@@ -1,0 +1,93 @@
+import 'package:decimal/decimal.dart';
+import 'package:intl/intl.dart';
+
+/// Number, money and date formatting at the presentation edge, for `fr`
+/// (default) and `en`.
+///
+/// French rules (BRIEF §10.3): decimal comma, narrow no-break space as
+/// thousands separator, no-break space before the currency symbol and the
+/// percent sign. Every locale uses the true minus sign (U+2212), and `signed`
+/// adds `+` to positive values so gains and losses never rely on color alone.
+class Formats {
+  Formats(String languageCode) : _locale = languageCode == 'fr' ? 'fr' : 'en';
+
+  final String _locale;
+  bool get _fr => _locale == 'fr';
+
+  static const _nnbsp = '\u202F';
+  static const _nbsp = '\u00A0';
+  static const _minus = '\u2212';
+  static const _symbols = {'EUR': '€', 'USD': r'$'};
+
+  /// [minorUnits] in cents (EUR and USD both have two decimals): `51 534,60 €`,
+  /// `€51,534.60`.
+  String money(int minorUnits, String currency, {bool signed = false}) =>
+      _withCurrency(Decimal.fromInt(minorUnits).shift(-2), currency, signed);
+
+  /// A quote-currency price, rounded half-even to cents: `177,57 $`.
+  String price(Decimal amount, String currency) =>
+      _withCurrency(amount, currency, false);
+
+  /// [ratio] 0.0288 → `2,88 %` (`+2,88 %` when [signed]).
+  String percent(Decimal ratio, {bool signed = false, int decimals = 2}) {
+    final number = _number(ratio.shift(2), decimals, signed);
+    return _fr ? '$number$_nnbsp%' : '$number%';
+  }
+
+  /// `7 octobre 2026`, `October 7, 2026`. Needs the intl date data, which
+  /// Flutter's localization delegates load (tests call
+  /// `initializeDateFormatting`).
+  String date(DateTime d) => DateFormat.yMMMMd(_locale).format(d);
+
+  /// `15 h 30`, `3:30 PM`.
+  String time(DateTime d) => _fr
+      ? '${d.hour}${_nbsp}h$_nbsp${d.minute.toString().padLeft(2, '0')}'
+      : DateFormat.jm(_locale).format(d);
+
+  String _withCurrency(Decimal amount, String currency, bool signed) {
+    final symbol = _symbols[currency] ?? currency;
+    final number = _number(amount, 2, signed);
+    if (_fr) return '$number$_nbsp$symbol';
+    // English puts the symbol after the sign: −€2.50, +€2.50.
+    final sign = number.startsWith(_minus) || number.startsWith('+')
+        ? number[0]
+        : '';
+    return '$sign$symbol${number.substring(sign.length)}';
+  }
+
+  String _number(Decimal value, int decimals, bool signed) {
+    final rounded = roundHalfEven(value, decimals);
+    final digits = rounded.abs().toStringAsFixed(decimals);
+    final [whole, ...fraction] = digits.split('.');
+    final group = _fr ? _nnbsp : ',';
+    final grouped = whole.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+$)'),
+      (m) => group,
+    );
+    final body = fraction.isEmpty
+        ? grouped
+        : '$grouped${_fr ? ',' : '.'}${fraction.first}';
+    final sign = rounded < Decimal.zero
+        ? _minus
+        : signed && rounded > Decimal.zero
+        ? '+'
+        : '';
+    return '$sign$body';
+  }
+}
+
+/// Rounds [value] to [scale] decimals, ties to the even neighbour (banker's
+/// rounding): 2.345 → 2.34, 2.355 → 2.36. The only rounding in the app happens
+/// here, at display time.
+Decimal roundHalfEven(Decimal value, int scale) {
+  final truncated = value.truncate(scale: scale);
+  final remainder = (value - truncated).shift(scale).abs();
+  final half = Decimal.parse('0.5');
+  if (remainder < half) return truncated;
+  final step = Decimal.one.shift(-scale);
+  final awayFromZero = value < Decimal.zero
+      ? truncated - step
+      : truncated + step;
+  if (remainder > half) return awayFromZero;
+  return truncated.shift(scale).toBigInt().isEven ? truncated : awayFromZero;
+}
