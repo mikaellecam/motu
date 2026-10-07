@@ -49,5 +49,12 @@
   "onboarding_time_question": "How much time per week?",
   "onboarding_time_five": "5 min",
   "onboarding_time_fifteen": "15 min",
-  "onboarding_time_thirtyPlus": "30 min or more"
+  "onboarding_time_thirtyPlus": "30 min or more",
+  "island_actionsEtf": "Stocks & ETFs",
+  "island_trading": "Trading",
+  "island_realEstate": "Real estate",
+  "island_crypto": "Crypto",
+  "island_basics": "The basics",
+  "map_soon": "Coming soon",
+  "map_island_locked": "{island}, coming soon"
 }

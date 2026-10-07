@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
+import '../../core/theme/tokens.dart';
+import '../features/map/archipelago_map.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../shell/app_shell.dart';
 
@@ -110,6 +112,9 @@ class MapTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
+      // World screens sit on the sea (BRIEF §10.2).
+      backgroundColor: AppColors.sea,
+      body: ArchipelagoMap(onOpen: (_) => context.push('/island/actions-etf')),
       appBar: AppBar(
         title: Text(l10n.map_title),
         actions: [

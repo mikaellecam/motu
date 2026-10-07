@@ -112,5 +112,20 @@
   },
   "@onboarding_start_node1": {
     "description": "Titles of the possible first steps; node titles will come from the content pack (M6-1)."
+  },
+  "island_actionsEtf": "Actions & ETF",
+  "island_trading": "Trading",
+  "island_realEstate": "Immobilier",
+  "island_crypto": "Crypto",
+  "island_basics": "Les bases",
+  "map_soon": "Bient\u00f4t",
+  "map_island_locked": "{island}, bient\u00f4t",
+  "@map_island_locked": {
+    "description": "Screen-reader label of a locked island.",
+    "placeholders": {
+      "island": {
+        "type": "String"
+      }
+    }
   }
 }
