@@ -1,9 +1,8 @@
 # Investment Companion — agent guide
 
-Read this file at the start of every session. Then read the issue you were given, then the sections of
-`docs/BRIEF.md` it points to. `docs/BRIEF.md` is the product and architecture spec; `docs/ROADMAP.md` is the
-milestone and issue breakdown. When they disagree with this file, this file wins; when the issue disagrees
-with the brief, ask.
+Work happens one issue at a time, following **Workflow** below. `docs/BRIEF.md` is the product and
+architecture spec; `docs/ROADMAP.md` is the original plan the tracker was seeded from. When they disagree
+with this file, this file wins; when the issue disagrees with the brief, ask.
 
 ## What we are building
 
@@ -27,6 +26,7 @@ app/        Flutter app (Dart)
 backend/    Go service + CLI tools (cmd/server, cmd/freeze, cmd/contentcheck)
 content/    Lesson packs, glossary, frozen datasets — source of truth for all learning content
 docs/       BRIEF.md, ROADMAP.md, decisions/ (ADRs, one file per decision)
+tracker/    Local issue tracker, gitignored (see Workflow)
 ```
 
 ## Commands
@@ -41,9 +41,31 @@ flutter analyze && flutter test
 cd backend && go vet ./... && go test ./...
 go run ./cmd/server                 # needs .env (see backend/.env.example)
 go run ./cmd/contentcheck ../content  # validates every content pack against the schema
+
+# tracker
+tracker/board        # every issue in roadmap order, then the next one to work on
+tracker/board next   # only the next issue id
 ```
 
-A change is not done until `flutter analyze`, `flutter test` and (when touched) `go vet` + `go test` pass.
+## Workflow
+
+`tracker/` holds one Markdown file per issue. It is gitignored, so Grep and Glob skip it: open issue files by
+path and list them with `tracker/board`. Frontmatter: `status` (todo | doing | blocked | done), `priority`
+(`must` = covers a graded requirement of `docs/BRIEF.md` §2, `normal` otherwise), `depends` (issue ids),
+`spec` (BRIEF sections).
+
+1. **Pick.** Take the issue the user names, or `tracker/board next`. Set `status: doing` and branch from
+   `main`: `git switch -c m1-2-simulation-clock` (lowercase id + slug).
+2. **Read.** The issue, every BRIEF section in `spec`, and the code the change touches. Done when you can name
+   every file you will change.
+3. **Build.** Domain code test-first. Tick an acceptance-criterion box when its test passes. Work outside the
+   issue's scope becomes a new issue file (next free number in the milestone), not part of this branch.
+4. **Blocked.** On a product question, or something only the user can provide (API key, account), write it
+   under `## Questions` with the options and their trade-offs, set `status: blocked`, tell the user, and
+   move to `tracker/board next`.
+5. **Finish.** Definition of done met. Commit on the branch, `git merge --no-ff` into `main`, set
+   `status: done`, and add a dated line under `## Log`: what changed, decisions taken, anything deferred.
+   Pushing is the user's call.
 
 ## Architecture rules (non-negotiable)
 
@@ -64,10 +86,10 @@ A change is not done until `flutter analyze`, `flutter test` and (when touched) 
 
 ## Guardrails
 
-- **Do not make product decisions.** If the spec is silent or ambiguous, stop, list the options with their
-  trade-offs in the issue or PR, and ask. Known open decisions: `docs/BRIEF.md` §14.
-- One issue per branch and per PR. Small diffs. No drive-by refactors or renames outside the issue's scope.
-- New dependency → justify it in the PR. Prefer the allowed list in `docs/BRIEF.md` §5.4.
+- **Do not make product decisions.** If the spec is silent or ambiguous, ask (Workflow step 4). Known open
+  decisions: `docs/BRIEF.md` §14.
+- One issue per branch. Small diffs. No drive-by refactors or renames outside the issue's scope.
+- New dependency → justify it in the issue log. Prefer the allowed list in `docs/BRIEF.md` §5.4.
 - Every domain function ships with unit tests, including edge cases: empty history, single data point, zero
   or negative amount, missing price for a date, weekend/holiday dates, dates outside the data range, division
   by zero, currency mismatch.
@@ -80,8 +102,8 @@ A change is not done until `flutter analyze`, `flutter test` and (when touched) 
 
 ## Definition of done
 
-- Acceptance criteria in the issue are met.
-- `flutter analyze` clean, all tests green (app and/or backend).
+- Every acceptance-criterion box in the issue is ticked.
+- `flutter analyze` clean and `flutter test` green; `go vet` + `go test` green when `backend/` changed.
 - New strings exist in both `app_fr.arb` and `app_en.arb`.
-- UI changes: screenshot or short screen recording in the PR description.
-- If behaviour or a contract changed: `docs/BRIEF.md` (or the relevant ADR) updated in the same PR.
+- UI changes: screenshot or short screen recording in `tracker/assets/`, linked from the issue log.
+- If behaviour or a contract changed: `docs/BRIEF.md` (or the relevant ADR) updated on the same branch.
