@@ -6,5 +6,5 @@ import 'main.dart';
 import 'presentation/debug/gallery_screen.dart';
 
 void main() {
-  runApp(const MainApp(home: GalleryScreen()));
+  runApp(MainApp.screen(const GalleryScreen()));
 }

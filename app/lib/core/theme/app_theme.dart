@@ -84,6 +84,12 @@ ThemeData appTheme() {
     textTheme: textTheme,
     dividerColor: AppColors.line,
     materialTapTargetSize: MaterialTapTargetSize.padded,
+    // The selected tab is a place, not progress: neutral tokens only.
+    navigationBarTheme: const NavigationBarThemeData(
+      backgroundColor: AppColors.surface,
+      indicatorColor: AppColors.line,
+      surfaceTintColor: AppColors.surface,
+    ),
     cardTheme: const CardThemeData(
       color: AppColors.surface,
       elevation: 0,

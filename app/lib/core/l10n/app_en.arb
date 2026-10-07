@@ -9,5 +9,11 @@
   "failure_not_found": "This data doesn't exist, or no longer does.",
   "failure_data_unavailable": "No data available for {date}.",
   "failure_storage": "Couldn't read or save on your device.",
-  "failure_unexpected": "Something unexpected went wrong."
+  "failure_unexpected": "Something unexpected went wrong.",
+  "tab_map": "Map",
+  "tab_wallets": "Wallet",
+  "tab_explore": "Explore",
+  "tab_glossary": "Glossary",
+  "map_title": "Your archipelago",
+  "map_settings": "Settings"
 }

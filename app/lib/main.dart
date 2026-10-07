@@ -1,33 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'core/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
+import 'presentation/routing/router.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(MainApp(router: buildRouter()));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key, this.home});
+  const MainApp({super.key, required this.router});
 
-  /// Replaces the home screen; used by the debug entry points.
-  final Widget? home;
+  /// A single screen with the app's theme and localizations: debug entry
+  /// points and screenshots.
+  MainApp.screen(Widget screen, {Key? key})
+    : this(
+        key: key,
+        router: GoRouter(
+          routes: [GoRoute(path: '/', builder: (_, _) => screen)],
+        ),
+      );
+
+  final GoRouter router;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).app_title,
       theme: appTheme(),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home:
-          home ??
-          Builder(
-            builder: (context) => Scaffold(
-              body: Center(child: Text(AppLocalizations.of(context).app_title)),
-            ),
-          ),
+      routerConfig: router,
     );
   }
 }

@@ -48,5 +48,14 @@
     }
   },
   "failure_storage": "Impossible de lire ou d'enregistrer sur ton appareil.",
-  "failure_unexpected": "Une erreur inattendue s'est produite."
+  "failure_unexpected": "Une erreur inattendue s'est produite.",
+  "tab_map": "Carte",
+  "tab_wallets": "Portefeuille",
+  "tab_explore": "Explorer",
+  "tab_glossary": "Glossaire",
+  "map_title": "Ton archipel",
+  "map_settings": "Param\u00e8tres",
+  "@map_settings": {
+    "description": "Accessibility label of the settings button in the map header."
+  }
 }
