@@ -232,6 +232,7 @@ final class TripAdvance {
 final class TripEngine {
   const TripEngine({
     required this.calendar,
+    required this.exchanges,
     required this.livretRates,
     required this.rules,
     required this.monthlyContribution,
@@ -239,6 +240,9 @@ final class TripEngine {
   });
 
   final MarketCalendar calendar;
+
+  /// The exchanges the catalogue's assets trade on.
+  final Set<Exchange> exchanges;
   final List<LivretRate> livretRates;
   final TradingRules rules;
 
@@ -248,11 +252,11 @@ final class TripEngine {
   /// Companion thresholds of the user's profile.
   final MomentThresholds thresholds;
 
-  /// A trip day is a day when any exchange of the catalogue trades (decided
-  /// 2026-10-07): an asset whose exchange is closed keeps its last close and
-  /// its orders wait.
+  /// A trip day is a day when any of the catalogue's [exchanges] trades
+  /// (decided 2026-10-07): an asset whose exchange is closed keeps its last
+  /// close and its orders wait.
   bool isTripDay(DateTime date) =>
-      Exchange.values.any((exchange) => calendar.isTradingDay(exchange, date));
+      exchanges.any((exchange) => calendar.isTradingDay(exchange, date));
 
   DateTime _nextTripDay(DateTime date) {
     var next = DateTime.utc(date.year, date.month, date.day + 1);

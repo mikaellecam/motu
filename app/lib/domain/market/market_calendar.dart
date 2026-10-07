@@ -8,7 +8,11 @@ import 'package:timezone/timezone.dart' as tz;
 enum Exchange {
   euronext('Europe/Paris', (9, 0), (17, 30)),
   nyse('America/New_York', (9, 30), (16, 0)),
-  nasdaq('America/New_York', (9, 30), (16, 0));
+  nasdaq('America/New_York', (9, 30), (16, 0)),
+
+  /// Over-the-counter US listings (ADRs of European companies, ADR-004):
+  /// New York hours and holidays.
+  otc('America/New_York', (9, 30), (16, 0));
 
   const Exchange(this.timeZone, this.opens, this.closes);
 

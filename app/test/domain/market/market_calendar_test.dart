@@ -139,6 +139,14 @@ void main() {
       );
     });
 
+    test('OTC (ADRs) keeps New York hours', () {
+      bool openAt(int h, int m) =>
+          calendar.isOpen(Exchange.otc, paris(2026, 4, 7, h, m, summer: true));
+      expect(openAt(15, 29), isFalse);
+      expect(openAt(15, 30), isTrue);
+      expect(openAt(22, 0), isFalse);
+    });
+
     test('closed on weekends and holidays, even within session hours', () {
       expect(
         calendar.isOpen(Exchange.nyse, paris(2026, 4, 3, 16, 0, summer: true)),

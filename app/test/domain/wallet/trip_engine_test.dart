@@ -22,6 +22,8 @@ final calendar = MarketCalendar({
   Exchange.euronext: {day(4, 3), day(4, 6), day(5, 1)},
   Exchange.nyse: {day(4, 3), day(7, 3)},
   Exchange.nasdaq: {day(4, 3), day(7, 3)},
+  // OTC follows the NYSE holiday calendar.
+  Exchange.otc: {day(4, 3), day(7, 3)},
 });
 
 const exchanges = {'cw8': Exchange.euronext, 'aapl': Exchange.nyse};
@@ -110,8 +112,14 @@ final live = TradingRules(
 
 final rates = [LivretRate(DateTime.utc(2000), d('0.03'))];
 
-TripEngine engine({Money? contribution, TradingRules? rules}) => TripEngine(
+/// The fixture trades CW8 on Euronext and AAPL on NYSE.
+TripEngine engine({
+  Money? contribution,
+  TradingRules? rules,
+  Set<Exchange> exchanges = const {Exchange.euronext, Exchange.nyse},
+}) => TripEngine(
   calendar: calendar,
+  exchanges: exchanges,
   livretRates: rates,
   rules: rules ?? live,
   monthlyContribution: contribution ?? const Money.zero(Currency.eur),
@@ -189,6 +197,18 @@ void main() {
     expect(result.state.date, day(4, 7));
     expect(result.endOfData, isFalse);
     expect(result.stop, isEmpty);
+  });
+
+  test('with US listings only, a US holiday is not a trip day', () {
+    final usOnly = engine(exchanges: const {Exchange.nyse, Exchange.otc});
+    final result = advance(
+      usOnly,
+      TripState.start(day(7, 2), eur('1000')),
+      day(7, 6),
+      const {},
+    );
+    // Friday 3 July: Euronext trades, but no catalogue exchange does.
+    expect(result.state.values.map((v) => v.date), [day(7, 2), day(7, 6)]);
   });
 
   test('a US asset waits on a US holiday and keeps its last close', () {
