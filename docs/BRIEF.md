@@ -371,7 +371,8 @@ Never blocks.
 
 Facts to encode (verify at implementation, keep in backend data, never hardcode in the app):
 - Annual rate history (dated rows; reviewed every 1 February and 1 August). Current: 1.7 % since 2026-08-01.
-- Deposit ceiling 22 950 € (capitalised interest may exceed it).
+- Deposit ceiling, dated like the rates: 15 300 € until 30 September 2012, 19 125 € from 1 October 2012,
+  22 950 € since 1 January 2013 (capitalised interest may exceed it).
 - Interest by fortnight ("quinzaine": 1st–15th, 16th–end of month). Deposits earn from the next quinzaine
   start; withdrawals stop earning from the start of the quinzaine in which they happen. Interest is credited
   and capitalised on 31 December.
@@ -379,6 +380,8 @@ Facts to encode (verify at implementation, keep in backend data, never hardcode 
 Uses:
 - Simulated Livret line in any wallet (transfer cash ↔ Livret, instant, no fees).
 - Benchmark line on the wallet chart; counterfactual in trip summary; comparison in DCA; island node 1.
+  These comparisons respect the ceiling valid at each date: money above it stays as uninvested cash at 0 %,
+  and the result says it was capped.
 - Teaching stance: the Livret is the right place for a safety cushion (3–6 months of expenses), not for
   long-term money. Never mock it.
 
@@ -605,7 +608,7 @@ Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via
 | `GET /v1/assets/{id}/history?from=&to=` | Adjusted daily OHLCV bars, ascending; `to` defaults to latest |
 | `GET /v1/quotes?ids=a,b,c` | Latest price per asset with `asOf` and market status |
 | `GET /v1/fx?base=USD&quote=EUR&from=&to=` | Daily rates (cached Frankfurter; the app also calls Frankfurter directly) |
-| `GET /v1/livret/rates` | Dated Livret A rate history |
+| `GET /v1/livret/rates` | Dated Livret A rate history and dated ceiling history |
 | `GET /v1/calendar/{exchange}?year=` | Trading days / holidays |
 | `GET /v1/content/manifest` · `GET /v1/content/packs/{islandId}/{version}` | Content distribution |
 | `GET /healthz` | Liveness |

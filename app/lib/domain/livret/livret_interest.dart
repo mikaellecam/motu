@@ -15,6 +15,18 @@ final class LivretRate {
   final Decimal annualRate;
 }
 
+/// The deposit ceiling, valid from a date until the next one (15 300 € before
+/// October 2012, 22 950 € since 2013).
+final class LivretCeiling {
+  const LivretCeiling(this.validFrom, this.amount);
+  final DateTime validFrom;
+  final Money amount;
+}
+
+/// The ceiling valid on [date].
+Money ceilingAt(DateTime date, List<LivretCeiling> ceilings) =>
+    _validOn(date, ceilings, (c) => c.validFrom, 'ceiling').amount;
+
 /// Cash moved into (positive) or out of (negative) the Livret on a day.
 final class LivretMovement {
   const LivretMovement(this.date, this.amount);
@@ -136,16 +148,26 @@ final class LivretAccount {
   }
 }
 
-Decimal _rateAt(DateTime date, List<LivretRate> rates) {
-  LivretRate? current;
-  for (final rate in rates) {
-    if (!rate.validFrom.isAfter(date) &&
-        (current == null || rate.validFrom.isAfter(current.validFrom))) {
-      current = rate;
+Decimal _rateAt(DateTime date, List<LivretRate> rates) =>
+    _validOn(date, rates, (r) => r.validFrom, 'rate').annualRate;
+
+/// The entry of a dated history in force on [date]: the latest that starts on
+/// or before it.
+T _validOn<T>(
+  DateTime date,
+  List<T> history,
+  DateTime Function(T) validFrom,
+  String what,
+) {
+  T? current;
+  for (final entry in history) {
+    if (!validFrom(entry).isAfter(date) &&
+        (current == null || validFrom(entry).isAfter(validFrom(current)))) {
+      current = entry;
     }
   }
-  if (current == null) throw ArgumentError('No Livret rate known on $date');
-  return current.annualRate;
+  if (current == null) throw ArgumentError('No Livret $what known on $date');
+  return current;
 }
 
 /// The Livret built from [movements] (in date order) as of [asOf]. Movements
