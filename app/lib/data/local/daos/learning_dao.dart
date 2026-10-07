@@ -27,6 +27,10 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
   Future<void> saveProfile(ProfilesCompanion row) =>
       into(profiles).insertOnConflictUpdate(row.copyWith(id: const Value(1)));
 
+  /// Writes the present fields of [row] to the existing profile (settings).
+  Future<void> updateProfile(ProfilesCompanion row) =>
+      (update(profiles)..where((p) => p.id.equals(1))).write(row);
+
   Future<List<NodeProgressRow>> progress() => select(nodeProgress).get();
 
   Future<void> saveProgress(NodeProgressCompanion row) =>

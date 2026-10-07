@@ -1,10 +1,11 @@
 // Debug entry point: `flutter run -t lib/main_gallery.dart`. Never part of a
 // release build, which only compiles lib/main.dart.
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'main.dart';
 import 'presentation/debug/gallery_screen.dart';
 
 void main() {
-  runApp(MainApp.screen(const GalleryScreen()));
+  runApp(ProviderScope(child: MainApp.screen(const GalleryScreen())));
 }

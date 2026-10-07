@@ -1,13 +1,23 @@
+import 'package:drift/native.dart';
+import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
+import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Future<void> open(WidgetTester tester, String location) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+  final db = AppDatabase(NativeDatabase.memory());
+  addTearDown(db.close);
   await tester.pumpWidget(
-    MainApp(router: buildRouter(initialLocation: location)),
+    ProviderScope(
+      overrides: [databaseProvider.overrideWithValue(db)],
+      child: MainApp(router: buildRouter(initialLocation: location)),
+    ),
   );
   await tester.pumpAndSettle();
 }
@@ -57,7 +67,6 @@ void main() {
   });
 
   for (final location in [
-    '/onboarding',
     '/settings',
     '/tools/dca',
     '/island/actions-etf',
@@ -75,6 +84,12 @@ void main() {
       expect(find.byType(NavigationBar), findsNothing);
     });
   }
+
+  testWidgets('/onboarding opens the questionnaire', (tester) async {
+    await open(tester, '/onboarding');
+    expect(find.byType(OnboardingScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
 
   testWidgets('an unknown location goes back to the map', (tester) async {
     await open(tester, '/nowhere');

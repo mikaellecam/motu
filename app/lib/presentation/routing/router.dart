@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../shell/app_shell.dart';
 
 /// Routes of the app (BRIEF §3). The four tabs share a shell with the bottom
@@ -34,7 +35,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
         ),
       ],
     ),
-    _pending('/onboarding'),
+    GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
     _pending('/settings'),
     _pending('/tools/dca'),
     _pending('/island/:islandId'),

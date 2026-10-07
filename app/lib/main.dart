@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'application/providers.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/routing/router.dart';
 
-void main() {
-  runApp(MainApp(router: buildRouter()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final container = ProviderContainer();
+  // First launch: the questionnaire before anything else (BRIEF §3).
+  final profile = await container.read(profileRepositoryProvider).load();
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: MainApp(
+        router: buildRouter(
+          initialLocation: profile == null ? '/onboarding' : '/',
+        ),
+      ),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {

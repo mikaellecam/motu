@@ -15,6 +15,7 @@ import '../../domain/wallet/trip_engine.dart';
 import '../../domain/wallet/wallet.dart';
 import '../local/database.dart';
 import '../local/tables.dart';
+import 'guard.dart';
 
 /// A wallet's settings: trading rules, monthly contribution, automatic stops
 /// (BRIEF §4.5), stored as JSON in `wallets.params`.
@@ -122,16 +123,6 @@ class WalletRepository {
 
   final AppDatabase _db;
 
-  Future<T> _guard<T>(Future<T> Function() body) async {
-    try {
-      return await body();
-    } on Failure {
-      rethrow;
-    } on Exception {
-      throw const StorageFailure();
-    }
-  }
-
   /// Creates a wallet with its starting cash, booked in the ledger and as the
   /// first day of the value series.
   Future<void> createWallet({
@@ -142,7 +133,7 @@ class WalletRepository {
     required Money startingCash,
     required WalletParams params,
     required DateTime createdAt,
-  }) => _guard(
+  }) => guardStorage(
     () => _db.transaction(() async {
       final dao = _db.walletDao;
       await dao.createWallet(
@@ -178,7 +169,7 @@ class WalletRepository {
   );
 
   /// The wallet [id], or a [NotFoundFailure].
-  Future<WalletState> load(String id) => _guard(() async {
+  Future<WalletState> load(String id) => guardStorage(() async {
     final dao = _db.walletDao;
     final row = await dao.wallet(id);
     if (row == null) throw const NotFoundFailure();
@@ -228,7 +219,7 @@ class WalletRepository {
     );
   });
 
-  Future<void> placeOrder(String walletId, Order order) => _guard(() {
+  Future<void> placeOrder(String walletId, Order order) => guardStorage(() {
     final (amount, quantity) = switch (order.size) {
       AmountSize(:final amount) => (amount.minorUnits, null),
       QuantitySize(:final quantity) => (null, quantity.micros),
@@ -255,51 +246,52 @@ class WalletRepository {
 
   /// Books [fill] of [order]: the fill, its notional and fees in the ledger,
   /// and the order closed. All or nothing.
-  Future<void> recordFill(String walletId, Order order, Fill fill) => _guard(
-    () => _db.transaction(() async {
-      final dao = _db.walletDao;
-      await dao.insertFill(
-        FillsCompanion.insert(
-          orderId: order.id,
-          walletId: walletId,
-          assetId: fill.assetId,
-          side: fill.side,
-          date: fill.date,
-          price: fill.price.value,
-          currency: fill.price.currency,
-          quantityMicros: fill.quantity.micros,
-          fxRate: fill.fxRate,
-          feesCents: fill.fees.minorUnits,
-        ),
+  Future<void> recordFill(String walletId, Order order, Fill fill) =>
+      guardStorage(
+        () => _db.transaction(() async {
+          final dao = _db.walletDao;
+          await dao.insertFill(
+            FillsCompanion.insert(
+              orderId: order.id,
+              walletId: walletId,
+              assetId: fill.assetId,
+              side: fill.side,
+              date: fill.date,
+              price: fill.price.value,
+              currency: fill.price.currency,
+              quantityMicros: fill.quantity.micros,
+              fxRate: fill.fxRate,
+              feesCents: fill.fees.minorUnits,
+            ),
+          );
+          final buy = fill.side == Side.buy;
+          await dao.addLedgerEntry(
+            CashLedgerCompanion.insert(
+              walletId: walletId,
+              date: fill.date,
+              amountCents: buy
+                  ? -fill.notional.minorUnits
+                  : fill.notional.minorUnits,
+              kind: buy ? LedgerKind.buy : LedgerKind.sell,
+              refId: Value(order.id),
+            ),
+          );
+          if (!fill.fees.isZero) {
+            await dao.addLedgerEntry(
+              CashLedgerCompanion.insert(
+                walletId: walletId,
+                date: fill.date,
+                amountCents: -fill.fees.minorUnits,
+                kind: LedgerKind.fee,
+                refId: Value(order.id),
+              ),
+            );
+          }
+          await dao.closeOrder(order.id, OrderStatus.filled);
+        }),
       );
-      final buy = fill.side == Side.buy;
-      await dao.addLedgerEntry(
-        CashLedgerCompanion.insert(
-          walletId: walletId,
-          date: fill.date,
-          amountCents: buy
-              ? -fill.notional.minorUnits
-              : fill.notional.minorUnits,
-          kind: buy ? LedgerKind.buy : LedgerKind.sell,
-          refId: Value(order.id),
-        ),
-      );
-      if (!fill.fees.isZero) {
-        await dao.addLedgerEntry(
-          CashLedgerCompanion.insert(
-            walletId: walletId,
-            date: fill.date,
-            amountCents: -fill.fees.minorUnits,
-            kind: LedgerKind.fee,
-            refId: Value(order.id),
-          ),
-        );
-      }
-      await dao.closeOrder(order.id, OrderStatus.filled);
-    }),
-  );
 
-  Future<void> cancelOrder(String orderId, CancelReason reason) => _guard(
+  Future<void> cancelOrder(String orderId, CancelReason reason) => guardStorage(
     () => _db.walletDao.closeOrder(
       orderId,
       OrderStatus.cancelled,
@@ -308,7 +300,7 @@ class WalletRepository {
   );
 
   /// Appends a day to the value series; a day computed again replaces its row.
-  Future<void> appendValue(String walletId, DailyValue value) => _guard(
+  Future<void> appendValue(String walletId, DailyValue value) => guardStorage(
     () => _db.walletDao.saveValue(
       WalletValuesCompanion.insert(
         walletId: walletId,
@@ -320,7 +312,7 @@ class WalletRepository {
   );
 
   Future<void> addContribution(String walletId, DateTime date, Money amount) =>
-      _guard(
+      guardStorage(
         () => _db.walletDao.addLedgerEntry(
           CashLedgerCompanion.insert(
             walletId: walletId,
@@ -334,7 +326,7 @@ class WalletRepository {
   /// Moves [amount] from cash into the Livret; a negative amount moves it
   /// back. Validate it first (`validateLivretTransfer`).
   Future<void> moveToLivret(String walletId, DateTime date, Money amount) =>
-      _guard(
+      guardStorage(
         () => _db.walletDao.addLedgerEntry(
           CashLedgerCompanion.insert(
             walletId: walletId,
@@ -347,7 +339,7 @@ class WalletRepository {
         ),
       );
 
-  Future<void> savePlan(String walletId, DcaPlan plan) => _guard(
+  Future<void> savePlan(String walletId, DcaPlan plan) => guardStorage(
     () => _db.walletDao.savePlan(
       DcaPlansCompanion.insert(
         id: plan.id,

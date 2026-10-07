@@ -4,10 +4,14 @@
 //   flutter test screenshots --update-goldens
 //
 // Files land in docs/screenshots/<name>.png.
+import 'package:drift/native.dart';
+import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Phone-sized canvas, in logical pixels.
@@ -34,16 +38,19 @@ void screenshot(
 
 /// Renders the real app opened at [location] (tabs and all) and writes
 /// `<name>.png`.
+/// [act] drives the screen (taps…) before the capture.
 void screenshotRoute(
   String name,
   String location, {
   Size size = phone,
   String locale = 'fr',
+  Future<void> Function(WidgetTester tester)? act,
 }) => _capture(
   name,
   () => MainApp(router: buildRouter(initialLocation: location)),
   size: size,
   locale: locale,
+  act: act,
 );
 
 /// [app] is built inside the test: a router built earlier would set up the
@@ -53,6 +60,7 @@ void _capture(
   Widget Function() app, {
   required Size size,
   required String locale,
+  Future<void> Function(WidgetTester tester)? act,
 }) {
   testWidgets(name, (tester) async {
     await tester.runAsync(_loadFonts);
@@ -62,10 +70,23 @@ void _capture(
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(app());
+    // An empty in-memory database: screens that read data start from scratch.
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(db)],
+        child: app(),
+      ),
+    );
     // Fixed frames, not pumpAndSettle: some screens animate forever (skeletons).
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
+    if (act != null) {
+      await act(tester);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+    }
     await expectLater(
       find.byType(MaterialApp),
       matchesGoldenFile('../../docs/screenshots/$name.png'),
