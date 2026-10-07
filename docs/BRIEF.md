@@ -524,7 +524,7 @@ the last update.
 ## 7. Domain calculations (all pure, all unit-tested)
 
 Money in integer cents; prices `Decimal`; intermediate ratios `Decimal` with 10-digit precision; rounding
-half-even at display only.
+half-even only when an amount is booked as Money (fill, fee, interest, daily value) or displayed (ADR-003).
 
 1. **Position (average cost):** buy fills add quantity and cost (price × qty × fx + fees, in €); sell fills
    reduce quantity, realised P&L = proceeds − avgCost × qty; avgCost unchanged on sells.

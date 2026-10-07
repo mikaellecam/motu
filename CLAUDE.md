@@ -81,7 +81,8 @@ Frontmatter: `status` (todo | doing | blocked | done), `priority` (`must` = cove
    market-data read goes through a repository that takes `asOf`. **No lookahead:** no price, rate, chart
    point or asset dated after `clock.now()` may reach the domain or the UI.
 4. **Money is never a `double`.** Use `Money` (integer minor units + currency), `Quantity` (fixed-point,
-   6 decimals), `Price` (`Decimal`). Round only at the presentation edge.
+   6 decimals), `Price` (`Decimal`). Round half-even only when booking an amount as `Money` or when
+   displaying it (ADR-003).
 5. **Currency conversion only through `FxService`**, always with a dated rate (latest rate on or before `asOf`).
 6. **State:** Riverpod. Async state is `AsyncValue`; errors are typed (`sealed class Failure`), never raw strings.
 7. **Persistence:** drift (SQLite). Any schema change ships with a migration and a migration test.
