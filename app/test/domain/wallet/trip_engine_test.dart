@@ -1,5 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/domain/companion/rules.dart';
+import 'package:finance_companion/domain/learning/profile_rules.dart';
 import 'package:finance_companion/domain/livret/livret_interest.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/market/price_bar.dart';
@@ -113,6 +115,7 @@ TripEngine engine({Money? contribution, TradingRules? rules}) => TripEngine(
   livretRates: rates,
   rules: rules ?? live,
   monthlyContribution: contribution ?? const Money.zero(Currency.eur),
+  thresholds: MomentThresholds(concentration: d('0.40')),
 );
 
 /// 10 shares of CW8 bought at 100 € on [date], no cash left.
@@ -243,15 +246,20 @@ void main() {
 
       // The contribution arrives first, the plan buys at the open with it, then
       // the user's order placed on Friday fills with the cash it reserved.
-      expect(result.events.map((e) => e.runtimeType), [
+      final steps = result.events.where((e) => e is! MomentFired);
+      expect(steps.map((e) => e.runtimeType), [
         ContributionCredited,
         OrderPlaced,
         OrderFilled,
         OrderFilled,
       ]);
-      expect((result.events[1] as OrderPlaced).order.planId, 'p1');
-      expect((result.events[2] as OrderFilled).order.planId, 'p1');
-      expect((result.events[3] as OrderFilled).order.id, 'o1');
+      expect((steps.elementAt(1) as OrderPlaced).order.planId, 'p1');
+      expect((steps.elementAt(2) as OrderFilled).order.planId, 'p1');
+      expect((steps.elementAt(3) as OrderFilled).order.id, 'o1');
+      // Companion rules run after valuation: all in one ETF is concentrated.
+      expect(result.events.whereType<MomentFired>().map((e) => e.moment.rule), [
+        CompanionRule.concentration,
+      ]);
       // Valuation sees the shares bought that morning.
       final today = result.state.values.last;
       expect(today.value, eur('300'));
@@ -334,6 +342,82 @@ void main() {
       result.events.whereType<OrderCancelled>().single.reason,
       CancelReason.amountBelowOneShare,
     );
+  });
+
+  test('companion moments are events, logged, and never stop the trip', () {
+    final result = advance(engine(), invested1000(day(5, 29)), day(6, 10), {
+      'cw8': series('cw8', day(6, 1), day(6, 10), overrides: {day(6, 3): '84'}),
+    });
+    expect(result.stop, isEmpty);
+    expect(result.state.date, day(6, 10));
+    final rules = result.events.whereType<MomentFired>().map(
+      (e) => (e.moment.rule, e.date),
+    );
+    expect(
+      rules,
+      containsAll([
+        (CompanionRule.firstLoss, day(6, 3)),
+        (CompanionRule.positionDrop, day(6, 3)),
+        (CompanionRule.portfolioDrawdown, day(6, 3)),
+      ]),
+    );
+    // Logged, so they respect their cooldowns on the next advance.
+    expect(
+      result.state.companionLog.map((e) => e.rule),
+      containsAll([CompanionRule.firstLoss, CompanionRule.positionDrop]),
+    );
+    final again = advance(engine(), result.state, day(6, 12), {
+      'cw8': series(
+        'cw8',
+        day(6, 1),
+        day(6, 12),
+        overrides: {day(6, 11): '80'},
+      ),
+    });
+    expect(
+      again.events.whereType<MomentFired>().where(
+        (e) =>
+            e.moment.rule == CompanionRule.firstLoss ||
+            e.moment.rule == CompanionRule.positionDrop,
+      ),
+      isEmpty,
+    );
+  });
+
+  test('a panic sell in a trip, revisited three months later', () {
+    final prices = {
+      'cw8': series(
+        'cw8',
+        day(6, 1),
+        day(9, 10),
+        overrides: {day(6, 2): '84', day(6, 3): '85'},
+      ),
+    };
+    final fell = advance(engine(), invested1000(day(5, 29)), day(6, 2), prices);
+    final sell = Order(
+      id: 's1',
+      assetId: 'cw8',
+      side: Side.sell,
+      type: OrderType.market,
+      size: QuantitySize(Quantity.whole(10)),
+      createdAt: day(6, 2),
+    );
+    final sold = advance(
+      engine(),
+      fell.state.copyWith(pendingOrders: [sell]),
+      day(6, 3),
+      prices,
+    );
+    expect(
+      sold.events.whereType<MomentFired>().map((e) => e.moment.rule),
+      contains(CompanionRule.panicSell),
+    );
+    final later = advance(engine(), sold.state, day(9, 10), prices);
+    final followUp = later.events.whereType<MomentFired>().singleWhere(
+      (e) => e.moment.rule == CompanionRule.panicSellFollowUp,
+    );
+    expect(followUp.date, day(9, 3));
+    expect(followUp.moment.params['priceNow'], Price(d('100'), Currency.eur));
   });
 
   group('stop conditions', () {

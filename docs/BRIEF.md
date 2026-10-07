@@ -399,7 +399,7 @@ Pure rule engine over domain events, outputs `CompanionCard{ruleId, title, body,
 |---|---|---|
 | `first_loss` | First time a position is < −5 % | once |
 | `position_drop` | Position −15 % from its peak since purchase | 30 days per position |
-| `portfolio_drawdown` | Wallet −10 % from peak | 30 days |
+| `portfolio_drawdown` | Wallet performance −10 % from its peak (contributions excluded) | 30 days |
 | `concentration` | One non-cash position > 30 % (low comfort) / 40 % (others) | 14 days |
 | `idle_cash` | Cash > 25 % of wallet for > 30 days | 30 days |
 | `panic_sell` | Sell within 10 trading days after that position was −15 % | per event; revisited 3 months later ("what happened after you sold") |

@@ -2,6 +2,9 @@ import 'package:decimal/decimal.dart';
 
 import '../../core/money/money.dart';
 import '../analytics/returns.dart';
+import '../companion/events.dart';
+import '../companion/rules.dart';
+import '../learning/profile_rules.dart';
 import '../livret/livret_interest.dart';
 import '../market/market_calendar.dart';
 import '../market/price_bar.dart';
@@ -43,6 +46,8 @@ final class TripState {
     required this.livret,
     required this.values,
     required this.breached,
+    required this.companion,
+    required this.companionLog,
   });
 
   /// A trip leaving on [date] with [cash].
@@ -58,6 +63,8 @@ final class TripState {
         livret: LivretAccount.empty(date),
         values: [DailyValue(date: date, value: cash, flow: cash)],
         breached: const {},
+        companion: CompanionTracker.empty(),
+        companionLog: const [],
       );
 
   /// The simulated day, seen after its close.
@@ -81,6 +88,10 @@ final class TripState {
   /// again only after being false once.
   final Set<String> breached;
 
+  /// The companion's running facts, and the moments it already showed.
+  final CompanionTracker companion;
+  final List<CompanionLogEntry> companionLog;
+
   TripState copyWith({
     DateTime? date,
     Money? cash,
@@ -92,6 +103,8 @@ final class TripState {
     LivretAccount? livret,
     List<DailyValue>? values,
     Set<String>? breached,
+    CompanionTracker? companion,
+    List<CompanionLogEntry>? companionLog,
   }) => TripState(
     date: date ?? this.date,
     cash: cash ?? this.cash,
@@ -103,6 +116,8 @@ final class TripState {
     livret: livret ?? this.livret,
     values: values ?? this.values,
     breached: breached ?? this.breached,
+    companion: companion ?? this.companion,
+    companionLog: companionLog ?? this.companionLog,
   );
 }
 
@@ -149,6 +164,12 @@ final class OrderFilled extends TripEvent {
   const OrderFilled(super.date, this.order, this.fill);
   final Order order;
   final Fill fill;
+}
+
+/// A companion rule fired: a card to show, never a reason to stop.
+final class MomentFired extends TripEvent {
+  MomentFired(this.moment) : super(moment.date);
+  final Moment moment;
 }
 
 final class OrderCancelled extends TripEvent {
@@ -214,6 +235,7 @@ final class TripEngine {
     required this.livretRates,
     required this.rules,
     required this.monthlyContribution,
+    required this.thresholds,
   });
 
   final MarketCalendar calendar;
@@ -222,6 +244,9 @@ final class TripEngine {
 
   /// Credited on the first trip day of each month; zero for none.
   final Money monthlyContribution;
+
+  /// Companion thresholds of the user's profile.
+  final MomentThresholds thresholds;
 
   /// A trip day is a day when any exchange of the catalogue trades (decided
   /// 2026-10-07): an asset whose exchange is closed keeps its last close and
@@ -245,7 +270,8 @@ final class TripEngine {
   /// 3. pending orders run through the matcher on the day's bar;
   /// 4. the Livret closes the fortnights that ended;
   /// 5. end-of-day valuation, appended to the value series;
-  /// 6. stop conditions: when one fires, the trip stops after that day.
+  /// 6. companion rules (moments become events), then stop conditions: when
+  ///    one fires, the trip stops after that day.
   ///
   /// Reads nothing dated after the day being computed.
   TripAdvance advance(
@@ -390,7 +416,39 @@ final class TripEngine {
     );
     final value = Money.book(valuation.total, Currency.eur);
 
-    // 6. Stop conditions. Thresholds fire when they start to hold.
+    // 6. Companion moments, then stop conditions.
+    final total = valuation.total;
+    Decimal share(Decimal part) =>
+        total > Decimal.zero ? ratio(part, total) : Decimal.zero;
+    final (companion, moments) = s.companion.observe(
+      DaySnapshot(
+        date: day,
+        value: total,
+        flow: flow.amount,
+        cashWeight: share(cash.amount),
+        holdings: [
+          for (final h in valuation.holdings)
+            HoldingFacts(
+              assetId: h.position.assetId,
+              price: h.price.price,
+              weight: share(h.marketValue),
+              pnlRatio: h.unrealisedPnlRatio,
+            ),
+        ],
+        sells: [
+          for (final event in events.whereType<OrderFilled>())
+            if (event.fill.side == Side.sell)
+              SellFact(event.fill.assetId, event.fill.price),
+        ],
+        usdRate: market.fxRate(Currency.usd, day),
+        priceOf: (assetId) => market.priceAsOf(assetId, day)?.price,
+      ),
+      log: s.companionLog,
+      thresholds: thresholds,
+    );
+    events.addAll(moments.map(MomentFired.new));
+
+    // Thresholds fire when they start to hold.
     final breached = <String>{};
     final reasons = <StopReason>[];
     void crossing(String key, bool holds, StopReason Function() reason) {
@@ -444,6 +502,8 @@ final class TripEngine {
         DailyValue(date: day, value: value, flow: flow),
       ],
       breached: breached,
+      companion: companion,
+      companionLog: [...s.companionLog, ...moments.map((m) => m.logEntry)],
     );
     return (next, events, reasons);
   }
