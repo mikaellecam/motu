@@ -23,6 +23,30 @@ final class Flow {
   final Money amount;
 }
 
+/// A standing instruction to buy [amount] of an asset on a schedule
+/// (BRIEF §6.1 `dca_plans`).
+final class DcaPlan {
+  const DcaPlan({
+    required this.id,
+    required this.assetId,
+    required this.amount,
+    required this.frequency,
+    required this.start,
+    this.active = true,
+  });
+
+  final String id;
+  final String assetId;
+
+  /// In EUR, per purchase.
+  final Money amount;
+  final DcaFrequency frequency;
+
+  /// First scheduled date; later ones follow [frequency] (see [dcaSchedule]).
+  final DateTime start;
+  final bool active;
+}
+
 /// Purchase dates from [start] to [end]: monthly on the start day of the
 /// month (the last day in shorter months), or weekly on the start weekday.
 /// A non-trading date rolls to the next trading day of [exchange]; a date

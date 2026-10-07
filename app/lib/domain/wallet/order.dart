@@ -52,6 +52,7 @@ final class Order {
     required this.createdAt,
     this.limitPrice,
     this.stopPrice,
+    this.planId,
   });
 
   final String id;
@@ -69,6 +70,9 @@ final class Order {
   /// When the order was placed: an instant (live) or the simulated day
   /// (trip).
   final DateTime createdAt;
+
+  /// The DCA plan that placed this order, null when the user did.
+  final String? planId;
 }
 
 /// Fees of an order with [notional] EUR in an asset quoted in [assetCurrency]

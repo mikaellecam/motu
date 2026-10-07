@@ -254,17 +254,21 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
   exit button. No colored banner (color rule §10.2).
 - Time controls card above the tab bar: +1 jour, +1 semaine, +1 mois, « Avancer jusqu'à… ».
 
-**Advancing time** (domain service `TripEngine.advance(wallet, target, stopConditions)`), one trading day at
-a time:
-1. Credit monthly contribution if due (first trading day of the month).
-2. Execute active DCA plan purchases due that day.
+**Advancing time** (domain service `TripEngine.advance(wallet, target, stopConditions)`), one trip day at a
+time. A trip day is a day when any exchange of the catalogue trades; an asset whose exchange is closed keeps
+its last close and its orders wait.
+1. Credit monthly contribution if due (first trip day of the month).
+2. Active DCA plans due that day place a € market order, filled at that day's open through the
+   `OrderMatcher` rules (fees, whole shares, cancellation). Cash reserved by pending orders stays reserved.
 3. Run `OrderMatcher` on that day's bar for every pending order (§4.6).
 4. Accrue Livret interest bookkeeping (§4.11).
 5. Compute end-of-day valuation, append to the wallet's daily value series.
 6. Evaluate stop conditions and companion rules; if a stop condition fires → stop, persist, emit event.
 
-Stop conditions: portfolio drawdown from start > X % (default 15), any position loss > Y % (default 20),
-an order filled, a contribution arrived. The automatic-stop screen shows the drop chart with the threshold,
+Stop conditions: portfolio value more than X % below the money put in so far (start + contributions;
+default 15), any position loss > Y % (default 20), an order the user placed filled (DCA purchases don't
+count), a contribution arrived. Threshold conditions fire when they start to hold and re-arm once false
+again, so a portfolio stuck below the line stops the trip once. The automatic-stop screen shows the drop chart with the threshold,
 three neutral choices (each with upside and downside), an optional "Pourquoi ?" text saved to the journal.
 
 **End of trip** (any time, or when the clock reaches the last available trading day): summary with the

@@ -69,12 +69,37 @@ final class Position {
       isOpen ? ratio(costBasis, quantity.toDecimal()) : null;
 }
 
-/// Positions from [fills], in date order. Buys add their cost (notional +
-/// fees) to the cost basis; sells remove their share of it, so the average
-/// cost is unchanged, and realise proceeds − average cost × quantity.
+/// [held] after [fill]: a buy adds its cost (notional + fees) to the cost
+/// basis; a sell removes its share of it, so the average cost is unchanged,
+/// and realises proceeds − average cost × quantity.
 ///
-/// Throws [StateError] on fills that cannot have been valid: a non-positive
-/// quantity, a sell above the quantity held, or fills out of date order.
+/// Throws [StateError] on a fill that cannot have been valid: a non-positive
+/// quantity, or a sell above the quantity held.
+Position applyFill(Position? held, Fill fill) {
+  if (!fill.quantity.isPositive) {
+    throw StateError('Fill of ${fill.quantity} for ${fill.assetId}');
+  }
+  final position =
+      held ??
+      Position(
+        assetId: fill.assetId,
+        quantity: const Quantity.zero(),
+        costBasis: Decimal.zero,
+        realisedPnl: Decimal.zero,
+      );
+  return switch (fill.side) {
+    Side.buy => Position(
+      assetId: fill.assetId,
+      quantity: position.quantity + fill.quantity,
+      costBasis: position.costBasis - fill.cashFlow.amount,
+      realisedPnl: position.realisedPnl,
+    ),
+    Side.sell => _sell(position, fill),
+  };
+}
+
+/// Positions from [fills], in date order (see [applyFill]). Throws
+/// [StateError] on fills out of date order.
 Map<String, Position> positionsFrom(Iterable<Fill> fills) {
   final positions = <String, Position>{};
   DateTime? previous;
@@ -83,27 +108,7 @@ Map<String, Position> positionsFrom(Iterable<Fill> fills) {
       throw StateError('Fills out of date order at ${fill.date}');
     }
     previous = fill.date;
-    if (!fill.quantity.isPositive) {
-      throw StateError('Fill of ${fill.quantity} for ${fill.assetId}');
-    }
-
-    final held =
-        positions[fill.assetId] ??
-        Position(
-          assetId: fill.assetId,
-          quantity: const Quantity.zero(),
-          costBasis: Decimal.zero,
-          realisedPnl: Decimal.zero,
-        );
-    positions[fill.assetId] = switch (fill.side) {
-      Side.buy => Position(
-        assetId: fill.assetId,
-        quantity: held.quantity + fill.quantity,
-        costBasis: held.costBasis - fill.cashFlow.amount,
-        realisedPnl: held.realisedPnl,
-      ),
-      Side.sell => _sell(held, fill),
-    };
+    positions[fill.assetId] = applyFill(positions[fill.assetId], fill);
   }
   return positions;
 }
