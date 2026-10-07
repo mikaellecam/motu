@@ -13,6 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  timezone: ^0.11.1
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,216 @@
+import 'package:finance_companion/domain/market/market_calendar.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+DateTime day(int y, int m, int d) => DateTime.utc(y, m, d);
+
+/// Paris wall-clock time as a UTC instant. CET = UTC+1 until the last Sunday
+/// of March and from the last Sunday of October; CEST = UTC+2 in between.
+DateTime paris(int y, int m, int d, int h, int min, {required bool summer}) =>
+    DateTime.utc(y, m, d, h - (summer ? 2 : 1), min);
+
+void main() {
+  // Easter 2026: Good Friday 3 April, Easter Monday 6 April. Euronext closes
+  // on both, NYSE on Good Friday only. New Year's Day 2027 is a Friday.
+  final calendar = MarketCalendar({
+    Exchange.euronext: {day(2026, 4, 3), day(2026, 4, 6), day(2027, 1, 1)},
+    Exchange.nyse: {day(2026, 4, 3), day(2027, 1, 1)},
+  });
+
+  group('trading days', () {
+    test('weekends are closed everywhere', () {
+      for (final exchange in Exchange.values) {
+        expect(calendar.isTradingDay(exchange, day(2026, 10, 10)), isFalse);
+        expect(calendar.isTradingDay(exchange, day(2026, 10, 11)), isFalse);
+        expect(calendar.isTradingDay(exchange, day(2026, 10, 12)), isTrue);
+      }
+    });
+
+    test('holidays come from the injected calendar, per exchange', () {
+      expect(
+        calendar.isTradingDay(Exchange.euronext, day(2026, 4, 6)),
+        isFalse,
+      );
+      expect(calendar.isTradingDay(Exchange.nyse, day(2026, 4, 6)), isTrue);
+      // Nasdaq got no holidays: every weekday trades.
+      expect(calendar.isTradingDay(Exchange.nasdaq, day(2026, 4, 3)), isTrue);
+    });
+
+    test('years outside the injected data have weekends only', () {
+      expect(calendar.isTradingDay(Exchange.euronext, day(2031, 1, 1)), isTrue);
+    });
+
+    test('the time of day is ignored', () {
+      expect(
+        calendar.isTradingDay(Exchange.euronext, DateTime.utc(2026, 4, 6, 23)),
+        isFalse,
+      );
+    });
+
+    test('next and previous skip weekends and holidays', () {
+      const e = Exchange.euronext;
+      expect(calendar.nextTradingDay(e, day(2026, 10, 9)), day(2026, 10, 12));
+      expect(calendar.nextTradingDay(e, day(2026, 4, 2)), day(2026, 4, 7));
+      expect(calendar.previousTradingDay(e, day(2026, 4, 7)), day(2026, 4, 2));
+      expect(
+        calendar.previousTradingDay(e, day(2026, 10, 12)),
+        day(2026, 10, 9),
+      );
+      expect(
+        calendar.nextTradingDay(Exchange.nyse, day(2026, 4, 2)),
+        day(2026, 4, 6),
+      );
+    });
+
+    test('next crosses the year boundary', () {
+      expect(
+        calendar.nextTradingDay(Exchange.euronext, day(2026, 12, 31)),
+        day(2027, 1, 4),
+      );
+    });
+
+    test('rolling keeps trading days and moves the others', () {
+      const e = Exchange.euronext;
+      expect(calendar.onOrAfter(e, day(2026, 10, 12)), day(2026, 10, 12));
+      expect(calendar.onOrAfter(e, day(2026, 10, 10)), day(2026, 10, 12));
+      expect(calendar.onOrAfter(e, day(2026, 4, 3)), day(2026, 4, 7));
+      expect(calendar.onOrBefore(e, day(2026, 10, 12)), day(2026, 10, 12));
+      expect(calendar.onOrBefore(e, day(2026, 10, 11)), day(2026, 10, 9));
+      expect(calendar.onOrBefore(e, day(2026, 4, 6)), day(2026, 4, 2));
+    });
+  });
+
+  group('market hours', () {
+    test('Euronext trades 09:00 to 17:30 Paris, end excluded', () {
+      const e = Exchange.euronext;
+      bool openAt(int h, int m) =>
+          calendar.isOpen(e, paris(2026, 4, 7, h, m, summer: true));
+      expect(openAt(8, 59), isFalse);
+      expect(openAt(9, 0), isTrue);
+      expect(openAt(17, 29), isTrue);
+      expect(openAt(17, 30), isFalse);
+    });
+
+    test('Euronext follows Paris across its own DST change', () {
+      // 07:30 UTC is 08:30 Paris on Friday 27 March (CET), 09:30 on Monday 30
+      // March (CEST).
+      const e = Exchange.euronext;
+      expect(calendar.isOpen(e, DateTime.utc(2026, 3, 27, 7, 30)), isFalse);
+      expect(calendar.isOpen(e, DateTime.utc(2026, 3, 30, 7, 30)), isTrue);
+    });
+
+    test('NYSE trades 15:30 to 22:00 Paris in a normal week', () {
+      const e = Exchange.nyse;
+      bool openAt(int h, int m) =>
+          calendar.isOpen(e, paris(2026, 4, 7, h, m, summer: true));
+      expect(openAt(14, 30), isFalse);
+      expect(openAt(15, 29), isFalse);
+      expect(openAt(15, 30), isTrue);
+      expect(openAt(21, 59), isTrue);
+      expect(openAt(22, 0), isFalse);
+    });
+
+    test('late March: US is on summer time, Europe not yet → 14:30 to 21:00 '
+        'Paris', () {
+      const e = Exchange.nyse;
+      bool openAt(int h, int m) =>
+          calendar.isOpen(e, paris(2026, 3, 10, h, m, summer: false));
+      expect(openAt(14, 29), isFalse);
+      expect(openAt(14, 30), isTrue);
+      expect(openAt(20, 59), isTrue);
+      expect(openAt(21, 0), isFalse);
+    });
+
+    test('late October: Europe is back on winter time, US not yet → 14:30 to '
+        '21:00 Paris', () {
+      const e = Exchange.nasdaq;
+      bool openAt(int h, int m) =>
+          calendar.isOpen(e, paris(2026, 10, 27, h, m, summer: false));
+      expect(openAt(14, 29), isFalse);
+      expect(openAt(14, 30), isTrue);
+      expect(openAt(21, 0), isFalse);
+      // From 2 November both are on winter time again: 15:30 Paris.
+      expect(
+        calendar.isOpen(e, paris(2026, 11, 3, 14, 30, summer: false)),
+        isFalse,
+      );
+      expect(
+        calendar.isOpen(e, paris(2026, 11, 3, 15, 30, summer: false)),
+        isTrue,
+      );
+    });
+
+    test('closed on weekends and holidays, even within session hours', () {
+      expect(
+        calendar.isOpen(Exchange.nyse, paris(2026, 4, 3, 16, 0, summer: true)),
+        isFalse,
+      );
+      expect(
+        calendar.isOpen(
+          Exchange.euronext,
+          paris(2026, 10, 10, 10, 0, summer: true),
+        ),
+        isFalse,
+      );
+    });
+
+    test('a session is judged on the exchange date, not the UTC date', () {
+      // Monday 12 Oct, 15:59 New York = 19:59 UTC: still Monday everywhere.
+      // Tuesday 13 Oct 00:30 Paris = Monday 22:30 UTC: NYSE closed (after 16:00).
+      expect(
+        calendar.isOpen(Exchange.nyse, DateTime.utc(2026, 10, 12, 19, 59)),
+        isTrue,
+      );
+      expect(
+        calendar.isOpen(Exchange.nyse, DateTime.utc(2026, 10, 12, 22, 30)),
+        isFalse,
+      );
+    });
+  });
+
+  group('next open', () {
+    test('before the open: today at the open', () {
+      expect(
+        calendar.nextOpen(
+          Exchange.nyse,
+          paris(2026, 4, 7, 10, 0, summer: true),
+        ),
+        paris(2026, 4, 7, 15, 30, summer: true),
+      );
+    });
+
+    test('during or after the session: the next trading day', () {
+      expect(
+        calendar.nextOpen(
+          Exchange.nyse,
+          paris(2026, 4, 7, 16, 0, summer: true),
+        ),
+        paris(2026, 4, 8, 15, 30, summer: true),
+      );
+      expect(
+        calendar.nextOpen(
+          Exchange.euronext,
+          paris(2026, 4, 2, 18, 0, summer: true),
+        ),
+        paris(2026, 4, 7, 9, 0, summer: true),
+      );
+    });
+
+    test('Friday evening in a DST-mismatch week opens Monday 14:30 Paris', () {
+      expect(
+        calendar.nextOpen(
+          Exchange.nyse,
+          paris(2026, 3, 13, 22, 0, summer: false),
+        ),
+        paris(2026, 3, 16, 14, 30, summer: false),
+      );
+    });
+
+    test('exactly at the open: that open is not "next"', () {
+      final open = paris(2026, 4, 7, 9, 0, summer: true);
+      expect(
+        calendar.nextOpen(Exchange.euronext, open),
+        paris(2026, 4, 8, 9, 0, summer: true),
+      );
+    });
+  });
+}

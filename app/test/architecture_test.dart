@@ -20,4 +20,17 @@ void main() {
     ];
     expect(offenders, isEmpty);
   });
+
+  test('the domain layer is pure Dart (CLAUDE.md rule 1)', () {
+    final forbidden = RegExp(
+      r"import 'package:flutter|import 'dart:io'|riverpod|DateTime\.now\(",
+    );
+    final offenders = [
+      for (final file in sources)
+        if (file.path.startsWith('lib/domain/') &&
+            forbidden.hasMatch(file.readAsStringSync()))
+          file.path,
+    ];
+    expect(offenders, isEmpty);
+  });
 }
