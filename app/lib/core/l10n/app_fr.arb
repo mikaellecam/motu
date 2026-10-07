@@ -1,5 +1,52 @@
 {
   "@@locale": "fr",
-  "appTitle": "Investment Companion",
-  "@appTitle": {"description": "App name, shown by the OS task switcher."}
+  "app_title": "Investment Companion",
+  "@app_title": {
+    "description": "App name, shown by the OS task switcher."
+  },
+  "common_retry": "R\u00e9essayer",
+  "cache_offline_banner": "Hors connexion. Tu vois les cours du {date}, {time}.",
+  "@cache_offline_banner": {
+    "description": "Offline: data shown is from the last update.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cache_stale_banner": "Cours du {date}, {time}\u202f: la mise \u00e0 jour n'a pas abouti.",
+  "@cache_stale_banner": {
+    "description": "Online, but the last refresh failed.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "failure_network": "Impossible de joindre le serveur. V\u00e9rifie ta connexion.",
+  "failure_rate_limited": "Trop de demandes d'un coup. R\u00e9essaie dans {seconds}\u00a0s.",
+  "@failure_rate_limited": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "failure_not_found": "Cette donn\u00e9e n'existe pas, ou plus.",
+  "failure_data_unavailable": "Pas de donn\u00e9es disponibles au {date}.",
+  "@failure_data_unavailable": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "failure_storage": "Impossible de lire ou d'enregistrer sur ton appareil.",
+  "failure_unexpected": "Une erreur inattendue s'est produite."
 }

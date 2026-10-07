@@ -1,4 +1,13 @@
 {
   "@@locale": "en",
-  "appTitle": "Investment Companion"
+  "app_title": "Investment Companion",
+  "common_retry": "Retry",
+  "cache_offline_banner": "Offline. You're seeing prices from {date}, {time}.",
+  "cache_stale_banner": "Prices from {date}, {time}: the update didn't go through.",
+  "failure_network": "Can't reach the server. Check your connection.",
+  "failure_rate_limited": "Too many requests at once. Try again in {seconds} s.",
+  "failure_not_found": "This data doesn't exist, or no longer does.",
+  "failure_data_unavailable": "No data available for {date}.",
+  "failure_storage": "Couldn't read or save on your device.",
+  "failure_unexpected": "Something unexpected went wrong."
 }

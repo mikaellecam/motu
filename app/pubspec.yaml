@@ -22,3 +22,10 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  fonts:
+    - family: Baloo2
+      fonts:
+        - asset: assets/fonts/Baloo2-Variable.ttf
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-Variable.ttf

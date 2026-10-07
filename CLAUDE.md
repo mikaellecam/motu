@@ -36,6 +36,7 @@ tracker/    Local issue tracker, gitignored (see Workflow)
 cd app && flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 dart format . && flutter analyze && flutter test
+flutter test screenshots --update-goldens   # renders screens to docs/screenshots/
 
 # backend
 cd backend && gofmt -w . && go vet ./... && go test ./...
