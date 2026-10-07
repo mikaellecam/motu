@@ -190,3 +190,14 @@ Decimal roundHalfEven(Decimal value, int scale) {
   if (remainder > half) return awayFromZero;
   return truncated.shift(scale).toBigInt().isEven ? truncated : awayFromZero;
 }
+
+/// Decimal places kept when a quotient does not terminate (1 / 3). At least
+/// the 10 significant digits of BRIEF §7 for any ratio above 1 %, and enough
+/// that 40 allocation weights still sum to 1 within 1e-9.
+const ratioScale = 12;
+
+/// [numerator] / [denominator]: exact when the quotient terminates, else
+/// truncated to [ratioScale] decimals. The caller rules out a zero
+/// [denominator] (it decides what an undefined ratio means).
+Decimal ratio(Decimal numerator, Decimal denominator) =>
+    (numerator / denominator).toDecimal(scaleOnInfinitePrecision: ratioScale);
