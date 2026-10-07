@@ -282,18 +282,25 @@ in the order sheet.
 ### 4.6 Orders
 
 Types: market, limit, stop (stop-loss on sells; stop-buy allowed). Sides: buy, sell. Input in € amount or
-in quantity (toggle). Fractional to 6 decimals unless wallet disallows. Good-till-cancelled.
+in quantity (toggle). A € amount is the value of the shares traded: fees come on top of a buy and out of a
+sell's proceeds. Fractional to 6 decimals unless wallet disallows; whole-share wallets accept € orders and
+floor them to whole shares. Good-till-cancelled.
 
 **Soft gate:** limit and stop are visible from day one. The first time a user selects one, the glossary
 sheet for that order type opens; after it is closed the type works normally. No hard locks in the sandbox.
 
 **Validation** (domain `validateOrder`, returns typed errors):
-- amount/quantity > 0; whole number if non-fractional wallet;
+- amount/quantity > 0; whole number if non-fractional wallet; a € amount must buy at least one share
+  (whole-share wallets);
 - buy: total cost incl. fees ≤ available cash; error copy: « Tu as {cash} de liquidités. Baisse le
   montant, ou vends d'abord une position. »;
-- sell: quantity ≤ position quantity;
+- sell: quantity ≤ position quantity; proceeds > fees;
 - limit/stop price > 0;
 - asset available at `asOf`.
+
+Pending orders reserve what they need: available cash = cash − Σ pending buys (an amount reserves amount +
+fees; a quantity reserves its cost at the limit, stop or last price, + fees), and a sell can use the
+position minus pending sells. Codes and params: `domain/wallet/validation.dart`.
 
 **Fees:** `fxFee = notionalEUR × fxFeeRate` when asset currency ≠ EUR; `fixedFee` per order. Shown in the
 order summary.
@@ -307,6 +314,8 @@ order summary.
 - Stop sell: first day with `low ≤ stop` fills at `min(open, stop)` (gap slippage is real and taught);
   stop buy: `high ≥ stop` → `max(open, stop)`.
 - Fill computes quantity (amount orders) at fill price, fees, FX rate of the fill date.
+- A triggered order that cannot execute as asked is cancelled with its reason, never partly filled: cash
+  short after a gap, shares no longer held, an amount below one share, fees above a sell's proceeds.
 
 Market hours (Paris time, exchange holidays from provider or a static calendar): Euronext 09:00–17:30,
 NYSE/Nasdaq 15:30–22:00 (adjust for US/EU DST mismatch via exchange time zones, never hardcode offsets).
