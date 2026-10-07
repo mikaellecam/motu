@@ -1,5 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/core/l10n/formats.dart';
+import 'package:finance_companion/core/money/money.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -14,26 +15,31 @@ void main() {
   final en = Formats('en');
 
   group('money', () {
-    final cases = <(Formats, int, String, bool, String)>[
-      (fr, 5153460, 'EUR', false, '51${nnbsp}534,60$nbsp€'),
-      (fr, 153460, 'EUR', true, '+1${nnbsp}534,60$nbsp€'),
-      (fr, -153460, 'EUR', true, '${minus}1${nnbsp}534,60$nbsp€'),
-      (fr, -250, 'EUR', false, '${minus}2,50$nbsp€'),
-      (fr, 0, 'EUR', true, '0,00$nbsp€'),
-      (fr, 5, 'EUR', false, '0,05$nbsp€'),
-      (fr, 99999, 'EUR', false, '999,99$nbsp€'),
-      (fr, 100000, 'EUR', false, '1${nnbsp}000,00$nbsp€'),
-      (fr, 1000000000, 'EUR', false, '10${nnbsp}000${nnbsp}000,00$nbsp€'),
-      (fr, 17757, 'USD', false, '177,57$nbsp\$'),
-      (fr, 1000, 'DKK', false, '10,00${nbsp}DKK'),
-      (en, 5153460, 'EUR', false, '€51,534.60'),
-      (en, 153460, 'EUR', true, '+€1,534.60'),
-      (en, -250, 'EUR', false, '$minus€2.50'),
-      (en, 17757, 'USD', false, '\$177.57'),
+    final cases = <(Formats, int, Currency, bool, String)>[
+      (fr, 5153460, Currency.eur, false, '51${nnbsp}534,60$nbsp€'),
+      (fr, 153460, Currency.eur, true, '+1${nnbsp}534,60$nbsp€'),
+      (fr, -153460, Currency.eur, true, '${minus}1${nnbsp}534,60$nbsp€'),
+      (fr, -250, Currency.eur, false, '${minus}2,50$nbsp€'),
+      (fr, 0, Currency.eur, true, '0,00$nbsp€'),
+      (fr, 5, Currency.eur, false, '0,05$nbsp€'),
+      (fr, 99999, Currency.eur, false, '999,99$nbsp€'),
+      (fr, 100000, Currency.eur, false, '1${nnbsp}000,00$nbsp€'),
+      (
+        fr,
+        1000000000,
+        Currency.eur,
+        false,
+        '10${nnbsp}000${nnbsp}000,00$nbsp€',
+      ),
+      (fr, 17757, Currency.usd, false, '177,57$nbsp\$'),
+      (en, 5153460, Currency.eur, false, '€51,534.60'),
+      (en, 153460, Currency.eur, true, '+€1,534.60'),
+      (en, -250, Currency.eur, false, '$minus€2.50'),
+      (en, 17757, Currency.usd, false, '\$177.57'),
     ];
     for (final (f, minor, currency, signed, expected) in cases) {
-      test('$minor $currency signed=$signed → $expected', () {
-        expect(f.money(minor, currency, signed: signed), expected);
+      test('$minor ${currency.code} signed=$signed → $expected', () {
+        expect(f.money(Money(minor, currency), signed: signed), expected);
       });
     }
   });
@@ -59,36 +65,26 @@ void main() {
     }
   });
 
-  test('price rounds half-even to cents', () {
-    expect(fr.price(d('177.565'), 'USD'), '177,56$nbsp\$');
-    expect(fr.price(d('177.575'), 'USD'), '177,58$nbsp\$');
-    expect(fr.price(d('0.004'), 'EUR'), '0,00$nbsp€');
+  test('price rounds half-even to cents at format time', () {
+    expect(fr.price(Price(d('177.565'), Currency.usd)), '177,56$nbsp\$');
+    expect(fr.price(Price(d('177.575'), Currency.usd)), '177,58$nbsp\$');
+    expect(fr.price(Price(d('0.004'), Currency.eur)), '0,00$nbsp€');
+  });
+
+  test('unbooked amounts round half-even at format time', () {
+    expect(
+      fr.amount(d('1534.605'), Currency.eur, signed: true),
+      '+1${nnbsp}534,60$nbsp€',
+    );
+    expect(
+      fr.amount(d('-1534.615'), Currency.eur, signed: true),
+      '${minus}1${nnbsp}534,62$nbsp€',
+    );
+    expect(en.amount(d('-0.004'), Currency.eur, signed: true), '€0.00');
   });
 
   test('unsupported locales fall back to English', () {
-    expect(Formats('de').money(150, 'EUR'), '€1.50');
-  });
-
-  group('roundHalfEven', () {
-    final cases = <(String, int, String)>[
-      ('2.345', 2, '2.34'),
-      ('2.355', 2, '2.36'),
-      ('-2.345', 2, '-2.34'),
-      ('-2.355', 2, '-2.36'),
-      ('2.3451', 2, '2.35'),
-      ('2.3449', 2, '2.34'),
-      ('0.5', 0, '0'),
-      ('1.5', 0, '2'),
-      ('2.5', 0, '2'),
-      ('-0.5', 0, '0'),
-      ('-1.5', 0, '-2'),
-      ('7', 2, '7'),
-    ];
-    for (final (value, scale, expected) in cases) {
-      test('$value at $scale → $expected', () {
-        expect(roundHalfEven(d(value), scale), d(expected));
-      });
-    }
+    expect(Formats('de').money(const Money(150, Currency.eur)), '€1.50');
   });
 
   group('dates', () {
