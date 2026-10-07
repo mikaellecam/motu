@@ -46,6 +46,8 @@ go run ./cmd/contentcheck ../content  # validates every content pack against the
 # tracker
 tracker/board        # every issue in roadmap order, then the next one to work on
 tracker/board next   # only the next issue id
+tracker/start M1-2   # status doing + worktree from up-to-date main (Workflow step 1)
+tracker/finish M1-2 <pr> "<log line>"   # squash-merge, remove worktree, status done (step 5)
 ```
 
 ## Workflow

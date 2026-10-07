@@ -68,8 +68,10 @@ Computation rules:
 - Everything else (valuations, P&L, returns, weights) stays `Decimal` and is rounded half-even only when
   displayed, by `Formats` (`roundHalfEven`). This is what "round only at the presentation edge" means for
   values that are never stored.
-- `double` is never used for money, quantities, prices or rates. The only place doubles appear is chart
-  coordinates, after all computation is done.
+- `double` is never used for money, quantities, prices or rates. Doubles appear in two places only: chart
+  coordinates, after all computation is done, and statistics that need logarithms or square roots
+  (volatility, §7.7). Those take `Decimal` inputs, describe how a price moved, and never feed back into an
+  amount.
 
 ## Consequences
 
