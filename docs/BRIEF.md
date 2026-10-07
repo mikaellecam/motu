@@ -148,7 +148,7 @@ V1 island "Actions & ETF" (order matters, ids stable):
 
 | # | id | Type | Title (fr) | Data |
 |---|---|---|---|---|
-| 1 | `ae.livret-vs-etf` | predict_reveal | Livret ou ETF ? | 10 000 € from 2016-01 to latest: Livret A (historical rates) vs MSCI World ETF |
+| 1 | `ae.livret-vs-etf` | predict_reveal | Livret ou ETF ? | 10 000 € from 2016-01 to latest: Livret A (historical rates) vs the world ETF (ACWI, in EUR) |
 | 2 | `ae.fees-toy` | toy | Le jouet des frais | Formula: 0.2 % vs 1.5 % yearly fees over 30 years |
 | 3 | `ae.mission-first-etf` | mission | Ton premier ETF | Live wallet holds ≥ 1 ETF |
 | 4 | `ae.apple-vs-world-2022` | predict_reveal | Apple ou ETF Monde : lequel a le plus chuté en 2022 ? | Weekly adjusted closes 2022, USD |
@@ -631,19 +631,24 @@ Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via
 Errors: `{"error": {"code": "...", "message": "..."}}` with proper status codes; 429 carries `Retry-After`.
 Every list endpoint supports conditional requests.
 
-### 8.4 Catalogue V1 (≈ 30; provider symbols to verify in M2)
+### 8.4 Catalogue V1 (29 instruments, US listings: ADR-004)
 
-ETFs: MSCI World (Euronext), S&P 500, Nasdaq 100, Stoxx Europe 600, MSCI Emerging Markets, a euro government
-bond ETF, a global aggregate bond ETF.
-Europe: LVMH, TotalEnergies, Airbus, ASML, SAP, Schneider Electric, L'Oréal, Sanofi, Siemens, Novo Nordisk,
-Hermès, BNP Paribas.
+The provider's free plan covers US exchanges only, so every instrument is a US listing quoted in USD; the
+symbol map, listings and history depth are in ADR-004.
+
+ETFs: world (MSCI ACWI, the « ETF Monde » benchmark), S&P 500, Nasdaq 100, Europe (FTSE Developed Europe),
+emerging markets, international government bonds, aggregate bonds.
+Europe (as ADRs): LVMH, TotalEnergies, Airbus, ASML, SAP, Schneider Electric, L'Oréal, Sanofi, Siemens,
+Novo Nordisk, Hermès, BNP Paribas.
 US: Apple, Microsoft, Nvidia, Amazon, Alphabet, Meta, Tesla, Berkshire Hathaway, JPMorgan, Coca-Cola.
 
 ### 8.5 Provider notes
 
-Primary: Twelve Data (free tier advertised at 8 credits/min, 800/day — verify). Before M2 is closed, confirm
-on the free tier: history depth, availability of split-adjusted prices, European exchange coverage. Record
-findings and the chosen `dataFloor` in an ADR. FX: Frankfurter (ECB data, no key).
+Twelve Data, Basic (free) plan: 8 credits/min, 800/day, US exchanges only (European listings need the paid
+Grow plan); verified 2026-10-07 (ADR-004). History is fetched with `adjust=all` (dividends and splits) from
+`dataFloor` = 2000-01-03. Budget: one-off backfill ≈ 60 credits, daily append 29, quotes refreshed by the
+backend every 30 minutes during the US session (≈ 380); about half the daily limit. FX: Frankfurter (ECB
+data, no key).
 
 ---
 
@@ -736,5 +741,5 @@ Milestones and issue breakdown: `docs/ROADMAP.md`. Each architecture choice gets
 2. Trip maximum length (open-ended to today, or capped at 1–3 years)?
 3. Cash shared across future islands, or one wallet per island?
 4. Explainable asset scoring in V1 or later?
-5. Final data provider and `dataFloor` (after the M2 verification).
-6. Final catalogue list and symbols.
+5. ~~Final data provider and `dataFloor`~~: decided in ADR-004 (Twelve Data free plan, `dataFloor` 2000-01-03).
+6. ~~Final catalogue list and symbols~~: decided in ADR-004 (US listings).
