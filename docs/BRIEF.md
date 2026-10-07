@@ -103,7 +103,7 @@ continuer. Aucune n'est mauvaise. »). Reassurance line: the answers only choose
 | Q1 | Pourquoi veux-tu investir ? | Projet dans moins de 3 ans / Dans 3 à 8 ans / Long terme, plus de 8 ans / Je découvre | `defaultHorizonYears` (2 / 5 / 15 / 10) used by projections, DCA defaults, companion wording |
 | Q2 | Ton portefeuille perd 20 % en un mois. Tu fais quoi ? | Je vends tout / J'attends / J'achète plus / Je ne sais pas | `riskComfort` (low/medium/high/unknown→medium) → moment thresholds + pre-trade coach sensitivity |
 | Q3 | Tu sais déjà… | Rien / Ce qu'est une action / Ce qu'est un ETF / J'investis déjà | `startingNode` (1 / 1 / 3 / 4) and `initialUiLevel` (1 / 1 / 1 / 2) |
-| Q4 | Où est ton épargne aujourd'hui ? | Livret A ou livrets / Compte courant / Déjà investie / Pas d'épargne | if Livret → node 1 "Livret ou ETF ?" is forced first and flagged; if none → safety-cushion content first |
+| Q4 | Où est ton épargne aujourd'hui ? | Livret A ou livrets / Compte courant / Déjà investie / Pas d'épargne | if Livret → node 1 "Livret ou ETF ?" is forced first and flagged; if none → the "matelas de sécurité" glossary sheet comes first |
 | Q5 | Combien de temps par semaine ? | 5 min / 15 min / 30 min et plus | next-step pacing (1 / 2 / 3 suggestions per day) |
 
 Rules:
@@ -118,8 +118,10 @@ Rules:
 - Isometric archipelago drawn in code (`CustomPainter`), 5 islands: Actions & ETF (centre, playable),
   Trading, Immobilier, Crypto, Les bases (locked: clouds/greyed, label "Bientôt").
 - Header: title "Ton archipel", islands opened count, level chip.
-- Next-step card at the bottom: always exactly one recommended action (next node, pending mission,
-  unread companion moment, or open trip). Selection is a pure function `nextStep(state)`.
+- Next-step card at the bottom: always exactly one recommended action. Selection is a pure function
+  `nextStep(state)`, first match wins: an unread companion moment; the safety-cushion sheet (Q4 "Pas
+  d'épargne", until read); the current node if it is a mission; the current lesson node while fewer nodes
+  than the pacing (Q5) were completed today; an open trip; the live wallet.
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
 
@@ -153,7 +155,7 @@ V1 island "Actions & ETF" (order matters, ids stable):
 | 5 | `ae.march-2020` | decision | Mars 2020 : vendre ou tenir ? | World ETF 2020-02 → 2021-02; bridge → trip 2020-02-18 |
 | 6 | `ae.risk-ladder` | sort | Classe par risque | Livret, world ETF, single stock, EM ETF; 1-year volatility |
 | 7 | `ae.compound-toy` | toy | Les intérêts composés | Formula |
-| 8 | `ae.mission-three-regions` | mission | Trois zones géographiques | Live wallet exposure to ≥ 3 regions |
+| 8 | `ae.mission-three-regions` | mission | Trois zones géographiques | ≥ 3 distinct regions among the live wallet's positions (one region per asset; a world ETF counts as one) |
 | 9 | `ae.dollar-trap` | predict_reveal | Le piège du dollar | A US stock's return in USD vs EUR over a period with a big EUR/USD move |
 | 10 | `ae.calm-portfolio` | build_puzzle | Construis un portefeuille calme | Volatility cap, ≥ 3 assets, frozen 3-year data |
 | 11 | `ae.mission-dca` | mission | Mets en place un DCA | Any wallet has an active DCA plan |
@@ -393,7 +395,7 @@ Uses:
 
 Pure rule engine over domain events, outputs `CompanionCard{ruleId, title, body, links[]}`.
 
-| Rule | Trigger (defaults; profile adjusts) | Cooldown |
+| Rule | Trigger (defaults; only concentration follows the profile) | Cooldown |
 |---|---|---|
 | `first_loss` | First time a position is < −5 % | once |
 | `position_drop` | Position −15 % from its peak since purchase | 30 days per position |
