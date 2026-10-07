@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          databases:
+            app_database: lib/data/local/database.dart
+          schema_dir: drift_schemas/
+          test_dir: test/drift/
+          # Readable ISO-8601 dates in the database file.
+          store_date_time_values_as_text: true

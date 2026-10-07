@@ -5,6 +5,8 @@ import 'position.dart';
 
 enum OrderType { market, limit, stop }
 
+enum OrderStatus { pending, filled, cancelled }
+
 /// How much an order trades: a EUR amount or a number of shares (BRIEF §4.6).
 sealed class OrderSize {
   const OrderSize();

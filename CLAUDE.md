@@ -37,6 +37,9 @@ cd app && flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 dart format . && flutter analyze && flutter test
 flutter test screenshots --update-goldens   # renders screens to docs/screenshots/
+# after a drift schema change (bump schemaVersion, add the step first):
+dart run drift_dev make-migrations
+dart run drift_dev schema generate drift_schemas/app_database/ test/drift/app_database/generated/
 
 # backend
 cd backend && gofmt -w . && go vet ./... && go test ./...

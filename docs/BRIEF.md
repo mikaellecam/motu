@@ -479,7 +479,8 @@ Repositories clamp every query to `asOf`. A trip wallet's providers are created 
 
 ### 5.4 Dependencies (allowed list)
 
-flutter_riverpod (+ riverpod_annotation / riverpod_generator), go_router, drift + sqlite3_flutter_libs,
+flutter_riverpod (+ riverpod_annotation / riverpod_generator), go_router, drift + drift_flutter (SQLite is
+bundled by `package:sqlite3` 3.x; `sqlite3_flutter_libs` is end-of-life),
 dio, freezed + json_serializable, decimal, intl + flutter_localizations, fl_chart, connectivity_plus,
 mocktail (dev), build_runner (dev). Fonts are **bundled as assets** (Baloo 2, Figtree — both OFL); do not
 fetch fonts at runtime (offline requirement).
@@ -490,28 +491,36 @@ fetch fonts at runtime (offline requirement).
 
 ### 6.1 Local schema (drift)
 
+Cache (cleared from Settings, refetched): user tables never reference them.
+
 | Table | Key columns |
 |---|---|
-| `assets` | id, symbol, name, type (etf/stock), exchange, currency, region, listingDate, providerSymbol |
-| `price_bars` | assetId, date, open, high, low, close, adjClose, volume — PK (assetId, date) |
-| `quotes` | assetId, price, currency, asOf, fetchedAt |
-| `fx_rates` | date, base, quote, rate — PK (date, base, quote) |
-| `livret_rates` | validFrom, annualRate |
-| `history_sync` | assetId, firstDate, lastDate, lastFetchedAt |
-| `wallets` | id, kind, name, startDate, simDate (trip), difficulty, params json, status, createdAt |
-| `cash_ledger` | walletId, simDate, amount (cents), kind (start, contribution, buy, sell, fee, livret_in/out, interest) |
-| `orders` | id, walletId, assetId, side, type, amountCents?, quantity?, limitPrice?, stopPrice?, status, createdSimAt |
-| `fills` | orderId, simDate, price, quantity, fxRate, feesCents |
+| `assets` | id, symbol, name, type (etf/stock), exchange, currency, region, listingDate |
+| `price_bars` | assetId, date, open, high, low, close, volume — PK (assetId, date); bars are already adjusted |
+| `quotes` | assetId, price, currency, asOf, fetchedAt, marketOpen |
+| `fx_rates` | base, quote, date, rate — PK (base, quote, date) |
+| `livret_rates` · `livret_ceilings` | validFrom, annualRate · validFrom, amountCents |
+| `history_sync` | assetId, firstDate, lastDate, fetchedAt, adjustedAt (backend refetch after a split) |
+| `exchange_holidays` · `calendar_years` | exchange, date · exchange, year, fetchedAt |
+| `content_packs` | islandId, version, json, etag, checkedAt |
+
+User data (only the user creates it; rows of a wallet cascade when it is deleted):
+
+| Table | Key columns |
+|---|---|
+| `wallets` | id, kind, name, startDate, simDate (trip), difficulty, params json, status, createdAt, breachedStops json, companionState json |
+| `cash_ledger` | walletId, date, amountCents, kind (start, contribution, buy, sell, fee, livretIn, livretOut), refId — cash = Σ amounts; Livret interest is computed, not stored |
+| `orders` | id, walletId, assetId, side, type, amountCents xor quantityMicros, limitPrice?, stopPrice?, priceCurrency?, status, cancelReason?, planId?, createdAt |
+| `fills` | id (execution order), orderId (unique), walletId, assetId, side, date, price, currency, quantityMicros, fxRate, feesCents |
 | `wallet_values` | walletId, date, valueCents, flowCents — daily series for charts and TWR |
-| `dca_plans` | walletId, assetId, amountCents, frequency, active |
+| `dca_plans` | id, walletId, assetId, amountCents, frequency, startDate, active |
 | `dca_simulations` | id, params json, result json, savedAt |
 | `journal_entries` | walletId, simDate, eventId, decision, reason |
-| `profile` | single row: answers, derived fields, uiLevel, showAll |
-| `node_progress` | nodeId, status, attempts, lastAnswer |
+| `profiles` | single row: the five answers, showAll, language |
+| `node_progress` | nodeId, status, attempts, lastAnswer, completedAt |
 | `glossary_state` | termId, discoveredAt, quizPassed |
-| `favorites` | assetId |
-| `companion_log` | ruleId, key, firedAt, dismissedAt |
-| `content_packs` | islandId, version, json |
+| `favorites` | assetId, addedAt |
+| `companion_log` | walletId, rule, key, firedAt, params json, dismissedAt |
 
 Positions are **derived** from fills (average-cost method), never stored as the source of truth.
 

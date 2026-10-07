@@ -48,7 +48,7 @@ each migration step against the real schema. Tests run against an in-memory data
 
 ## Decision
 
-drift with `sqlite3_flutter_libs`. Our data is relational and range-queried, and migrations must be tested:
+drift, opened with `drift_flutter` (SQLite itself is bundled by `package:sqlite3` 3.x). Our data is relational and range-queried, and migrations must be tested:
 drift is the only option that gives SQL's query power with compile-time types and migration tooling.
 
 ## Consequences
@@ -56,8 +56,9 @@ drift is the only option that gives SQL's query power with compile-time types an
 - **One database, two groups of tables.** User tables (`wallets`, `cash_ledger`, `orders`, `fills`,
   `wallet_values`, `dca_plans`, `dca_simulations`, `journal_entries`, `profile`, `node_progress`,
   `glossary_state`, `favorites`, `companion_log`) are never deleted by cache operations. Cache tables
-  (`price_bars`, `quotes`, `fx_rates`, `livret_rates`, `history_sync`, `content_packs`) can be cleared from
-  Settings at any time and rebuilt from the network.
+  (`assets`, `price_bars`, `quotes`, `fx_rates`, `livret_rates`, `livret_ceilings`, `history_sync`,
+  `exchange_holidays`, `calendar_years`, `content_packs`) can be cleared from Settings at any time and
+  rebuilt from the network.
 - **Repositories own persistence.** DAOs are used only by repositories in `app/lib/data/`; notifiers and
   widgets never see tables or SQL.
 - **Derived data is not stored.** Positions are computed from fills on read (average cost, §7.1), so there is
@@ -65,5 +66,10 @@ drift is the only option that gives SQL's query power with compile-time types an
 - **Range queries are indexed by design:** `price_bars` has primary key `(assetId, date)` and `fx_rates`
   `(date, base, quote)`, which serve the incremental-fetch and `asOf` queries directly.
 - **Every schema change** bumps the schema version, adds a migration step, dumps the new schema and adds a
-  migration test.
-- Adds `drift`, `sqlite3_flutter_libs`, `drift_dev` and `build_runner`, all on the §5.4 list.
+  migration test. `test/drift/app_database/migration_test.dart` migrates every recorded schema to the
+  current one and fails when the tables change without a recorded schema.
+- Clearing the cache empties the cache tables only. User tables never hold foreign keys into them, so
+  nothing the user created can break.
+- Adds `drift`, `drift_flutter`, `drift_dev` and `build_runner`. `sqlite3_flutter_libs`, first planned, is
+  end-of-life: version 3 of `package:sqlite3` bundles SQLite through build hooks, and `drift_flutter` is
+  drift's own helper for opening the database on a device.
