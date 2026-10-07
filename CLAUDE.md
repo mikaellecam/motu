@@ -35,10 +35,10 @@ tracker/    Local issue tracker, gitignored (see Workflow)
 # app
 cd app && flutter pub get
 dart run build_runner build --delete-conflicting-outputs
-flutter analyze && flutter test
+dart format . && flutter analyze && flutter test
 
 # backend
-cd backend && go vet ./... && go test ./...
+cd backend && gofmt -w . && go vet ./... && go test ./...
 go run ./cmd/server                 # needs .env (see backend/.env.example)
 go run ./cmd/contentcheck ../content  # validates every content pack against the schema
 
@@ -50,12 +50,14 @@ tracker/board next   # only the next issue id
 ## Workflow
 
 `tracker/` holds one Markdown file per issue. It is gitignored, so Grep and Glob skip it: open issue files by
-path and list them with `tracker/board`. Frontmatter: `status` (todo | doing | blocked | done), `priority`
-(`must` = covers a graded requirement of `docs/BRIEF.md` §2, `normal` otherwise), `depends` (issue ids),
-`spec` (BRIEF sections).
+path and list them with `tracker/board`. It exists only in the main checkout, as does `backend/.env`; from a
+worktree, reach them through `../../` (symlink `.env` into the worktree when the backend needs it).
+Frontmatter: `status` (todo | doing | blocked | done), `priority` (`must` = covers a graded requirement of
+`docs/BRIEF.md` §2, `normal` otherwise), `depends` (issue ids), `spec` (BRIEF sections).
 
-1. **Pick.** Take the issue the user names, or `tracker/board next`. Set `status: doing` and branch from
-   `main`: `git switch -c m1-2-simulation-clock` (lowercase id + slug).
+1. **Pick.** Take the issue the user names, or `tracker/board next`. Set `status: doing`, then work in a
+   worktree branched from an up-to-date `main` (lowercase id + slug):
+   `git pull && git worktree add .worktrees/m1-2-simulation-clock -b m1-2-simulation-clock`.
 2. **Read.** The issue, every BRIEF section in `spec`, and the code the change touches. Done when you can name
    every file you will change.
 3. **Build.** Domain code test-first. Tick an acceptance-criterion box when its test passes. Work outside the
@@ -63,9 +65,11 @@ path and list them with `tracker/board`. Frontmatter: `status` (todo | doing | b
 4. **Blocked.** On a product question, or something only the user can provide (API key, account), write it
    under `## Questions` with the options and their trade-offs, set `status: blocked`, tell the user, and
    move to `tracker/board next`.
-5. **Finish.** Definition of done met. Commit on the branch, `git merge --no-ff` into `main`, set
-   `status: done`, and add a dated line under `## Log`: what changed, decisions taken, anything deferred.
-   Pushing is the user's call.
+5. **Finish.** Definition of done met. Commit, push the branch, and open a PR to `main` with `gh pr create`:
+   title `M1-2: <issue title>`, body = what changed, the acceptance criteria, screenshots for UI changes.
+   Watch CI with `gh pr checks --watch` and fix until green, then `gh pr merge --squash --delete-branch` and
+   `git worktree remove`. Set `status: done` and add a dated line under `## Log`: PR link, decisions taken,
+   anything deferred.
 
 ## Architecture rules (non-negotiable)
 
@@ -88,13 +92,14 @@ path and list them with `tracker/board`. Frontmatter: `status` (todo | doing | b
 
 - **Do not make product decisions.** If the spec is silent or ambiguous, ask (Workflow step 4). Known open
   decisions: `docs/BRIEF.md` §14.
-- One issue per branch. Small diffs. No drive-by refactors or renames outside the issue's scope.
+- One issue per branch and per PR. Small diffs. No drive-by refactors or renames outside the issue's scope.
 - New dependency → justify it in the issue log. Prefer the allowed list in `docs/BRIEF.md` §5.4.
 - Every domain function ships with unit tests, including edge cases: empty history, single data point, zero
   or negative amount, missing price for a date, weekend/holiday dates, dates outside the data range, division
   by zero, currency mismatch.
 - Never weaken, skip or delete a test to make CI pass. Fix the code or ask.
 - Never commit secrets. Provider API keys exist only in the backend environment.
+- Commits and PRs carry no AI or tool attribution: no Co-Authored-By trailer, no "generated with" line.
 - No lorem ipsum or invented copy in the UI. Use the French copy given in the spec or the issue; if missing, ask.
 - Accessibility: `Semantics` labels on icon-only controls, touch targets ≥ 44×44, gains and losses always
   carry a + or − sign (never color alone).
@@ -105,5 +110,5 @@ path and list them with `tracker/board`. Frontmatter: `status` (todo | doing | b
 - Every acceptance-criterion box in the issue is ticked.
 - `flutter analyze` clean and `flutter test` green; `go vet` + `go test` green when `backend/` changed.
 - New strings exist in both `app_fr.arb` and `app_en.arb`.
-- UI changes: screenshot or short screen recording in `tracker/assets/`, linked from the issue log.
+- UI changes: screenshots committed under `docs/screenshots/` (they feed the report) and shown in the PR.
 - If behaviour or a contract changed: `docs/BRIEF.md` (or the relevant ADR) updated on the same branch.
