@@ -1,5 +1,6 @@
-// Package catalogue is the V1 instrument list (BRIEF §8.4, ADR-004): US
-// listings on the provider's free plan. Ids are stable and name the exposure
+// Package catalogue is the reference data the server seeds: the V1
+// instrument list (BRIEF §8.4, ADR-004), US listings on the provider's free
+// plan, and the Livret A history. Ids are stable and name the exposure
 // or company, not the ticker, so a provider or listing change keeps them.
 package catalogue
 

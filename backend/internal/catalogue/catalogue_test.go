@@ -1,6 +1,12 @@
 package catalogue
 
-import "testing"
+import (
+	"strconv"
+	"testing"
+	"time"
+
+	"finance-companion/backend/internal/store"
+)
 
 func TestCatalogue(t *testing.T) {
 	if len(Assets) != 29 {
@@ -29,4 +35,37 @@ func TestCatalogue(t *testing.T) {
 	if !ids["world"] {
 		t.Error("the world ETF (benchmark) is missing")
 	}
+}
+
+func TestLivretHistory(t *testing.T) {
+	floor := date("2000-01-03")
+	for _, series := range [][]time.Time{livretDates(LivretRates), ceilingDates(LivretCeilings)} {
+		if series[0].After(floor) {
+			t.Errorf("starts %s, after the data floor", series[0].Format(time.DateOnly))
+		}
+		for i := 1; i < len(series); i++ {
+			if !series[i].After(series[i-1]) {
+				t.Errorf("%s is out of order", series[i].Format(time.DateOnly))
+			}
+		}
+	}
+	for _, r := range LivretRates {
+		if _, err := strconv.ParseFloat(r.AnnualRate, 64); err != nil || r.AnnualRate[:2] != "0." {
+			t.Errorf("%s: rate %q", r.ValidFrom.Format(time.DateOnly), r.AnnualRate)
+		}
+	}
+}
+
+func livretDates(rates []store.LivretRate) (out []time.Time) {
+	for _, r := range rates {
+		out = append(out, r.ValidFrom)
+	}
+	return
+}
+
+func ceilingDates(ceilings []store.LivretCeiling) (out []time.Time) {
+	for _, c := range ceilings {
+		out = append(out, c.ValidFrom)
+	}
+	return
 }

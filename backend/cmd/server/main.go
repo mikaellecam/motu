@@ -55,6 +55,10 @@ func main() {
 		log.Error("seed catalogue", "err", err)
 		os.Exit(1)
 	}
+	if err := db.ReplaceLivret(ctx, catalogue.LivretRates, catalogue.LivretCeilings); err != nil {
+		log.Error("seed Livret A history", "err", err)
+		os.Exit(1)
+	}
 
 	floor, err := time.Parse(time.DateOnly, env("DATA_FLOOR", "2000-01-03"))
 	if err != nil {

@@ -190,6 +190,33 @@ func TestFxAndLivret(t *testing.T) {
 	}
 }
 
+func TestCalendar(t *testing.T) {
+	s, _ := newServer(t)
+	s.Now = func() time.Time { return time.Date(2026, 10, 8, 12, 0, 0, 0, time.UTC) }
+	rec, body := get(t, s, "/v1/calendar/otc?year=2026")
+	holidays := body["holidays"].([]any)
+	if rec.Code != http.StatusOK || body["exchange"] != "otc" || body["year"] != float64(2026) ||
+		len(holidays) != 10 || holidays[6] != "2026-07-03" {
+		t.Fatalf("%d %v", rec.Code, body)
+	}
+	if rec, _ := get(t, s, "/v1/calendar/otc?year=2026", "If-None-Match", rec.Header().Get("ETag")); rec.Code != http.StatusNotModified {
+		t.Fatalf("revalidation: %d", rec.Code)
+	}
+	for path, status := range map[string]int{
+		"/v1/calendar/nyse?year=2027":     http.StatusOK,
+		"/v1/calendar/nyse?year=2028":     http.StatusNotFound,
+		"/v1/calendar/nasdaq?year=1999":   http.StatusNotFound,
+		"/v1/calendar/euronext?year=2025": http.StatusNotFound,
+		"/v1/calendar/nyse":               http.StatusBadRequest,
+		"/v1/calendar/nyse?year=next":     http.StatusBadRequest,
+	} {
+		rec, body := get(t, s, path)
+		if rec.Code != status || (status != http.StatusOK && body["error"] == nil) {
+			t.Errorf("%s: %d %v", path, rec.Code, body)
+		}
+	}
+}
+
 func TestTooManyRequestsCarriesRetryAfter(t *testing.T) {
 	s, _ := newServer(t)
 	now := time.Date(2026, 10, 7, 12, 0, 0, 0, time.UTC)

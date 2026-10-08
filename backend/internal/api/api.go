@@ -39,6 +39,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/quotes", s.handle(s.quotes))
 	mux.HandleFunc("GET /v1/fx", s.handle(s.fx))
 	mux.HandleFunc("GET /v1/livret/rates", s.handle(s.livret))
+	mux.HandleFunc("GET /v1/calendar/{exchange}", s.handle(s.calendar))
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		writeError(w, apiError{http.StatusNotFound, "not_found", "no such endpoint"})
 	})

@@ -323,7 +323,7 @@ order summary.
 - A triggered order that cannot execute as asked is cancelled with its reason, never partly filled: cash
   short after a gap, shares no longer held, an amount below one share, fees above a sell's proceeds.
 
-Market hours (Paris time, exchange holidays from provider or a static calendar): Euronext 09:00–17:30,
+Market hours (Paris time, exchange holidays from the backend calendar, §8.3): Euronext 09:00–17:30,
 NYSE/Nasdaq 15:30–22:00 (adjust for US/EU DST mismatch via exchange time zones, never hardcode offsets).
 
 Order lifecycle UI: sent → market opens → executed. The map shows a pending buy as a building under
@@ -375,10 +375,11 @@ Never blocks.
 
 ### 4.11 Livret A
 
-Facts to encode (verify at implementation, keep in backend data, never hardcode in the app):
+Facts encoded in the backend (`backend/internal/catalogue/livret.go`, never hardcoded in the app), from the
+rate in force on the data floor:
 - Annual rate history (dated rows; reviewed every 1 February and 1 August). Current: 1.7 % since 2026-08-01.
-- Deposit ceiling, dated like the rates: 15 300 € until 30 September 2012, 19 125 € from 1 October 2012,
-  22 950 € since 1 January 2013 (capitalised interest may exceed it).
+- Deposit ceiling, dated like the rates: 100 000 F (15 244,90 €) until 2001, 15 300 € from 1 January 2002,
+  19 125 € from 1 October 2012, 22 950 € since 1 January 2013 (capitalised interest may exceed it).
 - Interest by fortnight ("quinzaine": 1st–15th, 16th–end of month). Deposits earn from the next quinzaine
   start; withdrawals stop earning from the start of the quinzaine in which they happen. Interest is credited
   and capitalised on 31 December.
@@ -624,7 +625,7 @@ Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via
 | `GET /v1/quotes?ids=a,b,c` | Latest price per asset with `asOf` and market status: the live quote (refreshed every 30 min in session) or else the last close |
 | `GET /v1/fx?base=USD&quote=EUR&from=&to=` | Daily rates (cached Frankfurter; the app also calls Frankfurter directly) |
 | `GET /v1/livret/rates` | Dated Livret A rate history and dated ceiling history |
-| `GET /v1/calendar/{exchange}?year=` | Trading days / holidays |
+| `GET /v1/calendar/{exchange}?year=` | Holidays (weekdays without a session) of `nyse`, `nasdaq` or `otc`, all on the NYSE calendar, from 2000 to next year; every other weekday trades. Early closes are not served |
 | `GET /v1/content/manifest` · `GET /v1/content/packs/{islandId}/{version}` | Content distribution |
 | `GET /healthz` | Liveness |
 

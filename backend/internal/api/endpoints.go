@@ -2,10 +2,13 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	"finance-companion/backend/internal/calendar"
 	"finance-companion/backend/internal/store"
 )
 
@@ -213,4 +216,28 @@ func (s *Server) livret(r *http.Request) (response, error) {
 		outCeilings = append(outCeilings, map[string]any{"validFrom": date(c.ValidFrom), "amountCents": c.AmountCents})
 	}
 	return response{body: map[string]any{"rates": outRates, "ceilings": outCeilings}}, nil
+}
+
+// calendar serves an exchange's holidays in a year: every other weekday
+// trades. Years run from the data floor's to next year's; later ones would
+// miss closures not yet announced.
+func (s *Server) calendar(r *http.Request) (response, error) {
+	exchange := r.PathValue("exchange")
+	year, err := strconv.Atoi(r.URL.Query().Get("year"))
+	if err != nil {
+		return response{}, badRequest("year must be a number, as in year=2025")
+	}
+	holidays, ok := calendar.Holidays(exchange, year)
+	if !ok {
+		return response{}, apiError{http.StatusNotFound, "not_found", "unknown exchange " + exchange}
+	}
+	if year < calendar.FirstYear || year > s.Now().Year()+1 {
+		return response{}, apiError{http.StatusNotFound, "not_found",
+			fmt.Sprintf("no calendar for %d (served: %d to next year)", year, calendar.FirstYear)}
+	}
+	out := make([]string, 0, len(holidays))
+	for _, d := range holidays {
+		out = append(out, date(d))
+	}
+	return response{body: map[string]any{"exchange": exchange, "year": year, "holidays": out}}, nil
 }
