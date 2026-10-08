@@ -46,6 +46,7 @@ cd backend && gofmt -w . && go vet ./... && go test ./...
 set -a; . ./.env; set +a; go run ./cmd/server   # .env from .env.example; syncs market data
 go test -tags live ./internal/provider/            # adapter against the real API (needs .env)
 go run ./cmd/contentcheck ../content  # validates every content pack against the schema
+docker build -t finance-companion-backend .        # the image; self-hosting steps in docs/deploy.md
 
 # tracker
 tracker/board        # every issue in roadmap order, then the next one to work on
