@@ -43,7 +43,8 @@ dart run drift_dev schema generate drift_schemas/app_database/ test/drift/app_da
 
 # backend
 cd backend && gofmt -w . && go vet ./... && go test ./...
-go run ./cmd/server                 # needs .env (see backend/.env.example)
+set -a; . ./.env; set +a; go run ./cmd/server   # .env from .env.example; syncs market data
+go test -tags live ./internal/provider/            # adapter against the real API (needs .env)
 go run ./cmd/contentcheck ../content  # validates every content pack against the schema
 
 # tracker

@@ -218,6 +218,12 @@ func (s *Store) UpsertBars(ctx context.Context, assetID string, bars []Bar) erro
 	})
 }
 
+// DeleteBars drops an asset's whole history, before refetching it.
+func (s *Store) DeleteBars(ctx context.Context, assetID string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM bars WHERE asset_id = ?`, assetID)
+	return err
+}
+
 // Bars returns an asset's bars from from to to, both included, oldest first.
 func (s *Store) Bars(ctx context.Context, assetID string, from, to time.Time) ([]Bar, error) {
 	rows, err := s.db.QueryContext(ctx, `

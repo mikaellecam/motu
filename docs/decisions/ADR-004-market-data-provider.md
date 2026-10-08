@@ -61,7 +61,7 @@ Frankfurter (ECB reference rates since 1999-01-04, no key).
 | S&P 500 ETF | SPY | NYSE Arca | 1993-01-29 |
 | Nasdaq 100 ETF | QQQ | Nasdaq | 1999-03-10 |
 | Europe ETF (FTSE Developed Europe, replaces Stoxx Europe 600) | VGK | NYSE Arca | 2005-03-10 |
-| Emerging markets ETF (MSCI EM) | EEM | NYSE Arca | 2008-01-02 |
+| Emerging markets ETF (MSCI EM) | EEM | NYSE Arca | 2009-07-21 (the provider's `earliest_timestamp` says 2008-01-02, but adjusted bars start here) |
 | International government bonds (replaces euro government bonds) | BWX | NYSE Arca | 2007-10-11 |
 | Aggregate bonds (US; replaces global aggregate) | AGG | NYSE Arca | 2003-09-29 |
 | LVMH | LVMUY | OTC (ADR) | 2006-01-27 |

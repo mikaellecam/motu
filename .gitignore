@@ -6,3 +6,6 @@ tracker/
 
 # Issue worktrees
 .worktrees/
+
+# Backend database (local runs)
+backend/data/
