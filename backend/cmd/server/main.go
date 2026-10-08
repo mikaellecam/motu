@@ -13,7 +13,9 @@ import (
 	"syscall"
 	"time"
 
+	"finance-companion/backend/internal/api"
 	"finance-companion/backend/internal/catalogue"
+	"finance-companion/backend/internal/fx"
 	"finance-companion/backend/internal/jobs"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
@@ -59,27 +61,34 @@ func main() {
 		log.Error("DATA_FLOOR", "err", err)
 		os.Exit(1)
 	}
+	quotes := jobs.NewQuoteCache()
 	if key := os.Getenv("TWELVEDATA_API_KEY"); key != "" {
+		market := provider.NewTwelveData(key)
+		// One budget for every job: they share the provider's credits. The
+		// default daily share leaves room for manual calls (ADR-004).
+		budget := jobs.NewBudget(envInt("PROVIDER_CREDITS_PER_MINUTE", 8), envInt("PROVIDER_CREDITS_PER_DAY", 700))
 		syncer := &jobs.Syncer{
-			Store:    db,
-			Provider: provider.NewTwelveData(key),
-			// Defaults leave room under the free plan's 8/min and 800/day
-			// for quotes and manual calls (ADR-004).
-			Budget:    jobs.NewBudget(envInt("PROVIDER_CREDITS_PER_MINUTE", 8), envInt("PROVIDER_CREDITS_PER_DAY", 400)),
-			DataFloor: floor,
-			Now:       time.Now,
-			Log:       log,
+			Store: db, Provider: market, Budget: budget, DataFloor: floor,
+			Now: time.Now, Log: log, Rates: fx.NewFrankfurter(),
+		}
+		refresher := &jobs.QuoteRefresher{
+			Store: db, Provider: market, Budget: budget, Cache: quotes, Now: time.Now, Log: log,
 		}
 		go syncer.RunDaily(ctx)
+		go refresher.Run(ctx)
 	} else {
 		log.Warn("TWELVEDATA_API_KEY not set: market data is not synced")
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte("ok"))
-	})
-	srv := &http.Server{Addr: ":" + env("PORT", "8080"), Handler: mux}
+	server := &api.Server{
+		Store: db, Quotes: quotes, Now: time.Now,
+		RequestsPerMinute: envInt("API_REQUESTS_PER_MINUTE", 120),
+	}
+	srv := &http.Server{
+		Addr:              ":" + env("PORT", "8080"),
+		Handler:           server.Handler(),
+		ReadHeaderTimeout: 10 * time.Second,
+	}
 	go func() {
 		<-ctx.Done()
 		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)

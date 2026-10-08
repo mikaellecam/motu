@@ -620,16 +620,17 @@ Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via
 | Method & path | Returns |
 |---|---|
 | `GET /v1/assets` | Catalogue with listingDate, currency, region, type |
-| `GET /v1/assets/{id}/history?from=&to=` | Adjusted daily OHLCV bars, ascending; `to` defaults to latest |
-| `GET /v1/quotes?ids=a,b,c` | Latest price per asset with `asOf` and market status |
+| `GET /v1/assets/{id}/history?from=&to=` | Adjusted daily OHLCV bars, ascending; `to` defaults to latest; `adjustedAt` = last full refetch after a dividend or split (the app drops its cached history when it moves) |
+| `GET /v1/quotes?ids=a,b,c` | Latest price per asset with `asOf` and market status: the live quote (refreshed every 30 min in session) or else the last close |
 | `GET /v1/fx?base=USD&quote=EUR&from=&to=` | Daily rates (cached Frankfurter; the app also calls Frankfurter directly) |
 | `GET /v1/livret/rates` | Dated Livret A rate history and dated ceiling history |
 | `GET /v1/calendar/{exchange}?year=` | Trading days / holidays |
 | `GET /v1/content/manifest` · `GET /v1/content/packs/{islandId}/{version}` | Content distribution |
 | `GET /healthz` | Liveness |
 
-Errors: `{"error": {"code": "...", "message": "..."}}` with proper status codes; 429 carries `Retry-After`.
-Every list endpoint supports conditional requests.
+Errors: `{"error": {"code": "...", "message": "..."}}` with proper status codes; 429 carries `Retry-After` (per-client
+limit). Every endpoint answers conditional requests (`ETag`, and `Last-Modified` where the data's date is
+known). Prices and rates are decimal strings, never JSON numbers.
 
 ### 8.4 Catalogue V1 (29 instruments, US listings: ADR-004)
 

@@ -334,6 +334,33 @@ func TestAReadjustedHistoryIsRefetchedWhole(t *testing.T) {
 	}
 }
 
+func TestALateCorrectionOfTheLastDayIsNotAnAdjustment(t *testing.T) {
+	f := newFixture(t)
+	f.sync.SyncAll(context.Background())
+	// The provider corrected 15 September's close after we stored it.
+	bars := f.fake.Bars["A"]
+	for i := range bars {
+		if bars[i].Date.Equal(day("2026-09-15")) {
+			bars[i].Close = "999"
+		}
+	}
+	calls := f.fake.Calls
+	f.clock.now = ny("2026-09-16 17:00")
+	if err := f.sync.SyncAll(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if f.fake.Calls-calls != 2 {
+		t.Fatalf("no refetch: %d calls", f.fake.Calls-calls)
+	}
+	a := f.bars(t, "a")
+	if a[10].Close != "999" || len(a) != 12 {
+		t.Fatalf("the corrected day is updated: %+v", a[10])
+	}
+	if state, _, _ := f.store.SyncState(context.Background(), "a"); !state.AdjustedAt.IsZero() {
+		t.Fatalf("not an adjustment: %+v", state)
+	}
+}
+
 func TestTheSameCloseWrittenDifferentlyIsNotAnAdjustment(t *testing.T) {
 	f := newFixture(t)
 	f.sync.SyncAll(context.Background())
@@ -346,5 +373,24 @@ func TestTheSameCloseWrittenDifferentlyIsNotAnAdjustment(t *testing.T) {
 	f.sync.SyncAll(context.Background())
 	if f.fake.Calls-calls != 2 {
 		t.Fatalf("no refetch: %d calls", f.fake.Calls-calls)
+	}
+}
+
+type rates struct{ calls int }
+
+func (r *rates) Rates(_ context.Context, _, _ string, _, to time.Time) ([]store.Rate, error) {
+	r.calls++
+	return []store.Rate{{Date: to, Rate: "0.9"}}, nil
+}
+
+func TestSyncAllKeepsUSDEURUpToDate(t *testing.T) {
+	f := newFixture(t)
+	src := &rates{}
+	f.sync.Rates = src
+	if err := f.sync.SyncAll(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if last, ok, _ := f.store.LastRateDate(context.Background(), "USD", "EUR"); !ok || !last.Equal(day("2026-09-15")) {
+		t.Fatalf("last rate %v %v", last, ok)
 	}
 }

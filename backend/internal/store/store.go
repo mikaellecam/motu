@@ -300,6 +300,17 @@ func (s *Store) Rates(ctx context.Context, base, quote string, from, to time.Tim
 	return rates, rows.Err()
 }
 
+// LastRateDate is the date of a pair's latest rate; ok is false without rates.
+func (s *Store) LastRateDate(ctx context.Context, base, quote string) (last time.Time, ok bool, err error) {
+	var date sql.NullString
+	if err := s.db.QueryRowContext(ctx, `SELECT max(date) FROM fx_rates WHERE base = ? AND quote = ?`, base, quote).
+		Scan(&date); err != nil || !date.Valid {
+		return time.Time{}, false, err
+	}
+	last, err = parseDate(date.String)
+	return last, err == nil, err
+}
+
 // ReplaceLivret replaces the whole Livret A history: it is small, seeded data.
 func (s *Store) ReplaceLivret(ctx context.Context, rates []LivretRate, ceilings []LivretCeiling) error {
 	return inTx(ctx, s.db, func(tx *sql.Tx) error {

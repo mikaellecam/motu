@@ -10,6 +10,7 @@ import (
 
 	_ "time/tzdata" // America/New_York without a system tz database (Docker)
 
+	"finance-companion/backend/internal/fx"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
 )
@@ -62,9 +63,11 @@ type Syncer struct {
 	DataFloor time.Time
 	Now       func() time.Time
 	Log       *slog.Logger
+	// Rates, when set, also keeps USD→EUR up to date (no provider credit).
+	Rates fx.Source
 }
 
-// SyncAll syncs every asset of the store's catalogue. It stops at the first
+// SyncAll syncs USD→EUR and every asset of the store's catalogue. It stops at the first
 // error that would hit every asset (budget, rate limit, cancellation) and
 // carries on past errors of a single asset, returning them all.
 func (s *Syncer) SyncAll(ctx context.Context) error {
@@ -74,6 +77,12 @@ func (s *Syncer) SyncAll(ctx context.Context) error {
 	}
 	to := LastClosedSession(s.Now())
 	var failed []error
+	if s.Rates != nil {
+		if err := fx.Sync(ctx, s.Store, s.Rates, "USD", "EUR", s.DataFloor, to); err != nil {
+			s.Log.Warn("fx sync failed", "err", err)
+			failed = append(failed, fmt.Errorf("fx: %w", err))
+		}
+	}
 	for _, asset := range assets {
 		err := s.syncAsset(ctx, asset, to)
 		switch {
@@ -99,9 +108,10 @@ func (s *Syncer) syncAsset(ctx context.Context, asset store.Asset, to time.Time)
 	}
 	from := floor
 	if synced {
-		// Ask for the last stored day again: if its close changed, the
-		// provider re-adjusted the history (dividend, split).
-		from = state.LastDate
+		// Ask again for the last few stored days (at least one trading day
+		// before the last): a dividend or split rewrites every earlier
+		// close, a late correction only the latest one.
+		from = state.LastDate.AddDate(0, 0, -5)
 	}
 	check := synced
 	for !from.After(to) {
@@ -118,7 +128,7 @@ func (s *Syncer) syncAsset(ctx context.Context, asset store.Asset, to time.Time)
 		}
 		if check {
 			check = false
-			readjusted, err := s.readjusted(ctx, asset.ID, state.LastDate, bars)
+			readjusted, err := s.readjusted(ctx, asset.ID, from, state.LastDate, bars)
 			if err != nil {
 				return err
 			}
@@ -154,20 +164,32 @@ func (s *Syncer) syncAsset(ctx context.Context, asset store.Asset, to time.Time)
 	return nil
 }
 
-// readjusted compares the provider's close on day with the stored one.
-// Adjusted series are rewritten backwards at every dividend and split, so a
-// different close means every stored day is stale.
-func (s *Syncer) readjusted(ctx context.Context, assetID string, day time.Time, fresh []store.Bar) (bool, error) {
-	if len(fresh) == 0 || !fresh[0].Date.Equal(day) {
-		return false, nil
-	}
-	stored, err := s.Store.Bars(ctx, assetID, day, day)
-	if err != nil || len(stored) == 0 {
+// readjusted compares the provider's closes with the stored ones on the days
+// from `from` up to, not including, last. Adjusted series are rewritten
+// backwards at every dividend and split, so any difference there means every
+// stored day is stale. The last day itself may just have been corrected late
+// (OTC listings): the upsert takes care of it.
+func (s *Syncer) readjusted(ctx context.Context, assetID string, from, last time.Time, fresh []store.Bar) (bool, error) {
+	stored, err := s.Store.Bars(ctx, assetID, from, last.AddDate(0, 0, -1))
+	if err != nil {
 		return false, err
 	}
-	a, okA := new(big.Rat).SetString(stored[0].Close)
-	b, okB := new(big.Rat).SetString(fresh[0].Close)
-	return okA && okB && a.Cmp(b) != 0, nil
+	closes := map[time.Time]string{}
+	for _, b := range fresh {
+		closes[b.Date] = b.Close
+	}
+	for _, b := range stored {
+		freshClose, ok := closes[b.Date]
+		if !ok {
+			continue
+		}
+		a, okA := new(big.Rat).SetString(b.Close)
+		f, okF := new(big.Rat).SetString(freshClose)
+		if okA && okF && a.Cmp(f) != 0 {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // history fetches a window. Credits spent outside this process (a manual
