@@ -138,8 +138,9 @@ class StaleBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formats = _formats(context);
-    final date = formats.date(lastUpdated);
-    final time = formats.time(lastUpdated);
+    final local = lastUpdated.toLocal();
+    final date = formats.date(local);
+    final time = formats.time(local);
 
     return Card(
       child: Padding(

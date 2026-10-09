@@ -1,7 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../core/cache_status.dart';
 import '../data/local/database.dart';
 import '../data/remote/backend_api.dart';
+import '../data/remote/connectivity.dart';
 import '../data/remote/frankfurter_api.dart';
 import '../data/repositories/fx_service.dart';
 import '../data/repositories/market_repository.dart';
@@ -34,8 +36,20 @@ const backendUrl = String.fromEnvironment(
 );
 
 @Riverpod(keepAlive: true)
-MarketRepository marketRepository(Ref ref) =>
-    MarketRepository(ref.watch(databaseProvider), BackendApi(backendUrl));
+MarketRepository marketRepository(Ref ref) {
+  final repository = MarketRepository(
+    ref.watch(databaseProvider),
+    BackendApi(backendUrl),
+    online: deviceOnline(),
+  );
+  ref.onDispose(repository.dispose);
+  return repository;
+}
+
+/// Whether the prices on screen are current (BRIEF §6.3).
+@riverpod
+Stream<CacheStatus> cacheStatus(Ref ref) =>
+    ref.watch(marketRepositoryProvider).status();
 
 @Riverpod(keepAlive: true)
 FxService fxService(Ref ref) =>

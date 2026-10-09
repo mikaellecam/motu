@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -5,6 +6,7 @@ import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
+import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
 import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/data/local/database.dart';
@@ -429,5 +431,96 @@ void main() {
 
     final old = await load(1999, 1999);
     expect(old.isTradingDay(Exchange.nyse, DateTime.utc(1999, 12, 24)), isTrue);
+  });
+
+  group('status', () {
+    late StreamController<bool> online;
+    late List<CacheStatus> seen;
+    final firstFetch = DateTime.utc(2026, 10, 8, 12);
+
+    MarketRepository start() {
+      final repository = MarketRepository(
+        db,
+        BackendApi('http://backend.test', adapter: backend),
+        wallClock: wall,
+        online: online.stream,
+      );
+      addTearDown(repository.dispose);
+      seen = [];
+      repository.status().listen(seen.add);
+      return repository;
+    }
+
+    setUp(() {
+      online = StreamController<bool>();
+      repo = start();
+    });
+
+    Future<void> settle() => Future<void>.delayed(Duration.zero);
+
+    test(
+      'fresh, stale after a failed refresh, offline without a connection',
+      () async {
+        await closes();
+        await settle();
+        expect(seen, [const Fresh()]);
+
+        // The server cannot be reached; the device is still connected.
+        backend.offline = true;
+        wall.t = DateTime.utc(2026, 10, 9, 22);
+        expect(await closes(), hasLength(3));
+        await settle();
+        expect(seen.last, Stale(firstFetch));
+
+        online.add(false);
+        await settle();
+        expect(seen.last, Offline(firstFetch));
+        online.add(true);
+        await settle();
+        expect(seen.last, Stale(firstFetch), reason: 'nothing refetched yet');
+
+        backend.offline = false;
+        await closes();
+        await settle();
+        expect(seen, [
+          const Fresh(),
+          Stale(firstFetch),
+          Offline(firstFetch),
+          Stale(firstFetch),
+          const Fresh(),
+        ]);
+      },
+    );
+
+    test('a failed quote refresh is stale as of the cached quote', () async {
+      backend.quotes['apple'] = {
+        'assetId': 'apple',
+        'price': '231.4',
+        'currency': 'USD',
+        'asOf': '2026-10-07T20:00:00Z',
+        'marketOpen': false,
+      };
+      await repo.latest('apple', asOf: wall.now());
+      backend.offline = true;
+      wall.t = DateTime.utc(2026, 10, 12, 15);
+      await repo.latest('apple', asOf: wall.now());
+      await settle();
+      expect(seen.last, Stale(firstFetch));
+    });
+
+    test('after a restart offline: when prices were last fetched', () async {
+      await closes();
+      wall.t = DateTime.utc(2026, 10, 10, 9);
+      online = StreamController<bool>()..add(false);
+      start();
+      await settle();
+      expect(seen.last, Offline(firstFetch));
+    });
+
+    test('offline before any fetch: no date to show', () async {
+      online.add(false);
+      await settle();
+      expect(seen.last, const Offline(null));
+    });
   });
 }

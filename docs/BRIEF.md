@@ -551,7 +551,11 @@ fetch is needed, and emit updates. UI never knows the source except through `Cac
 Everything readable offline: map, islands (bundled packs), wallets, positions, charts (cached), glossary,
 saved simulations, trip advancing (only within cached history; past that → `DataUnavailableFailure` with a
 clear message). Live orders while offline: open decision (§14). Stale-data banner shows date and time of
-the last update.
+the last successful price fetch, in local time.
+
+`CacheStatus` (from `MarketRepository.status()`): `Offline(lastUpdated)` when the device has no connection
+(`connectivity_plus`); `Stale(lastUpdated)` when it has one but the last price fetch (history or quote)
+failed and the cache stood in; `Fresh` otherwise. `CacheStatusBanner` shows the banner for the first two.
 
 ---
 

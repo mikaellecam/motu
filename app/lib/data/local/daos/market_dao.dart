@@ -73,6 +73,21 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
   Future<void> saveQuote(QuotesCompanion row) =>
       into(quotes).insertOnConflictUpdate(row);
 
+  /// When prices were last fetched: the latest quote or history fetch.
+  Future<DateTime?> lastPriceFetch() async {
+    final quoted = quotes.fetchedAt.max();
+    final synced = historySync.fetchedAt.max();
+    final times = [
+      await (selectOnly(
+        quotes,
+      )..addColumns([quoted])).map((r) => r.read(quoted)).getSingle(),
+      await (selectOnly(
+        historySync,
+      )..addColumns([synced])).map((r) => r.read(synced)).getSingle(),
+    ].nonNulls;
+    return times.isEmpty ? null : times.reduce((a, b) => a.isAfter(b) ? a : b);
+  }
+
   Future<void> upsertRates(List<FxRatesCompanion> rows) =>
       batch((b) => b.insertAllOnConflictUpdate(fxRates, rows));
 

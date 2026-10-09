@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 
+import '../../core/cache_status.dart';
 import '../../core/clock/simulation_clock.dart';
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
@@ -21,16 +24,64 @@ import 'guard.dart';
 /// Every read is cut at `asOf`: nothing dated after its day is returned
 /// (CLAUDE.md rule 3). Cache ages run on the device clock, never on a trip's.
 class MarketRepository {
+  /// [online] reports the device's connection (`deviceOnline` in the app).
   MarketRepository(
     AppDatabase db,
     this._api, {
     SimulationClock wallClock = const LiveClock(),
+    Stream<bool>? online,
   }) : _dao = db.marketDao,
-       _wall = wallClock;
+       _wall = wallClock {
+    _onlineSub = online?.listen((value) {
+      _online = value;
+      _changes.add(null);
+    });
+    _dao.lastPriceFetch().then((t) {
+      if (t != null) _pricesAt(t);
+    }, onError: (_) {});
+  }
 
   final MarketDao _dao;
   final BackendApi _api;
   final SimulationClock _wall;
+
+  StreamSubscription<bool>? _onlineSub;
+  final _changes = StreamController<void>.broadcast(sync: true);
+  bool _online = true;
+  bool _priceFetchFailed = false;
+  DateTime? _lastUpdated;
+
+  /// Whether the prices served are current: [Offline] without a connection,
+  /// [Stale] when the last price fetch failed and the cache stood in,
+  /// [Fresh] otherwise. Emits the current status, then each change.
+  Stream<CacheStatus> status() => Stream<CacheStatus>.multi((out) {
+    final sub = _changes.stream.listen((_) => out.add(_status));
+    out.onCancel = sub.cancel;
+    out.add(_status);
+  }).distinct();
+
+  CacheStatus get _status => !_online
+      ? Offline(_lastUpdated)
+      : _priceFetchFailed
+      ? Stale(_lastUpdated!)
+      : const Fresh();
+
+  /// Prices held in the cache date from [t] at the latest.
+  void _pricesAt(DateTime t) {
+    final last = _lastUpdated;
+    if (last == null || t.isAfter(last)) _lastUpdated = t;
+    _changes.add(null);
+  }
+
+  void _priceFetch({required bool ok, required DateTime cachedAt}) {
+    _priceFetchFailed = !ok;
+    _pricesAt(cachedAt);
+  }
+
+  Future<void> dispose() async {
+    await _onlineSub?.cancel();
+    await _changes.close();
+  }
 
   /// How long a fetched history counts as up to date: the backend adds each
   /// session's close some time after it.
@@ -92,7 +143,8 @@ class MarketRepository {
         var row = await _dao.quote(assetId);
         if (row == null || !await _isFresh(row, asset.exchange)) {
           try {
-            for (final q in await _api.quotes([assetId])) {
+            final fetched = await _api.quotes([assetId]);
+            for (final q in fetched) {
               await _dao.saveQuote(
                 QuotesCompanion.insert(
                   assetId: q.assetId,
@@ -105,8 +157,10 @@ class MarketRepository {
               );
             }
             row = await _dao.quote(assetId);
+            _priceFetch(ok: true, cachedAt: _wall.now());
           } on Failure {
             if (row == null) rethrow;
+            _priceFetch(ok: false, cachedAt: row.fetchedAt);
           }
         }
         if (row == null || _day(row.asOf).isAfter(_day(asOf))) return null;
@@ -201,17 +255,23 @@ class MarketRepository {
       return;
     }
     try {
-      if (sync == null) return await _save(await _api.history(assetId));
-      final next = await _api.history(
-        assetId,
-        from: sync.lastDate.add(const Duration(days: 1)),
-      );
-      if (!_sameInstant(next.adjustedAt, sync.adjustedAt)) {
-        return await _save(await _api.history(assetId));
+      if (sync == null) {
+        await _save(await _api.history(assetId));
+      } else {
+        final next = await _api.history(
+          assetId,
+          from: sync.lastDate.add(const Duration(days: 1)),
+        );
+        if (_sameInstant(next.adjustedAt, sync.adjustedAt)) {
+          await _save(next, after: sync);
+        } else {
+          await _save(await _api.history(assetId));
+        }
       }
-      await _save(next, after: sync);
+      _priceFetch(ok: true, cachedAt: _wall.now());
     } on Failure {
       if (sync == null) rethrow;
+      _priceFetch(ok: false, cachedAt: sync.fetchedAt);
     }
   }
 

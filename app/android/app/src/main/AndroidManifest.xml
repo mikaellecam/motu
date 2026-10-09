@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Market data from the backend and Frankfurter. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="finance_companion"
         android:name="${applicationName}"
