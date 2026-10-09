@@ -46,6 +46,9 @@ ThemeData appTheme() {
     onPrimary: AppColors.surface,
     secondary: AppColors.progress,
     onSecondary: AppColors.ink,
+    // Selected segments and chips are a choice, not progress: neutral.
+    secondaryContainer: AppColors.line,
+    onSecondaryContainer: AppColors.ink,
     error: AppColors.alertText,
     onError: AppColors.surface,
     surface: AppColors.surface,
@@ -84,6 +87,13 @@ ThemeData appTheme() {
     textTheme: textTheme,
     dividerColor: AppColors.line,
     materialTapTargetSize: MaterialTapTargetSize.padded,
+    // No tint when content scrolls under the bar (§10.2: no decorative
+    // color).
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: AppColors.surface,
+      scrolledUnderElevation: 0,
+    ),
     // The selected tab is a place, not progress: neutral tokens only.
     navigationBarTheme: const NavigationBarThemeData(
       backgroundColor: AppColors.surface,

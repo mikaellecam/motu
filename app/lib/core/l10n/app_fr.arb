@@ -127,5 +127,121 @@
         "type": "String"
       }
     }
+  },
+  "wallet_live_name": "Mon portefeuille",
+  "@wallet_live_name": {
+    "description": "Title of the live wallet (today's prices)."
+  },
+  "wallet_change_since_start": "{change} depuis le d\u00e9but",
+  "@wallet_change_since_start": {
+    "description": "Signed change in \u20ac and %, e.g. \"+1 234,56 \u20ac (+2,47 %)\".",
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_prices_as_of": "Cours du {date}, {time}",
+  "@wallet_prices_as_of": {
+    "description": "When the prices on screen were observed.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_invested": "Investi",
+  "@wallet_invested": {
+    "description": "Tile: market value of the positions now."
+  },
+  "wallet_cash_available": "Liquidit\u00e9s disponibles",
+  "@wallet_cash_available": {
+    "description": "Tile: cash not held back by pending buys."
+  },
+  "wallet_invest": "Investir",
+  "@wallet_invest": {
+    "description": "Button: opens the Explorer for this wallet."
+  },
+  "wallet_period_week": "1S",
+  "wallet_period_month": "1M",
+  "wallet_period_quarter": "3M",
+  "wallet_period_year": "1A",
+  "wallet_period_all": "Tout",
+  "@wallet_period_week": {
+    "description": "Chart period chip: one week."
+  },
+  "wallet_period_week_long": "1 semaine",
+  "wallet_period_month_long": "1 mois",
+  "wallet_period_quarter_long": "3 mois",
+  "wallet_period_year_long": "1 an",
+  "wallet_period_all_long": "toute la p\u00e9riode",
+  "@wallet_period_week_long": {
+    "description": "Chart period spelled out, for screen readers."
+  },
+  "wallet_compare": "Comparer \u00e0\u202f:",
+  "@wallet_compare": {
+    "description": "Before the benchmark chips."
+  },
+  "wallet_benchmark_world": "ETF Monde",
+  "wallet_benchmark_livret": "Livret A",
+  "wallet_chart_money_in": "Argent vers\u00e9",
+  "@wallet_chart_money_in": {
+    "description": "Legend of the dashed line: starting cash plus contributions so far."
+  },
+  "wallet_chart_starts": "La courbe d\u00e9marre le {date}.",
+  "@wallet_chart_starts": {
+    "description": "Chart with fewer than two days.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_chart_semantics": "Valeur du portefeuille sur {period}\u202f: de {start} \u00e0 {end}.",
+  "@wallet_chart_semantics": {
+    "description": "Screen-reader summary of the chart.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_allocation_title": "R\u00e9partition",
+  "wallet_allocation_cash": "Liquidit\u00e9s",
+  "wallet_allocation_livret": "Livret A",
+  "wallet_positions_title": "Positions",
+  "wallet_positions_empty": "Aucune position pour l'instant.",
+  "wallet_quantity_stock": "{form, select, one{{quantity} action} other{{quantity} actions}}",
+  "@wallet_quantity_stock": {
+    "description": "Shares held; form is \"one\" below 2 in French.",
+    "placeholders": {
+      "form": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_quantity_etf": "{form, select, one{{quantity} part} other{{quantity} parts}}",
+  "@wallet_quantity_etf": {
+    "description": "ETF units held; form is \"one\" below 2 in French.",
+    "placeholders": {
+      "form": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "String"
+      }
+    }
   }
 }

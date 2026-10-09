@@ -1,9 +1,4 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:decimal/decimal.dart';
-import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
 import 'package:finance_companion/core/failure.dart';
@@ -13,68 +8,8 @@ import 'package:finance_companion/data/remote/frankfurter_api.dart';
 import 'package:finance_companion/data/repositories/fx_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class WallClock implements SimulationClock {
-  WallClock(this.t);
-  DateTime t;
-  @override
-  DateTime now() => t;
-}
-
-/// Frankfurter's range endpoint over a set of published USD→EUR rates. Like
-/// the real one, a range starting on a day without a rate also brings the
-/// last rate before it.
-class FakeFrankfurter implements HttpClientAdapter {
-  final requests = <Uri>[];
-  bool offline = false;
-  final published = <String, num>{
-    '2000-01-03': 0.9847,
-    '2008-09-15': 0.70582,
-    '2026-10-01': 0.8513,
-    '2026-10-02': 0.85125, // Friday
-    '2026-10-05': 0.85251, // Monday
-    '2026-10-06': 0.85,
-    '2026-10-07': 0.8547,
-  };
-
-  @override
-  Future<ResponseBody> fetch(
-    RequestOptions options,
-    Stream<Uint8List>? requestStream,
-    Future<void>? cancelFuture,
-  ) async {
-    requests.add(options.uri);
-    if (offline) throw const SocketException('offline');
-    final [from, to] = options.uri.pathSegments.last.split('..');
-    final days = published.keys.toList()..sort();
-    final inRange = [
-      for (final d in days)
-        if (d.compareTo(from) >= 0 && d.compareTo(to) <= 0) d,
-    ];
-    final before = [
-      for (final d in days)
-        if (d.compareTo(from) < 0) d,
-    ];
-    if (!published.containsKey(from) && before.isNotEmpty) {
-      inRange.insert(0, before.last);
-    }
-    return ResponseBody.fromString(
-      jsonEncode({
-        'amount': 1.0,
-        'base': 'USD',
-        'rates': {
-          for (final d in inRange) d: {'EUR': published[d]},
-        },
-      }),
-      200,
-      headers: {
-        Headers.contentTypeHeader: ['application/json'],
-      },
-    );
-  }
-
-  @override
-  void close({bool force = false}) {}
-}
+import '../../fakes/fake_frankfurter.dart';
+import '../../fakes/fake_backend.dart' show WallClock;
 
 DateTime day(int m, int d) => DateTime.utc(2026, m, d);
 Decimal dec(String s) => Decimal.parse(s);
@@ -195,5 +130,40 @@ void main() {
       usdEur(DateTime.utc(1999, 6, 1)),
       throwsA(isA<DataUnavailableFailure>()),
     );
+  });
+
+  test('lookup: many days from one read, cut at asOf', () async {
+    final rate = await fx.lookup(
+      Currency.usd,
+      Currency.eur,
+      start: day(10, 3),
+      asOf: day(10, 6),
+    );
+    expect(api.requests, hasLength(1));
+    // Saturday 10-03 takes Friday's rate, read before the range.
+    expect(rate(day(10, 3)), dec('0.85125'));
+    expect(rate(day(10, 5)), dec('0.85251'));
+    expect(rate(day(10, 6)), dec('0.85'));
+    expect(() => rate(day(10, 7)), throwsArgumentError);
+
+    final early = await fx.lookup(
+      Currency.usd,
+      Currency.eur,
+      start: DateTime.utc(1999, 6, 1),
+      asOf: DateTime.utc(2000, 1, 3),
+    );
+    expect(early(DateTime.utc(2000, 1, 3)), dec('0.9847'));
+    expect(
+      () => early(DateTime.utc(1999, 12, 31)),
+      throwsA(isA<DataUnavailableFailure>()),
+    );
+
+    final same = await fx.lookup(
+      Currency.eur,
+      Currency.eur,
+      start: day(1, 1),
+      asOf: day(10, 6),
+    );
+    expect(same(day(5, 5)), Decimal.one);
   });
 }

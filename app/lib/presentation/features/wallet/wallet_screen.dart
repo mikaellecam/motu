@@ -1,0 +1,612 @@
+import 'package:decimal/decimal.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../application/wallet/wallet_overview.dart';
+import '../../../application/wallet/wallet_providers.dart';
+import '../../../core/failure.dart';
+import '../../../core/l10n/app_localizations.dart';
+import '../../../core/l10n/formats.dart';
+import '../../../core/money/money.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/async_states.dart';
+import '../../../domain/market/asset.dart';
+import '../../../domain/wallet/valuation.dart';
+import '../../../domain/wallet/wallet.dart';
+import '../../widgets/cache_status_banner.dart';
+
+/// A wallet's value, chart, allocation and positions (BRIEF §4.7). Same
+/// layout for the live wallet and trips.
+class WalletScreen extends ConsumerWidget {
+  const WalletScreen({super.key, required this.walletId});
+
+  final String walletId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final state = ref.watch(walletOverviewProvider(walletId));
+    Future<void> refresh() =>
+        ref.refresh(walletOverviewProvider(walletId).future).then((_) {});
+    final overview = state.value;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: overview == null
+            ? null
+            : Text(
+                overview.kind == WalletKind.live
+                    ? l10n.wallet_live_name
+                    : overview.name,
+              ),
+      ),
+      body: switch (overview) {
+        final o? => RefreshIndicator(
+          onRefresh: refresh,
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpace.screenPadding),
+            children: [
+              CacheStatusBanner(onRetry: refresh),
+              const SizedBox(height: AppSpace.x2),
+              _Header(o),
+              const SizedBox(height: AppSpace.x4),
+              _Tiles(o),
+              const SizedBox(height: AppSpace.x4),
+              FilledButton(
+                onPressed: () => context.go('/explore?wallet=${o.id}'),
+                child: Text(l10n.wallet_invest),
+              ),
+              const SizedBox(height: AppSpace.x4),
+              _ChartCard(walletId),
+              const SizedBox(height: AppSpace.x4),
+              _AllocationCard(o),
+              const SizedBox(height: AppSpace.x4),
+              _PositionsCard(o),
+            ],
+          ),
+        ),
+        null when state.hasError => Center(
+          child: ErrorView(
+            failure: state.error is Failure
+                ? state.error! as Failure
+                : const ServerFailure(),
+            onRetry: () => ref.invalidate(walletOverviewProvider(walletId)),
+          ),
+        ),
+        null => const Padding(
+          padding: EdgeInsets.all(AppSpace.screenPadding),
+          child: AsyncSkeleton(lines: 6),
+        ),
+      },
+    );
+  }
+}
+
+Formats _formats(BuildContext context) =>
+    Formats(Localizations.localeOf(context).languageCode);
+
+/// Gain, loss or nothing, by the sign of [value] once rounded to cents.
+Color _signColor(Decimal value) {
+  final cents = roundHalfEven(value, 2);
+  return cents > Decimal.zero
+      ? AppColors.gain
+      : cents < Decimal.zero
+      ? AppColors.loss
+      : AppColors.muted;
+}
+
+class _Header extends StatelessWidget {
+  const _Header(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    final text = Theme.of(context).textTheme;
+    final ratio = o.changeRatio;
+    final change = [
+      formats.amount(o.change, Currency.eur, signed: true),
+      if (ratio != null) '(${formats.percent(ratio, signed: true)})',
+    ].join(' ');
+    final pricesAsOf = o.pricesAsOf?.toLocal();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          formats.amount(o.total, Currency.eur),
+          style: AppText.figureLarge.copyWith(color: AppColors.ink),
+        ),
+        Text(
+          l10n.wallet_change_since_start(change),
+          style: text.bodyLarge?.copyWith(color: _signColor(o.change)),
+        ),
+        if (pricesAsOf != null)
+          Text(
+            l10n.wallet_prices_as_of(
+              formats.date(pricesAsOf),
+              formats.time(pricesAsOf),
+            ),
+            style: text.bodySmall?.copyWith(color: AppColors.muted),
+          ),
+      ],
+    );
+  }
+}
+
+class _Tiles extends StatelessWidget {
+  const _Tiles(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _Tile(
+              l10n.wallet_invested,
+              formats.amount(o.invested, Currency.eur),
+            ),
+          ),
+          const SizedBox(width: AppSpace.x3),
+          Expanded(
+            child: _Tile(
+              l10n.wallet_cash_available,
+              formats.money(o.availableCash),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Tile extends StatelessWidget {
+  const _Tile(this.label, this.amount);
+  final String label;
+  final String amount;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpace.x3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: text.bodySmall?.copyWith(color: AppColors.muted),
+            ),
+            const SizedBox(height: AppSpace.x1),
+            Text(amount, style: AppText.figure.copyWith(color: AppColors.ink)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChartCard extends ConsumerStatefulWidget {
+  const _ChartCard(this.walletId);
+  final String walletId;
+
+  @override
+  ConsumerState<_ChartCard> createState() => _ChartCardState();
+}
+
+class _ChartCardState extends ConsumerState<_ChartCard> {
+  var _period = ChartPeriod.all;
+  Benchmark? _benchmark;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final chart = ref.watch(
+      walletChartProvider(widget.walletId, _period, _benchmark),
+    );
+    final benchmarkName = switch (_benchmark) {
+      Benchmark.world => l10n.wallet_benchmark_world,
+      Benchmark.livret => l10n.wallet_benchmark_livret,
+      null => null,
+    };
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpace.x3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SegmentedButton<ChartPeriod>(
+              showSelectedIcon: false,
+              segments: [
+                for (final (period, label) in [
+                  (ChartPeriod.week, l10n.wallet_period_week),
+                  (ChartPeriod.month, l10n.wallet_period_month),
+                  (ChartPeriod.quarter, l10n.wallet_period_quarter),
+                  (ChartPeriod.year, l10n.wallet_period_year),
+                  (ChartPeriod.all, l10n.wallet_period_all),
+                ])
+                  ButtonSegment(value: period, label: Text(label)),
+              ],
+              selected: {_period},
+              onSelectionChanged: (s) => setState(() => _period = s.single),
+            ),
+            const SizedBox(height: AppSpace.x4),
+            SizedBox(
+              height: 180,
+              child: switch (chart) {
+                AsyncValue(value: final data?) => _Chart(data, _period),
+                AsyncValue(error: final error?) => ErrorView(
+                  failure: error is Failure ? error : const ServerFailure(),
+                  onRetry: () => ref.invalidate(
+                    walletChartProvider(widget.walletId, _period, _benchmark),
+                  ),
+                ),
+                _ => const AsyncSkeleton(lines: 3),
+              },
+            ),
+            const SizedBox(height: AppSpace.x2),
+            Wrap(
+              spacing: AppSpace.x4,
+              children: [
+                _Legend(
+                  l10n.wallet_chart_money_in,
+                  color: AppColors.muted,
+                  dashed: true,
+                ),
+                if (benchmarkName != null)
+                  _Legend(benchmarkName, color: AppColors.ink),
+              ],
+            ),
+            const SizedBox(height: AppSpace.x2),
+            Wrap(
+              spacing: AppSpace.x2,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(l10n.wallet_compare, style: text.bodyMedium),
+                for (final (benchmark, label) in [
+                  (Benchmark.world, l10n.wallet_benchmark_world),
+                  (Benchmark.livret, l10n.wallet_benchmark_livret),
+                ])
+                  FilterChip(
+                    label: Text(label),
+                    selected: _benchmark == benchmark,
+                    showCheckmark: false,
+                    onSelected: (on) =>
+                        setState(() => _benchmark = on ? benchmark : null),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Chart extends StatelessWidget {
+  const _Chart(this.data, this.period);
+  final ChartData data;
+  final ChartPeriod period;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    if (data.dates.isEmpty) return const SizedBox.shrink();
+    if (data.dates.length < 2) {
+      return Center(
+        child: Text(
+          l10n.wallet_chart_starts(formats.date(data.dates.first)),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: AppColors.muted),
+        ),
+      );
+    }
+    // Doubles from here on: pixels, not money.
+    List<FlSpot> spots(List<Decimal> values) => [
+      for (var i = 0; i < values.length; i++)
+        FlSpot(i.toDouble(), values[i].toDouble()),
+    ];
+    final all = [...data.values, ...data.moneyIn, ...?data.benchmark];
+    final low = all.reduce((a, b) => a < b ? a : b).toDouble();
+    final high = all.reduce((a, b) => a > b ? a : b).toDouble();
+    final margin = (high - low) * 0.1 + 1;
+    final periodName = switch (period) {
+      ChartPeriod.week => l10n.wallet_period_week_long,
+      ChartPeriod.month => l10n.wallet_period_month_long,
+      ChartPeriod.quarter => l10n.wallet_period_quarter_long,
+      ChartPeriod.year => l10n.wallet_period_year_long,
+      ChartPeriod.all => l10n.wallet_period_all_long,
+    };
+
+    return Semantics(
+      label: l10n.wallet_chart_semantics(
+        periodName,
+        formats.amount(data.values.first, Currency.eur),
+        formats.amount(data.values.last, Currency.eur),
+      ),
+      excludeSemantics: true,
+      child: LineChart(
+        LineChartData(
+          minY: low - margin,
+          maxY: high + margin,
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          lineTouchData: const LineTouchData(enabled: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots(data.moneyIn),
+              color: AppColors.muted,
+              barWidth: 1.5,
+              dashArray: const [6, 4],
+              dotData: const FlDotData(show: false),
+            ),
+            if (data.benchmark case final benchmark?)
+              LineChartBarData(
+                spots: spots(benchmark),
+                color: AppColors.ink,
+                barWidth: 1.5,
+                dotData: const FlDotData(show: false),
+              ),
+            LineChartBarData(
+              spots: spots(data.values),
+              color: AppColors.primary,
+              barWidth: 2.5,
+              dotData: const FlDotData(show: false),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  const _Legend(this.label, {required this.color, this.dashed = false});
+  final String label;
+  final Color color;
+  final bool dashed;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < (dashed ? 3 : 1); i++)
+            Container(
+              width: dashed ? 5 : 16,
+              height: 2,
+              margin: const EdgeInsets.only(right: 2),
+              color: color,
+            ),
+        ],
+      ),
+      const SizedBox(width: AppSpace.x1),
+      Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: AppColors.muted),
+      ),
+    ],
+  );
+}
+
+class _AllocationCard extends StatelessWidget {
+  const _AllocationCard(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    final text = Theme.of(context).textTheme;
+    final names = {for (final p in o.positions) p.asset.id: p.asset.name};
+    var rank = 0;
+    final slices = [
+      for (final line in o.allocation)
+        switch (line) {
+          PositionLine(:final assetId) => (
+            names[assetId]!,
+            AppColors.allocationShade(rank++),
+            line.weight,
+          ),
+          CashLine() => (
+            l10n.wallet_allocation_cash,
+            AppColors.line,
+            line.weight,
+          ),
+          LivretLine() => (
+            l10n.wallet_allocation_livret,
+            AppColors.muted,
+            line.weight,
+          ),
+        },
+    ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpace.x3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.wallet_allocation_title, style: text.titleMedium),
+            const SizedBox(height: AppSpace.x3),
+            ExcludeSemantics(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpace.x1),
+                child: SizedBox(
+                  height: AppSpace.x3,
+                  child: Row(
+                    children: [
+                      for (final (_, color, weight) in slices)
+                        if ((weight * Decimal.fromInt(1000))
+                                .round()
+                                .toBigInt()
+                                .toInt()
+                            case final flex when flex > 0)
+                          Expanded(
+                            flex: flex,
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 2),
+                              color: color,
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpace.x3),
+            for (final (name, color, weight) in slices)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
+                child: Row(
+                  children: [
+                    Container(
+                      width: AppSpace.x3,
+                      height: AppSpace.x3,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpace.x2),
+                    Expanded(child: Text(name, style: text.bodyMedium)),
+                    Text(formats.percent(weight), style: text.bodyMedium),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PositionsCard extends StatelessWidget {
+  const _PositionsCard(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
+              child: Text(l10n.wallet_positions_title, style: text.titleMedium),
+            ),
+            const SizedBox(height: AppSpace.x2),
+            if (o.positions.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
+                child: Text(
+                  l10n.wallet_positions_empty,
+                  style: text.bodyMedium?.copyWith(color: AppColors.muted),
+                ),
+              ),
+            for (final p in o.positions) _PositionRow(p, walletId: o.id),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PositionRow extends StatelessWidget {
+  const _PositionRow(this.p, {required this.walletId});
+  final PositionView p;
+  final String walletId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    final text = Theme.of(context).textTheme;
+    final count = p.quantity.toDecimal();
+    final quantity = switch (p.asset.type) {
+      AssetType.stock => l10n.wallet_quantity_stock(
+        formats.countForm(count),
+        formats.quantity(p.quantity),
+      ),
+      AssetType.etf => l10n.wallet_quantity_etf(
+        formats.countForm(count),
+        formats.quantity(p.quantity),
+      ),
+    };
+    final pnl = p.pnlRatio;
+
+    return InkWell(
+      onTap: () => context.push('/asset/${p.asset.id}?wallet=$walletId'),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpace.x3,
+            vertical: AppSpace.x2,
+          ),
+          child: Row(
+            children: [
+              ExcludeSemantics(
+                child: CircleAvatar(
+                  radius: AppSpace.x5,
+                  backgroundColor: AppColors.line,
+                  foregroundColor: AppColors.ink,
+                  child: Text(p.asset.name.characters.first.toUpperCase()),
+                ),
+              ),
+              const SizedBox(width: AppSpace.x3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.asset.name, style: text.titleMedium),
+                    Text(
+                      quantity,
+                      style: text.bodySmall?.copyWith(color: AppColors.muted),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    formats.amount(p.value, Currency.eur),
+                    style: AppText.figure.copyWith(color: AppColors.ink),
+                  ),
+                  if (pnl != null)
+                    Text(
+                      formats.percent(pnl, signed: true),
+                      style: text.bodySmall?.copyWith(color: _signColor(pnl)),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -12,6 +12,7 @@ import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 
 /// Phone-sized canvas, in logical pixels.
@@ -29,12 +30,22 @@ Future<void> _loadFonts() async {
 
 /// Renders [screen] with the app's theme and localizations, in [locale], and
 /// writes `<name>.png`.
+/// [overrides] feed the screen fixed data instead of the network.
 void screenshot(
   String name,
   Widget screen, {
   Size size = phone,
   String locale = 'fr',
-}) => _capture(name, () => MainApp.screen(screen), size: size, locale: locale);
+  List<Override> overrides = const [],
+  Future<void> Function(WidgetTester tester)? act,
+}) => _capture(
+  name,
+  () => MainApp.screen(screen),
+  size: size,
+  locale: locale,
+  overrides: overrides,
+  act: act,
+);
 
 /// Renders the real app opened at [location] (tabs and all) and writes
 /// `<name>.png`.
@@ -60,6 +71,7 @@ void _capture(
   Widget Function() app, {
   required Size size,
   required String locale,
+  List<Override> overrides = const [],
   Future<void> Function(WidgetTester tester)? act,
 }) {
   testWidgets(name, (tester) async {
@@ -75,7 +87,7 @@ void _capture(
     addTearDown(db.close);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(db)],
+        overrides: [databaseProvider.overrideWithValue(db), ...overrides],
         child: app(),
       ),
     );

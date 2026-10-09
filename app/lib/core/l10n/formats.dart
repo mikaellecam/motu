@@ -33,6 +33,20 @@ class Formats {
   String price(Price price) =>
       _withCurrency(price.value, price.currency, false);
 
+  /// A share count with its own decimals, up to six: `12`, `1,5`,
+  /// `1 250,123456`.
+  String quantity(Quantity quantity) {
+    final value = quantity.toDecimal();
+    return _number(value, value.scale, false);
+  }
+
+  /// The plural form a count takes in copy (`one` or `other`), for ICU
+  /// `select`: French uses the singular below 2 (`1,5 action`), English only
+  /// for exactly 1.
+  String countForm(Decimal count) => _fr
+      ? (count.abs() < Decimal.fromInt(2) ? 'one' : 'other')
+      : (count == Decimal.one ? 'one' : 'other');
+
   /// [ratio] 0.0288 → `2,88 %` (`+2,88 %` when [signed]).
   String percent(Decimal ratio, {bool signed = false, int decimals = 2}) {
     final number = _number(ratio.shift(2), decimals, signed);

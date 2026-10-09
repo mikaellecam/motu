@@ -39,6 +39,13 @@ abstract final class AppColors {
 
   /// World screens background only (map, island path, node player).
   static const sea = Color(0xFF86D9EC);
+
+  /// Allocation bar: the position ranked [rank] by weight (0 = largest) in
+  /// [primary], lighter as positions get smaller. Color says "invested";
+  /// cash is [line] and the Livret [muted]; the legend names each segment
+  /// (decided 2026-10-09).
+  static Color allocationShade(int rank) =>
+      primary.withValues(alpha: rank >= 4 ? 0.2 : 1 - rank * 0.2);
 }
 
 /// 4-pt spacing scale and fixed sizes (BRIEF §10.4).

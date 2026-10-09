@@ -175,6 +175,23 @@ void main() {
     });
   });
 
+  test('closeAt: the session close as an instant, DST on each side', () {
+    // 16:00 in New York: 22:00 in Paris most of the year, 21:00 in the week
+    // the US is on summer time and Europe is not yet (2026-03-09..28).
+    expect(
+      calendar.closeAt(Exchange.nyse, day(2026, 10, 7)),
+      paris(2026, 10, 7, 22, 0, summer: true),
+    );
+    expect(
+      calendar.closeAt(Exchange.nyse, day(2026, 3, 20)),
+      paris(2026, 3, 20, 21, 0, summer: false),
+    );
+    expect(
+      calendar.closeAt(Exchange.euronext, day(2026, 12, 1)),
+      paris(2026, 12, 1, 17, 30, summer: false),
+    );
+  });
+
   group('next open', () {
     test('before the open: today at the open', () {
       expect(

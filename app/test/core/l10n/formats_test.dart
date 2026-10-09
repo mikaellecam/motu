@@ -65,6 +65,26 @@ void main() {
     }
   });
 
+  test('quantities keep their own decimals', () {
+    expect(fr.quantity(const Quantity.whole(12)), '12');
+    expect(fr.quantity(const Quantity.micros(1500000)), '1,5');
+    expect(
+      fr.quantity(const Quantity.micros(1250123456)),
+      '1${nnbsp}250,123456',
+    );
+    expect(en.quantity(const Quantity.micros(1500000)), '1.5');
+    expect(fr.quantity(const Quantity.zero()), '0');
+  });
+
+  test('plural form of a count: French singular below 2, English at 1', () {
+    expect(fr.countForm(d('0.5')), 'one');
+    expect(fr.countForm(d('1.5')), 'one');
+    expect(fr.countForm(d('2')), 'other');
+    expect(en.countForm(d('1')), 'one');
+    expect(en.countForm(d('1.5')), 'other');
+    expect(en.countForm(d('0.5')), 'other');
+  });
+
   test('price rounds half-even to cents at format time', () {
     expect(fr.price(Price(d('177.565'), Currency.usd)), '177,56$nbsp\$');
     expect(fr.price(Price(d('177.575'), Currency.usd)), '177,58$nbsp\$');

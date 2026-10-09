@@ -1,10 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:decimal/decimal.dart';
-import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
@@ -15,122 +11,7 @@ import 'package:finance_companion/data/repositories/market_repository.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class WallClock implements SimulationClock {
-  WallClock(this.t);
-  DateTime t;
-  @override
-  DateTime now() => t;
-  void advance(Duration d) => t = t.add(d);
-}
-
-/// The backend's endpoints over in-memory data; records every request.
-class FakeBackend implements HttpClientAdapter {
-  final requests = <Uri>[];
-  bool offline = false;
-
-  final assets = <Map<String, Object>>[
-    _asset('apple', 'nasdaq', '1980-12-12'),
-    _asset('meta', 'nasdaq', '2012-05-18'),
-  ];
-
-  /// Closes by asset and day.
-  final closes = <String, Map<String, String>>{
-    'apple': {'2026-10-05': '100', '2026-10-06': '101', '2026-10-07': '102'},
-  };
-  final adjustedAt = <String, String?>{};
-  final quotes = <String, Map<String, Object>>{};
-  final holidays = <int, List<String>>{
-    2025: ['2025-12-25'],
-    2026: ['2026-07-03', '2026-11-26', '2026-12-25'],
-    2027: ['2027-01-01'],
-  };
-
-  static Map<String, Object> _asset(String id, String exchange, String since) =>
-      {
-        'id': id,
-        'symbol': id.toUpperCase(),
-        'name': id,
-        'type': 'stock',
-        'exchange': exchange,
-        'currency': 'USD',
-        'region': 'us',
-        'listingDate': since,
-      };
-
-  /// Requests whose path starts with [prefix].
-  List<Uri> to(String prefix) => [
-    for (final r in requests)
-      if (r.path.startsWith(prefix)) r,
-  ];
-
-  @override
-  Future<ResponseBody> fetch(
-    RequestOptions options,
-    Stream<Uint8List>? requestStream,
-    Future<void>? cancelFuture,
-  ) async {
-    final uri = options.uri;
-    requests.add(uri);
-    if (offline) throw const SocketException('offline');
-    final q = uri.queryParameters;
-    final segments = uri.pathSegments;
-    final Object body;
-    switch (segments) {
-      case ['v1', 'assets']:
-        body = {'assets': assets};
-      case ['v1', 'assets', final id, 'history']:
-        final days = (closes[id] ?? {}).keys.toList()..sort();
-        body = {
-          'assetId': id,
-          'currency': 'USD',
-          'adjustedAt': adjustedAt[id],
-          'bars': [
-            for (final day in days)
-              if ((q['from'] == null || day.compareTo(q['from']!) >= 0) &&
-                  (q['to'] == null || day.compareTo(q['to']!) <= 0))
-                {
-                  'date': day,
-                  'open': closes[id]![day],
-                  'high': closes[id]![day],
-                  'low': closes[id]![day],
-                  'close': closes[id]![day],
-                  'volume': 1,
-                },
-          ],
-        };
-      case ['v1', 'quotes']:
-        body = {
-          'quotes': [
-            for (final id in q['ids']!.split(','))
-              if (quotes[id] != null) quotes[id]!,
-          ],
-        };
-      case ['v1', 'calendar', final exchange]:
-        final year = int.parse(q['year']!);
-        final days = holidays[year];
-        if (days == null) {
-          return _json({
-            'error': {'code': 'not_found', 'message': 'no calendar'},
-          }, 404);
-        }
-        body = {'exchange': exchange, 'year': year, 'holidays': days};
-      default:
-        return _json({}, 404);
-    }
-    return _json(body, 200);
-  }
-
-  static ResponseBody _json(Object body, int status) => ResponseBody.fromString(
-    jsonEncode(body),
-    status,
-    headers: {
-      Headers.contentTypeHeader: ['application/json'],
-    },
-  );
-
-  @override
-  void close({bool force = false}) {}
-}
+import '../../fakes/fake_backend.dart';
 
 DateTime day(int m, int d) => DateTime.utc(2026, m, d);
 Decimal dec(String s) => Decimal.parse(s);
@@ -431,6 +312,24 @@ void main() {
 
     final old = await load(1999, 1999);
     expect(old.isTradingDay(Exchange.nyse, DateTime.utc(1999, 12, 24)), isTrue);
+  });
+
+  test('Livret history: cut at asOf, checked daily, cached offline', () async {
+    final now = await repo.livret(asOf: wall.now());
+    expect(
+      [for (final r in now.rates) r.annualRate],
+      [dec('0.017'), dec('0.015'), dec('0.017')],
+    );
+    expect(now.ceilings.single.amount.minorUnits, 2295000);
+
+    final trip = await repo.livret(asOf: day(3, 1));
+    expect(trip.rates.last.validFrom, day(2, 1));
+    expect(backend.to('/v1/livret'), hasLength(1));
+
+    backend.offline = true;
+    wall.advance(const Duration(days: 1));
+    expect((await repo.livret(asOf: wall.now())).rates, hasLength(3));
+    expect(backend.to('/v1/livret'), hasLength(2));
   });
 
   group('status', () {

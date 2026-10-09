@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../domain/wallet/order.dart';
 import '../../../domain/wallet/order_matcher.dart';
+import '../../../domain/wallet/wallet.dart';
 import '../database.dart';
 import '../tables.dart';
 
@@ -27,6 +28,10 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
 
   Future<WalletRow?> wallet(String id) =>
       (select(wallets)..where((w) => w.id.equals(id))).getSingleOrNull();
+
+  Future<WalletRow?> liveWallet() => (select(
+    wallets,
+  )..where((w) => w.kind.equalsValue(WalletKind.live))).getSingleOrNull();
 
   Stream<List<WalletRow>> watchWallets() => (select(
     wallets,

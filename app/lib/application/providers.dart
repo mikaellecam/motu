@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../core/cache_status.dart';
+import '../core/clock/simulation_clock.dart';
 import '../data/local/database.dart';
 import '../data/remote/backend_api.dart';
 import '../data/remote/connectivity.dart';
@@ -11,6 +12,10 @@ import '../data/repositories/profile_repository.dart';
 import '../data/repositories/wallet_repository.dart';
 
 part 'providers.g.dart';
+
+/// The device clock (the live wallet's), overridable in tests.
+@Riverpod(keepAlive: true)
+SimulationClock liveClock(Ref ref) => const LiveClock();
 
 /// The app's database, opened once and closed with the app (ADR-002).
 @Riverpod(keepAlive: true)

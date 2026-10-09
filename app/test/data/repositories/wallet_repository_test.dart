@@ -105,6 +105,27 @@ void main() {
     expect((await repo.load('live')).simDate, isNull);
   });
 
+  test('the live wallet is created once, with the §4.5 settings', () async {
+    final launch = DateTime.utc(2026, 10, 9, 7, 30);
+    final id = await repo.ensureLiveWallet(launch);
+    expect(
+      await repo.ensureLiveWallet(launch.add(const Duration(days: 3))),
+      id,
+    );
+
+    final live = await repo.load(id);
+    expect(live.kind, WalletKind.live);
+    expect(live.startDate, DateTime.utc(2026, 10, 9));
+    expect(live.cash, eur('50000'));
+    expect(live.values.single.value, eur('50000'));
+    expect(live.params.rules.fxFeeRate, d('0.0015'));
+    expect(live.params.rules.fixedFee, eur('0'));
+    expect(live.params.rules.fractionalShares, isTrue);
+    expect(live.params.monthlyContribution, eur('0'));
+    expect(live.params.stops.drawdown, isNull);
+    expect(live.params.stops.orderFilled, isFalse);
+  });
+
   test('an unknown wallet is a NotFoundFailure', () async {
     expect(() => repo.load('nope'), throwsA(isA<NotFoundFailure>()));
   });

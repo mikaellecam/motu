@@ -168,6 +168,35 @@ class WalletRepository {
     }),
   );
 
+  /// The live wallet's id; created on first launch (BRIEF §4.5) with
+  /// 50 000 €, a 0.15 % FX fee, fractional shares, no monthly contribution
+  /// and no automatic stop. Its name comes from the UI copy, not from here.
+  Future<String> ensureLiveWallet(DateTime now) => guardStorage(() async {
+    final existing = await _db.walletDao.liveWallet();
+    if (existing != null) return existing.id;
+    final utc = now.toUtc();
+    await createWallet(
+      id: liveWalletId,
+      kind: WalletKind.live,
+      name: liveWalletId,
+      startDate: DateTime.utc(utc.year, utc.month, utc.day),
+      startingCash: Money(5000000, Currency.eur),
+      params: WalletParams(
+        rules: TradingRules(
+          fxFeeRate: Decimal.parse('0.0015'),
+          fixedFee: const Money.zero(Currency.eur),
+          fractionalShares: true,
+        ),
+        monthlyContribution: const Money.zero(Currency.eur),
+        stops: const StopConditions(),
+      ),
+      createdAt: utc,
+    );
+    return liveWalletId;
+  });
+
+  static const liveWalletId = 'live';
+
   /// The wallet [id], or a [NotFoundFailure].
   Future<WalletState> load(String id) => guardStorage(() async {
     final dao = _db.walletDao;

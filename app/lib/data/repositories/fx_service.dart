@@ -43,12 +43,53 @@ class FxService {
   Future<Decimal> rate(Currency from, Currency to, {required DateTime asOf}) =>
       guardStorage(() async {
         if (from == to) return Decimal.one;
-        final utc = asOf.toUtc();
-        final day = DateTime.utc(utc.year, utc.month, utc.day);
+        final day = _dayOf(asOf);
         await _sync(from, to, upTo: day);
         final row = await _dao.rateOnOrBefore(from, to, day);
         return row?.rate ?? (throw DataUnavailableFailure(asOf));
       });
+
+  /// Rates of [from] → [to] for many days at once (charts, trips): one sync,
+  /// one read. The function answers like [rate] for any day from [start] to
+  /// [asOf]'s day; a later day is an error (no lookahead).
+  Future<Decimal Function(DateTime day)> lookup(
+    Currency from,
+    Currency to, {
+    required DateTime start,
+    required DateTime asOf,
+  }) => guardStorage(() async {
+    if (from == to) return (_) => Decimal.one;
+    await rate(from, to, asOf: asOf);
+    final first = _dayOf(start);
+    final last = _dayOf(asOf);
+    final rows = await _dao.rates(
+      from,
+      to,
+      from: (await _dao.rateOnOrBefore(from, to, first))?.date ?? first,
+      to: last,
+    );
+    return (DateTime day) {
+      final d = _dayOf(day);
+      if (d.isAfter(last)) throw ArgumentError.value(day, 'day', 'after asOf');
+      // The last row dated on or before d.
+      var lo = 0, hi = rows.length;
+      while (lo < hi) {
+        final mid = (lo + hi) ~/ 2;
+        if (rows[mid].date.isAfter(d)) {
+          hi = mid;
+        } else {
+          lo = mid + 1;
+        }
+      }
+      if (lo == 0) throw DataUnavailableFailure(day);
+      return rows[lo - 1].rate;
+    };
+  });
+
+  static DateTime _dayOf(DateTime t) {
+    final utc = t.toUtc();
+    return DateTime.utc(utc.year, utc.month, utc.day);
+  }
 
   /// Fetches the rates the cache lacks up to today, when [upTo] is past the
   /// last cached one.

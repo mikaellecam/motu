@@ -5,6 +5,7 @@ import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/wallet/wallet_screen.dart';
 import '../shell/app_shell.dart';
 
 /// Routes of the app (BRIEF §3). The four tabs share a shell with the bottom
@@ -48,7 +49,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
         args: TripWizardArgs.fromQuery(state.uri.queryParameters),
       ),
     ),
-    _pending('/wallet/:walletId'),
+    GoRoute(
+      path: '/wallet/:walletId',
+      builder: (_, state) =>
+          WalletScreen(walletId: state.pathParameters['walletId']!),
+    ),
     _pending('/wallet/:walletId/stop/:eventId'),
     _pending('/wallet/:walletId/summary'),
     _pending('/wallet/:walletId/order/:orderId'),

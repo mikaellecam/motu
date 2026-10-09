@@ -335,11 +335,16 @@ Never blocks.
 
 ### 4.7 Wallet (portfolio) screen
 
-- Header: total value, change since start (amount and %; TWR when contributions exist), data timestamp,
-  two tiles "Investi" / "Liquidités disponibles", primary button « Investir » (→ Explorer scoped to wallet).
-- Period selector 1S / 1M / 3M / 1A / Tout; chart of daily value with dashed starting-capital baseline;
-  benchmark toggle: ETF Monde / Livret A.
-- Allocation bar + legend (includes cash and Livret lines).
+- Header: total value, change since start (amount and %; TWR when contributions exist), data timestamp
+  (the oldest price on screen), two tiles "Investi" (market value of the positions now, so tiles + Livret
+  add up to the total) / "Liquidités disponibles" (cash minus what pending buys hold back), primary button
+  « Investir » (→ Explorer scoped to wallet).
+- Period selector 1S / 1M / 3M / 1A / Tout (each opens on the last day before the period); chart of daily
+  value with a dashed "Argent versé" baseline (starting cash + contributions so far); benchmark chips
+  « Comparer à : » ETF Monde / Livret A, none by default: the same money put in on the same days, into the
+  world ETF (wallet fees, fractional shares) or the Livret A (within its ceiling).
+- Allocation bar + legend (includes cash and Livret lines): positions in shades of `primary`, largest first;
+  cash `line`; Livret `muted`.
 - Companion card when a moment is active.
 - Positions list (cash is **not** a row): avatar, name, quantity, value in €, P&L % with sign.
 
@@ -700,7 +705,8 @@ Rule: chunky = the game is talking to you; flat = your money.
 | `sea` | #86D9EC | World screens background only |
 
 No decorative color. A screen state (e.g. being in a trip) is signalled by content (date, icon, label), not
-by tinting the screen.
+by tinting the screen. Selected tabs, segments and chips use the neutral `line` container; app bars stay
+`surface` when content scrolls under them.
 
 ### 10.3 Typography
 

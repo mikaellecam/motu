@@ -12,6 +12,10 @@ Future<void> main() async {
   final container = ProviderContainer();
   // First launch: the questionnaire before anything else (BRIEF §3).
   final profile = await container.read(profileRepositoryProvider).load();
+  // The live wallet exists from the first launch (BRIEF §4.5).
+  await container
+      .read(walletRepositoryProvider)
+      .ensureLiveWallet(container.read(liveClockProvider).now());
   runApp(
     UncontrolledProviderScope(
       container: container,

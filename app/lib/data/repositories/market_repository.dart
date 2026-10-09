@@ -6,6 +6,7 @@ import '../../core/cache_status.dart';
 import '../../core/clock/simulation_clock.dart';
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
+import '../../domain/livret/livret_interest.dart';
 import '../../domain/market/asset.dart';
 import '../../domain/market/market_calendar.dart';
 import '../../domain/market/price_bar.dart';
@@ -96,6 +97,51 @@ class MarketRepository {
   static const dailyCheck = Duration(days: 1);
 
   DateTime? _assetsCheckedAt;
+  DateTime? _livretCheckedAt;
+
+  /// The Livret A rate and ceiling histories known on [asOf]'s day, checked
+  /// once a day (BRIEF §6.2, §4.11).
+  Future<({List<LivretRate> rates, List<LivretCeiling> ceilings})> livret({
+    required DateTime asOf,
+  }) => guardStorage(() async {
+    final checked = _livretCheckedAt;
+    if (checked == null || _wall.now().difference(checked) >= dailyCheck) {
+      try {
+        final dto = await _api.livret();
+        await _dao.replaceLivret(
+          [
+            for (final r in dto.rates)
+              LivretRatesCompanion.insert(
+                validFrom: r.validFrom,
+                annualRate: r.annualRate,
+              ),
+          ],
+          [
+            for (final c in dto.ceilings)
+              LivretCeilingsCompanion.insert(
+                validFrom: c.validFrom,
+                amountCents: c.amountCents,
+              ),
+          ],
+        );
+        _livretCheckedAt = _wall.now();
+      } on Failure {
+        if ((await _dao.allLivretRates()).isEmpty) rethrow;
+      }
+    }
+    final last = _day(asOf);
+    return (
+      rates: [
+        for (final r in await _dao.allLivretRates())
+          if (!r.validFrom.isAfter(last)) LivretRate(r.validFrom, r.annualRate),
+      ],
+      ceilings: [
+        for (final c in await _dao.allLivretCeilings())
+          if (!c.validFrom.isAfter(last))
+            LivretCeiling(c.validFrom, Money(c.amountCents, Currency.eur)),
+      ],
+    );
+  });
 
   /// The catalogue, without the assets listed after [asOf].
   Future<List<Asset>> assets({required DateTime asOf}) =>

@@ -110,6 +110,10 @@ class MarketCalendar {
     }
   }
 
+  /// When the regular session of [day] closes, as a UTC instant.
+  DateTime closeAt(Exchange exchange, DateTime day) =>
+      _at(exchange, _day(day), exchange.closes).toUtc();
+
   /// [time] on the local calendar day of [date], in the exchange's zone.
   static tz.TZDateTime _at(Exchange exchange, DateTime date, (int, int) time) =>
       tz.TZDateTime(

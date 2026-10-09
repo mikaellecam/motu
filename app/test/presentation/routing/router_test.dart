@@ -3,6 +3,7 @@ import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
+import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,7 +73,6 @@ void main() {
     '/island/actions-etf',
     '/node/ae.fees-toy',
     '/wallets/new',
-    '/wallet/live',
     '/wallet/t1/stop/e1',
     '/wallet/t1/summary',
     '/wallet/t1/order/o1',
@@ -84,6 +84,12 @@ void main() {
       expect(find.byType(NavigationBar), findsNothing);
     });
   }
+
+  testWidgets('/wallet/:id opens the wallet full screen', (tester) async {
+    await open(tester, '/wallet/live');
+    expect(find.byType(WalletScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
 
   testWidgets('/onboarding opens the questionnaire', (tester) async {
     await open(tester, '/onboarding');
