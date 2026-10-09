@@ -16,6 +16,12 @@ final class RateLimitedFailure extends Failure {
   final Duration retryAfter;
 }
 
+/// The server answered with an error, or with a body the app cannot read: a
+/// bug on one side, not something the user can fix.
+final class ServerFailure extends Failure {
+  const ServerFailure();
+}
+
 final class NotFoundFailure extends Failure {
   const NotFoundFailure();
 }

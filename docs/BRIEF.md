@@ -473,7 +473,8 @@ Repositories clamp every query to `asOf`. A trip wallet's providers are created 
 - One notifier per screen-level concern; widgets `ref.watch` and render `AsyncValue` through shared
   widgets: `AsyncSkeleton`, `ErrorView(failure, onRetry)`, `StaleBanner(lastUpdated)`.
 - Refresh keeps previous data visible (`AsyncValue.copyWithPrevious`), never flashes a spinner over data.
-- Failures: `NetworkFailure`, `RateLimitedFailure(retryAfter)`, `NotFoundFailure`, `DataUnavailableFailure(asOf)`,
+- Failures: `NetworkFailure` (unreachable, timeout, HTTP 502–504), `RateLimitedFailure(retryAfter)`,
+  `NotFoundFailure`, `ServerFailure` (other HTTP errors, unreadable body), `DataUnavailableFailure(asOf)`,
   `ValidationFailure(code, params)`, `StorageFailure`.
 - What happens on rebuild: widgets are stateless where possible; `AnimationController`s live in `State`
   objects and are disposed; no fetching in `build`.

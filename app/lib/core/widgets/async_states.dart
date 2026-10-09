@@ -70,6 +70,7 @@ String failureMessage(BuildContext context, Failure failure) {
       _formats(context).date(asOf),
     ),
     StorageFailure() => l10n.failure_storage,
+    ServerFailure() => l10n.failure_unexpected,
     // Forms show validation failures next to their fields; reaching a
     // full-screen error with one is a bug.
     ValidationFailure() => l10n.failure_unexpected,

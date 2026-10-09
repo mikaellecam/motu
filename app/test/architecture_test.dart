@@ -33,4 +33,14 @@ void main() {
     ];
     expect(offenders, isEmpty);
   });
+
+  test('network only in the data layer (CLAUDE.md rule 8)', () {
+    final offenders = [
+      for (final file in sources)
+        if (!file.path.startsWith('lib/data/') &&
+            file.readAsStringSync().contains("import 'package:dio/"))
+          file.path,
+    ];
+    expect(offenders, isEmpty);
+  });
 }
