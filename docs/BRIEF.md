@@ -457,10 +457,12 @@ app/lib/
 
 ```dart
 abstract interface class SimulationClock { DateTime now(); }      // LiveClock, HistoricalClock(date)
-abstract interface class MarketRepository {
-  Future<List<PriceBar>> history(AssetId id, {required DateRange range, required DateTime asOf});
-  Future<Quote?> latest(AssetId id, {required DateTime asOf});
-  Stream<CacheStatus> status();                                     // fresh / stale(lastUpdated) / offline
+class MarketRepository {                                           // ADR-005
+  Future<List<Asset>> assets({required DateTime asOf});
+  Future<List<PriceBar>> history(String assetId, {required DateTime from, required DateTime to, required DateTime asOf});
+  Future<Quote?> latest(String assetId, {required DateTime asOf});  // live only; trips price from history
+  Future<MarketCalendar> calendar(Set<Exchange> exchanges, {required int fromYear, required int toYear});
+  Stream<CacheStatus> status();                                     // fresh / stale(lastUpdated) / offline (M3-5)
 }
 abstract interface class FxService { Future<Rate> rate(Currency from, Currency to, {required DateTime asOf}); }
 ```
@@ -526,12 +528,13 @@ User data (only the user creates it; rows of a wallet cascade when it is deleted
 
 Positions are **derived** from fills (average-cost method), never stored as the source of truth.
 
-### 6.2 Cache policy (to justify in the report — write an ADR)
+### 6.2 Cache policy (ADR-005)
 
-- **History:** immutable once a day is closed. On first need, fetch from `dataFloor` (or from the trip start)
-  to latest. Afterwards fetch only `from = lastDate + 1`. Never refetch closed days unless a split/adjustment
-  invalidation flag is returned by the backend (then refetch that asset fully).
+- **History:** immutable once a day is closed. On first need, fetch the whole history (from `dataFloor`).
+  Afterwards fetch only `from = lastDate + 1`, at most every 15 min. Never refetch closed days unless the
+  backend's `adjustedAt` moved (then refetch that asset fully).
 - **Quotes (live wallet):** TTL 15 min during the asset's market hours, until next session open otherwise.
+- **Catalogue:** once a day. **Calendar:** past years once; the current year and later once a day.
 - **FX:** daily ECB rates; refetch only missing dates; a date's rate never changes.
 - **Content packs:** ETag; check at most once a day.
 - **Livret rates:** check once a day.

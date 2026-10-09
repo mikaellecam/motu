@@ -72,11 +72,20 @@ void main() {
         );
         expect(replaced.single.close, d('261.20'));
 
-        await dao.deleteBars('cw8');
+        await dao.saveSync(
+          HistorySyncCompanion.insert(
+            assetId: 'cw8',
+            firstDate: day(10, 5),
+            lastDate: day(10, 7),
+            fetchedAt: day(10, 8),
+          ),
+        );
+        await dao.deleteHistory('cw8');
         expect(
           await dao.bars('cw8', from: day(1, 1), to: day(12, 31)),
           isEmpty,
         );
+        expect(await dao.sync('cw8'), isNull);
         expect(
           await dao.bars('aapl', from: day(1, 1), to: day(12, 31)),
           hasLength(1),
@@ -179,7 +188,9 @@ void main() {
         (await dao.holidays(Exchange.euronext)).map((h) => h.date),
         unorderedEquals([day(4, 3), day(4, 6)]),
       );
-      expect(await dao.cachedCalendarYears(Exchange.euronext), {2026});
+      expect(await dao.cachedCalendarYears(Exchange.euronext), {
+        2026: day(1, 2),
+      });
       expect(await dao.cachedCalendarYears(Exchange.nyse), isEmpty);
     });
 

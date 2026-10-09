@@ -1,6 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/local/database.dart';
+import '../data/remote/backend_api.dart';
+import '../data/repositories/market_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../data/repositories/wallet_repository.dart';
 
@@ -21,3 +23,14 @@ ProfileRepository profileRepository(Ref ref) =>
 @Riverpod(keepAlive: true)
 WalletRepository walletRepository(Ref ref) =>
     WalletRepository(ref.watch(databaseProvider));
+
+/// The backend's address, set at build time:
+/// `flutter run --dart-define=BACKEND_URL=https://api.example.org`.
+const backendUrl = String.fromEnvironment(
+  'BACKEND_URL',
+  defaultValue: 'http://localhost:8080',
+);
+
+@Riverpod(keepAlive: true)
+MarketRepository marketRepository(Ref ref) =>
+    MarketRepository(ref.watch(databaseProvider), BackendApi(backendUrl));

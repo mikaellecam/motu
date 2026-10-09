@@ -28,6 +28,9 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
   Future<void> upsertAssets(List<AssetsCompanion> rows) =>
       batch((b) => b.insertAllOnConflictUpdate(assets, rows));
 
+  Future<AssetRow?> asset(String id) =>
+      (select(assets)..where((a) => a.id.equals(id))).getSingleOrNull();
+
   Future<List<AssetRow>> allAssets() =>
       (select(assets)..orderBy([(a) => OrderingTerm(expression: a.id)])).get();
 
@@ -49,9 +52,12 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
             ..orderBy([(b) => OrderingTerm(expression: b.date)]))
           .get();
 
-  /// Drops an asset's history, before refetching it after a split.
-  Future<void> deleteBars(String assetId) =>
-      (delete(priceBars)..where((b) => b.assetId.equals(assetId))).go();
+  /// Drops an asset's bars and sync state, before refetching its whole
+  /// history after a split.
+  Future<void> deleteHistory(String assetId) => transaction(() async {
+    await (delete(priceBars)..where((b) => b.assetId.equals(assetId))).go();
+    await (delete(historySync)..where((s) => s.assetId.equals(assetId))).go();
+  });
 
   Future<HistorySyncRow?> sync(String assetId) => (select(
     historySync,
@@ -154,11 +160,12 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
     exchangeHolidays,
   )..where((h) => h.exchange.equalsValue(exchange))).get();
 
-  Future<Set<int>> cachedCalendarYears(Exchange exchange) async => {
+  /// The cached years of [exchange], with when each was fetched.
+  Future<Map<int, DateTime>> cachedCalendarYears(Exchange exchange) async => {
     for (final row in await (select(
       calendarYears,
     )..where((y) => y.exchange.equalsValue(exchange))).get())
-      row.year,
+      row.year: row.fetchedAt,
   };
 
   Future<ContentPackRow?> contentPack(String islandId) => (select(
