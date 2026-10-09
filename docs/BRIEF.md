@@ -646,7 +646,8 @@ Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via
 
 Errors: `{"error": {"code": "...", "message": "..."}}` with proper status codes; 429 carries `Retry-After` (per-client
 limit). Every endpoint answers conditional requests (`ETag`, and `Last-Modified` where the data's date is
-known). Prices and rates are decimal strings, never JSON numbers.
+known). Bodies over 1 KB are gzipped for clients that accept it (own ETag, `Vary: Accept-Encoding`). Prices and
+rates are decimal strings, never JSON numbers.
 
 ### 8.4 Catalogue V1 (29 instruments, US listings: ADR-004)
 

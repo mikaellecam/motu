@@ -1,11 +1,16 @@
 package api
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -233,5 +238,52 @@ func TestTooManyRequestsCarriesRetryAfter(t *testing.T) {
 	now = now.Add(40 * time.Second)
 	if rec, _ := get(t, s, "/v1/assets"); rec.Code != 200 {
 		t.Fatalf("a minute after the first: %d", rec.Code)
+	}
+}
+
+func TestLargeBodiesAreGzipped(t *testing.T) {
+	s, db := newServer(t)
+	var bars []store.Bar
+	for i := 1; i <= 30; i++ {
+		bars = append(bars, store.Bar{
+			Date: day(fmt.Sprintf("2026-09-%02d", i)), Open: "159.00", High: "160.10", Low: "158.80", Close: "159.95", Volume: 1000,
+		})
+	}
+	db.UpsertBars(context.Background(), "world", bars)
+	path := "/v1/assets/world/history"
+
+	plain, want := get(t, s, path)
+	if plain.Header().Get("Content-Encoding") != "" || len(want["bars"].([]any)) != 32 {
+		t.Fatalf("plain: %v %d", plain.Header(), len(want["bars"].([]any)))
+	}
+
+	zipped, _ := get(t, s, path, "Accept-Encoding", "br, gzip")
+	h := zipped.Header()
+	if h.Get("Content-Encoding") != "gzip" || h.Get("Vary") != "Accept-Encoding" {
+		t.Fatalf("headers: %v", h)
+	}
+	if h.Get("ETag") == plain.Header().Get("ETag") || !strings.HasSuffix(h.Get("ETag"), `-gz"`) {
+		t.Fatalf("etags: %s vs %s", h.Get("ETag"), plain.Header().Get("ETag"))
+	}
+	r, err := gzip.NewReader(bytes.NewReader(zipped.Body.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	unzipped, _ := io.ReadAll(r)
+	if !bytes.Equal(unzipped, plain.Body.Bytes()) {
+		t.Fatal("the gzipped body differs from the plain one")
+	}
+	if zipped.Body.Len() >= plain.Body.Len()/3 {
+		t.Errorf("gzip saved little: %d of %d bytes", zipped.Body.Len(), plain.Body.Len())
+	}
+
+	if rec, _ := get(t, s, path, "Accept-Encoding", "gzip", "If-None-Match", h.Get("ETag")); rec.Code != http.StatusNotModified {
+		t.Fatalf("gzip revalidation: %d", rec.Code)
+	}
+	if rec, _ := get(t, s, path, "Accept-Encoding", "gzip;q=0"); rec.Header().Get("Content-Encoding") != "" {
+		t.Fatal("q=0 refuses gzip")
+	}
+	if rec, _ := get(t, s, "/v1/livret/rates", "Accept-Encoding", "gzip"); rec.Header().Get("Content-Encoding") != "" {
+		t.Fatal("a small body stays plain")
 	}
 }

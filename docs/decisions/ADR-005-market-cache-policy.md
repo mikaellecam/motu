@@ -69,8 +69,8 @@ These rules hold for every kind of data:
 ## Consequences
 
 - Reads are local after the first fetch. A trip that advances through cached history makes no request.
-- The first view of an asset downloads its whole history. If that becomes a problem on mobile data, gzip
-  on the backend would cut it about five-fold without changing this policy.
+- The first view of an asset downloads its whole history: about 775 KB of JSON, sent gzipped as about
+  195 KB (M2-7; the app's HTTP client decompresses it).
 - Adjusted history can change in the past, so derived values that the app stores (daily wallet values)
   keep the prices they were computed with. Recomputing them after a re-adjustment is not done.
 - `CacheStatus` (fresh / stale / offline, M3-5) will be reported by this repository. The fallback paths

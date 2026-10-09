@@ -4,6 +4,7 @@
 package api
 
 import (
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -12,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -92,8 +94,16 @@ func (s *Server) handle(endpoint func(*http.Request) (response, error)) http.Han
 			return
 		}
 		sum := sha256.Sum256(body)
-		etag := `"` + base64.RawURLEncoding.EncodeToString(sum[:16]) + `"`
+		tag := base64.RawURLEncoding.EncodeToString(sum[:16])
 		h := w.Header()
+		// Large bodies (a whole history is ~640 KB) go gzipped to clients that
+		// take it. Each encoding is a distinct representation: its own ETag.
+		gzipped := len(body) > gzipMin && acceptsGzip(r)
+		if gzipped {
+			tag += "-gz"
+			h.Set("Vary", "Accept-Encoding")
+		}
+		etag := `"` + tag + `"`
 		h.Set("ETag", etag)
 		h.Set("Cache-Control", "no-cache") // revalidate, which is cheap with the ETag
 		if !res.lastModified.IsZero() {
@@ -110,8 +120,35 @@ func (s *Server) handle(endpoint func(*http.Request) (response, error)) http.Han
 			return
 		}
 		h.Set("Content-Type", "application/json")
-		w.Write(body)
+		if !gzipped {
+			w.Write(body)
+			return
+		}
+		h.Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		gz.Write(body)
+		gz.Close()
 	}
+}
+
+// gzipMin is the body size from which compression pays.
+const gzipMin = 1024
+
+// acceptsGzip reads Accept-Encoding: gzip is listed, and not with q=0.
+func acceptsGzip(r *http.Request) bool {
+	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+		coding, params, _ := strings.Cut(part, ";")
+		if !strings.EqualFold(strings.TrimSpace(coding), "gzip") {
+			continue
+		}
+		name, value, _ := strings.Cut(strings.TrimSpace(params), "=")
+		if strings.TrimSpace(name) != "q" {
+			return true
+		}
+		q, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
+		return err != nil || q > 0
+	}
+	return false
 }
 
 // limit answers 429 with Retry-After once a client IP has made
