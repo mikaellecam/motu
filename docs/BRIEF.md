@@ -362,8 +362,11 @@ Never blocks.
 
 ### 4.9 Explorer
 
-- Catalogue (§8.4), search (name, ticker), filter chips: Tout / ETF / Actions / Favoris.
-- Row: avatar, name, region, risk meter (5 bars, §7.8), price, 1-year change, favorite toggle (persisted).
+- Catalogue (§8.4) sorted by name, search (name, ticker; case, accents and punctuation ignored), filter
+  chips: Tout / ETF / Actions / Favoris.
+- Row: avatar, name, region, risk meter (5 bars, §7.8, from the volatility of the last year of closes),
+  price (quote currency), change over 1 year to that price, favorite toggle (persisted). A row whose history
+  cannot be read keeps its name without figures; the list fails only when no row has any.
 - Offline banner « Hors connexion. Tu vois les cours du {date}, {heure}. » + Réessayer.
 - In a trip, the list is filtered by availability and every value is as of the trip date.
 

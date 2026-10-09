@@ -183,39 +183,64 @@ class MarketRepository {
 
   /// The live price of [assetId]. Null when the backend has none, or when it
   /// was observed after [asOf]'s day: trips price from [history].
-  Future<Quote?> latest(String assetId, {required DateTime asOf}) =>
-      guardStorage(() async {
-        final asset = await _assetRow(assetId);
-        var row = await _dao.quote(assetId);
-        if (row == null || !await _isFresh(row, asset.exchange)) {
-          try {
-            final fetched = await _api.quotes([assetId]);
-            for (final q in fetched) {
-              await _dao.saveQuote(
-                QuotesCompanion.insert(
-                  assetId: q.assetId,
-                  price: q.price,
-                  currency: q.currency,
-                  asOf: q.asOf,
-                  fetchedAt: _wall.now(),
-                  marketOpen: q.marketOpen,
-                ),
-              );
-            }
-            row = await _dao.quote(assetId);
-            _priceFetch(ok: true, cachedAt: _wall.now());
-          } on Failure {
-            if (row == null) rethrow;
-            _priceFetch(ok: false, cachedAt: row.fetchedAt);
-          }
+  Future<Quote?> latest(String assetId, {required DateTime asOf}) async =>
+      (await latestAll([assetId], asOf: asOf))[assetId];
+
+  /// The live prices of [assetIds], those whose cached quote expired fetched
+  /// in one request. An asset is missing when the backend has no price for
+  /// it, or when its price was observed after [asOf]'s day. Offline, the
+  /// cached quotes; the failure surfaces only when none is cached.
+  Future<Map<String, Quote>> latestAll(
+    Iterable<String> assetIds, {
+    required DateTime asOf,
+  }) => guardStorage(() async {
+    final rows = <String, QuoteRow>{};
+    final expired = <String>[];
+    for (final id in assetIds.toSet()) {
+      final asset = await _assetRow(id);
+      final row = await _dao.quote(id);
+      if (row != null) rows[id] = row;
+      if (row == null || !await _isFresh(row, asset.exchange)) expired.add(id);
+    }
+    if (expired.isNotEmpty) {
+      try {
+        for (final q in await _api.quotes(expired)) {
+          await _dao.saveQuote(
+            QuotesCompanion.insert(
+              assetId: q.assetId,
+              price: q.price,
+              currency: q.currency,
+              asOf: q.asOf,
+              fetchedAt: _wall.now(),
+              marketOpen: q.marketOpen,
+            ),
+          );
         }
-        if (row == null || _day(row.asOf).isAfter(_day(asOf))) return null;
-        return Quote(
-          Price(row.price, row.currency),
-          row.asOf,
-          marketOpen: row.marketOpen,
+        for (final id in expired) {
+          final row = await _dao.quote(id);
+          if (row != null) rows[id] = row;
+        }
+        _priceFetch(ok: true, cachedAt: _wall.now());
+      } on Failure {
+        if (rows.isEmpty) rethrow;
+        _priceFetch(
+          ok: false,
+          cachedAt: rows.values
+              .map((r) => r.fetchedAt)
+              .reduce((a, b) => a.isBefore(b) ? a : b),
         );
-      });
+      }
+    }
+    return {
+      for (final MapEntry(key: id, value: row) in rows.entries)
+        if (!_day(row.asOf).isAfter(_day(asOf)))
+          id: Quote(
+            Price(row.price, row.currency),
+            row.asOf,
+            marketOpen: row.marketOpen,
+          ),
+    };
+  });
 
   /// The holidays of [exchanges] from [fromYear] to [toYear]. Past years are
   /// fetched once; the current year and later are checked once a day, since

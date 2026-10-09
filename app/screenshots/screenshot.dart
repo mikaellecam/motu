@@ -55,12 +55,14 @@ void screenshotRoute(
   String location, {
   Size size = phone,
   String locale = 'fr',
+  List<Override> overrides = const [],
   Future<void> Function(WidgetTester tester)? act,
 }) => _capture(
   name,
   () => MainApp(router: buildRouter(initialLocation: location)),
   size: size,
   locale: locale,
+  overrides: overrides,
   act: act,
 );
 
@@ -103,5 +105,8 @@ void _capture(
       find.byType(MaterialApp),
       matchesGoldenFile('../../docs/screenshots/$name.png'),
     );
+    // Drift closes its watch queries on a timer once the tree is gone.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 10));
   });
 }

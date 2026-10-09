@@ -267,6 +267,47 @@ void main() {
     test('no price at all is null', () async {
       expect(await repo.latest('meta', asOf: wall.now()), isNull);
     });
+
+    test('many assets: the expired ones in one request', () async {
+      final closed = DateTime.utc(2026, 10, 7, 20);
+      backend.quotes['apple'] = quote('231.4', closed, open: false);
+      backend.quotes['meta'] = {
+        ...quote('600', closed, open: false),
+        'assetId': 'meta',
+      };
+      final both = await repo.latestAll(['apple', 'meta'], asOf: wall.now());
+      expect(
+        {for (final e in both.entries) e.key: e.value.price.value},
+        {'apple': dec('231.4'), 'meta': dec('600')},
+      );
+      final requests = backend.to('/v1/quotes');
+      expect(requests, hasLength(1));
+      expect(
+        requests.single.queryParameters['ids']!.split(','),
+        unorderedEquals(['apple', 'meta']),
+      );
+
+      // Both still fresh (closed market): no request at all.
+      await repo.latestAll(['apple', 'meta'], asOf: wall.now());
+      expect(backend.to('/v1/quotes'), hasLength(1));
+    });
+
+    test('many assets offline: what is cached, else the failure', () async {
+      backend.quotes['apple'] = quote(
+        '231.4',
+        DateTime.utc(2026, 10, 7, 20),
+        open: false,
+      );
+      await repo.latestAll(['apple'], asOf: wall.now());
+      backend.offline = true;
+      wall.advance(const Duration(days: 2));
+      final partial = await repo.latestAll(['apple', 'meta'], asOf: wall.now());
+      expect(partial.keys, ['apple']);
+      await expectLater(
+        repo.latestAll(['meta'], asOf: wall.now()),
+        throwsA(isA<NetworkFailure>()),
+      );
+    });
   });
 
   test(

@@ -243,5 +243,47 @@
         "type": "String"
       }
     }
-  }
+  },
+  "explorer_search_hint": "Rechercher un nom ou un ticker",
+  "explorer_filter_all": "Tout",
+  "explorer_filter_etfs": "ETF",
+  "explorer_filter_stocks": "Actions",
+  "explorer_filter_favorites": "Favoris",
+  "region_world": "Monde",
+  "region_us": "\u00c9tats-Unis",
+  "region_europe": "Europe",
+  "region_emerging": "Pays \u00e9mergents",
+  "explorer_year_change": "{change} sur 1 an",
+  "@explorer_year_change": {
+    "description": "Signed change over one year, e.g. \"+12,30 %\".",
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "explorer_risk": "Risque {band} sur 5",
+  "@explorer_risk": {
+    "description": "Risk meter, for screen readers.",
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "explorer_risk_unknown": "pas assez de donn\u00e9es",
+  "@explorer_risk_unknown": {
+    "description": "Risk meter when there are fewer than 20 daily returns (BRIEF \u00a77.7)."
+  },
+  "explorer_favorite_add": "Ajouter aux favoris",
+  "explorer_favorite_remove": "Retirer des favoris",
+  "explorer_no_match": "Aucun actif ne correspond \u00e0 \u00ab\u00a0{query}\u00a0\u00bb.",
+  "@explorer_no_match": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "explorer_no_favorites": "Pas encore de favori. Touche l'\u00e9toile d'un actif pour le retrouver ici."
 }

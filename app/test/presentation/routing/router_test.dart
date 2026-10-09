@@ -1,7 +1,9 @@
 import 'package:drift/native.dart';
+import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
+import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
@@ -16,7 +18,14 @@ Future<void> open(WidgetTester tester, String location) async {
   addTearDown(db.close);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(db)],
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+        // Navigation only: no catalogue behind the Explorer tab.
+        explorerRowsProvider.overrideWith((ref, walletId) async => const []),
+        favoritesProvider.overrideWithBuild(
+          (ref, notifier) => Stream.value({}),
+        ),
+      ],
       child: MainApp(router: buildRouter(initialLocation: location)),
     ),
   );
@@ -38,7 +47,7 @@ void main() {
     await open(tester, '/');
     for (final (label, screen) in [
       ('Portefeuille', WalletsTab),
-      ('Explorer', ExploreTab),
+      ('Explorer', ExplorerScreen),
       ('Glossaire', GlossaryTab),
       ('Carte', MapTab),
     ]) {

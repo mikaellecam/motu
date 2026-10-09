@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
+import '../features/explorer/explorer_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/wallet/wallet_screen.dart';
 import '../shell/app_shell.dart';
@@ -28,7 +29,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/explore', builder: (_, _) => const ExploreTab()),
+            GoRoute(
+              path: '/explore',
+              builder: (_, state) =>
+                  ExplorerScreen(walletId: state.uri.queryParameters['wallet']),
+            ),
           ],
         ),
         StatefulShellBranch(
@@ -140,15 +145,6 @@ class WalletsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(AppLocalizations.of(context).tab_wallets)),
-  );
-}
-
-class ExploreTab extends StatelessWidget {
-  const ExploreTab({super.key});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(AppLocalizations.of(context).tab_explore)),
   );
 }
 

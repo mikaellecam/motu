@@ -16,7 +16,9 @@ import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
+import '../../widgets/asset_avatar.dart';
 import '../../widgets/cache_status_banner.dart';
+import '../../widgets/sign_color.dart';
 
 /// A wallet's value, chart, allocation and positions (BRIEF §4.7). Same
 /// layout for the live wallet and trips.
@@ -88,16 +90,6 @@ class WalletScreen extends ConsumerWidget {
 Formats _formats(BuildContext context) =>
     Formats(Localizations.localeOf(context).languageCode);
 
-/// Gain, loss or nothing, by the sign of [value] once rounded to cents.
-Color _signColor(Decimal value) {
-  final cents = roundHalfEven(value, 2);
-  return cents > Decimal.zero
-      ? AppColors.gain
-      : cents < Decimal.zero
-      ? AppColors.loss
-      : AppColors.muted;
-}
-
 class _Header extends StatelessWidget {
   const _Header(this.o);
   final WalletOverview o;
@@ -123,7 +115,7 @@ class _Header extends StatelessWidget {
         ),
         Text(
           l10n.wallet_change_since_start(change),
-          style: text.bodyLarge?.copyWith(color: _signColor(o.change)),
+          style: text.bodyLarge?.copyWith(color: signColor(o.change)),
         ),
         if (pricesAsOf != null)
           Text(
@@ -568,14 +560,7 @@ class _PositionRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              ExcludeSemantics(
-                child: CircleAvatar(
-                  radius: AppSpace.x5,
-                  backgroundColor: AppColors.line,
-                  foregroundColor: AppColors.ink,
-                  child: Text(p.asset.name.characters.first.toUpperCase()),
-                ),
-              ),
+              AssetAvatar(p.asset.name),
               const SizedBox(width: AppSpace.x3),
               Expanded(
                 child: Column(
@@ -599,7 +584,9 @@ class _PositionRow extends StatelessWidget {
                   if (pnl != null)
                     Text(
                       formats.percent(pnl, signed: true),
-                      style: text.bodySmall?.copyWith(color: _signColor(pnl)),
+                      style: text.bodySmall?.copyWith(
+                        color: signColor(pnl, ratio: true),
+                      ),
                     ),
                 ],
               ),

@@ -85,5 +85,21 @@
   "wallet_positions_title": "Positions",
   "wallet_positions_empty": "No positions yet.",
   "wallet_quantity_stock": "{form, select, one{{quantity} share} other{{quantity} shares}}",
-  "wallet_quantity_etf": "{form, select, one{{quantity} share} other{{quantity} shares}}"
+  "wallet_quantity_etf": "{form, select, one{{quantity} share} other{{quantity} shares}}",
+  "explorer_search_hint": "Search a name or ticker",
+  "explorer_filter_all": "All",
+  "explorer_filter_etfs": "ETFs",
+  "explorer_filter_stocks": "Stocks",
+  "explorer_filter_favorites": "Favorites",
+  "region_world": "World",
+  "region_us": "United States",
+  "region_europe": "Europe",
+  "region_emerging": "Emerging markets",
+  "explorer_year_change": "{change} over 1 year",
+  "explorer_risk": "Risk {band} out of 5",
+  "explorer_risk_unknown": "not enough data",
+  "explorer_favorite_add": "Add to favorites",
+  "explorer_favorite_remove": "Remove from favorites",
+  "explorer_no_match": "No asset matches \u201c{query}\u201d.",
+  "explorer_no_favorites": "No favorites yet. Tap an asset's star to find it here."
 }
