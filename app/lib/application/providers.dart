@@ -2,6 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/local/database.dart';
 import '../data/remote/backend_api.dart';
+import '../data/remote/frankfurter_api.dart';
+import '../data/repositories/fx_service.dart';
 import '../data/repositories/market_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../data/repositories/wallet_repository.dart';
@@ -34,3 +36,7 @@ const backendUrl = String.fromEnvironment(
 @Riverpod(keepAlive: true)
 MarketRepository marketRepository(Ref ref) =>
     MarketRepository(ref.watch(databaseProvider), BackendApi(backendUrl));
+
+@Riverpod(keepAlive: true)
+FxService fxService(Ref ref) =>
+    FxService(ref.watch(databaseProvider), FrankfurterApi());

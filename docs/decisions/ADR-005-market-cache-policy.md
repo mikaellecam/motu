@@ -53,6 +53,7 @@ re-adjustments and publishes `adjustedAt` with every history answer, so the app 
 | History | First need: the whole history. After that: only if the range's end (cut at `asOf`) is after `lastDate` and the last fetch is older than 15 min, with `from = lastDate + 1`. If the answer's `adjustedAt` differs from the cached one, the asset's history is dropped and fetched whole again, in one transaction. | Forever |
 | Quotes | When the cached one has expired: 15 min after its fetch if the exchange was open at that moment, otherwise at the next open (holidays included). | Until replaced |
 | Catalogue | Once a day, and once more when an unknown asset id is asked for. | Until replaced |
+| FX rates (`FxService`, from Frankfurter) | First need of a pair: its whole history since the data floor (one request, about 200 KB). After that: only if `asOf`'s day is after the last cached rate and the last check is older than 15 min, from the day after it. A day without a fixing (weekend, ECB holiday) takes the previous rate. | Forever |
 | Calendar | Past years once. The current year and later once a day, since an unscheduled closure can be announced. Years the backend does not serve count as weekends-only. | Forever |
 
 These rules hold for every kind of data:
@@ -74,4 +75,3 @@ These rules hold for every kind of data:
   keep the prices they were computed with. Recomputing them after a re-adjustment is not done.
 - `CacheStatus` (fresh / stale / offline, M3-5) will be reported by this repository. The fallback paths
   above are where it learns that it is offline.
-- FX rates are not covered here: they come from Frankfurter through `FxService` (M3-4).

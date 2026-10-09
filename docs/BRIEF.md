@@ -464,7 +464,7 @@ class MarketRepository {                                           // ADR-005
   Future<MarketCalendar> calendar(Set<Exchange> exchanges, {required int fromYear, required int toYear});
   Stream<CacheStatus> status();                                     // fresh / stale(lastUpdated) / offline (M3-5)
 }
-abstract interface class FxService { Future<Rate> rate(Currency from, Currency to, {required DateTime asOf}); }
+class FxService { Future<Decimal> rate(Currency from, Currency to, {required DateTime asOf}); }  // ADR-005
 ```
 
 Repositories clamp every query to `asOf`. A trip wallet's providers are created with its `HistoricalClock`
@@ -535,7 +535,9 @@ Positions are **derived** from fills (average-cost method), never stored as the 
   backend's `adjustedAt` moved (then refetch that asset fully).
 - **Quotes (live wallet):** TTL 15 min during the asset's market hours, until next session open otherwise.
 - **Catalogue:** once a day. **Calendar:** past years once; the current year and later once a day.
-- **FX:** daily ECB rates; refetch only missing dates; a date's rate never changes.
+- **FX:** daily ECB rates from Frankfurter; a date's rate never changes. First need of a pair: its whole
+  history since `dataFloor` in one request; afterwards only the days after the last cached rate, at most
+  every 15 min. A day without a fixing takes the previous rate.
 - **Content packs:** ETag; check at most once a day.
 - **Livret rates:** check once a day.
 
