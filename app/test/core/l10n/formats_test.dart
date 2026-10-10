@@ -85,6 +85,15 @@ void main() {
     expect(en.countForm(d('0.5')), 'other');
   });
 
+  test('French elision before a vowel sound', () {
+    expect(fr.elision('Apple'), 'yes');
+    expect(fr.elision('Hermès'), 'yes');
+    expect(fr.elision('iShares MSCI ACWI ETF'), 'yes');
+    expect(fr.elision('ÉDF'), 'yes');
+    expect(fr.elision('LVMH'), 'other');
+    expect(fr.elision(''), 'other');
+  });
+
   test('price rounds half-even to cents at format time', () {
     expect(fr.price(Price(d('177.565'), Currency.usd)), '177,56$nbsp\$');
     expect(fr.price(Price(d('177.575'), Currency.usd)), '177,58$nbsp\$');

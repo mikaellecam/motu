@@ -22,6 +22,7 @@ final class ExplorerRow {
     required this.price,
     required this.yearChange,
     required this.riskBand,
+    this.volatility,
   });
 
   final Asset asset;
@@ -35,6 +36,9 @@ final class ExplorerRow {
 
   /// 1 to 5 from the 1-year volatility (BRIEF §7.8); null under 20 returns.
   final int? riskBand;
+
+  /// Annualised volatility over the last year; null under 20 returns.
+  final Decimal? volatility;
 }
 
 /// The row of [asset] at [asOf], from its [bars] (the last year and a bit,
@@ -47,7 +51,7 @@ ExplorerRow explorerRow(
 }) {
   final utc = asOf.toUtc();
   final day = DateTime.utc(utc.year, utc.month, utc.day);
-  final yearAgo = _yearBefore(day);
+  final yearAgo = yearBefore(day);
   final known = [
     for (final b in bars)
       if (!b.date.isAfter(day)) b,
@@ -59,23 +63,23 @@ ExplorerRow explorerRow(
   final price =
       quote?.price ??
       (known.isEmpty ? null : Price(known.last.close, known.last.currency));
+  final volatility = annualisedVolatility([
+    for (final b in known)
+      if (b.date.isAfter(yearAgo)) b.close,
+  ]);
   return ExplorerRow(
     asset: asset,
     price: price,
     yearChange: price == null || reference == null
         ? null
         : simpleReturn(reference.close, price.value),
-    riskBand: riskBand(
-      annualisedVolatility([
-        for (final b in known)
-          if (b.date.isAfter(yearAgo)) b.close,
-      ]),
-    ),
+    riskBand: riskBand(volatility),
+    volatility: volatility,
   );
 }
 
 /// The same day a year earlier; 28 February for 29 February.
-DateTime _yearBefore(DateTime day) => DateTime.utc(
+DateTime yearBefore(DateTime day) => DateTime.utc(
   day.year - 1,
   day.month,
   day.month == 2 && day.day == 29 ? 28 : day.day,
@@ -146,7 +150,7 @@ Future<List<ExplorerRow>> explorerRows(Ref ref, String? walletId) async {
   final quotes = live
       ? await market.latestAll([for (final a in assets) a.id], asOf: asOf)
       : const <String, Quote>{};
-  final from = _yearBefore(DateTime.utc(asOf.year, asOf.month, asOf.day))
+  final from = yearBefore(DateTime.utc(asOf.year, asOf.month, asOf.day))
       .subtract(const Duration(days: 10));
 
   // One asset whose history cannot be read (offline, never cached) keeps its

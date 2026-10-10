@@ -3,6 +3,7 @@ import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
+import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
@@ -85,7 +86,6 @@ void main() {
     '/wallet/t1/stop/e1',
     '/wallet/t1/summary',
     '/wallet/t1/order/o1',
-    '/asset/cw8?wallet=t1',
   ]) {
     testWidgets('$location opens full screen', (tester) async {
       await open(tester, location);
@@ -93,6 +93,15 @@ void main() {
       expect(find.byType(NavigationBar), findsNothing);
     });
   }
+
+  testWidgets('/asset/:id opens the asset full screen, in its wallet', (
+    tester,
+  ) async {
+    await open(tester, '/asset/cw8?wallet=t1');
+    final screen = tester.widget<AssetScreen>(find.byType(AssetScreen));
+    expect((screen.assetId, screen.walletId), ('cw8', 't1'));
+    expect(find.byType(NavigationBar), findsNothing);
+  });
 
   testWidgets('/wallet/:id opens the wallet full screen', (tester) async {
     await open(tester, '/wallet/live');

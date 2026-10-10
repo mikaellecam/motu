@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../domain/learning/profile.dart';
 import '../local/database.dart';
+import '../local/tables.dart';
 import 'guard.dart';
 
 /// The onboarding answers (BRIEF §4.1). Saving replaces the answers only:
@@ -35,5 +36,18 @@ class ProfileRepository {
         weeklyTime: Value(profile.weeklyTime),
       ),
     ),
+  );
+
+  /// The « Tout afficher dès maintenant » setting (BRIEF §4.15).
+  Future<bool> showAll() => guardStorage(
+    () async => (await _db.learningDao.profile())?.showAll ?? false,
+  );
+
+  /// Ids of the nodes the user completed.
+  Future<Set<String>> completedNodes() => guardStorage(
+    () async => {
+      for (final row in await _db.learningDao.progress())
+        if (row.status == NodeStatus.completed) row.nodeId,
+    },
   );
 }

@@ -351,13 +351,17 @@ Never blocks.
 ### 4.8 Asset page
 
 - Name, ticker + exchange + quote currency in words, price in quote currency and ≈ € equivalent,
-  last-session change, data timestamp.
-- Period chart (1S / 1M / 1A / 5A) with: user's buy markers, worst-drop annotation (peak → trough),
-  optional benchmark (ETF Monde, dashed).
-- Essentials tiles (each opens its glossary sheet): Performance sur 1 an, Volatilité (label from risk band),
-  Pire baisse, Risque de change.
-- "Pourquoi ça bouge ?" card: decomposition of the period move (§7.9) as a stacked bar + three rows.
-- User position: quantity, value, P&L (amount, %), of which currency effect.
+  last-session change (from the previous close), data timestamp.
+- Period chart (1S / 1M / 1A / 5A, each opening on the last close before it) with: the scoped wallet's buy
+  markers (at the price paid), worst-drop annotation (peak → trough, `alert` dots), optional benchmark
+  (ETF Monde, dashed, rebased to the asset's first close of the period).
+- Essentials tiles (each opens its glossary sheet, M6-6), over the last year: Performance sur 1 an,
+  Volatilité (band label at level 1; label + figure from level 2), Pire baisse, Risque de change (the
+  currency and its 1-year move against the euro; « Aucun » for EUR assets).
+- "Pourquoi ça bouge ?" card: decomposition of the chart period's move (§7.9), from its first close to the
+  price now, as a stacked bar + three rows.
+- User position: quantity, value, P&L (amount, %), of which currency effect = value now − value at the
+  average purchase rate (notional-weighted, kept by sells like the average cost).
 - Buy / Sell buttons.
 
 ### 4.9 Explorer

@@ -285,5 +285,124 @@
       }
     }
   },
-  "explorer_no_favorites": "Pas encore de favori. Touche l'\u00e9toile d'un actif pour le retrouver ici."
+  "explorer_no_favorites": "Pas encore de favori. Touche l'\u00e9toile d'un actif pour le retrouver ici.",
+  "asset_quoted_usd": "cot\u00e9 en dollars US",
+  "asset_quoted_eur": "cot\u00e9 en euros",
+  "exchange_nyse": "NYSE",
+  "exchange_nasdaq": "Nasdaq",
+  "exchange_otc": "OTC",
+  "exchange_euronext": "Euronext",
+  "asset_eur_equivalent": "\u2248 {amount}",
+  "@asset_eur_equivalent": {
+    "description": "The price in euros, approximately.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_session_change": "{change} sur la derni\u00e8re s\u00e9ance",
+  "@asset_session_change": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_period_five_years": "5A",
+  "asset_period_five_years_long": "5 ans",
+  "asset_your_buys": "Tes achats",
+  "@asset_your_buys": {
+    "description": "Legend of the buy markers on the chart."
+  },
+  "asset_worst_drop": "Pire baisse\u202f: {depth}",
+  "@asset_worst_drop": {
+    "description": "Under the chart: the worst drop of the period.",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_chart_semantics": "{elide, select, yes{Cours d'{name}} other{Cours de {name}}} sur {period}\u202f: de {start} \u00e0 {end}.",
+  "@asset_chart_semantics": {
+    "description": "Screen-reader summary; elide is \"yes\" before a vowel sound.",
+    "placeholders": {
+      "elide": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_tile_performance": "Performance sur 1 an",
+  "asset_tile_volatility": "Volatilit\u00e9",
+  "asset_tile_drawdown": "Pire baisse",
+  "asset_tile_fx": "Risque de change",
+  "asset_band_1": "Tr\u00e8s faible",
+  "asset_band_2": "Faible",
+  "asset_band_3": "Moyenne",
+  "asset_band_4": "\u00c9lev\u00e9e",
+  "asset_band_5": "Tr\u00e8s \u00e9lev\u00e9e",
+  "@asset_band_1": {
+    "description": "Volatility band 1 of 5 (BRIEF \u00a77.8)."
+  },
+  "asset_volatility_figure": "{band} \u00b7 {figure}",
+  "@asset_volatility_figure": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      },
+      "figure": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_fx_usd": "Dollar US \u00b7 {change} sur 1 an",
+  "@asset_fx_usd": {
+    "description": "The dollar against the euro over a year.",
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_fx_none": "Aucun\u202f: cot\u00e9 en euros",
+  "asset_why_title": "Pourquoi \u00e7a bouge\u202f?",
+  "asset_why_total": "{total} en euros sur {period}",
+  "@asset_why_total": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_why_market": "Le march\u00e9 mondial",
+  "asset_why_currency": "Le dollar",
+  "asset_why_rest": "Le reste, propre \u00e0 {name}",
+  "@asset_why_rest": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_position_title": "Ta position",
+  "asset_position_quantity": "Quantit\u00e9",
+  "asset_position_value": "Valeur",
+  "asset_position_pnl": "Plus-value latente",
+  "asset_position_fx": "dont effet de change"
 }

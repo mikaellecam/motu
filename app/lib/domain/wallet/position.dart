@@ -132,3 +132,39 @@ Position _sell(Position held, Fill fill) {
     realisedPnl: held.realisedPnl + fill.cashFlow.amount - soldCost,
   );
 }
+
+/// The EUR rate the shares of [assetId] still held were bought at, on
+/// average: their notional in EUR over their notional in the quote currency.
+/// A sell keeps it, like the average cost. Fees are left out: they are not a
+/// currency move. Null when no share is held.
+Decimal? averagePurchaseRate(Iterable<Fill> fills, String assetId) {
+  var local = Decimal.zero;
+  var eur = Decimal.zero;
+  var held = const Quantity.zero();
+  for (final fill in fills) {
+    if (fill.assetId != assetId) continue;
+    final notional = fill.price.times(fill.quantity);
+    switch (fill.side) {
+      case Side.buy:
+        local += notional;
+        eur += notional * fill.fxRate;
+        held += fill.quantity;
+      case Side.sell:
+        final left = held - fill.quantity;
+        local = ratio(local * left.toDecimal(), held.toDecimal());
+        eur = ratio(eur * left.toDecimal(), held.toDecimal());
+        held = left;
+    }
+  }
+  return held.isPositive && local > Decimal.zero ? ratio(eur, local) : null;
+}
+
+/// Of a holding's unrealised P&L in EUR, the part the currency made: its
+/// value now minus its value at [averageRate] (BRIEF §4.8). Zero for an EUR
+/// price (rates of 1).
+Decimal currencyEffect({
+  required Quantity quantity,
+  required Price price,
+  required Decimal fxNow,
+  required Decimal averageRate,
+}) => price.times(quantity) * (fxNow - averageRate);

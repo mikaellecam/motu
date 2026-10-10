@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
+import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/wallet/wallet_screen.dart';
@@ -62,7 +63,13 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     _pending('/wallet/:walletId/stop/:eventId'),
     _pending('/wallet/:walletId/summary'),
     _pending('/wallet/:walletId/order/:orderId'),
-    _pending('/asset/:assetId'),
+    GoRoute(
+      path: '/asset/:assetId',
+      builder: (_, state) => AssetScreen(
+        assetId: state.pathParameters['assetId']!,
+        walletId: state.uri.queryParameters['wallet'],
+      ),
+    ),
   ],
 );
 

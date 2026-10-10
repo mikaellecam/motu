@@ -19,6 +19,12 @@ class FlakyRepository implements ProfileRepository {
   Future<Profile?> load() async => saved;
 
   @override
+  Future<bool> showAll() async => false;
+
+  @override
+  Future<Set<String>> completedNodes() async => const {};
+
+  @override
   Future<void> save(Profile profile) async {
     if (failures > 0) {
       failures--;

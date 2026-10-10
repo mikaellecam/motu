@@ -199,4 +199,76 @@ void main() {
       );
     });
   });
+
+  group('currency effect', () {
+    Fill usd(Side side, String qty, String price, String fx) => fill(
+      side,
+      qty,
+      price,
+      asset: 'aapl',
+      currency: Currency.usd,
+      fx: fx,
+      feeCents: 150,
+    );
+
+    test('one buy: its own rate, fees left out', () {
+      expect(
+        averagePurchaseRate([usd(Side.buy, '10', '100', '0.9')], 'aapl'),
+        d('0.9'),
+      );
+    });
+
+    test('two buys: weighted by the dollars spent', () {
+      // 1 000 $ at 0,90 and 3 000 $ at 0,80: 3 300 € for 4 000 $.
+      final rate = averagePurchaseRate([
+        usd(Side.buy, '10', '100', '0.9'),
+        usd(Side.buy, '20', '150', '0.8'),
+      ], 'aapl');
+      expect(rate, d('0.825'));
+    });
+
+    test('a sell keeps the average; selling everything leaves none', () {
+      final fills = [
+        usd(Side.buy, '10', '100', '0.9'),
+        usd(Side.buy, '20', '150', '0.8'),
+        usd(Side.sell, '15', '160', '0.95'),
+      ];
+      expect(averagePurchaseRate(fills, 'aapl'), d('0.825'));
+      expect(
+        averagePurchaseRate([
+          ...fills,
+          usd(Side.sell, '15', '160', '0.95'),
+        ], 'aapl'),
+        isNull,
+      );
+      expect(
+        averagePurchaseRate(fills, 'other'),
+        isNull,
+        reason: 'never bought',
+      );
+      expect(averagePurchaseRate(const [], 'aapl'), isNull);
+    });
+
+    test('the part of the value the currency made', () {
+      // 10 shares at 120 $: 1 200 $ worth 1 020 € at 0,85, 1 080 € at 0,90.
+      expect(
+        currencyEffect(
+          quantity: Quantity.whole(10),
+          price: Price(d('120'), Currency.usd),
+          fxNow: d('0.85'),
+          averageRate: d('0.9'),
+        ),
+        d('-60'),
+      );
+      expect(
+        currencyEffect(
+          quantity: Quantity.whole(10),
+          price: Price(d('50'), Currency.eur),
+          fxNow: Decimal.one,
+          averageRate: Decimal.one,
+        ),
+        Decimal.zero,
+      );
+    });
+  });
 }

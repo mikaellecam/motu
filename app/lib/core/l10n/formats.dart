@@ -47,6 +47,16 @@ class Formats {
       ? (count.abs() < Decimal.fromInt(2) ? 'one' : 'other')
       : (count == Decimal.one ? 'one' : 'other');
 
+  /// `yes` when French elides « de » before [word] (« d'Apple », « d'Hermès »),
+  /// `other` otherwise, for ICU `select`. A mute h is assumed: the catalogue
+  /// has no aspirated one.
+  String elision(String word) {
+    if (word.isEmpty) return 'other';
+    return 'aàâäeéèêëiîïoôöuùûüyh'.contains(word[0].toLowerCase())
+        ? 'yes'
+        : 'other';
+  }
+
   /// [ratio] 0.0288 → `2,88 %` (`+2,88 %` when [signed]).
   String percent(Decimal ratio, {bool signed = false, int decimals = 2}) {
     final number = _number(ratio.shift(2), decimals, signed);

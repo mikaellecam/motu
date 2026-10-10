@@ -17,6 +17,9 @@ abstract final class AppText {
   static TextStyle _figtree(double size, int weight, {double height = 1.35}) =>
       TextStyle(
         fontFamily: 'Figtree',
+        // Glyphs Figtree lacks (≈) come from the other bundled font, so they
+        // render offline and the same on every device.
+        fontFamilyFallback: const ['Baloo2'],
         fontSize: size,
         height: height,
         fontWeight: FontWeight.values[weight ~/ 100 - 1],
@@ -84,6 +87,7 @@ ThemeData appTheme() {
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.page,
     fontFamily: 'Figtree',
+    fontFamilyFallback: const ['Baloo2'],
     textTheme: textTheme,
     dividerColor: AppColors.line,
     materialTapTargetSize: MaterialTapTargetSize.padded,
