@@ -1,0 +1,9 @@
+{
+  "id": "ae.fees-toy",
+  "type": "toy",
+  "title": {
+    "fr": "Le jouet des frais",
+    "en": "The fees toy"
+  },
+  "status": "draft"
+}

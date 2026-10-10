@@ -1,0 +1,9 @@
+{
+  "id": "ae.compound-toy",
+  "type": "toy",
+  "title": {
+    "fr": "Les intérêts composés",
+    "en": "Compound interest"
+  },
+  "status": "draft"
+}

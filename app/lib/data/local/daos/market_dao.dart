@@ -190,6 +190,9 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
   Future<void> saveContentPack(ContentPacksCompanion row) =>
       into(contentPacks).insertOnConflictUpdate(row);
 
+  Future<void> deleteContentPack(String islandId) =>
+      (delete(contentPacks)..where((p) => p.islandId.equals(islandId))).go();
+
   /// Empties every cache table. User tables are not touched (ADR-002).
   Future<void> clearCache() => transaction(() async {
     for (final table in <TableInfo>[

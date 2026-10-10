@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../application/learning/content.dart';
 import '../../../application/onboarding/onboarding_controller.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
@@ -169,23 +170,29 @@ class _ValidationMessage extends StatelessWidget {
   );
 }
 
-class _Result extends StatelessWidget {
+class _Result extends ConsumerWidget {
   const _Result(this.state);
 
   final OnboardingState state;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final profile = state.profile!;
     final (:reason, :node) = startExplanation(profile);
+    // The starting node's title comes from the island's content pack.
+    final pack = ref.watch(contentPackProvider(actionsEtfIsland)).value;
+    if (pack == null && reason != StartReason.noSavings) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpace.screenPadding),
+        child: AsyncSkeleton(lines: 3),
+      );
+    }
     final start = reason == StartReason.noSavings
         ? l10n.onboarding_start_cushion
-        : switch (node) {
-            1 => l10n.onboarding_start_node1,
-            3 => l10n.onboarding_start_node3,
-            _ => l10n.onboarding_start_node4,
-          };
+        : pack!.nodes[node - 1].title.of(
+            Localizations.localeOf(context).languageCode,
+          );
     final answer = answerLabel(
       l10n,
       reason == StartReason.knowledge ? profile.knowledge : profile.savings,

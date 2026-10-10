@@ -1,0 +1,9 @@
+{
+  "id": "ae.checkpoint-1",
+  "type": "checkpoint",
+  "title": {
+    "fr": "Point d'étape",
+    "en": "Checkpoint"
+  },
+  "status": "draft"
+}

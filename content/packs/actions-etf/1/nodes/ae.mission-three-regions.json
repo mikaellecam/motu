@@ -1,0 +1,9 @@
+{
+  "id": "ae.mission-three-regions",
+  "type": "mission",
+  "title": {
+    "fr": "Trois zones géographiques",
+    "en": "Three regions"
+  },
+  "status": "draft"
+}

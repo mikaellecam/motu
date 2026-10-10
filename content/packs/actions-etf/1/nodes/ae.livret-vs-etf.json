@@ -1,0 +1,9 @@
+{
+  "id": "ae.livret-vs-etf",
+  "type": "predict_reveal",
+  "title": {
+    "fr": "Livret ou ETF ?",
+    "en": "Livret or ETF?"
+  },
+  "status": "draft"
+}

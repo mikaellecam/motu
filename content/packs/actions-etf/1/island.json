@@ -1,0 +1,22 @@
+{
+  "id": "actions-etf",
+  "version": 1,
+  "title": {
+    "fr": "Actions & ETF",
+    "en": "Stocks & ETFs"
+  },
+  "nodes": [
+    "ae.livret-vs-etf",
+    "ae.fees-toy",
+    "ae.mission-first-etf",
+    "ae.apple-vs-world-2022",
+    "ae.march-2020",
+    "ae.risk-ladder",
+    "ae.compound-toy",
+    "ae.mission-three-regions",
+    "ae.dollar-trap",
+    "ae.calm-portfolio",
+    "ae.mission-dca",
+    "ae.checkpoint-1"
+  ]
+}

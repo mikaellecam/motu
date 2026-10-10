@@ -64,9 +64,6 @@
   "onboarding_error": "Choisis une r\u00e9ponse pour continuer. Aucune n'est mauvaise.",
   "onboarding_result": "On commence par \u00ab\u00a0{start}\u00a0\u00bb parce que tu as r\u00e9pondu \u00ab\u00a0{answer}\u00a0\u00bb.",
   "onboarding_go": "C'est parti",
-  "onboarding_start_node1": "Livret ou ETF\u202f?",
-  "onboarding_start_node3": "Ton premier ETF",
-  "onboarding_start_node4": "Apple ou ETF Monde\u202f: lequel a le plus chut\u00e9 en 2022\u202f?",
   "onboarding_start_cushion": "Le matelas de s\u00e9curit\u00e9",
   "onboarding_goal_question": "Pourquoi veux-tu investir\u202f?",
   "onboarding_goal_under3Years": "Projet dans moins de 3 ans",
@@ -109,9 +106,6 @@
         "type": "String"
       }
     }
-  },
-  "@onboarding_start_node1": {
-    "description": "Titles of the possible first steps; node titles will come from the content pack (M6-1)."
   },
   "island_actionsEtf": "Actions & ETF",
   "island_trading": "Trading",

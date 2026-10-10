@@ -60,4 +60,21 @@ class BackendApi {
       await _get('/v1/calendar/${exchange.name}', {'year': year}),
     ),
   );
+
+  /// The latest version of each island's content pack (ADR-006).
+  Future<Map<String, int>> contentManifest() => guardNetwork(() async {
+    final json = await _get('/v1/content/manifest');
+    return {
+      for (final p in json['packs'] as List)
+        (p as Map)['islandId'] as String: p['version'] as int,
+    };
+  });
+
+  /// One version of an island's pack, as the JSON text to cache.
+  Future<String> contentPack(String islandId, int version) => guardNetwork(
+    () async => (await _dio.get<String>(
+      '/v1/content/packs/${Uri.encodeComponent(islandId)}/$version',
+      options: Options(responseType: ResponseType.plain),
+    )).data!,
+  );
 }

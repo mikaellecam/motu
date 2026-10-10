@@ -193,7 +193,8 @@ Rules:
 - Datasets are produced by `cmd/freeze` from the same provider as live data, adjusted for splits, with
   provenance shown in-app ("Cours réels, clôtures hebdo, 2022, en dollars").
 - The app bundles a baseline pack in assets (first launch works offline) and fetches newer versions from
-  `/v1/content`.
+  `/v1/content`. On the wire and in the bundle a pack is one document, `{island, nodes, datasets,
+  glossary}`; glossary terms live in `glossary/<id>.json` inside the pack (ADR-006).
 
 ### 4.4 Glossary
 
@@ -550,7 +551,8 @@ Positions are **derived** from fills (average-cost method), never stored as the 
 - **FX:** daily ECB rates from Frankfurter; a date's rate never changes. First need of a pair: its whole
   history since `dataFloor` in one request; afterwards only the days after the last cached rate, at most
   every 15 min. A day without a fixing takes the previous rate.
-- **Content packs:** ETag; check at most once a day.
+- **Content packs:** manifest checked at most once a day; a higher version is downloaded and cached if it
+  reads, otherwise the bundled pack stands in (ADR-006).
 - **Livret rates:** check once a day.
 
 ### 6.3 Who decides cache vs network

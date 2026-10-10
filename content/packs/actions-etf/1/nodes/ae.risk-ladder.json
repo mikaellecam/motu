@@ -1,0 +1,9 @@
+{
+  "id": "ae.risk-ladder",
+  "type": "sort",
+  "title": {
+    "fr": "Classe par risque",
+    "en": "Rank by risk"
+  },
+  "status": "draft"
+}

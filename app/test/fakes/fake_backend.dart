@@ -29,6 +29,10 @@ class FakeBackend implements HttpClientAdapter {
   };
   final adjustedAt = <String, String?>{};
   final quotes = <String, Map<String, Object>>{};
+
+  /// Content packs served, by island and version, as JSON text.
+  final packs = <String, Map<int, String>>{};
+
   final holidays = <int, List<String>>{
     2025: ['2025-12-25'],
     2026: ['2026-07-03', '2026-11-26', '2026-12-25'],
@@ -106,6 +110,26 @@ class FakeBackend implements HttpClientAdapter {
             {'validFrom': '2013-01-01', 'amountCents': 2295000},
           ],
         };
+      case ['v1', 'content', 'manifest']:
+        body = {
+          'packs': [
+            for (final MapEntry(key: id, value: versions) in packs.entries)
+              {
+                'islandId': id,
+                'version': versions.keys.reduce((a, b) => a > b ? a : b),
+              },
+          ],
+        };
+      case ['v1', 'content', 'packs', final id, final version]:
+        final json = packs[id]?[int.parse(version)];
+        if (json == null) return _json({}, 404);
+        return ResponseBody.fromString(
+          json,
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json'],
+          },
+        );
       case ['v1', 'calendar', final exchange]:
         final year = int.parse(q['year']!);
         final days = holidays[year];

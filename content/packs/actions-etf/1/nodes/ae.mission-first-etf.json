@@ -1,0 +1,9 @@
+{
+  "id": "ae.mission-first-etf",
+  "type": "mission",
+  "title": {
+    "fr": "Ton premier ETF",
+    "en": "Your first ETF"
+  },
+  "status": "draft"
+}

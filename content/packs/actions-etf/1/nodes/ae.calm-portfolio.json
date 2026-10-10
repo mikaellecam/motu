@@ -1,0 +1,9 @@
+{
+  "id": "ae.calm-portfolio",
+  "type": "build_puzzle",
+  "title": {
+    "fr": "Construis un portefeuille calme",
+    "en": "Build a calm portfolio"
+  },
+  "status": "draft"
+}

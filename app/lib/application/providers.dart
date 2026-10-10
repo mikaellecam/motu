@@ -2,10 +2,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../core/cache_status.dart';
 import '../core/clock/simulation_clock.dart';
+import '../data/content/bundled_packs.dart';
 import '../data/local/database.dart';
 import '../data/remote/backend_api.dart';
 import '../data/remote/connectivity.dart';
 import '../data/remote/frankfurter_api.dart';
+import '../data/repositories/content_repository.dart';
 import '../data/repositories/favorites_repository.dart';
 import '../data/repositories/fx_service.dart';
 import '../data/repositories/market_repository.dart';
@@ -41,11 +43,15 @@ const backendUrl = String.fromEnvironment(
   defaultValue: 'http://localhost:8080',
 );
 
+/// Our backend, shared by every repository that calls it.
+@Riverpod(keepAlive: true)
+BackendApi backendApi(Ref ref) => BackendApi(backendUrl);
+
 @Riverpod(keepAlive: true)
 MarketRepository marketRepository(Ref ref) {
   final repository = MarketRepository(
     ref.watch(databaseProvider),
-    BackendApi(backendUrl),
+    ref.watch(backendApiProvider),
     online: deviceOnline(),
   );
   ref.onDispose(repository.dispose);
@@ -64,3 +70,10 @@ FxService fxService(Ref ref) =>
 @Riverpod(keepAlive: true)
 FavoritesRepository favoritesRepository(Ref ref) =>
     FavoritesRepository(ref.watch(databaseProvider));
+
+@Riverpod(keepAlive: true)
+ContentRepository contentRepository(Ref ref) => ContentRepository(
+  ref.watch(databaseProvider),
+  ref.watch(backendApiProvider),
+  bundled: bundledPack,
+);
