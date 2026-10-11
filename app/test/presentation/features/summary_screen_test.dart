@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = '\u202f';
 const nbsp = '\u00a0';
 
@@ -178,5 +180,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Aucune décision notée pendant ce voyage.'), findsNothing);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, summary());
+    await expectAccessible(tester);
   });
 }

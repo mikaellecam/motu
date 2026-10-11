@@ -10,6 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -172,5 +174,11 @@ void main() {
     await tester.tap(find.text('Refaire le questionnaire'));
     await tester.pumpAndSettle();
     expect(find.text('questionnaire'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester);
+    await expectAccessible(tester);
   });
 }

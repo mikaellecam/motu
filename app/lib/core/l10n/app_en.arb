@@ -2,6 +2,7 @@
   "@@locale": "en",
   "app_title": "Investment Companion",
   "common_retry": "Retry",
+  "common_loading": "Loading\u2026",
   "cache_offline_banner": "Offline. You're seeing prices from {date}, {time}.",
   "cache_stale_banner": "Prices from {date}, {time}: the update didn't go through.",
   "failure_network": "Can't reach the server. Check your connection.",

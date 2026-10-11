@@ -15,12 +15,17 @@ import 'package:finance_companion/domain/analytics/returns.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
+import 'package:finance_companion/application/companion/companion.dart';
+import 'package:finance_companion/application/wallet/livret_line.dart';
+import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../helpers.dart';
 
 /// Records the steps asked for instead of moving time; lands on [result]
 /// when one is set.
@@ -128,6 +133,11 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        // The Livret and companion cards have their own tests.
+        livretLineProvider.overrideWith(
+          (ref, id) async => throw const NotFoundFailure(),
+        ),
+        walletMomentProvider.overrideWith((ref, args) async => null),
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) async => o),
         walletChartProvider.overrideWith(
@@ -283,5 +293,11 @@ void main() {
     await tester.tap(find.text('Voir le bilan'));
     await tester.pumpAndSettle();
     expect(find.text('summary trip'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, trip());
+    await expectAccessible(tester);
   });
 }

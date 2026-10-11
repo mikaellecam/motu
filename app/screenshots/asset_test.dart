@@ -124,6 +124,15 @@ void main() {
       return assetChartFor(o, period, benchmark: benchmark);
     }),
   ];
+  // The accessibility pass (M9-3): text at 130 %, nothing cut off.
+  screenshot(
+    'm9-3-asset-130',
+    const AssetScreen(assetId: 'apple'),
+    size: const Size(390, 1900),
+    textScale: 1.3,
+    overrides: overrides,
+  );
+
   screenshot(
     'm4-4-asset',
     const AssetScreen(assetId: 'apple'),

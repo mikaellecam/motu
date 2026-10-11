@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/wallet/live_catch_up.dart';
+import 'package:finance_companion/application/wallet/livret_line.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
@@ -25,6 +27,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../helpers.dart';
 
 Decimal d(String s) => Decimal.parse(s);
 Money eur(String s) => Money.book(d(s), Currency.eur);
@@ -133,6 +137,11 @@ Future<void> show(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        // The Livret and companion cards have their own tests.
+        livretLineProvider.overrideWith(
+          (ref, id) async => throw const NotFoundFailure(),
+        ),
+        walletMomentProvider.overrideWith((ref, args) async => null),
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) => o()),
         liveCatchUpProvider.overrideWith(() => catchUp),
@@ -298,5 +307,14 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Réessayer'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(
+      tester,
+      () async => overview(fills: invested, cash: eur('48020')),
+    );
+    await expectAccessible(tester);
   });
 }

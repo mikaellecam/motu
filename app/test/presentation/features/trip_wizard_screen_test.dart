@@ -18,6 +18,8 @@ import 'package:finance_companion/data/repositories/wallet_repository.dart';
 
 import '../../fakes/fake_backend.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 DateTime day(int y, int m, int d) => DateTime.utc(y, m, d);
@@ -305,5 +307,11 @@ void main() {
     await tester.tap(find.text('Modifier').first);
     await tester.pumpAndSettle();
     expect(find.text('Étape 1 sur 3'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester);
+    await expectAccessible(tester);
   });
 }

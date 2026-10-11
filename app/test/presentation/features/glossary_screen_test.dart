@@ -19,6 +19,8 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../fakes/fake_glossary.dart';
 import '../../fakes/glossary_pack.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 
 class _Fixed implements SimulationClock {
@@ -182,5 +184,11 @@ void main() {
     await tester.tapOnText(find.textRange.ofSubstring("l'indice"));
     await tester.pumpAndSettle();
     expect(find.text('Indice, en une ligne.'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, const GlossaryScreen());
+    await expectAccessible(tester);
   });
 }

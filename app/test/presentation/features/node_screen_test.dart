@@ -16,6 +16,8 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../fakes/lesson_pack.dart';
 import '../../fakes/recording_profiles.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -169,5 +171,11 @@ void main() {
     expect(find.textContaining('Hypothèse$nnbsp:'), findsOneWidget);
     expect(find.text('Continuer'), findsOneWidget);
     expect(profiles.completed, [('ae.fees', null)]);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, 'ae.apple');
+    await expectAccessible(tester);
   });
 }

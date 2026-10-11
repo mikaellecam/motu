@@ -120,4 +120,9 @@ void main() {
       findsNWidgets(4),
     );
   });
+
+  testWidgets('screen readers hear that it loads', (tester) async {
+    await pumpApp(tester, const AsyncSkeleton());
+    expect(find.bySemanticsLabel('Chargement…'), findsOneWidget);
+  });
 }

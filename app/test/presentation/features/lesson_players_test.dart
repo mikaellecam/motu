@@ -12,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../fakes/more_lessons.dart';
 import '../../fakes/recording_profiles.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -184,5 +186,11 @@ void main() {
     expect(find.text('1 sur 2'), findsOneWidget);
     expect(find.text("Point d'étape terminé."), findsOneWidget);
     expect(profiles.completed, [('ae.quiz', '1/2')]);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, 'ae.march');
+    await expectAccessible(tester);
   });
 }

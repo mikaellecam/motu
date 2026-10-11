@@ -16,6 +16,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 Money eur(String s) => Money.book(Decimal.parse(s), Currency.eur);
@@ -204,5 +206,25 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(
+      tester,
+      WalletsList(
+        live: summary('live', WalletKind.live),
+        trips: [
+          summary(
+            't1',
+            WalletKind.trip,
+            difficulty: 'realiste',
+            status: WalletStatus.stopped,
+          ),
+        ],
+        suggestions: const [],
+      ),
+    );
+    await expectAccessible(tester);
   });
 }

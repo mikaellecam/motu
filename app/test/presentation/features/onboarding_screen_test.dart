@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/quiet_map.dart';
+import '../../helpers.dart';
 
 const nbsp = ' ';
 
@@ -78,5 +79,39 @@ void main() {
     await tester.tap(find.text('C\'est parti'));
     await tester.pumpAndSettle();
     expect(find.byType(MapTab), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %: the questions and the result', (
+    tester,
+  ) async {
+    textAt(tester, 1.3);
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    tester.platformDispatcher.localesTestValue = [const Locale('fr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(db), ...quietMap],
+        child: MainApp(router: buildRouter(initialLocation: '/onboarding')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectAccessible(tester);
+    for (final answer in [
+      'Long terme, plus de 8 ans',
+      'J\'attends',
+      'Ce qu\'est un ETF',
+      'Compte courant',
+      '15${nbsp}min',
+    ]) {
+      await tester.tap(find.text(answer));
+      await tester.pump();
+      await tester.tap(find.text('Suivant'));
+      await tester.pumpAndSettle();
+    }
+    await expectAccessible(tester);
   });
 }

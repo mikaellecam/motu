@@ -36,6 +36,7 @@ void screenshot(
   Widget screen, {
   Size size = phone,
   String locale = 'fr',
+  double textScale = 1,
   List<Override> overrides = const [],
   Future<void> Function(WidgetTester tester)? act,
 }) => _capture(
@@ -43,6 +44,7 @@ void screenshot(
   () => MainApp.screen(screen),
   size: size,
   locale: locale,
+  textScale: textScale,
   overrides: overrides,
   act: act,
 );
@@ -55,6 +57,7 @@ void screenshotRoute(
   String location, {
   Size size = phone,
   String locale = 'fr',
+  double textScale = 1,
   List<Override> overrides = const [],
   Future<void> Function(WidgetTester tester)? act,
 }) => _capture(
@@ -62,6 +65,7 @@ void screenshotRoute(
   () => MainApp(router: buildRouter(initialLocation: location)),
   size: size,
   locale: locale,
+  textScale: textScale,
   overrides: overrides,
   act: act,
 );
@@ -73,6 +77,7 @@ void _capture(
   Widget Function() app, {
   required Size size,
   required String locale,
+  double textScale = 1,
   List<Override> overrides = const [],
   Future<void> Function(WidgetTester tester)? act,
 }) {
@@ -82,6 +87,8 @@ void _capture(
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.view.physicalSize = size * 3;
     tester.view.devicePixelRatio = 3;
+    tester.platformDispatcher.textScaleFactorTestValue = textScale;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     addTearDown(tester.view.reset);
 
     // An empty in-memory database: screens that read data start from scratch.

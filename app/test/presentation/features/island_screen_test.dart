@@ -15,6 +15,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../fakes/lesson_pack.dart';
 
+import '../../helpers.dart';
+
 /// No profile; completions come from [completions].
 class StreamedProfiles extends Fake implements ProfileRepository {
   final completions = StreamController<Set<String>>.broadcast();
@@ -138,5 +140,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester);
+    await expectAccessible(tester);
   });
 }

@@ -5,6 +5,7 @@
     "description": "App name, shown by the OS task switcher."
   },
   "common_retry": "R\u00e9essayer",
+  "common_loading": "Chargement\u2026",
   "cache_offline_banner": "Hors connexion. Tu vois les cours du {date}, {time}.",
   "@cache_offline_banner": {
     "description": "Offline: data shown is from the last update.",

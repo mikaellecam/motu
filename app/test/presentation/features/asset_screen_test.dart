@@ -1,5 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/asset/asset_page.dart';
+import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/money/money.dart';
@@ -21,6 +22,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../helpers.dart';
 
 Decimal d(String s) => Decimal.parse(s);
 DateTime day(int y, int m, int dd) => DateTime.utc(y, m, dd);
@@ -133,6 +136,8 @@ Future<void> show(WidgetTester tester, AssetOverview o) async {
       overrides: [
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         assetOverviewProvider.overrideWith((ref, args) async => o),
+        // The companion card has its own tests.
+        walletMomentProvider.overrideWith((ref, args) async => null),
         assetChartProvider.overrideWith((ref, args) async {
           final (_, _, period, benchmark) = args;
           return assetChartFor(o, period, benchmark: benchmark);
@@ -317,5 +322,11 @@ void main() {
     expect(find.text('+1${nnbsp}140,00$nbsp€ (+80,85$nnbsp%)'), findsOneWidget);
     expect(find.text('dont effet de change'), findsOneWidget);
     expect(find.text('${minus}93,75$nbsp€'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, overview());
+    await expectAccessible(tester);
   });
 }

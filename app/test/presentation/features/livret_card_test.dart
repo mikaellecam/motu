@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -131,5 +133,11 @@ void main() {
     );
     final moved = (await WalletRepository(db).load('live')).livretMovements;
     expect(moved.single.amount, eur('1000'));
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, line(balance: '1000', accrued: '0.708333'));
+    await expectAccessible(tester);
   });
 }

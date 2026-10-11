@@ -400,7 +400,8 @@ class _Legend extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       const SizedBox(width: AppSpace.x1),
-      Text(label, style: _muted(context)),
+      // Large text wraps instead of overflowing.
+      Flexible(child: Text(label, style: _muted(context))),
     ],
   );
 }

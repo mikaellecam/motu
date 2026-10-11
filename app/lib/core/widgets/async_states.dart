@@ -32,25 +32,33 @@ class _AsyncSkeletonState extends State<AsyncSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _pulse,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var i = 0; i < widget.lines; i++)
-            FractionallySizedBox(
-              // The last bar is shorter, like the end of a paragraph.
-              widthFactor: i == widget.lines - 1 && widget.lines > 1 ? .6 : 1,
-              child: Container(
-                height: AppSpace.x4,
-                margin: const EdgeInsets.only(bottom: AppSpace.x3),
-                decoration: const BoxDecoration(
-                  color: AppColors.line,
-                  borderRadius: BorderRadius.all(Radius.circular(AppSpace.x1)),
+    // Screen readers hear « Chargement… », not empty bars (M9-3).
+    return Semantics(
+      label: AppLocalizations.of(context).common_loading,
+      liveRegion: true,
+      excludeSemantics: true,
+      child: FadeTransition(
+        opacity: _pulse,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < widget.lines; i++)
+              FractionallySizedBox(
+                // The last bar is shorter, like the end of a paragraph.
+                widthFactor: i == widget.lines - 1 && widget.lines > 1 ? .6 : 1,
+                child: Container(
+                  height: AppSpace.x4,
+                  margin: const EdgeInsets.only(bottom: AppSpace.x3),
+                  decoration: const BoxDecoration(
+                    color: AppColors.line,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(AppSpace.x1),
+                    ),
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

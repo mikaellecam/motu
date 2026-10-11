@@ -32,6 +32,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/quiet_map.dart';
+import '../../helpers.dart';
 
 Future<void> open(WidgetTester tester, String location) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
@@ -272,5 +273,13 @@ void main() {
         expect(args.date, date);
       });
     }
+  });
+
+  testWidgets('the shell and the map, accessible with text at 130 %', (
+    tester,
+  ) async {
+    textAt(tester, 1.3);
+    await open(tester, '/');
+    await expectAccessible(tester);
   });
 }

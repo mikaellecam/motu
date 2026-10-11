@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -200,5 +202,11 @@ void main() {
     // Back in the form, with its date.
     expect(find.text('08/10/2025'), findsOneWidget);
     expect(find.textContaining('3 achats'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester);
+    await expectAccessible(tester);
   });
 }

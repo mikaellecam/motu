@@ -13,6 +13,7 @@ import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/position.dart';
+import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
@@ -20,6 +21,8 @@ import 'package:finance_companion/presentation/widgets/term_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../helpers.dart';
 
 const nnbsp = ' ';
 const nbsp = ' ';
@@ -123,6 +126,17 @@ Future<void> show(
     ProviderScope(
       overrides: [
         orderTicketProvider.overrideWith2((_) => ticket),
+        // The coach's glossary link: no pack to download.
+        contentPackProvider(actionsEtfIsland).overrideWith(
+          (ref) async => const ContentPack(
+            id: 'actions-etf',
+            version: 1,
+            title: Localized('Actions & ETF', 'Stocks & ETFs'),
+            nodes: [],
+            datasets: {},
+            glossary: {},
+          ),
+        ),
         liveClockProvider.overrideWithValue(const _Fixed()),
         termSheetProvider.overrideWith(
           (ref, id) async => TermSheetView(
@@ -297,5 +311,11 @@ void main() {
       result!.message,
       'Ordre envoyé$nnbsp: il partira au prochain jour de cotation du voyage.',
     );
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester);
+    await expectAccessible(tester);
   });
 }

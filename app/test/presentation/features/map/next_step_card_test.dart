@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../helpers.dart';
+
 /// The card on a bare screen; the routes it opens print where they lead.
 Future<void> show(WidgetTester tester, NextStepView? view) async {
   await tester.pumpWidget(
@@ -124,5 +126,17 @@ void main() {
     await show(tester, null);
     expect(find.byType(Card), findsNothing);
     expect(find.byType(Text), findsNothing);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(
+      tester,
+      const NextStepView(
+        PlayNode('ae.fees-toy'),
+        title: Localized('Le jouet des frais', 'The fees toy'),
+      ),
+    );
+    await expectAccessible(tester);
   });
 }

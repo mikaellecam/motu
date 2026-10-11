@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -184,6 +186,13 @@ void main() {
       ),
     );
     expect(find.text('Actif 59'), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, catalogue);
+    await expectAccessible(tester);
     await unmount(tester);
   });
 }

@@ -172,4 +172,10 @@ void main() {
       expect(drawn(), drawnBuildings([world]));
     });
   });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await pumpMap(tester);
+    await expectAccessible(tester);
+  });
 }

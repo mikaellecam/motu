@@ -929,6 +929,9 @@ French only for the names and symbols both share.
   TTL, offline fallback, no-lookahead clamp).
 - Application: notifier tests with mocktail fakes (loading → data, error → retry, refresh keeps data).
 - Widget: key flows (order validation, wizard validation, onboarding validation).
+- Accessibility (M9-3): every screen's tests render it once with text at 130 % (an overflow fails the test)
+  and check Flutter's guidelines with `expectAccessible` (`test/helpers.dart`): tap targets of at least
+  44 × 44, a label on every tappable, readable text contrast. The loading skeleton reads « Chargement… ».
 - Backend: handler tests with fake provider; store tests; `contentcheck` tests.
 
 ---

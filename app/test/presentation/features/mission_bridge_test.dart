@@ -13,6 +13,8 @@ import 'package:go_router/go_router.dart';
 import '../../fakes/lesson_pack.dart';
 import '../../fakes/recording_profiles.dart';
 
+import '../../helpers.dart';
+
 Future<void> show(
   WidgetTester tester,
   String nodeId, {
@@ -111,5 +113,11 @@ void main() {
     }
     expect(find.text('Continuer'), findsOneWidget);
     expect(find.text('Rejoue-le toi-même'), findsNothing);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, 'ae.mission');
+    await expectAccessible(tester);
   });
 }

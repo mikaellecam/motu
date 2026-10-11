@@ -429,10 +429,13 @@ class _Legend extends StatelessWidget {
         ],
       ),
       const SizedBox(width: AppSpace.x1),
-      Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: AppColors.muted),
+      // Large text wraps instead of overflowing.
+      Flexible(
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: AppColors.muted),
+        ),
       ),
     ],
   );

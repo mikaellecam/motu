@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers.dart';
+
 const nnbsp = '\u202f';
 const nbsp = '\u00a0';
 
@@ -265,5 +267,11 @@ void main() {
   testWidgets('an unknown order offers a retry', (tester) async {
     await show(tester, FailingTracker());
     expect(find.text('Réessayer'), findsOneWidget);
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, FakeTracker(view(market(), opens: opensAt)));
+    await expectAccessible(tester);
   });
 }

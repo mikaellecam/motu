@@ -20,6 +20,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../fakes/fake_backend.dart' show WallClock;
 
+import '../../helpers.dart';
+
 const nnbsp = ' ';
 const nbsp = ' ';
 
@@ -199,5 +201,15 @@ void main() {
       expect(title, isNotEmpty, reason: rule.id);
       expect(body, isNotEmpty, reason: rule.id);
     }
+  });
+
+  testWidgets('accessible, with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, CompanionRule.positionDrop, {
+      'assetId': 'apple',
+      'drop': d('-0.16'),
+    });
+    await expectAccessible(tester);
+    await unmount(tester);
   });
 }
