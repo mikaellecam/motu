@@ -14,6 +14,7 @@ import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
+import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -211,6 +212,25 @@ void main() {
       find.text('Dollar US · ${minus}5,56$nnbsp% sur 1 an'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('each essentials tile opens its term, about this asset', (
+    tester,
+  ) async {
+    await show(tester, overview());
+    for (final (tile, term) in [
+      ('Volatilité', 'volatilite'),
+      ('Risque de change', 'risque-de-change'),
+    ]) {
+      await tester.tap(find.text(tile));
+      // The sheet loads its term: frames, not settling.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      final sheet = tester.widget<TermSheet>(find.byType(TermSheet));
+      expect((sheet.termId, sheet.assetId), (term, overview().asset.id));
+      Navigator.of(tester.element(find.byType(TermSheet))).pop();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
   });
 
   testWidgets('level 2: the band and its figure', (tester) async {

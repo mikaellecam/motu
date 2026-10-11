@@ -95,7 +95,7 @@ void main() {
     expect(find.text('−16,83$nnbsp%'), findsOneWidget);
     expect(colorOf(tester, '−16,83$nnbsp%'), AppColors.loss);
 
-    expect(find.widgetWithText(Chip, 'Pire baisse'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'Pire baisse'), findsOneWidget);
     expect(
       find.text('Aucune décision notée pendant ce voyage.'),
       findsOneWidget,

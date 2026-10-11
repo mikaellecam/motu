@@ -1,5 +1,7 @@
 import 'package:decimal/decimal.dart';
 
+import 'checkpoint.dart';
+import 'glossary.dart';
 import 'node.dart';
 
 /// A text in both app languages (BRIEF §4.3: every text field has both).
@@ -92,14 +94,14 @@ final class Dataset {
   final List<(DateTime, Decimal)> points;
 }
 
-/// A glossary entry (BRIEF §4.4). [liveExample] and [quiz] are read by the
-/// glossary sheet.
+/// A glossary entry (BRIEF §4.4), shown in its sheet.
 final class GlossaryTerm {
   const GlossaryTerm({
     required this.id,
     required this.title,
     required this.short,
     required this.body,
+    this.forYou,
     this.related = const [],
     this.liveExample,
     this.quiz = const [],
@@ -111,9 +113,16 @@ final class GlossaryTerm {
   /// One line.
   final Localized short;
   final Localized body;
+
+  /// « Ce que ça change pour toi » (decided 2026-10-11); optional.
+  final Localized? forYou;
   final List<String> related;
-  final Map<String, Object?>? liveExample;
-  final List<Map<String, Object?>> quiz;
+
+  /// The real-data example the sheet shows; null for none.
+  final LiveExample? liveExample;
+
+  /// « Tester en 30 secondes »: 1 to 3 questions, or none.
+  final List<QuizQuestion> quiz;
 }
 
 /// An island's content at one version: its path of nodes, their datasets

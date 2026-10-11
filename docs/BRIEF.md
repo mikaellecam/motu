@@ -245,8 +245,16 @@ Rules:
 ### 4.4 Glossary
 
 - Term record: `id`, `status` (`draft` | `published`, §9), `title{fr,en}`, `short{fr,en}` (one line),
-  `body{fr,en}` (2–3 short paragraphs), `live_example` (widget id + params, optional), `related[]`, `quiz`
-  (1–3 questions, optional).
+  `body{fr,en}` (2–3 short paragraphs), `for_you{fr,en}` (optional: « Ce que ça change pour toi », decided
+  2026-10-11), `live_example` (`{"widget": …}`, optional), `related[]`, `quiz` (1–3 questions, optional:
+  `{question, choices[{id, label}], answer}`; passed with every answer right, persisted).
+- Live examples (decided 2026-10-11): `performance`, `volatility`, `drawdown`, `currency`, the asset page's
+  essentials over the last year, for the asset the sheet was opened from (the world ETF elsewhere) beside the
+  world ETF's figure, with the asset's year as a small line. `contentcheck` refuses another widget and a quiz
+  answer that is not one of its choices.
+- Status per term (decided 2026-10-11): discovered ✓ (its sheet was opened), « Nouvelle » (met in a completed
+  lesson's terms or a companion moment, not opened yet), to discover (not met yet). « À découvrir » keeps
+  both of the latter.
 - Index screen: search, filters (Toutes / Découvertes / À découvrir), grouped by letter, status per term
   (discovered ✓, new, to discover).
 - Sheet (modal bottom sheet, opened from any `{{term}}` link or essentials tile): title, "Nouvelle notion"

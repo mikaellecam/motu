@@ -241,6 +241,23 @@ func TestGlossary(t *testing.T) {
 	)
 }
 
+func TestTermQuizAndLiveExample(t *testing.T) {
+	ok := strings.Replace(volatilite, `"body": {"fr": "…", "en": "…"}`, `"body": {"fr": "…", "en": "…"},
+		"for_you": {"fr": "Pour toi.", "en": "For you."},
+		"live_example": {"widget": "volatility"},
+		"quiz": [{"question": {"fr": "Q", "en": "Q"}, "choices": [{"id": "a", "label": {"fr": "A", "en": "A"}}], "answer": "a"}]`, 1)
+	if got := problems(t, pack(t, map[string]string{"glossary/volatilite.json": ok}), true); got != "" {
+		t.Errorf("a valid term: %s", got)
+	}
+	bad := strings.NewReplacer(`"widget": "volatility"`, `"widget": "radar"`, `"answer": "a"`, `"answer": "z"`,
+		`"for_you": {"fr": "Pour toi.", "en": "For you."}`, `"for_you": {"fr": "Pour toi."}`).Replace(ok)
+	expectProblem(t, map[string]string{"glossary/volatilite.json": bad},
+		`glossary/volatilite.json: live_example: widget "radar" is unknown`,
+		`glossary/volatilite.json: quiz[0]: answer "z" is not a choice`,
+		`glossary/volatilite.json: for_you: "en" is missing`,
+	)
+}
+
 func TestARelease_HasNoDraft(t *testing.T) {
 	ref := pack(t, map[string]string{
 		"nodes/ae.march.json":      strings.Replace(march, `"published"`, `"draft"`, 1),

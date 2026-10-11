@@ -356,8 +356,32 @@ func (c *checker) term(f file) {
 		c.requireText(f.name, b, key)
 	}
 	c.refs(f.name, b, "related", c.terms, "a term")
+	if v, ok := b["live_example"]; ok {
+		example, _ := v.(object)
+		if w, _ := example["widget"].(string); !slices.Contains(liveExamples, w) {
+			c.add(f.name, "live_example: widget %q is unknown", w)
+		}
+	}
+	quiz, _ := b["quiz"].([]any)
+	for i, q := range quiz {
+		question, _ := q.(object)
+		choices, _ := question["choices"].([]any)
+		answer, _ := question["answer"].(string)
+		found := false
+		for _, ch := range choices {
+			if choice, _ := ch.(object); choice["id"] == answer {
+				found = true
+			}
+		}
+		if !found {
+			c.add(f.name, "quiz[%d]: answer %q is not a choice", i, answer)
+		}
+	}
 	c.texts(f.name, "", b)
 }
+
+// The live examples the app's glossary sheet draws (decided 2026-10-11).
+var liveExamples = []string{"performance", "volatility", "drawdown", "currency"}
 
 func (c *checker) sameID(f file) {
 	if id, _ := f.body["id"].(string); id != f.id {

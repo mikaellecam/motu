@@ -10,6 +10,7 @@ import '../data/remote/frankfurter_api.dart';
 import '../data/repositories/content_repository.dart';
 import '../data/repositories/favorites_repository.dart';
 import '../data/repositories/fx_service.dart';
+import '../data/repositories/glossary_repository.dart';
 import '../data/repositories/market_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../data/repositories/wallet_repository.dart';
@@ -66,6 +67,10 @@ Stream<CacheStatus> cacheStatus(Ref ref) =>
 @Riverpod(keepAlive: true)
 FxService fxService(Ref ref) =>
     FxService(ref.watch(databaseProvider), FrankfurterApi());
+
+@Riverpod(keepAlive: true)
+GlossaryRepository glossaryRepository(Ref ref) =>
+    GlossaryRepository(ref.watch(databaseProvider));
 
 @Riverpod(keepAlive: true)
 FavoritesRepository favoritesRepository(Ref ref) =>

@@ -11,6 +11,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/wallet/stop_decision.dart';
 import '../../widgets/sign_color.dart';
+import '../glossary/term_sheet.dart';
 
 /// The end of a trip (BRIEF §4.5): its time-weighted return against the
 /// same money elsewhere, the journal replayed with what happened next, and
@@ -84,13 +85,15 @@ class TripSummaryScreen extends ConsumerWidget {
               _Section(
                 title: l10n.summary_terms_title,
                 children: [
-                  // M6-6 opens each term's sheet.
                   Wrap(
                     spacing: AppSpace.x2,
                     runSpacing: AppSpace.x2,
                     children: [
                       for (final term in s.terms)
-                        Chip(label: Text(term.title.of(language))),
+                        ActionChip(
+                          label: Text(term.title.of(language)),
+                          onPressed: () => showTermSheet(context, term.id),
+                        ),
                     ],
                   ),
                 ],

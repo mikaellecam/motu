@@ -1122,5 +1122,107 @@
   "mission_auto": "Elle se valide toute seule d\u00e8s que ton portefeuille la remplit.",
   "mission_done": "Mission accomplie",
   "mission_go_explorer": "Ouvrir l'Explorer",
-  "mission_go_wallet": "Voir mon portefeuille"
+  "mission_go_wallet": "Voir mon portefeuille",
+  "glossary_search": "Rechercher une notion",
+  "glossary_filter_all": "Toutes",
+  "glossary_filter_discovered": "D\u00e9couvertes",
+  "glossary_filter_to_discover": "\u00c0 d\u00e9couvrir",
+  "glossary_new": "Nouvelle",
+  "glossary_status_discovered": "d\u00e9couverte",
+  "glossary_status_new": "nouvelle, \u00e0 ouvrir",
+  "glossary_status_to_discover": "\u00e0 d\u00e9couvrir",
+  "glossary_row_semantics": "{title}, {status}",
+  "@glossary_row_semantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_no_match": "Aucune notion ne correspond.",
+  "glossary_none_yet": "Les notions arrivent avec les le\u00e7ons.",
+  "glossary_new_notion": "Nouvelle notion",
+  "glossary_for_you": "Ce que \u00e7a change pour toi",
+  "glossary_related": "Voir aussi",
+  "glossary_quiz_start": "Tester en 30 secondes",
+  "glossary_quiz_passed": "Tout juste\u202f: notion acquise.",
+  "glossary_quiz_failed": "{score} sur {total}. Tu peux r\u00e9essayer.",
+  "@glossary_quiz_failed": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "glossary_quiz_retry": "R\u00e9essayer",
+  "glossary_quiz_done": "Test r\u00e9ussi",
+  "glossary_example_title": "Sur donn\u00e9es r\u00e9elles",
+  "glossary_example_performance": "Sur un an, {asset} a fait {value}.",
+  "@glossary_example_performance": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_example_volatility": "Volatilit\u00e9 de {asset} sur un an\u202f: {value}.",
+  "@glossary_example_volatility": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_example_drawdown": "Pire baisse de {asset} sur un an\u202f: {value}.",
+  "@glossary_example_drawdown": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_example_currency": "Sur un an, {currency, select, USD{le dollar} other{le {currency}}} a fait {value} face \u00e0 l'euro.",
+  "@glossary_example_currency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_example_in_euros": "{asset} est cot\u00e9 en euros\u202f: pas de risque de change.",
+  "@glossary_example_in_euros": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_example_too_short": "Pas assez de donn\u00e9es sur un an.",
+  "glossary_example_world": "L'ETF Monde, sur la m\u00eame p\u00e9riode\u202f: {value}.",
+  "@glossary_example_world": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "glossary_example_unavailable": "Exemple sur donn\u00e9es r\u00e9elles indisponible pour l'instant."
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/learning/glossary.dart';
 import 'package:finance_companion/domain/learning/node.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -164,6 +165,83 @@ void main() {
 
     test('not JSON at all', () {
       expect(() => decodePack('{"island": '), throwsFormatException);
+    });
+  });
+
+  group('glossary terms', () {
+    String withTerm(Map<String, Object> extra) => pack(
+      edit: (json) => (json['glossary'] as List)[0] = {
+        'id': 'volatilite',
+        'title': {'fr': 'Volatilité', 'en': 'Volatility'},
+        'short': {'fr': 'Une ligne.', 'en': 'One line.'},
+        'body': {'fr': 'Un texte.', 'en': 'A text.'},
+        'related': ['pire-baisse'],
+        ...extra,
+      },
+    );
+
+    test('« pour toi », a live example and a quiz', () {
+      final term = decodePack(
+        withTerm({
+          'for_you': {'fr': 'Pour toi.', 'en': 'For you.'},
+          'live_example': {'widget': 'volatility'},
+          'quiz': [
+            {
+              'question': {'fr': 'Q ?', 'en': 'Q?'},
+              'choices': [
+                {
+                  'id': 'a',
+                  'label': {'fr': 'A', 'en': 'A'},
+                },
+                {
+                  'id': 'b',
+                  'label': {'fr': 'B', 'en': 'B'},
+                },
+              ],
+              'answer': 'b',
+            },
+          ],
+        }),
+      ).glossary['volatilite']!;
+      expect(term.forYou!.fr, 'Pour toi.');
+      expect(term.liveExample, LiveExample.volatility);
+      expect(term.quiz.single.answer, 'b');
+    });
+
+    test('all three are optional; an unknown live example is none', () {
+      final plain = decodePack(withTerm({})).glossary['volatilite']!;
+      expect(
+        (plain.forYou, plain.liveExample, plain.quiz.length),
+        (null, null, 0),
+      );
+      final unknown = decodePack(
+        withTerm({
+          'live_example': {'widget': 'radar'},
+        }),
+      ).glossary['volatilite']!;
+      expect(unknown.liveExample, isNull);
+    });
+
+    test('a quiz whose answer is no choice makes the pack corrupt', () {
+      expect(
+        () => decodePack(
+          withTerm({
+            'quiz': [
+              {
+                'question': {'fr': 'Q', 'en': 'Q'},
+                'choices': [
+                  {
+                    'id': 'a',
+                    'label': {'fr': 'A', 'en': 'A'},
+                  },
+                ],
+                'answer': 'z',
+              },
+            ],
+          }),
+        ),
+        throwsFormatException,
+      );
     });
   });
 }

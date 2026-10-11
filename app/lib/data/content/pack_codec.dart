@@ -5,6 +5,7 @@ import 'package:decimal/decimal.dart';
 import '../../domain/learning/checkpoint.dart';
 import '../../domain/learning/content.dart';
 import '../../domain/learning/decision.dart';
+import '../../domain/learning/glossary.dart';
 import '../../domain/learning/missions.dart';
 import '../../domain/learning/node.dart';
 import '../../domain/learning/puzzle.dart';
@@ -157,12 +158,20 @@ GlossaryTerm _term(Map<String, Object?> json) {
     short: _localized(json['short'], '$id short'),
     body: _localized(json['body'], '$id body'),
     related: _strings(json['related'] ?? const [], '$id related'),
-    liveExample: json['live_example'] == null
-        ? null
-        : _map(json['live_example'], '$id live_example'),
+    forYou: switch (json['for_you']) {
+      null => null,
+      final Object v => _localized(v, '$id for_you'),
+    },
+    liveExample: switch (json['live_example']) {
+      null => null,
+      final Object v =>
+        LiveExample.values
+            .where((e) => e.name == _map(v, '$id live_example')['widget'])
+            .firstOrNull,
+    },
     quiz: [
       for (final q in _list(json['quiz'] ?? const [], '$id quiz'))
-        _map(q, '$id quiz question'),
+        _question(_map(q, '$id quiz question'), id),
     ],
   );
 }

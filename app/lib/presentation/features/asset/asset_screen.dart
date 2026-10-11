@@ -15,6 +15,7 @@ import '../../../domain/market/asset.dart';
 import '../../../domain/market/market_calendar.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
+import '../glossary/term_sheet.dart';
 
 /// An asset as of a wallet's clock: price, chart, essentials, why it moved,
 /// the wallet's position (BRIEF §4.8).
@@ -515,8 +516,10 @@ class _Essentials extends StatelessWidget {
     final fxChange = o.fxYearChange;
     final performance = o.yearChange;
 
+    // Each tile opens its term's sheet, about this asset (BRIEF §4.4).
     final tiles = [
       (
+        'performance',
         l10n.asset_tile_performance,
         performance == null
             ? unknown
@@ -524,6 +527,7 @@ class _Essentials extends StatelessWidget {
         performance == null ? null : signColor(performance, ratio: true),
       ),
       (
+        'volatilite',
         l10n.asset_tile_volatility,
         band == null || volatility == null
             ? unknown
@@ -533,6 +537,7 @@ class _Essentials extends StatelessWidget {
         null,
       ),
       (
+        'pire-baisse',
         l10n.asset_tile_drawdown,
         l10n.explorer_year_change(
           formats.percent(o.yearDrawdown.depth, signed: true),
@@ -540,6 +545,7 @@ class _Essentials extends StatelessWidget {
         null,
       ),
       (
+        'risque-de-change',
         l10n.asset_tile_fx,
         o.asset.currency == Currency.eur
             ? l10n.asset_fx_none
@@ -550,19 +556,23 @@ class _Essentials extends StatelessWidget {
       ),
     ];
 
-    Widget tile((String, String, Color?) t) => Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(t.$1, style: _muted(context)),
-            const SizedBox(height: AppSpace.x1),
-            Text(
-              t.$2,
-              style: AppText.figure.copyWith(color: t.$3 ?? AppColors.ink),
-            ),
-          ],
+    Widget tile((String, String, String, Color?) t) => Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => showTermSheet(context, t.$1, assetId: o.asset.id),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t.$2, style: _muted(context)),
+              const SizedBox(height: AppSpace.x1),
+              Text(
+                t.$3,
+                style: AppText.figure.copyWith(color: t.$4 ?? AppColors.ink),
+              ),
+            ],
+          ),
         ),
       ),
     );

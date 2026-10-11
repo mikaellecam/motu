@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
+import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/learning/node_player.dart';
 import 'package:finance_companion/application/providers.dart';
@@ -36,7 +37,7 @@ Future<void> open(WidgetTester tester, String location) async {
         databaseProvider.overrideWithValue(db),
         // Navigation only: no catalogue behind the Explorer tab, no wallet
         // behind the Portefeuille tab, no trip behind its summary, no lesson
-        // behind the node player or the island path.
+        // behind the node player, the island path or the glossary.
         explorerRowsProvider.overrideWith((ref, walletId) async => const []),
         favoritesProvider.overrideWithBuild(
           (ref, notifier) => Stream.value({}),
@@ -61,6 +62,9 @@ Future<void> open(WidgetTester tester, String location) async {
         ),
         islandPathProvider.overrideWith(
           (ref, id) async => throw const NotFoundFailure(),
+        ),
+        glossaryIndexProvider.overrideWith(
+          (ref, language) async => const GlossaryIndex([], total: 0),
         ),
       ],
       child: MainApp(router: buildRouter(initialLocation: location)),

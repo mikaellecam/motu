@@ -52,6 +52,12 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<GlossaryStateRow>> discovered() => select(glossaryState).get();
 
+  Stream<List<GlossaryStateRow>> watchGlossary() =>
+      select(glossaryState).watch();
+
+  /// Every companion moment, in any wallet.
+  Future<List<CompanionLogRow>> allMoments() => select(companionLog).get();
+
   Stream<Set<String>> watchFavorites() =>
       select(favorites)
           .watch()

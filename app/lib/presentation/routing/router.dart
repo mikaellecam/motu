@@ -7,6 +7,7 @@ import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
+import '../features/glossary/glossary_screen.dart';
 import '../features/island/island_screen.dart';
 import '../features/node/node_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
@@ -141,7 +142,5 @@ class GlossaryTab extends StatelessWidget {
   const GlossaryTab({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(AppLocalizations.of(context).tab_glossary)),
-  );
+  Widget build(BuildContext context) => const GlossaryScreen();
 }
