@@ -247,12 +247,16 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
    | Serré | 2 000 € | 0 | 0.15 % | 1 € | no (whole shares) |
    | Sur mesure | 100 € – 1 000 000 € | 0 – 10 000 € | 0 – 2 % | 0 – 20 € | yes/no |
 
-   Option: "Commencer avec un matelas de sécurité" → X % of starting cash moved to the simulated Livret line.
-   Companion note explains that fixed fees and whole shares are what make small budgets harder.
+   Option: "Commencer avec un matelas de sécurité" → 10 / 20 / 30 % of starting cash (20 % preselected)
+   moved to the simulated Livret line on the start date, capped at the Livret ceiling of that date (shown).
+   « Sur mesure »: a monthly contribution, when not 0, must at least pay one order's fixed fee.
+   Companion note explains that fixed fees and whole shares are what make small budgets harder (shown when
+   the settings have a fixed fee or whole shares only).
 
-3. *Recap* — summary rows with "Modifier" links, name (required, 1–30 chars, trimmed), automatic stop
-   conditions (defaults: portfolio −15 %, order filled), reminder that only data known at the simulated date
-   is shown. CTA « Partir le {date} ».
+3. *Recap* — summary rows with "Modifier" links, name (required, 1–30 chars, trimmed; prefilled with the
+   moment's name, or « Voyage du JJ/MM/AAAA »), automatic stop conditions as switches with fixed thresholds
+   (defaults: portfolio −15 %, order filled; position −20 % and contribution off), reminder that only data
+   known at the simulated date is shown. CTA « Partir le {date} » creates the trip and opens it.
 
 **Trip wallet screen:** identical to the live wallet plus:
 - Trip header (neutral background): clock tile, trip name + difficulty chip, simulated date in large type,

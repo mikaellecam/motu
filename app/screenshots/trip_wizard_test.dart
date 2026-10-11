@@ -1,4 +1,5 @@
 import 'package:finance_companion/application/trip/trip_wizard.dart';
+import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_screen.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +47,23 @@ WizardDates _dates() {
 }
 
 void main() {
-  final overrides = [wizardDatesProvider.overrideWith((ref) async => _dates())];
+  final overrides = [
+    wizardDatesProvider.overrideWith((ref) async => _dates()),
+    // The Livret A ceiling in 2008 (backend/internal/catalogue/livret.go).
+    livretCeilingOnProvider.overrideWith(
+      (ref, day) async => const Money(1530000, Currency.eur),
+    ),
+  ];
+  Future<void> toStep2(WidgetTester tester) async {
+    await tester.tap(find.text('Crise financière'));
+    await tester.pump();
+    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await tester.pump();
+    await tester.tap(find.text('Suivant'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+  }
+
   screenshot(
     'm5-1-trip-wizard-dates',
     const TripWizardScreen(),
@@ -66,6 +83,37 @@ void main() {
       await tester.pump();
       await tester.enterText(find.byType(TextField), '24/10/1929');
       await tester.pump();
+    },
+  );
+  screenshot(
+    'm5-2-trip-wizard-difficulty',
+    const TripWizardScreen(),
+    size: const Size(390, 1500),
+    overrides: overrides,
+    act: (tester) async {
+      await toStep2(tester);
+      await tester.tap(find.text('Réaliste'));
+      await tester.pump();
+      await tester.tap(find.text('Commencer avec un matelas de sécurité'));
+      await tester.pump();
+    },
+  );
+  screenshot(
+    'm5-2-trip-wizard-recap',
+    const TripWizardScreen(),
+    size: const Size(390, 1400),
+    overrides: overrides,
+    act: (tester) async {
+      await toStep2(tester);
+      await tester.tap(find.text('Réaliste'));
+      await tester.pump();
+      await tester.tap(find.text('Commencer avec un matelas de sécurité'));
+      await tester.pump();
+      await tester.drag(find.byType(ListView), const Offset(0, -1000));
+      await tester.pump();
+      await tester.tap(find.text('Suivant'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
     },
   );
 }

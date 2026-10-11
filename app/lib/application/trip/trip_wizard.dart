@@ -1,10 +1,16 @@
+import 'package:decimal/decimal.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/failure.dart';
+import '../../core/money/money.dart';
+import '../../data/repositories/wallet_repository.dart';
 import '../../domain/learning/content.dart';
+import '../../domain/livret/livret_interest.dart';
 import '../../domain/market/asset.dart';
 import '../../domain/market/market_calendar.dart';
+import '../../domain/wallet/trip_setup.dart';
 import '../../domain/wallet/trip_start.dart';
+import '../../domain/wallet/wallet.dart';
 import '../learning/content.dart';
 import '../providers.dart';
 
@@ -144,6 +150,14 @@ NodeContent? lessonCovering(Iterable<ContentPack> packs, DateTime day) {
   return null;
 }
 
+/// The money fields of « Sur mesure ».
+enum SettingField { startingCash, contribution, fxFee, fixedFee }
+
+/// The automatic stops of step 3.
+enum StopKind { portfolio, position, orderFilled, contribution }
+
+const _keep = Object();
+
 /// The trip being set up, step by step.
 final class TripDraft {
   const TripDraft({
@@ -152,6 +166,12 @@ final class TripDraft {
     this.custom = '',
     this.check,
     this.fromNode,
+    this.difficulty,
+    this.customText = const {},
+    this.customFractional = true,
+    this.cushionPercent,
+    this.name,
+    this.stops = const {StopKind.portfolio, StopKind.orderFilled},
   });
 
   final int step;
@@ -166,26 +186,120 @@ final class TripDraft {
   final StartCheck? check;
   final String? fromNode;
 
+  /// Null until chosen.
+  final Difficulty? difficulty;
+
+  /// What was typed in the « Sur mesure » fields; a field never touched
+  /// keeps the starting value (Réaliste's).
+  final Map<SettingField, String> customText;
+  final bool customFractional;
+
+  /// Share of the starting cash for the safety cushion; null when off.
+  final int? cushionPercent;
+
+  /// The typed name; null while the default one stands.
+  final String? name;
+
+  /// The automatic stops switched on (defaults: BRIEF §4.5).
+  final Set<StopKind> stops;
+
   /// The start day, once a valid one is chosen.
   DateTime? get start => switch (check) {
     StartOk(:final date) => date,
     _ => null,
   };
 
+  /// The settings of the chosen difficulty; null when none is chosen or a
+  /// « Sur mesure » field is not a number.
+  TripSettings? get settings => _settings(strict: true);
+
+  /// [strict] refuses a field that is not a number; otherwise it stands at
+  /// its starting value, so the other fields can still be checked.
+  TripSettings? _settings({required bool strict}) {
+    final difficulty = this.difficulty;
+    if (difficulty == null) return null;
+    final base = presetSettings(difficulty);
+    if (difficulty != Difficulty.surMesure) return base;
+    Decimal start(SettingField f) => switch (f) {
+      SettingField.startingCash => base.startingCash.amount,
+      SettingField.contribution => base.monthlyContribution.amount,
+      SettingField.fxFee => base.fxFeeRate.shift(2),
+      SettingField.fixedFee => base.fixedFee.amount,
+    };
+    final values = <SettingField, Decimal>{};
+    for (final f in SettingField.values) {
+      final text = customText[f];
+      final parsed = text == null ? start(f) : parseAmount(text);
+      if (parsed == null && strict) return null;
+      values[f] = parsed ?? start(f);
+    }
+    Money eur(SettingField f) => Money.book(values[f]!, Currency.eur);
+    return TripSettings(
+      startingCash: eur(SettingField.startingCash),
+      monthlyContribution: eur(SettingField.contribution),
+      fxFeeRate: values[SettingField.fxFee]!.shift(-2),
+      fixedFee: eur(SettingField.fixedFee),
+      fractionalShares: customFractional,
+    );
+  }
+
+  /// What is wrong with each « Sur mesure » field: `number` when it is not
+  /// one, else the code of `validateSettings`.
+  Map<SettingField, String> get settingErrors {
+    if (difficulty != Difficulty.surMesure) return const {};
+    final errors = <SettingField, String>{
+      for (final MapEntry(key: f, value: text) in customText.entries)
+        if (parseAmount(text) == null) f: 'number',
+    };
+    for (final failure in validateSettings(_settings(strict: false)!)) {
+      final field = switch (failure.code) {
+        'starting_cash_range' => SettingField.startingCash,
+        'contribution_range' ||
+        'contribution_below_fee' => SettingField.contribution,
+        'fx_fee_range' => SettingField.fxFee,
+        _ => SettingField.fixedFee,
+      };
+      errors.putIfAbsent(field, () => failure.code);
+    }
+    return errors;
+  }
+
+  bool get settingsValid => settings != null && settingErrors.isEmpty;
+
   TripDraft copyWith({
     int? step,
-    TripPreset? preset,
-    bool clearPreset = false,
+    Object? preset = _keep,
     String? custom,
-    StartCheck? check,
+    Object? check = _keep,
+    Object? difficulty = _keep,
+    Map<SettingField, String>? customText,
+    bool? customFractional,
+    Object? cushionPercent = _keep,
+    Object? name = _keep,
+    Set<StopKind>? stops,
   }) => TripDraft(
     step: step ?? this.step,
-    preset: clearPreset ? null : preset ?? this.preset,
+    preset: identical(preset, _keep) ? this.preset : preset as TripPreset?,
     custom: custom ?? this.custom,
-    check: check ?? this.check,
+    check: identical(check, _keep) ? this.check : check as StartCheck?,
     fromNode: fromNode,
+    difficulty: identical(difficulty, _keep)
+        ? this.difficulty
+        : difficulty as Difficulty?,
+    customText: customText ?? this.customText,
+    customFractional: customFractional ?? this.customFractional,
+    cushionPercent: identical(cushionPercent, _keep)
+        ? this.cushionPercent
+        : cushionPercent as int?,
+    name: identical(name, _keep) ? this.name : name as String?,
+    stops: stops ?? this.stops,
   );
 }
+
+/// An amount typed the French or the English way: `1 500,50`, `1500.50`.
+Decimal? parseAmount(String text) => Decimal.tryParse(
+  text.replaceAll(RegExp(r'[\s\u00a0\u202f]'), '').replaceAll(',', '.'),
+);
 
 @riverpod
 class TripWizard extends _$TripWizard {
@@ -193,9 +307,12 @@ class TripWizard extends _$TripWizard {
   TripDraft build() => const TripDraft();
 
   /// Starts from a deep link: its date selects the matching moment, or fills
-  /// the typed date.
+  /// the typed date; its difficulty is preselected.
   Future<void> prefill(TripWizardArgs args) async {
-    state = TripDraft(fromNode: args.fromNode);
+    state = TripDraft(
+      fromNode: args.fromNode,
+      difficulty: Difficulty.byId(args.difficulty),
+    );
     final date = args.date;
     if (date == null) return;
     final dates = await ref.read(wizardDatesProvider.future);
@@ -219,7 +336,7 @@ class TripWizard extends _$TripWizard {
 
   /// Checks a typed date against the trip days of its year.
   Future<void> type(String input) async {
-    state = TripDraft(fromNode: state.fromNode, custom: input);
+    state = state.copyWith(preset: null, custom: input, check: null);
     final day = parseDay(input);
     final today = ref.read(liveClockProvider).now();
     StartCheck check;
@@ -245,18 +362,100 @@ class TripWizard extends _$TripWizard {
       );
     }
     // A slower check of an older input never overwrites a newer one.
-    if (state.custom == input) state = state.copyWith(check: check);
+    if (state.custom == input && state.preset == null) {
+      state = state.copyWith(check: check);
+    }
   }
 
+  void chooseDifficulty(Difficulty difficulty) =>
+      state = state.copyWith(difficulty: difficulty);
+
+  void setCustom(SettingField field, String text) =>
+      state = state.copyWith(customText: {...state.customText, field: text});
+
+  void setFractional(bool on) => state = state.copyWith(customFractional: on);
+
+  void setCushion(int? percent) =>
+      state = state.copyWith(cushionPercent: percent);
+
+  void setName(String name) => state = state.copyWith(name: name);
+
+  void setStop(StopKind stop, bool on) => state = state.copyWith(
+    stops: on ? {...state.stops, stop} : ({...state.stops}..remove(stop)),
+  );
+
+  /// To the next step, once this one is complete.
   void next() {
-    if (state.start != null && state.step < 3) {
-      state = state.copyWith(step: state.step + 1);
-    }
+    final ready = switch (state.step) {
+      1 => state.start != null,
+      2 => state.settingsValid,
+      _ => false,
+    };
+    if (ready) state = state.copyWith(step: state.step + 1);
   }
 
   void back() {
     if (state.step > 1) state = state.copyWith(step: state.step - 1);
   }
+
+  /// Back to an earlier step (the recap's « Modifier »).
+  void edit(int step) {
+    if (step >= 1 && step < state.step) state = state.copyWith(step: step);
+  }
+
+  /// Creates the trip wallet and moves the cushion to its Livret; returns
+  /// its id. [defaultName] stands when no name was typed.
+  Future<String> create({required String defaultName}) async {
+    final draft = state;
+    final start = draft.start;
+    final settings = draft.settings;
+    final name = tripName(draft.name ?? defaultName);
+    if (start == null || settings == null || !draft.settingsValid) {
+      throw const ValidationFailure('incomplete');
+    }
+    if (name == null) throw const ValidationFailure('name');
+    final wallets = ref.read(walletRepositoryProvider);
+    final now = ref.read(liveClockProvider).now();
+    final percent = draft.cushionPercent;
+    final kept = percent == null
+        ? null
+        : cushion(
+            settings.startingCash,
+            percent,
+            ceiling: await ref.read(livretCeilingOnProvider(start).future),
+          );
+    final id = 'trip-${now.microsecondsSinceEpoch}';
+    await wallets.createWallet(
+      id: id,
+      kind: WalletKind.trip,
+      name: name,
+      startDate: start,
+      startingCash: settings.startingCash,
+      params: WalletParams(
+        rules: settings.rules,
+        monthlyContribution: settings.monthlyContribution,
+        stops: stopsFrom(
+          portfolio: draft.stops.contains(StopKind.portfolio),
+          position: draft.stops.contains(StopKind.position),
+          orderFilled: draft.stops.contains(StopKind.orderFilled),
+          contribution: draft.stops.contains(StopKind.contribution),
+        ),
+        difficulty: draft.difficulty!.id,
+      ),
+      createdAt: now,
+    );
+    if (kept != null && kept.amount.isPositive) {
+      await wallets.moveToLivret(id, start, kept.amount);
+    }
+    return id;
+  }
+}
+
+/// The Livret A ceiling valid on [day] (BRIEF §4.11).
+@riverpod
+Future<Money> livretCeilingOn(Ref ref, DateTime day) async {
+  final history = await ref.watch(marketRepositoryProvider).livret(asOf: day);
+  return ceilingAt(day, history.ceilings);
 }
 
 /// The lesson to link from a date before the data floor, from the packs.

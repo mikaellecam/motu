@@ -12,6 +12,9 @@ import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/data/repositories/wallet_repository.dart';
 
 import '../../fakes/fake_backend.dart';
 
@@ -34,6 +37,8 @@ final dates = WizardDates(
   listingDates: [for (var i = 0; i < 22; i++) day(2000, 1, 3)],
 );
 
+late AppDatabase db;
+
 Future<void> show(
   WidgetTester tester, {
   TripWizardArgs args = const TripWizardArgs(),
@@ -43,7 +48,7 @@ Future<void> show(
   tester.view.physicalSize = const Size(1170, 6000);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
-  final db = AppDatabase(NativeDatabase.memory());
+  db = AppDatabase(NativeDatabase.memory());
   addTearDown(db.close);
   final wall = WallClock(DateTime.utc(2026, 10, 11, 10));
   await tester.pumpWidget(
@@ -59,6 +64,9 @@ Future<void> show(
           ),
         ),
         wizardDatesProvider.overrideWith((ref) async => dates),
+        livretCeilingOnProvider.overrideWith(
+          (ref, day) async => const Money(1530000, Currency.eur),
+        ),
         lessonBeforeProvider.overrideWith(
           (ref, d) async => d.year == 1929
               ? const NodeContent(
@@ -70,7 +78,20 @@ Future<void> show(
               : null,
         ),
       ],
-      child: MainApp.screen(TripWizardScreen(args: args)),
+      child: MainApp(
+        router: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => TripWizardScreen(args: args),
+            ),
+            GoRoute(
+              path: '/wallet/:id',
+              builder: (_, s) => Text('wallet ${s.pathParameters['id']}'),
+            ),
+          ],
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -161,5 +182,128 @@ void main() {
         .ancestor(of: find.text('Covid'), matching: find.byType(Semantics))
         .first;
     expect(tester.getSemantics(card), isSemantics(isSelected: true));
+  });
+
+  Future<void> toDifficulty(WidgetTester tester) async {
+    await show(tester);
+    await tester.tap(find.text('Crise financière'));
+    await tester.pumpAndSettle();
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('step 2: the difficulties, the budget note, the cushion', (
+    tester,
+  ) async {
+    await toDifficulty(tester);
+    expect(find.text('Étape 2 sur 3'), findsOneWidget);
+    expect(find.text('Quelle difficulté$nnbsp?'), findsOneWidget);
+    expect(find.text('50${nnbsp}000,00$nbsp€ au départ'), findsOneWidget);
+    expect(find.text('200,00$nbsp€ par mois'), findsOneWidget);
+    expect(find.text('Frais de change 0,15$nnbsp%'), findsNWidgets(2));
+    expect(find.text('Actions entières seulement'), findsOneWidget);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Étape 2 sur 3'),
+      findsOneWidget,
+      reason: 'no difficulty yet',
+    );
+
+    await tester.tap(find.text('Serré'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('les frais fixes et les actions entières'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Commencer avec un matelas de sécurité'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('400,00$nbsp€ sur le Livret A'),
+      findsOneWidget,
+    ); // 20 % of 2 000 €
+    await tester.tap(find.widgetWithText(ChoiceChip, '30$nnbsp%'));
+    await tester.pumpAndSettle();
+    expect(find.text('600,00$nbsp€ sur le Livret A'), findsOneWidget);
+  });
+
+  testWidgets('« Sur mesure »: fields with their errors', (tester) async {
+    await toDifficulty(tester);
+    await tester.tap(find.text('Sur mesure'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Argent de départ (€)'),
+      '50',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Frais de change (%)'),
+      'deux',
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Entre 100$nbsp€ et 1${nnbsp}000${nnbsp}000$nbsp€.'),
+      findsOneWidget,
+    );
+    expect(find.text('Écris un nombre, par exemple 1 500.'), findsOneWidget);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(find.text('Étape 2 sur 3'), findsOneWidget);
+  });
+
+  testWidgets('step 3: recap, name, stops, and the trip is created', (
+    tester,
+  ) async {
+    await toDifficulty(tester);
+    await tester.tap(find.text('Réaliste'));
+    await tester.pumpAndSettle();
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Récapitulatif'), findsOneWidget);
+    expect(find.text('15 septembre 2008'), findsOneWidget);
+    expect(find.text('Aucun'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'Crise financière'), findsOneWidget);
+    expect(
+      find.text("ton portefeuille passe 15$nnbsp% sous l'argent versé"),
+      findsOneWidget,
+    );
+    expect(
+      find.text('un versement mensuel arrive'),
+      findsOneWidget,
+      reason: '200 € a month',
+    );
+    expect(
+      find.text(
+        "Pendant le voyage, tu ne vois que ce qu'on savait à cette date.",
+      ),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextField), '  ');
+    await tester.pumpAndSettle();
+    expect(find.text('Donne-lui un nom de 1 à 30 caractères.'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Lehman');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Partir le 15 septembre 2008'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('wallet trip-'), findsOneWidget);
+    final trips = await tester.runAsync(
+      () => WalletRepository(db).watchWallets().first,
+    );
+    final trip = trips!.where((w) => w.name == 'Lehman').single;
+    expect(trip.difficulty, 'realiste');
+  });
+
+  testWidgets('Modifier goes back to the step', (tester) async {
+    await toDifficulty(tester);
+    await tester.tap(find.text('Découverte'));
+    await tester.pumpAndSettle();
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Modifier').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Étape 1 sur 3'), findsOneWidget);
   });
 }

@@ -506,5 +506,110 @@
       }
     }
   },
-  "wizard_next": "Suivant"
+  "wizard_next": "Suivant",
+  "wizard_how": "Quelle difficult\u00e9\u202f?",
+  "wizard_cash": "{amount} au d\u00e9part",
+  "@wizard_cash": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_contribution": "{amount} par mois",
+  "@wizard_contribution": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_no_contribution": "Pas de versement mensuel",
+  "wizard_fx_fee": "Frais de change {rate}",
+  "@wizard_fx_fee": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_fixed_fee": "{amount} de frais par ordre",
+  "@wizard_fixed_fee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_no_fixed_fee": "Aucun frais par ordre",
+  "wizard_fractional": "Fractions d'action possibles",
+  "wizard_whole": "Actions enti\u00e8res seulement",
+  "wizard_field_cash": "Argent de d\u00e9part (\u20ac)",
+  "wizard_field_contribution": "Versement mensuel (\u20ac)",
+  "wizard_field_fx_fee": "Frais de change (%)",
+  "wizard_field_fixed_fee": "Frais par ordre (\u20ac)",
+  "wizard_field_fractional": "Fractions d'action",
+  "wizard_err_number": "\u00c9cris un nombre, par exemple 1 500.",
+  "wizard_err_cash": "Entre 100\u00a0\u20ac et 1\u202f000\u202f000\u00a0\u20ac.",
+  "wizard_err_contribution": "Entre 0 et 10\u202f000\u00a0\u20ac par mois.",
+  "wizard_err_contribution_fee": "Au moins les frais d'un ordre ({fee}), ou 0.",
+  "@wizard_err_contribution_fee": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_err_fx_fee": "Entre 0 et 2\u202f%.",
+  "wizard_err_fixed_fee": "Entre 0 et 20\u00a0\u20ac par ordre.",
+  "wizard_cushion": "Commencer avec un matelas de s\u00e9curit\u00e9",
+  "wizard_cushion_amount": "{amount} sur le Livret A",
+  "@wizard_cushion_amount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_cushion_capped": "Plafonn\u00e9 \u00e0 {ceiling}, le plafond du Livret A \u00e0 cette date.",
+  "@wizard_cushion_capped": {
+    "placeholders": {
+      "ceiling": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_small_budget": "Avec un petit budget, les frais fixes et les actions enti\u00e8res p\u00e8sent plus lourd\u202f: 1\u00a0\u20ac de frais sur un achat de 50\u00a0\u20ac, c'est 2\u202f%.",
+  "wizard_recap": "R\u00e9capitulatif",
+  "wizard_recap_start": "D\u00e9part",
+  "wizard_recap_difficulty": "Difficult\u00e9",
+  "wizard_recap_cushion": "Matelas de s\u00e9curit\u00e9",
+  "wizard_recap_none": "Aucun",
+  "wizard_edit": "Modifier",
+  "wizard_name": "Nom du voyage",
+  "wizard_name_error": "Donne-lui un nom de 1 \u00e0 30 caract\u00e8res.",
+  "wizard_name_custom": "Voyage du {date}",
+  "@wizard_name_custom": {
+    "description": "Default name of a trip on a typed day, JJ/MM/AAAA.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_stops": "Arr\u00eats automatiques",
+  "wizard_stops_hint": "Le voyage s'arr\u00eate de lui-m\u00eame quand\u2026",
+  "wizard_stop_portfolio": "ton portefeuille passe 15\u202f% sous l'argent vers\u00e9",
+  "wizard_stop_position": "une position perd plus de 20\u202f%",
+  "wizard_stop_order": "un de tes ordres est ex\u00e9cut\u00e9",
+  "wizard_stop_contribution": "un versement mensuel arrive",
+  "wizard_known_only": "Pendant le voyage, tu ne vois que ce qu'on savait \u00e0 cette date.",
+  "wizard_go": "Partir le {date}",
+  "@wizard_go": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }
