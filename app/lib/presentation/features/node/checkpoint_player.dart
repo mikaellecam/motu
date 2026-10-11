@@ -53,10 +53,7 @@ class CheckpointPlayer extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpace.x6),
-              ChunkyButton(
-                label: l10n.node_continue,
-                onPressed: () => leaveNode(context),
-              ),
+              LessonEnd(node: view.node),
             ],
           );
         }

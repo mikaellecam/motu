@@ -136,10 +136,7 @@ class PuzzlePlayer extends ConsumerWidget {
               const SizedBox(height: AppSpace.x2),
               TermText(puzzle.explanation.of(language), terms: s.view.terms),
               const SizedBox(height: AppSpace.x6),
-              ChunkyButton(
-                label: l10n.node_continue,
-                onPressed: () => leaveNode(context),
-              ),
+              LessonEnd(node: s.view.node),
             ],
           ],
         );

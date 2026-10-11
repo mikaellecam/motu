@@ -133,10 +133,7 @@ class DecisionPlayer extends ConsumerWidget {
               const SizedBox(height: AppSpace.x4),
               TermText(decision.explanation.of(language), terms: view.terms),
               const SizedBox(height: AppSpace.x6),
-              ChunkyButton(
-                label: l10n.node_continue,
-                onPressed: () => leaveNode(context),
-              ),
+              LessonEnd(node: view.node),
             ],
           ],
         );

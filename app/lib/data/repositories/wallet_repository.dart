@@ -452,6 +452,25 @@ class WalletRepository {
     ],
   );
 
+  /// What the missions look at (BRIEF §4.3), then every change of fills or
+  /// plans: the assets the live wallet holds, and whether any wallet runs a
+  /// DCA plan.
+  Stream<({Set<String> liveAssets, bool activePlan})> watchMissionFacts() => _db
+      .customSelect('SELECT 1', readsFrom: {_db.fills, _db.dcaPlans})
+      .watch()
+      .asyncMap(
+        (_) async => (
+          liveAssets: {
+            for (final p in positionsFrom([
+              for (final f in await _db.walletDao.fillsOf(liveWalletId))
+                _fill(f),
+            ]).values)
+              if (p.isOpen) p.assetId,
+          },
+          activePlan: await _db.walletDao.anyActivePlan(),
+        ),
+      );
+
   /// The asset an order traded; null for an unknown order.
   Future<String?> orderAsset(String orderId) =>
       guardStorage(() async => (await _db.walletDao.order(orderId))?.assetId);

@@ -5,6 +5,7 @@ import 'package:decimal/decimal.dart';
 import '../../domain/learning/checkpoint.dart';
 import '../../domain/learning/content.dart';
 import '../../domain/learning/decision.dart';
+import '../../domain/learning/missions.dart';
 import '../../domain/learning/node.dart';
 import '../../domain/learning/puzzle.dart';
 import '../../domain/learning/reveal.dart';
@@ -502,4 +503,19 @@ String _daily(NodeContent node, ContentPack pack, Object? dataset) {
     throw FormatException('${node.id}: $id is not daily');
   }
   return id;
+}
+
+/// The payload of a `mission` [node] (BRIEF §4.3): its goal, and where in
+/// the sandbox it is done (`explorer` or `wallet`).
+MissionNode decodeMission(NodeContent node, ContentPack pack) {
+  final id = node.id;
+  final place = _string(node.payload['go'], '$id go');
+  return MissionNode(
+    _localized(node.payload['goal'], '$id goal'),
+    MissionPlace.values.firstWhere(
+      (p) => p.name == place,
+      orElse: () =>
+          throw FormatException('$id goes to an unknown place: $place'),
+    ),
+  );
 }

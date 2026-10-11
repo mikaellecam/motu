@@ -144,10 +144,7 @@ class ToyPlayer extends ConsumerWidget {
             TermText(toy.explanation.of(language), terms: s.view.terms),
             const SizedBox(height: AppSpace.x6),
             if (s.completed)
-              ChunkyButton(
-                label: l10n.node_continue,
-                onPressed: () => leaveNode(context),
-              )
+              LessonEnd(node: s.view.node)
             else
               Text(
                 l10n.toy_touch_all,

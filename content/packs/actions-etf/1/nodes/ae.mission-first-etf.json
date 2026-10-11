@@ -5,5 +5,10 @@
     "fr": "Ton premier ETF",
     "en": "Your first ETF"
   },
-  "status": "draft"
+  "status": "draft",
+  "goal": {
+    "fr": "Ajoute un ETF, n'importe lequel, à ton portefeuille fictif.",
+    "en": "Add an ETF, any one, to your practice wallet."
+  },
+  "go": "explorer"
 }

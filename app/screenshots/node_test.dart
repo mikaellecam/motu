@@ -49,7 +49,7 @@ void main() {
   screenshot(
     'm6-4-decision',
     const NodeScreen(nodeId: 'ae.march-2020'),
-    size: const Size(390, 1330),
+    size: const Size(390, 1400),
     overrides: overrides,
     act: (tester) async {
       await tester.tap(find.text('Garder'));

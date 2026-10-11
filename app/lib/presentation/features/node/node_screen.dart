@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../application/learning/node_player.dart';
+import '../../../application/trip/trip_wizard.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
+import '../../../core/widgets/chunky.dart';
+import '../../../domain/learning/content.dart';
 import '../../../domain/learning/node.dart';
 import 'checkpoint_player.dart';
 import 'decision_player.dart';
+import 'mission_player.dart';
 import 'predict_reveal_player.dart';
 import 'puzzle_player.dart';
 import 'sort_player.dart';
@@ -24,7 +28,6 @@ class NodeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
     final node = ref.watch(islandNodeProvider(nodeId));
     return Scaffold(
       appBar: AppBar(
@@ -44,13 +47,7 @@ class NodeScreen extends ConsumerWidget {
           NodeType.sort => SortPlayer(nodeId: nodeId),
           NodeType.buildPuzzle => PuzzlePlayer(nodeId: nodeId),
           NodeType.checkpoint => CheckpointPlayer(nodeId: nodeId),
-          // Missions play in the sandbox (M6-5).
-          NodeType.mission => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpace.screenPadding),
-              child: Text(l10n.node_not_playable, textAlign: TextAlign.center),
-            ),
-          ),
+          NodeType.mission => MissionPlayer(nodeId: nodeId),
         },
       ),
     );
@@ -79,3 +76,34 @@ Widget playerState<T>(
     child: AsyncSkeleton(lines: 5),
   ),
 };
+
+/// The end of a played lesson: its bridge into the sandbox when it has one
+/// (BRIEF §4.3: « Rejoue-le toi-même » opens the prefilled trip wizard),
+/// then « Continuer ».
+class LessonEnd extends StatelessWidget {
+  const LessonEnd({super.key, required this.node});
+
+  final NodeContent node;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (node.bridge case final bridge?) ...[
+          ChunkyButton(
+            label: l10n.node_bridge,
+            kind: ChunkyButtonKind.progress,
+            onPressed: () => context.push(bridgeLocation(bridge, node.id)),
+          ),
+          const SizedBox(height: AppSpace.x3),
+        ],
+        ChunkyButton(
+          label: l10n.node_continue,
+          onPressed: () => leaveNode(context),
+        ),
+      ],
+    );
+  }
+}

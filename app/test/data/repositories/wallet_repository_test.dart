@@ -509,4 +509,65 @@ void main() {
       expect(wallet.simDate, day(2, 19));
     });
   });
+
+  test(
+    'mission facts: the live wallet\'s holdings and any active plan',
+    () async {
+      await repo.ensureLiveWallet(DateTime.utc(2026, 10, 11));
+      final facts = <({Set<String> liveAssets, bool activePlan})>[];
+      final sub = repo.watchMissionFacts().listen(facts.add);
+      addTearDown(sub.cancel);
+      Future<void> settle() =>
+          Future<void>.delayed(const Duration(milliseconds: 20));
+      await settle();
+      expect(facts.last.liveAssets, isEmpty);
+      expect(facts.last.activePlan, isFalse);
+
+      // A buy in the live wallet; one in a trip does not count.
+      final order = buyApple('o1');
+      await repo.placeOrder('live', order);
+      await repo.recordFill('live', order, fillOf(order, price: '66'));
+      await repo.placeOrder('covid', buyApple('o2'));
+      await repo.recordFill(
+        'covid',
+        buyApple('o2'),
+        fillOf(buyApple('o2'), price: '66'),
+      );
+      await settle();
+      expect(facts.last.liveAssets, {'aapl'});
+      expect(facts.last.activePlan, isFalse);
+
+      // Sold out: no longer held.
+      final sell = Order(
+        id: 's1',
+        assetId: 'aapl',
+        side: Side.sell,
+        type: OrderType.market,
+        size: QuantitySize(Quantity.whole(2)),
+        createdAt: day(3, 1),
+      );
+      await repo.placeOrder('live', sell);
+      await repo.recordFill(
+        'live',
+        sell,
+        fillOf(sell, price: '70', side: Side.sell),
+      );
+      await settle();
+      expect(facts.last.liveAssets, isEmpty);
+
+      // A plan in any wallet.
+      await repo.savePlan(
+        'covid',
+        DcaPlan(
+          id: 'p1',
+          assetId: 'aapl',
+          amount: eur('100'),
+          frequency: DcaFrequency.monthly,
+          start: day(3, 2),
+        ),
+      );
+      await settle();
+      expect(facts.last.activePlan, isTrue);
+    },
+  );
 }

@@ -167,9 +167,4 @@ void main() {
     expect(find.text('Continuer'), findsOneWidget);
     expect(profiles.completed, [('ae.fees', null)]);
   });
-
-  testWidgets('a mission is not played here', (tester) async {
-    await show(tester, 'ae.mission');
-    expect(find.text("Cette leçon n'est pas encore jouable."), findsOneWidget);
-  });
 }

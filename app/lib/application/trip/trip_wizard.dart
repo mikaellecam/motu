@@ -48,6 +48,18 @@ final class TripWizardArgs {
   final String? fromNode;
 }
 
+/// Where a lesson's [bridge] leads: the wizard on step 1 at its date and
+/// difficulty, remembering [nodeId] (read back by [TripWizardArgs.fromQuery]).
+String bridgeLocation(TripBridge bridge, String nodeId) => Uri(
+  path: '/wallets/new',
+  queryParameters: {
+    'step': '1',
+    'date': bridge.date.toIso8601String().substring(0, 10),
+    'difficulty': ?bridge.difficulty,
+    'from': nodeId,
+  },
+).toString();
+
 /// The start dates the wizard offers (BRIEF §4.5): four historic moments,
 /// then « Il y a 1 / 5 / 10 ans ».
 enum TripPreset {

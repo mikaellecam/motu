@@ -277,7 +277,6 @@
   "replay_sold_moved": "Since then, those shares moved {change}.",
   "replay_hold_moved": "Since then, your portfolio moved {change}, contributions aside.",
   "replay_reason": "\u201c{reason}\u201d",
-  "node_not_playable": "This lesson can't be played yet.",
   "node_check": "Check",
   "node_right": "Spot on!",
   "node_wrong": "Not this time: it was {answer}.",
@@ -335,5 +334,10 @@
   "checkpoint_next": "Next question",
   "checkpoint_finish": "See my result",
   "checkpoint_score": "{score} of {total}",
-  "checkpoint_done": "Checkpoint done."
+  "checkpoint_done": "Checkpoint done.",
+  "node_bridge": "Replay it yourself",
+  "mission_auto": "It completes by itself as soon as your wallet meets it.",
+  "mission_done": "Mission complete",
+  "mission_go_explorer": "Open the Explorer",
+  "mission_go_wallet": "See my wallet"
 }

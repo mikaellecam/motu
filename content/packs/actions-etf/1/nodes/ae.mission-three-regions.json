@@ -5,5 +5,10 @@
     "fr": "Trois zones géographiques",
     "en": "Three regions"
   },
-  "status": "draft"
+  "status": "draft",
+  "goal": {
+    "fr": "Détiens des positions dans au moins trois zones géographiques. Un ETF Monde compte pour une zone.",
+    "en": "Hold positions in at least three regions. A world ETF counts as one region."
+  },
+  "go": "explorer"
 }

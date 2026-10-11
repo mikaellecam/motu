@@ -1,4 +1,5 @@
 import '../market/asset.dart';
+import 'content.dart';
 
 /// What mission detectors look at: the live wallet's open positions, and
 /// whether any wallet runs a DCA plan.
@@ -36,3 +37,20 @@ bool _threeRegions(MissionContext c) =>
     {for (final a in c.liveHoldings) a.region}.length >= 3;
 
 bool _hasDcaPlan(MissionContext c) => c.hasActiveDcaPlan;
+
+/// A `mission` node (BRIEF §4.3): what to do in the sandbox, and where to
+/// go to do it. It completes by itself ([missionDetectors]).
+final class MissionNode {
+  const MissionNode(this.goal, this.place);
+  final Localized goal;
+  final MissionPlace place;
+}
+
+/// Where a mission is done.
+enum MissionPlace {
+  /// The catalogue, to buy something for the live wallet.
+  explorer,
+
+  /// The live wallet.
+  wallet,
+}

@@ -223,6 +223,11 @@ Type payloads (M6-3; the player refuses a pack that breaks them):
   rule are checked live by domain calculations; « Valider » once they all hold.
 - `checkpoint` (M6-4): `questions[{question, choices[{id, label}], answer, explanation?}]` (4–6 in content),
   one at a time; done at the end whatever the score.
+- `mission` (M6-5): `goal` (what to do), `go` (`explorer` | `wallet`: where the button leads). It completes by
+  itself, never by a button: while the app runs, the live wallet's holdings and the DCA plans are watched and
+  each mission they satisfy is saved as done.
+- A played lesson ends on « Continuer », preceded by « Rejoue-le toi-même » when it has a `bridge`: the trip
+  wizard on step 1 at the bridge's date and difficulty (`/wallets/new?step=1&date=…&difficulty=…&from=<node>`).
 - Completion is saved in `node_progress` (status, attempts, last answer, first completion kept).
 
 Rules:

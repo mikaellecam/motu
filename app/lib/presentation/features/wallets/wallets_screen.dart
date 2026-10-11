@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../application/wallet/wallet_providers.dart';
+import '../../../application/trip/trip_wizard.dart';
 import '../../../application/wallet/wallets_list.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
@@ -192,13 +193,6 @@ class _SuggestionCard extends StatelessWidget {
     final language = Localizations.localeOf(context).languageCode;
     final text = Theme.of(context).textTheme;
     final bridge = suggestion.bridge;
-    final query = {
-      'step': '1',
-      'date': bridge.date.toIso8601String().substring(0, 10),
-      'difficulty': ?bridge.difficulty,
-      'from': suggestion.nodeId,
-    };
-
     return ChunkyCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -211,9 +205,8 @@ class _SuggestionCard extends StatelessWidget {
           const SizedBox(height: AppSpace.x3),
           ChunkyButton(
             label: l10n.wallets_suggestion_go,
-            onPressed: () => context.push(
-              Uri(path: '/wallets/new', queryParameters: query).toString(),
-            ),
+            onPressed: () =>
+                context.push(bridgeLocation(bridge, suggestion.nodeId)),
           ),
         ],
       ),

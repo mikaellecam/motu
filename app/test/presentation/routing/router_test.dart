@@ -8,6 +8,7 @@ import 'package:finance_companion/application/trip/trip_wizard.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
 import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/data/local/database.dart';
+import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
@@ -198,6 +199,26 @@ void main() {
     expect(args.date, DateTime.utc(2020, 2, 18));
     expect(args.difficulty, 'realiste');
     expect(args.fromNode, 'ae.march-2020');
+  });
+
+  test('a lesson bridge\'s location reads back as the same arguments', () {
+    final location = bridgeLocation(
+      TripBridge(DateTime.utc(2020, 2, 18), difficulty: 'realiste'),
+      'ae.march-2020',
+    );
+    expect(
+      location,
+      '/wallets/new?step=1&date=2020-02-18&difficulty=realiste&from=ae.march-2020',
+    );
+    final args = TripWizardArgs.fromQuery(Uri.parse(location).queryParameters);
+    expect(
+      (args.step, args.date, args.difficulty, args.fromNode),
+      (1, DateTime.utc(2020, 2, 18), 'realiste', 'ae.march-2020'),
+    );
+    expect(
+      bridgeLocation(TripBridge(DateTime.utc(2008, 9, 15)), 'ae.x'),
+      '/wallets/new?step=1&date=2008-09-15&from=ae.x',
+    );
   });
 
   group('TripWizardArgs.fromQuery', () {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/learning/missions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, Object> text(String s) => {'fr': s, 'en': s};
@@ -293,5 +294,26 @@ void main() {
       (n) => n['questions'] = const [],
       decodeCheckpoint,
     );
+  });
+
+  group('mission', () {
+    Map<String, Object?> mission() => node('mission', {
+      'goal': text('Achète un ETF dans ton portefeuille.'),
+      'go': 'explorer',
+    });
+
+    test('what to do and where', () {
+      final m = decoded(mission(), decodeMission);
+      expect(m.goal.fr, 'Achète un ETF dans ton portefeuille.');
+      expect(m.place, MissionPlace.explorer);
+    });
+
+    refused(
+      'an unknown place',
+      mission,
+      (n) => n['go'] = 'bank',
+      decodeMission,
+    );
+    refused('no goal', mission, (n) => n.remove('goal'), decodeMission);
   });
 }

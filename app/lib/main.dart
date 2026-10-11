@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'application/learning/missions.dart';
 import 'application/providers.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
@@ -16,6 +17,8 @@ Future<void> main() async {
   await container
       .read(walletRepositoryProvider)
       .ensureLiveWallet(container.read(liveClockProvider).now());
+  // Missions complete by themselves while the app runs (BRIEF §4.3).
+  container.read(missionTrackerProvider);
   runApp(
     UncontrolledProviderScope(
       container: container,

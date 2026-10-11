@@ -5,5 +5,10 @@
     "fr": "Mets en place un DCA",
     "en": "Set up a DCA"
   },
-  "status": "draft"
+  "status": "draft",
+  "goal": {
+    "fr": "Mets en place un versement programmé (DCA) dans l'un de tes portefeuilles.",
+    "en": "Set up a recurring investment (DCA) in one of your wallets."
+  },
+  "go": "wallet"
 }
