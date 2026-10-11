@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"finance-companion/backend/internal/calendar"
+	"finance-companion/backend/internal/content"
 	"finance-companion/backend/internal/store"
 )
 
@@ -240,4 +242,28 @@ func (s *Server) calendar(r *http.Request) (response, error) {
 		out = append(out, date(d))
 	}
 	return response{body: map[string]any{"exchange": exchange, "year": year, "holidays": out}}, nil
+}
+
+// contentManifest is the latest published version of each island (ADR-006).
+func (s *Server) contentManifest(*http.Request) (response, error) {
+	packs := []content.Latest{}
+	if s.Content != nil {
+		packs = s.Content.Manifest()
+	}
+	return response{body: map[string]any{"packs": packs}}, nil
+}
+
+// contentPack is one published version's document. A version is immutable,
+// so its ETag never changes.
+func (s *Server) contentPack(r *http.Request) (response, error) {
+	version, err := strconv.Atoi(r.PathValue("version"))
+	if err != nil {
+		return response{}, badRequest("version must be a number, as in /v1/content/packs/actions-etf/1")
+	}
+	if s.Content != nil {
+		if doc, ok := s.Content.Document(r.PathValue("islandId"), version); ok {
+			return response{body: json.RawMessage(doc)}, nil
+		}
+	}
+	return response{}, apiError{http.StatusNotFound, "not_found", "no such content pack"}
 }

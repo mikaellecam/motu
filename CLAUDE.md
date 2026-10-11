@@ -45,7 +45,11 @@ dart run drift_dev schema generate drift_schemas/app_database/ test/drift/app_da
 cd backend && gofmt -w . && go vet ./... && go test ./...
 set -a; . ./.env; set +a; go run ./cmd/server   # .env from .env.example; syncs market data
 go test -tags live ./internal/provider/            # adapter against the real API (needs .env)
-go run ./cmd/contentcheck ../content  # validates every content pack against the schema
+go run ./cmd/contentcheck -bundle ../app/assets/packs ../content  # checks every pack + the app's bundle
+go run ./cmd/contentcheck -bundle ../app/assets/packs -write ../content   # after a content change
+go run ./cmd/contentcheck -release ../content      # no draft in the latest versions (before a release)
+set -a; . ./.env; set +a; go run ./cmd/freeze -pack ../content/packs/actions-etf/1 -id ds.aapl-2022-w \
+  -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31   # a frozen dataset (1 provider credit)
 docker build -t finance-companion-backend .        # the image; self-hosting steps in docs/deploy.md
 
 # tracker

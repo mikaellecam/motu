@@ -34,5 +34,5 @@ jobs:
       - run: test -z "$(gofmt -l .)"
       - run: go vet ./...
       - run: go test ./...
-      - run: go run ./cmd/contentcheck ../content
+      - run: go run ./cmd/contentcheck -bundle ../app/assets/packs ../content
       - run: docker build -t finance-companion-backend .

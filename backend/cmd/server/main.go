@@ -15,6 +15,7 @@ import (
 
 	"finance-companion/backend/internal/api"
 	"finance-companion/backend/internal/catalogue"
+	"finance-companion/backend/internal/content"
 	"finance-companion/backend/internal/fx"
 	"finance-companion/backend/internal/jobs"
 	"finance-companion/backend/internal/provider"
@@ -84,8 +85,16 @@ func main() {
 		log.Warn("TWELVEDATA_API_KEY not set: market data is not synced")
 	}
 
+	// Content packs: the draft-free versions under CONTENT_DIR (ADR-006). A
+	// pack with a problem is left out; market data is served either way.
+	library, problems := content.Load(env("CONTENT_DIR", "../content"))
+	for _, err := range problems {
+		log.Warn("content pack not published", "err", err)
+	}
+	log.Info("content packs", "published", library.Manifest())
+
 	server := &api.Server{
-		Store: db, Quotes: quotes, Now: time.Now,
+		Store: db, Quotes: quotes, Content: library, Now: time.Now,
 		RequestsPerMinute: envInt("API_REQUESTS_PER_MINUTE", 120),
 	}
 	srv := &http.Server{

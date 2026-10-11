@@ -16,6 +16,8 @@ COPY --from=build /server /usr/local/bin/server
 USER app
 # DB_PATH defaults to data/market.db, which is this volume.
 VOLUME /app/data
+# The content tree, mounted read-only (docs/deploy.md).
+ENV CONTENT_DIR=/app/content
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
   CMD wget -qO /dev/null "http://localhost:${PORT:-8080}/healthz" || exit 1

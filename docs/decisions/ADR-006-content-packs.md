@@ -56,6 +56,11 @@ islands share terms; moving terms out then is a format change of the tool, not o
   `fr` or `en`, when a node type or status is unknown, or when a reference points to a node, dataset or
   term the pack does not hold. The deeper checks (glossary links inside texts, dataset provenance, drafts
   in a release) belong to `cmd/contentcheck`.
+- **Assembling and publishing** (M6-2, `internal/content`): `cmd/contentcheck` checks every version and
+  assembles the latest one into the bundle: compact JSON, keys sorted, text and digits as written, so the
+  same source always gives the same bytes and CI compares them. The server reads `CONTENT_DIR` at start and
+  publishes, per island, the versions that pass the release check (no draft node or term, decided
+  2026-10-11); a version with a problem is logged and left out, and market data is served either way.
 
 ## Consequences
 

@@ -9,11 +9,13 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"finance-companion/backend/internal/content"
 	"finance-companion/backend/internal/jobs"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
@@ -285,5 +287,55 @@ func TestLargeBodiesAreGzipped(t *testing.T) {
 	}
 	if rec, _ := get(t, s, "/v1/livret/rates", "Accept-Encoding", "gzip"); rec.Header().Get("Content-Encoding") != "" {
 		t.Fatal("a small body stays plain")
+	}
+}
+
+func TestContentPacks(t *testing.T) {
+	s, _ := newServer(t)
+	// actions-etf: version 1 published, version 2 still a draft.
+	root := t.TempDir()
+	for version, status := range map[string]string{"1": "published", "2": "draft"} {
+		dir := filepath.Join(root, "packs", "actions-etf", version)
+		os.MkdirAll(filepath.Join(dir, "nodes"), 0o755)
+		os.WriteFile(filepath.Join(dir, "island.json"), []byte(`{"id": "actions-etf", "version": `+version+`,
+			"title": {"fr": "Actions & ETF", "en": "Stocks & ETFs"}, "nodes": ["ae.fees"]}`), 0o644)
+		os.WriteFile(filepath.Join(dir, "nodes", "ae.fees.json"), []byte(`{"id": "ae.fees", "type": "toy",
+			"status": "`+status+`", "title": {"fr": "Les frais", "en": "Fees"}}`), 0o644)
+	}
+	library, errs := content.Load(root)
+	if len(errs) != 1 {
+		t.Fatalf("the draft version is left out: %v", errs)
+	}
+	s.Content = library
+
+	rec, body := get(t, s, "/v1/content/manifest")
+	packs, _ := body["packs"].([]any)
+	if rec.Code != http.StatusOK || len(packs) != 1 ||
+		packs[0].(map[string]any)["islandId"] != "actions-etf" || packs[0].(map[string]any)["version"] != float64(1) {
+		t.Fatalf("manifest: %d %v", rec.Code, body)
+	}
+
+	rec, body = get(t, s, "/v1/content/packs/actions-etf/1")
+	island, _ := body["island"].(map[string]any)
+	if rec.Code != http.StatusOK || island["title"].(map[string]any)["fr"] != "Actions & ETF" || len(body["nodes"].([]any)) != 1 {
+		t.Fatalf("pack: %d %v", rec.Code, body)
+	}
+	if rec, _ := get(t, s, "/v1/content/packs/actions-etf/1", "If-None-Match", rec.Header().Get("ETag")); rec.Code != http.StatusNotModified {
+		t.Errorf("revalidation: %d", rec.Code)
+	}
+	for path, status := range map[string]int{
+		"/v1/content/packs/actions-etf/2":  http.StatusNotFound,
+		"/v1/content/packs/budget/1":       http.StatusNotFound,
+		"/v1/content/packs/actions-etf/v1": http.StatusBadRequest,
+	} {
+		if rec, body := get(t, s, path); rec.Code != status || body["error"] == nil {
+			t.Errorf("%s: %d %v", path, rec.Code, body)
+		}
+	}
+
+	// A server started without content publishes none.
+	s.Content = nil
+	if rec, body := get(t, s, "/v1/content/manifest"); rec.Code != http.StatusOK || len(body["packs"].([]any)) != 0 {
+		t.Errorf("no content: %d %v", rec.Code, body)
 	}
 }

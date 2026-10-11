@@ -1,6 +1,6 @@
-// Package api serves market data to the app over HTTP (BRIEF §8.3): JSON,
-// read-only, conditional requests, an error envelope, and a per-client rate
-// limit answered with 429 and Retry-After.
+// Package api serves market data and content packs to the app over HTTP
+// (BRIEF §8.3, ADR-006): JSON, read-only, conditional requests, an error
+// envelope, and a per-client rate limit answered with 429 and Retry-After.
 package api
 
 import (
@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"finance-companion/backend/internal/content"
 	"finance-companion/backend/internal/jobs"
 	"finance-companion/backend/internal/store"
 )
@@ -24,6 +25,8 @@ import (
 type Server struct {
 	Store  *store.Store
 	Quotes *jobs.QuoteCache
+	// Content is the published content packs; nil serves none.
+	Content *content.Library
 	// RequestsPerMinute per client IP; 0 disables the limit.
 	RequestsPerMinute int
 	Now               func() time.Time
@@ -42,6 +45,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/fx", s.handle(s.fx))
 	mux.HandleFunc("GET /v1/livret/rates", s.handle(s.livret))
 	mux.HandleFunc("GET /v1/calendar/{exchange}", s.handle(s.calendar))
+	mux.HandleFunc("GET /v1/content/manifest", s.handle(s.contentManifest))
+	mux.HandleFunc("GET /v1/content/packs/{islandId}/{version}", s.handle(s.contentPack))
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		writeError(w, apiError{http.StatusNotFound, "not_found", "no such endpoint"})
 	})

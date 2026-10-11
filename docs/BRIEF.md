@@ -182,24 +182,26 @@ Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/c
   "bridge": null }
 
 // datasets/ds.aapl-2022-w.json  (produced by cmd/freeze, never hand-typed)
-{ "id": "ds.aapl-2022-w", "source": "twelvedata", "adjusted": true, "currency": "USD",
-  "interval": "1week", "frozen_at": "2026-10-06",
-  "points": [["2022-01-03", 177.57], ["...", 0]] }
+{ "id": "ds.aapl-2022-w", "source": "twelvedata", "asset": "apple", "symbol": "AAPL", "adjusted": true,
+  "currency": "USD", "interval": "1week", "from": "2022-01-01", "to": "2022-12-31", "frozen_at": "2026-10-06",
+  "points": [["2022-01-07", 168.14415], ["...", 0]] }
 ```
 
 Rules:
 - `{{term}}` in any text renders as a tappable glossary link; unknown terms fail `contentcheck`.
 - Every text field has `fr` and `en`; missing locale fails `contentcheck`.
 - Datasets are produced by `cmd/freeze` from the same provider as live data, adjusted for splits, with
-  provenance shown in-app ("Cours réels, clôtures hebdo, 2022, en dollars").
+  provenance shown in-app ("Cours réels, clôtures hebdo, 2022, en dollars"). A weekly or monthly point is
+  the last close of its ISO week or calendar month, dated by the day of that close.
 - The app bundles a baseline pack in assets (first launch works offline) and fetches newer versions from
   `/v1/content`. On the wire and in the bundle a pack is one document, `{island, nodes, datasets,
   glossary}`; glossary terms live in `glossary/<id>.json` inside the pack (ADR-006).
 
 ### 4.4 Glossary
 
-- Term record: `id`, `title{fr,en}`, `short{fr,en}` (one line), `body{fr,en}` (2–3 short paragraphs),
-  `live_example` (widget id + params, optional), `related[]`, `quiz` (1–3 questions, optional).
+- Term record: `id`, `status` (`draft` | `published`, §9), `title{fr,en}`, `short{fr,en}` (one line),
+  `body{fr,en}` (2–3 short paragraphs), `live_example` (widget id + params, optional), `related[]`, `quiz`
+  (1–3 questions, optional).
 - Index screen: search, filters (Toutes / Découvertes / À découvrir), grouped by letter, status per term
   (discovered ✓, new, to discover).
 - Sheet (modal bottom sheet, opened from any `{{term}}` link or essentials tile): title, "Nouvelle notion"
@@ -707,8 +709,12 @@ data, no key).
 
 - Lesson text is written in `content/` (fr first, en second), reviewed by Bob. Agents may draft, marked
   `"status": "draft"`; drafts never ship in a release pack.
+- A release is the latest version of an island once `contentcheck -release` passes: no draft node or term
+  (decided 2026-10-11). The server publishes only such versions; drafts stay in the app's bundle while the
+  island is being built, and the graded build passes `-release` first.
 - Datasets only via `cmd/freeze` (provenance, adjusted prices, frozen_at date).
-- `contentcheck` runs in CI.
+- `contentcheck` runs in CI, with the bundle check: `app/assets/packs/<island>.json` is the assembled latest
+  version (`contentcheck -bundle ../app/assets/packs -write` rewrites it).
 
 ---
 
