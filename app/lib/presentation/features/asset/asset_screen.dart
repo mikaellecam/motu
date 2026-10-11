@@ -13,9 +13,11 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/market/market_calendar.dart';
+import '../../../domain/wallet/position.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
 import '../glossary/term_sheet.dart';
+import '../order/order_sheet.dart';
 
 /// An asset as of a wallet's clock: price, chart, essentials, why it moved,
 /// the wallet's position (BRIEF §4.8).
@@ -37,6 +39,9 @@ class AssetScreen extends ConsumerWidget {
       appBar: AppBar(
         title: overview == null ? null : Text(overview.asset.name),
       ),
+      bottomNavigationBar: overview != null && overview.tradable
+          ? _TradeBar(overview)
+          : null,
       body: switch (overview) {
         final o? => RefreshIndicator(
           onRefresh: refresh,
@@ -677,6 +682,60 @@ class _PositionCard extends StatelessWidget {
               color: signColor(p.currencyEffect),
               indent: true,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// « Acheter · Vendre » (BRIEF §4.8): the order sheet, then what it did.
+/// « Vendre » only with a position.
+class _TradeBar extends StatelessWidget {
+  const _TradeBar(this.o);
+  final AssetOverview o;
+
+  Future<void> _trade(BuildContext context, Side side) async {
+    final message = await showOrderSheet(
+      context,
+      assetId: o.asset.id,
+      walletId: o.walletId,
+      side: side,
+    );
+    if (message != null && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpace.screenPadding,
+          AppSpace.x2,
+          AppSpace.screenPadding,
+          AppSpace.x2,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: FilledButton(
+                onPressed: () => _trade(context, Side.buy),
+                child: Text(l10n.asset_buy),
+              ),
+            ),
+            if (o.position != null) ...[
+              const SizedBox(width: AppSpace.x3),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _trade(context, Side.sell),
+                  child: Text(l10n.asset_sell),
+                ),
+              ),
+            ],
           ],
         ),
       ),

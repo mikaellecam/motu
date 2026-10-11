@@ -33,6 +33,13 @@ final class JournalEntry {
   bool get isSell =>
       decision == StopDecision.sellHalf.id ||
       decision == StopDecision.sellAll.id;
+
+  /// A trip order written with a reason (BRIEF §4.13): its decision is the
+  /// order's side and its event the order.
+  bool get isOrder => decision == 'buy' || decision == 'sell';
+
+  /// A decision to sell, from a stop or an order (« Ta pire décision »).
+  bool get sells => isSell || decision == 'sell';
 }
 
 /// [series] had everything been sold at the close of [date] and kept as
@@ -100,14 +107,19 @@ Money sellAllFees(
   return total;
 }
 
-/// The fills of the sells a stop's [entry] placed (`stopSells`).
-Iterable<Fill> soldBy(JournalEntry entry, List<Fill> fills) => fills.where(
-  (f) => f.side == Side.sell && f.orderId == stopSellId(f.assetId, entry.date),
+/// The fills [entry] led to: the sells a stop placed (`stopSells`), or the
+/// trip order it names.
+Iterable<Fill> filledBy(JournalEntry entry, List<Fill> fills) => fills.where(
+  (f) => entry.isOrder
+      ? f.orderId == entry.eventId
+      : entry.isSell &&
+            f.side == Side.sell &&
+            f.orderId == stopSellId(f.assetId, entry.date),
 );
 
 /// What happened after [entry] (BRIEF §4.13, decided 2026-10-11): for a
-/// sell, how the shares it sold moved from their sale to [endPrices] (EUR
-/// per share at the end of the trip); for « Garder », the time-weighted
+/// stop's sell or a trip order, how the shares it traded moved from their
+/// fill to [endPrices] (EUR per share at the end of the trip); for « Garder », the time-weighted
 /// return of [series] from that day on. Null for any other entry, or when
 /// nothing followed (a sell not filled yet, a decision on the last day).
 Decimal? movedAfter(
@@ -116,10 +128,10 @@ Decimal? movedAfter(
   required List<Fill> fills,
   required Map<String, Decimal> endPrices,
 }) {
-  if (entry.isSell) {
+  if (entry.isSell || entry.isOrder) {
     var then = Decimal.zero;
     var now = Decimal.zero;
-    for (final f in soldBy(entry, fills)) {
+    for (final f in filledBy(entry, fills)) {
       final end = endPrices[f.assetId];
       if (end == null) return null;
       then += f.price.times(f.quantity) * f.fxRate;

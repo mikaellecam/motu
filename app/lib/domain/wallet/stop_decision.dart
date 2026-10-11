@@ -1,5 +1,6 @@
 import '../../core/money/money.dart';
 import 'order.dart';
+import 'order_ticket.dart';
 import 'position.dart';
 import 'trip_engine.dart';
 
@@ -63,6 +64,5 @@ String stopSellId(String assetId, DateTime date) =>
 
 Quantity _quantity(StopDecision decision, Quantity held, bool fractional) {
   if (decision == StopDecision.sellAll) return held;
-  final half = Quantity.micros(held.micros ~/ 2);
-  return fractional ? half : Quantity.whole(half.micros ~/ 1000000);
+  return halfOf(held, fractional: fractional);
 }

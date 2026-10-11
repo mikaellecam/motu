@@ -1224,5 +1224,211 @@
       }
     }
   },
-  "glossary_example_unavailable": "Exemple sur donn\u00e9es r\u00e9elles indisponible pour l'instant."
+  "glossary_example_unavailable": "Exemple sur donn\u00e9es r\u00e9elles indisponible pour l'instant.",
+  "asset_buy": "Acheter",
+  "asset_sell": "Vendre",
+  "order_title_buy": "Acheter {name}",
+  "@order_title_buy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "order_title_sell": "Vendre {name}",
+  "@order_title_sell": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "order_type_market": "Au march\u00e9",
+  "order_type_limit": "\u00c0 cours limit\u00e9",
+  "order_type_stop": "Stop",
+  "order_mode_amount": "Montant",
+  "order_mode_quantity": "Quantit\u00e9",
+  "order_amount_label": "Montant en euros",
+  "order_quantity_label": "Nombre de parts",
+  "order_price_limit": "Cours limite ({currency})",
+  "@order_price_limit": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "order_price_stop": "Cours de d\u00e9clenchement ({currency})",
+  "@order_price_stop": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "order_hint_limit_buy": "Achat d\u00e8s que le cours descend \u00e0 ce prix ou moins.",
+  "order_hint_limit_sell": "Vente d\u00e8s que le cours monte \u00e0 ce prix ou plus.",
+  "order_hint_stop_sell": "Vente d\u00e8s que le cours descend \u00e0 ce prix\u202f: il peut s'ex\u00e9cuter plus bas si le cours chute d'un coup.",
+  "order_hint_stop_buy": "Achat d\u00e8s que le cours monte \u00e0 ce prix\u202f: il peut s'ex\u00e9cuter plus haut si le cours bondit.",
+  "order_gtc": "Valable jusqu'\u00e0 annulation.",
+  "order_quick_max": "Max",
+  "order_quick_shares": "{count, plural, one{{count} part} other{{count} parts}}",
+  "@order_quick_shares": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "order_quick_half": "La moiti\u00e9",
+  "order_quick_all": "Tout",
+  "order_line_shares": "Parts",
+  "order_line_value": "Valeur",
+  "order_line_fees": "Frais",
+  "order_line_total_buy": "Total \u00e0 payer",
+  "order_line_total_sell": "Tu re\u00e7ois",
+  "order_estimate_note": "Estimation au dernier cours connu\u202f: le prix d'ex\u00e9cution peut diff\u00e9rer.",
+  "order_coach": "{name} p\u00e8serait {after} de ton portefeuille, contre {before} aujourd'hui.",
+  "@order_coach": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
+      }
+    }
+  },
+  "order_coach_over": "Au-del\u00e0 de {threshold}, une seule ligne p\u00e8se lourd\u202f: c'est la {term}.",
+  "@order_coach_over": {
+    "placeholders": {
+      "threshold": {
+        "type": "String"
+      },
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "order_market_closed": "{exchange, select, nasdaq{Le Nasdaq est ferm\u00e9} nyse{Le NYSE est ferm\u00e9} euronext{Euronext est ferm\u00e9} other{Le march\u00e9 est ferm\u00e9}}. Ton ordre partira \u00e0 l'ouverture, le {day} \u00e0 {time}.",
+  "@order_market_closed": {
+    "placeholders": {
+      "exchange": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "order_trip_next": "Ton ordre partira au prochain jour de cotation du voyage.",
+  "order_reason": "Pourquoi\u202f? (facultatif, not\u00e9 dans ton journal)",
+  "order_done_buy": "Achat ex\u00e9cut\u00e9\u202f: {quantity} \u00d7 {name} \u00e0 {price}.",
+  "@order_done_buy": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_done_sell": "Vente ex\u00e9cut\u00e9e\u202f: {quantity} \u00d7 {name} \u00e0 {price}.",
+  "@order_done_sell": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_sent_opening": "Ordre envoy\u00e9\u202f: il partira \u00e0 l'ouverture, le {day} \u00e0 {time}.",
+  "@order_sent_opening": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "order_sent_waiting": "Ordre envoy\u00e9\u202f: il attend que le cours atteigne ton prix.",
+  "order_sent_trip": "Ordre envoy\u00e9\u202f: il partira au prochain jour de cotation du voyage.",
+  "order_error_amount_not_positive": "Saisis un montant sup\u00e9rieur \u00e0 z\u00e9ro.",
+  "order_error_quantity_not_positive": "Saisis un nombre de parts sup\u00e9rieur \u00e0 z\u00e9ro.",
+  "order_error_quantity_not_whole": "Ce portefeuille n'\u00e9change que des parts enti\u00e8res.",
+  "order_error_limit_price_not_positive": "Saisis un cours limite sup\u00e9rieur \u00e0 z\u00e9ro.",
+  "order_error_stop_price_not_positive": "Saisis un cours de d\u00e9clenchement sup\u00e9rieur \u00e0 z\u00e9ro.",
+  "order_error_asset_unavailable": "Cet actif n'est pas disponible \u00e0 cette date.",
+  "order_error_amount_below_one_share": "Ce montant n'ach\u00e8te pas une part enti\u00e8re\u202f: une part co\u00fbte {price}.",
+  "@order_error_amount_below_one_share": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_error_insufficient_cash": "Tu as {cash} de liquidit\u00e9s. Baisse le montant, ou vends d'abord une position.",
+  "@order_error_insufficient_cash": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "order_error_insufficient_quantity": "Tu peux vendre au plus {held} parts.",
+  "@order_error_insufficient_quantity": {
+    "placeholders": {
+      "held": {
+        "type": "String"
+      }
+    }
+  },
+  "order_error_amount_below_fees": "Les frais ({fees}) d\u00e9passeraient ce que la vente rapporte.",
+  "@order_error_amount_below_fees": {
+    "placeholders": {
+      "fees": {
+        "type": "String"
+      }
+    }
+  },
+  "replay_order_buy": "{filled, select, yes{Tu as achet\u00e9 {assets}.} other{Ton ordre d'achat n'a pas \u00e9t\u00e9 ex\u00e9cut\u00e9 avant la fin.}}",
+  "@replay_order_buy": {
+    "placeholders": {
+      "filled": {
+        "type": "String"
+      },
+      "assets": {
+        "type": "String"
+      }
+    }
+  },
+  "replay_order_sell": "{filled, select, yes{Tu as vendu {assets}.} other{Ton ordre de vente n'a pas \u00e9t\u00e9 ex\u00e9cut\u00e9 avant la fin.}}",
+  "@replay_order_sell": {
+    "placeholders": {
+      "filled": {
+        "type": "String"
+      },
+      "assets": {
+        "type": "String"
+      }
+    }
+  },
+  "order_coach_term": "concentration"
 }

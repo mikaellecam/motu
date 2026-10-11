@@ -15,6 +15,7 @@ import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
+import 'package:finance_companion/presentation/features/order/order_sheet.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,10 +66,14 @@ Fill buy(DateTime date, String qty, String price, String rate) => Fill(
   fees: const Money.zero(Currency.eur),
 );
 
-AssetOverview overview({int level = 1}) {
+AssetOverview overview({
+  int level = 1,
+  bool held = true,
+  WalletStatus status = WalletStatus.active,
+}) {
   final fills = [
-    buy(day(2026, 3, 2), '10', '100', '0.9'),
-    buy(day(2026, 6, 1), '5', '120', '0.85'),
+    if (held) buy(day(2026, 3, 2), '10', '100', '0.9'),
+    if (held) buy(day(2026, 6, 1), '5', '120', '0.85'),
   ];
   return buildAssetOverview(
     asset: apple,
@@ -78,7 +83,7 @@ AssetOverview overview({int level = 1}) {
       name: 'live',
       startDate: day(2026, 1, 1),
       simDate: null,
-      status: WalletStatus.active,
+      status: status,
       params: WalletParams(
         rules: TradingRules(
           fxFeeRate: Decimal.zero,
@@ -231,6 +236,37 @@ void main() {
       Navigator.of(tester.element(find.byType(TermSheet))).pop();
       await tester.pump(const Duration(milliseconds: 400));
     }
+  });
+
+  testWidgets('« Acheter · Vendre »: Vendre only with a position', (
+    tester,
+  ) async {
+    await show(tester, overview());
+    expect(find.widgetWithText(FilledButton, 'Acheter'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Vendre'), findsOneWidget);
+  });
+
+  testWidgets('no position: « Acheter » alone', (tester) async {
+    await show(tester, overview(held: false));
+    expect(find.widgetWithText(FilledButton, 'Acheter'), findsOneWidget);
+    expect(find.text('Vendre'), findsNothing);
+  });
+
+  testWidgets('a finished trip takes no order', (tester) async {
+    await show(tester, overview(status: WalletStatus.finished));
+    expect(find.text('Acheter'), findsNothing);
+  });
+
+  testWidgets('« Acheter » opens the order sheet', (tester) async {
+    await show(tester, overview());
+    await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    final sheet = tester.widget<OrderSheet>(find.byType(OrderSheet));
+    expect(
+      (sheet.assetId, sheet.walletId, sheet.side),
+      ('apple', 'live', Side.buy),
+    );
   });
 
   testWidgets('level 2: the band and its figure', (tester) async {

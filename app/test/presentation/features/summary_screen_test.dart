@@ -131,6 +131,19 @@ void main() {
           ),
           ReplayLine(JournalEntry(date: day(12, 30), decision: 'sell_all')),
           ReplayLine(JournalEntry(date: day(5, 4), decision: 'continue')),
+          ReplayLine(
+            JournalEntry(
+              date: day(6, 1),
+              decision: 'buy',
+              eventId: 'o-1',
+              reason: 'Les prix ont baissé',
+            ),
+            sold: const ['ETF Monde'],
+            moved: dec('0.12'),
+          ),
+          ReplayLine(
+            JournalEntry(date: day(12, 1), decision: 'sell', eventId: 'o-2'),
+          ),
         ],
       ),
     );
@@ -154,6 +167,16 @@ void main() {
     // A sell placed on the last day never filled.
     expect(find.text('Tu as choisi de tout vendre.'), findsOneWidget);
     expect(find.text('Tu as continué le voyage.'), findsOneWidget);
+    // Trip orders noted in the journal.
+    expect(find.text('Tu as acheté ETF Monde.'), findsOneWidget);
+    expect(
+      find.text('Depuis, ces parts ont fait +12,00$nnbsp%.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text("Ton ordre de vente n'a pas été exécuté avant la fin."),
+      findsOneWidget,
+    );
     expect(find.text('Aucune décision notée pendant ce voyage.'), findsNothing);
   });
 }

@@ -520,6 +520,41 @@ class WalletRepository {
     );
   });
 
+  /// A live market order filled as it is placed (BRIEF §4.6: market open):
+  /// the order and its [fill], all or nothing.
+  Future<void> executeOrder(String walletId, Order order, Fill fill) =>
+      guardStorage(
+        () => _db.transaction(() async {
+          await placeOrder(walletId, order);
+          await recordFill(walletId, order, fill);
+        }),
+      );
+
+  /// A trip order, pending until the trip moves on; with a [reason], a
+  /// journal entry too (BRIEF §4.13: optional on any order in a trip), its
+  /// decision the order's side and its event the order. All or nothing.
+  Future<void> placeTripOrder(
+    String walletId,
+    Order order, {
+    required DateTime simDate,
+    String? reason,
+  }) => guardStorage(
+    () => _db.transaction(() async {
+      await placeOrder(walletId, order);
+      if (reason != null && reason.isNotEmpty) {
+        await _db.walletDao.addJournalEntry(
+          JournalEntriesCompanion.insert(
+            walletId: walletId,
+            simDate: simDate,
+            eventId: Value(order.id),
+            decision: order.side.name,
+            reason: Value(reason),
+          ),
+        );
+      }
+    }),
+  );
+
   /// Books [fill] of [order]: the fill, its notional and fees in the ledger,
   /// and the order closed. All or nothing.
   Future<void> recordFill(String walletId, Order order, Fill fill) =>

@@ -292,6 +292,54 @@ void main() {
     });
   });
 
+  test('a trip order with a reason: its fill from then to the end', () {
+    final buy = JournalEntry(date: d(4), decision: 'buy', eventId: 'o-1');
+    final bought = Fill(
+      assetId: 'apple',
+      side: Side.buy,
+      date: d(6),
+      quantity: Quantity.whole(5),
+      price: Price(dec('100'), Currency.usd),
+      fxRate: dec('0.9'),
+      fees: const Money.zero(Currency.eur),
+      orderId: 'o-1',
+    );
+    expect(buy.isOrder, isTrue);
+    expect(filledBy(buy, [bought]).single, same(bought));
+    // 450 € then, 495 € now.
+    expect(
+      movedAfter(
+        buy,
+        series: series,
+        fills: [bought],
+        endPrices: {'apple': dec('99')},
+      ),
+      dec('0.1'),
+    );
+    expect(
+      movedAfter(buy, series: series, fills: const [], endPrices: const {}),
+      isNull,
+      reason: 'not filled before the end',
+    );
+  });
+
+  test('sell decisions: a stop\'s sells, and a trip order to sell', () {
+    expect(
+      [
+        for (final decision in [
+          'sell_half',
+          'sell_all',
+          'sell',
+          'buy',
+          'hold',
+          'continue',
+        ])
+          JournalEntry(date: d(4), decision: decision).sells,
+      ],
+      [true, true, true, false, false, false],
+    );
+  });
+
   test('isSell: the stop answers that sell', () {
     expect(
       [for (final s in StopDecision.values) entry(s, 4).isSell],

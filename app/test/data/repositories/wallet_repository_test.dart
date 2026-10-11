@@ -570,4 +570,48 @@ void main() {
       expect(facts.last.activePlan, isTrue);
     },
   );
+
+  test('a live order filled at once: placed and filled together', () async {
+    final order = Order(
+      id: 'now',
+      assetId: 'aapl',
+      side: Side.buy,
+      type: OrderType.market,
+      size: QuantitySize(Quantity.whole(2)),
+      createdAt: day(2, 20),
+    );
+    await repo.executeOrder('covid', order, fillOf(order, price: '66'));
+    final w = await repo.load('covid');
+    expect(w.pendingOrders, isEmpty);
+    expect(w.fills.single.orderId, 'now');
+    expect(w.positions['aapl']!.quantity, Quantity.whole(2));
+  });
+
+  test('a trip order waits; its reason goes to the journal', () async {
+    Order buy(String id) => Order(
+      id: id,
+      assetId: 'aapl',
+      side: Side.buy,
+      type: OrderType.market,
+      size: QuantitySize(Quantity.whole(1)),
+      createdAt: day(3, 9),
+    );
+    await repo.placeTripOrder(
+      'covid',
+      buy('t1'),
+      simDate: day(3, 9),
+      reason: 'Les prix ont baissé',
+    );
+    await repo.placeTripOrder('covid', buy('t2'), simDate: day(3, 9));
+    expect(
+      [for (final o in (await repo.load('covid')).pendingOrders) o.id],
+      ['t1', 't2'],
+    );
+    final journal = await repo.journal('covid');
+    expect(
+      [for (final e in journal) (e.date, e.decision, e.eventId, e.reason)],
+      [(day(3, 9), 'buy', 't1', 'Les prix ont baissé')],
+      reason: 'no reason, no entry',
+    );
+  });
 }

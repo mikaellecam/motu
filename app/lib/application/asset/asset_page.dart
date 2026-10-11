@@ -62,6 +62,7 @@ final class AssetOverview {
     required this.benchmark,
     required this.buys,
     required this.fx,
+    this.tradable = true,
   });
 
   final Asset asset;
@@ -103,6 +104,9 @@ final class AssetOverview {
 
   /// EUR per unit of the asset's currency on a day of the window.
   final Decimal Function(DateTime day) fx;
+
+  /// The wallet takes orders: false once a trip is finished (M5-5).
+  final bool tradable;
 }
 
 DateTime _day(DateTime t) {
@@ -212,6 +216,7 @@ AssetOverview buildAssetOverview({
           f,
     ],
     fx: fx,
+    tradable: wallet.status != WalletStatus.finished,
   );
 }
 

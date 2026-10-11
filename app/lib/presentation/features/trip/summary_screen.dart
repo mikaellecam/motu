@@ -209,11 +209,16 @@ class _ReplayTile extends StatelessWidget {
       StopDecision.sellHalf => l10n.replay_sell_half(filled, assets),
       StopDecision.sellAll => l10n.replay_sell_all(filled, assets),
       StopDecision.carryOn => l10n.replay_continue,
-      null => null,
+      // A trip order noted in the journal (M4-5).
+      null => switch (entry.decision) {
+        'buy' => l10n.replay_order_buy(filled, assets),
+        'sell' => l10n.replay_order_sell(filled, assets),
+        _ => null,
+      },
     };
     final moved = switch (line.moved) {
       null => null,
-      final change when entry.isSell => (
+      final change when entry.isSell || entry.isOrder => (
         l10n.replay_sold_moved(formats.percent(change, signed: true)),
         change,
       ),

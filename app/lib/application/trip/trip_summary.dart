@@ -123,7 +123,7 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
   }
 
   // What selling everything would have cost on each day the journal sold.
-  final sells = journal.where((e) => e.isSell).toList();
+  final sells = journal.where((e) => e.sells).toList();
   final fees = <DateTime, Money>{};
   for (final e in sells) {
     final held = positionsFrom(
@@ -148,7 +148,7 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
 
   // The sold shares, valued at the end of the trip.
   final endPrices = <String, Decimal>{};
-  for (final f in [for (final e in sells) ...soldBy(e, wallet.fills)]) {
+  for (final f in [for (final e in journal) ...filledBy(e, wallet.fills)]) {
     final close = await closeOf(f.assetId, end);
     endPrices[f.assetId] = close.value * await eurPer(close.currency, end);
   }
@@ -189,7 +189,7 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
         ReplayLine(
           e,
           sold: [
-            for (final f in soldBy(e, wallet.fills))
+            for (final f in filledBy(e, wallet.fills))
               assets[f.assetId]?.name ?? f.assetId,
           ],
           moved: movedAfter(

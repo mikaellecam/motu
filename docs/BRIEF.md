@@ -411,7 +411,18 @@ construction that completes on fill.
 
 **Pre-trade coach** (companion card in the order sheet): new weight of the asset in the wallet ("Apple
 pèserait 8 % de ton portefeuille, contre 4 % aujourd'hui"), threshold from `momentThresholds(profile)`.
-Never blocks.
+Never blocks. Shown on every order; above the threshold it adds « Au-delà de {seuil}, une seule ligne pèse
+lourd : c'est la concentration » in the alert color (decided 2026-10-11).
+
+**Order sheet** (M4-5, decided 2026-10-11): opened from the asset page's « Acheter · Vendre » (Vendre only with
+a position; neither on a finished trip). Quick chips: 100 / 500 / 1 000 € and « Max » (all available cash, fees
+included) to buy in euros, 1 / 5 / 10 shares in quantity, « La moitié » and « Tout » to sell. The summary shows
+shares, value, fees and total, estimated at the last known price. Errors show once there is input or after
+« Valider ». Placing closes the sheet back on the asset with a message: « Achat exécuté : … » (live market
+order, market open: filled at the quote now), « Ordre envoyé : il partira à l'ouverture, le … à … » (market
+closed), « … il attend que le cours atteigne ton prix » (limit, stop) or « … au prochain jour de cotation du
+voyage » (trip). In a trip, an optional « Pourquoi ? » saves the order to the journal (decision `buy` or
+`sell`, event the order id); the summary replays it with how the traded shares moved since their fill.
 
 ### 4.7 Wallet (portfolio) screen
 

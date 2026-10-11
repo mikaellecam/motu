@@ -24,7 +24,9 @@ Map<String, Object?> _term(
   'quiz': ?quiz,
 };
 
-String glossaryPackJson() => jsonEncode({
+/// [withOrderTerms] adds « Ordre à cours limité » and « Ordre stop » (the
+/// order sheet's soft gate).
+String glossaryPackJson({bool withOrderTerms = false}) => jsonEncode({
   'island': {
     'id': 'actions-etf',
     'version': 1,
@@ -73,5 +75,9 @@ String glossaryPackJson() => jsonEncode({
     _term('ecart', 'Écart', widget: 'performance'),
     _term('volatilite', 'Volatilité', widget: 'volatility'),
     _term('risque-de-change', 'Risque de change', widget: 'currency'),
+    if (withOrderTerms) ...[
+      _term('ordre-limite', 'Ordre à cours limité'),
+      _term('ordre-stop', 'Ordre stop'),
+    ],
   ],
 });
