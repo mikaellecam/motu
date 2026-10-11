@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../application/trip/trip_runner.dart';
 import '../../../application/wallet/wallet_overview.dart';
 import '../../../application/wallet/wallet_providers.dart';
 import '../../../core/failure.dart';
@@ -35,8 +36,16 @@ class WalletScreen extends ConsumerWidget {
         ref.refresh(walletOverviewProvider(walletId).future).then((_) {});
     final overview = state.value;
 
+    final trip = overview?.kind == WalletKind.trip;
     return Scaffold(
       appBar: AppBar(
+        leading: trip
+            ? IconButton(
+                tooltip: l10n.trip_exit,
+                icon: const Icon(Icons.close),
+                onPressed: () => context.go('/wallets'),
+              )
+            : null,
         title: overview == null
             ? null
             : Text(
@@ -45,6 +54,7 @@ class WalletScreen extends ConsumerWidget {
                     : overview.name,
               ),
       ),
+      bottomNavigationBar: trip ? _TimeControls(overview!) : null,
       body: switch (overview) {
         final o? => RefreshIndicator(
           onRefresh: refresh,
@@ -53,6 +63,10 @@ class WalletScreen extends ConsumerWidget {
             children: [
               CacheStatusBanner(onRetry: refresh),
               const SizedBox(height: AppSpace.x2),
+              if (o.kind == WalletKind.trip) ...[
+                _TripHeader(o),
+                const SizedBox(height: AppSpace.x4),
+              ],
               _Header(o),
               const SizedBox(height: AppSpace.x4),
               _Tiles(o),
@@ -591,6 +605,159 @@ class _PositionRow extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A trip's header (BRIEF §4.5): its clock, name and difficulty, and the
+/// simulated day, on a neutral card: being in a trip shows in the content,
+/// never as a tint.
+class _TripHeader extends StatelessWidget {
+  const _TripHeader(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    final text = Theme.of(context).textTheme;
+    final difficulty = switch (o.difficulty) {
+      'decouverte' => l10n.difficulty_decouverte,
+      'realiste' => l10n.difficulty_realiste,
+      'serre' => l10n.difficulty_serre,
+      'sur-mesure' => l10n.difficulty_sur_mesure,
+      _ => null,
+    };
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpace.x3),
+        child: Row(
+          children: [
+            ExcludeSemantics(
+              child: Container(
+                width: AppSpace.minTarget,
+                height: AppSpace.minTarget,
+                decoration: BoxDecoration(
+                  color: AppColors.line,
+                  borderRadius: BorderRadius.circular(
+                    AppShape.flatButtonRadius,
+                  ),
+                ),
+                child: const Icon(Icons.schedule, color: AppColors.ink),
+              ),
+            ),
+            const SizedBox(width: AppSpace.x3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: AppSpace.x2,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(o.name, style: text.titleMedium),
+                      if (difficulty != null)
+                        Chip(
+                          label: Text(difficulty),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                    ],
+                  ),
+                  Text(formats.date(o.asOf), style: AppText.title),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// +1 jour, +1 semaine, +1 mois (BRIEF §4.5). Off while time moves, once
+/// the trip stopped by itself, and at the end of the data.
+class _TimeControls extends ConsumerWidget {
+  const _TimeControls(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final runner = ref.watch(tripRunnerProvider(o.id));
+    final moving = runner.isLoading;
+    final endOfData = runner.value?.endOfData ?? false;
+    final stopped = o.status == WalletStatus.stopped;
+    final canMove = !moving && !stopped && !endOfData;
+    final note = switch ((stopped, endOfData, runner.error)) {
+      (true, _, _) => (l10n.wallets_status_stopped, AppColors.alertText),
+      (_, true, _) => (l10n.trip_end_of_data, AppColors.muted),
+      (_, _, final Failure f) => (
+        failureMessage(context, f),
+        AppColors.alertText,
+      ),
+      _ => null,
+    };
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpace.screenPadding,
+          AppSpace.x2,
+          AppSpace.screenPadding,
+          AppSpace.x2,
+        ),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpace.x3),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (note case (final message, final color)) ...[
+                  Text(message, style: text.bodySmall?.copyWith(color: color)),
+                  const SizedBox(height: AppSpace.x2),
+                ],
+                Row(
+                  children: [
+                    for (final (step, label) in [
+                      (TripStep.day, l10n.trip_step_day),
+                      (TripStep.week, l10n.trip_step_week),
+                      (TripStep.month, l10n.trip_step_month),
+                    ]) ...[
+                      if (step != TripStep.day)
+                        const SizedBox(width: AppSpace.x2),
+                      Expanded(
+                        child: OutlinedButton(
+                          // Three to a row at phone width: no wrapping.
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpace.x2,
+                            ),
+                          ),
+                          onPressed: canMove
+                              ? () => ref
+                                    .read(tripRunnerProvider(o.id).notifier)
+                                    .advance(step)
+                              : null,
+                          child: Text(label),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (moving) ...[
+                  const SizedBox(height: AppSpace.x2),
+                  Semantics(
+                    label: l10n.trip_moving,
+                    child: const LinearProgressIndicator(),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

@@ -80,6 +80,27 @@ final class CompanionTracker {
     required this.followUps,
   });
 
+  /// A tracker as it was saved (the data layer's JSON).
+  const CompanionTracker.restore({
+    required Map<String, Price> peaks,
+    required Decimal index,
+    required Decimal indexPeak,
+    required Decimal? previousValue,
+    required DateTime? cashHighSince,
+    required Map<String, List<Decimal>> recentPnl,
+    required List<(DateTime, Decimal)> usdRates,
+    required Map<String, FollowUp> followUps,
+  }) : this._(
+         peaks: peaks,
+         index: index,
+         indexPeak: indexPeak,
+         previousValue: previousValue,
+         cashHighSince: cashHighSince,
+         recentPnl: recentPnl,
+         usdRates: usdRates,
+         followUps: followUps,
+       );
+
   CompanionTracker.empty()
     : this._(
         peaks: const {},

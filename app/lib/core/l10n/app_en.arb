@@ -210,5 +210,11 @@
   "wizard_stop_order": "one of your orders fills",
   "wizard_stop_contribution": "a monthly contribution arrives",
   "wizard_known_only": "During the trip, you only see what was known on that date.",
-  "wizard_go": "Set off on {date}"
+  "wizard_go": "Set off on {date}",
+  "trip_step_day": "+1 day",
+  "trip_step_week": "+1 week",
+  "trip_step_month": "+1 month",
+  "trip_exit": "Leave the trip",
+  "trip_end_of_data": "You've reached the last day with prices.",
+  "trip_moving": "Time is moving forward\u2026"
 }

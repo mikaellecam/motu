@@ -261,7 +261,11 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
 **Trip wallet screen:** identical to the live wallet plus:
 - Trip header (neutral background): clock tile, trip name + difficulty chip, simulated date in large type,
   exit button. No colored banner (color rule §10.2).
-- Time controls card above the tab bar: +1 jour, +1 semaine, +1 mois, « Avancer jusqu'à… ».
+- Time controls card above the tab bar: +1 jour (the next trip day), +1 semaine, +1 mois (same day next
+  month, or its last day), « Avancer jusqu'à… ». They are off while time moves, once the trip stopped by
+  itself (until the user decides, §4.5 automatic stop), and at the last day with data. Each advance runs
+  `TripEngine.advance` on a snapshot of the cached market and books its result in one transaction
+  (orders, fills, contributions, daily values, companion moments, simulated day, status).
 
 **Advancing time** (domain service `TripEngine.advance(wallet, target, stopConditions)`), one trip day at a
 time. A trip day is a day when any exchange of the catalogue trades; an asset whose exchange is closed keeps

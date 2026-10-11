@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
 import '../../domain/analytics/returns.dart';
+import '../../domain/companion/rules.dart';
 import '../../domain/livret/livret_interest.dart';
 import '../../domain/wallet/dca.dart';
 import '../../domain/wallet/order.dart';
@@ -13,6 +14,7 @@ import '../../domain/wallet/order_matcher.dart';
 import '../../domain/wallet/position.dart';
 import '../../domain/wallet/trip_engine.dart';
 import '../../domain/wallet/wallet.dart';
+import '../companion/companion_codec.dart';
 import '../local/database.dart';
 import '../local/tables.dart';
 import 'guard.dart';
@@ -288,6 +290,90 @@ class WalletRepository {
       ],
     );
   });
+
+  /// Trip [walletId] at its simulated day, as the trip engine takes it:
+  /// the Livret rebuilt from its movements with [livretRates], the stops
+  /// already breached and what the companion kept.
+  Future<TripState> tripState(
+    String walletId, {
+    required List<LivretRate> livretRates,
+  }) => guardStorage(() async {
+    final wallet = await load(walletId);
+    final date = wallet.simDate;
+    if (date == null) throw const NotFoundFailure();
+    final row = (await _db.walletDao.wallet(walletId))!;
+    return TripState(
+      date: date,
+      cash: wallet.cash,
+      invested: wallet.values.fold(
+        const Money.zero(Currency.eur),
+        (sum, v) => sum + v.flow,
+      ),
+      fills: wallet.fills,
+      positions: wallet.positions,
+      pendingOrders: wallet.pendingOrders,
+      dcaPlans: wallet.plans,
+      livret: livretAt(wallet.livretMovements, rates: livretRates, asOf: date),
+      values: wallet.values,
+      breached: {...(jsonDecode(row.breachedStops) as List).cast<String>()},
+      companion: switch (row.companionState) {
+        final json? => decodeTracker(json),
+        null => CompanionTracker.empty(),
+      },
+      companionLog: [
+        for (final m in await _db.learningDao.momentsOf(walletId))
+          CompanionLogEntry(m.rule, m.key, m.firedAt),
+      ],
+    );
+  });
+
+  /// Books what [advance] did since [before], all or nothing: contributions,
+  /// DCA orders, fills, cancellations, companion moments, the new daily
+  /// values, then the wallet's day, status, breached stops and companion.
+  Future<void> saveAdvance(
+    String walletId,
+    TripAdvance advance, {
+    required TripState before,
+  }) => guardStorage(
+    () => _db.transaction(() async {
+      for (final event in advance.events) {
+        switch (event) {
+          case ContributionCredited(:final date, :final amount):
+            await addContribution(walletId, date, amount);
+          case OrderPlaced(:final order):
+            await placeOrder(walletId, order);
+          case OrderFilled(:final order, :final fill):
+            await recordFill(walletId, order, fill);
+          case OrderCancelled(:final order, :final reason):
+            await cancelOrder(order.id, reason);
+          case MomentFired(:final moment):
+            await _db.learningDao.logMoment(
+              CompanionLogCompanion.insert(
+                walletId: walletId,
+                rule: moment.rule,
+                key: moment.key,
+                firedAt: moment.date,
+                params: encodeParams(moment.params),
+              ),
+            );
+        }
+      }
+      for (final value in advance.state.values.skip(before.values.length)) {
+        await appendValue(walletId, value);
+      }
+      await _db.walletDao.updateWallet(
+        walletId,
+        WalletsCompanion(
+          simDate: Value(advance.state.date),
+          status: advance.stop.isEmpty
+              ? const Value.absent()
+              : const Value(WalletStatus.stopped),
+          breachedStops: Value(jsonEncode([...advance.state.breached]..sort())),
+          companionState: Value(encodeTracker(advance.state.companion)),
+        ),
+      );
+    }),
+  );
 
   Future<void> placeOrder(String walletId, Order order) => guardStorage(() {
     final (amount, quantity) = switch (order.size) {

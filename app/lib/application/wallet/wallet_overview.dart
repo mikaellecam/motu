@@ -43,6 +43,8 @@ final class WalletOverview {
     required this.id,
     required this.kind,
     required this.name,
+    this.difficulty,
+    this.status = WalletStatus.active,
     required this.rules,
     required this.asOf,
     required this.pricesAsOf,
@@ -60,6 +62,10 @@ final class WalletOverview {
   final String id;
   final WalletKind kind;
   final String name;
+
+  /// A trip's difficulty id; null for the live wallet.
+  final String? difficulty;
+  final WalletStatus status;
   final TradingRules rules;
   final DateTime asOf;
 
@@ -173,6 +179,8 @@ WalletOverview buildOverview({
     id: wallet.id,
     kind: wallet.kind,
     name: wallet.name,
+    difficulty: wallet.params.difficulty,
+    status: wallet.status,
     rules: wallet.params.rules,
     asOf: asOf,
     pricesAsOf: holdings.isEmpty

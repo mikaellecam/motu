@@ -611,5 +611,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "trip_step_day": "+1 jour",
+  "trip_step_week": "+1 semaine",
+  "trip_step_month": "+1 mois",
+  "trip_exit": "Quitter le voyage",
+  "trip_end_of_data": "Tu es arriv\u00e9 au dernier jour de cours disponible.",
+  "trip_moving": "Le temps avance\u2026"
 }

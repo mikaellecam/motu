@@ -5,6 +5,7 @@ import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/analytics/returns.dart';
+import 'package:finance_companion/domain/companion/rules.dart';
 import 'package:finance_companion/domain/livret/livret_interest.dart';
 import 'package:finance_companion/domain/wallet/dca.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
@@ -263,5 +264,126 @@ void main() {
       () => repo.placeOrder('ghost', buyApple('o9')),
       throwsA(isA<StorageFailure>()),
     );
+  });
+
+  group('trips', () {
+    final rates = [LivretRate(DateTime.utc(2019, 8, 1), d('0.0075'))];
+
+    test('a new trip as the engine takes it', () async {
+      final state = await repo.tripState('covid', livretRates: rates);
+      expect(state.date, day(2, 18));
+      expect(state.cash, eur('10000'));
+      expect(state.invested, eur('10000'));
+      expect(state.values.single.flow, eur('10000'));
+      expect(state.breached, isEmpty);
+      expect(state.companionLog, isEmpty);
+    });
+
+    test('an advance is booked whole, and reads back', () async {
+      final before = await repo.tripState('covid', livretRates: rates);
+      final userOrder = buyApple('o1');
+      await repo.placeOrder('covid', userOrder);
+      final dcaOrder = Order(
+        id: 'dca-p1-2020-03-02',
+        assetId: 'aapl',
+        side: Side.buy,
+        type: OrderType.market,
+        size: AmountSize(eur('100')),
+        createdAt: day(3, 2),
+        planId: 'p1',
+      );
+      final cancelled = Order(
+        id: 'o2',
+        assetId: 'aapl',
+        side: Side.buy,
+        type: OrderType.limit,
+        size: QuantitySize(Quantity.whole(1)),
+        limitPrice: Price(d('1'), Currency.usd),
+        createdAt: day(2, 18),
+      );
+      await repo.placeOrder('covid', cancelled);
+      final userFill = fillOf(userOrder, price: '66', date: day(2, 20));
+      final dcaFill = fillOf(
+        dcaOrder,
+        price: '60',
+        date: day(3, 2),
+        qty: '1.5',
+      );
+      final values = [
+        ...before.values,
+        DailyValue(date: day(2, 19), value: eur('9990'), flow: eur('0')),
+        DailyValue(date: day(3, 2), value: eur('10150'), flow: eur('200')),
+      ];
+      final after = before.copyWith(
+        date: day(3, 2),
+        values: values,
+        breached: {'drawdown'},
+        companion: CompanionTracker.restore(
+          peaks: {'aapl': Price(d('66'), Currency.usd)},
+          index: d('0.98'),
+          indexPeak: d('1'),
+          previousValue: d('10150'),
+          cashHighSince: null,
+          recentPnl: const {},
+          usdRates: const [],
+          followUps: const {},
+        ),
+      );
+      await repo.saveAdvance(
+        'covid',
+        TripAdvance(
+          state: after,
+          events: [
+            OrderFilled(day(2, 20), userOrder, userFill),
+            ContributionCredited(day(3, 2), eur('200')),
+            OrderPlaced(day(3, 2), dcaOrder),
+            OrderFilled(day(3, 2), dcaOrder, dcaFill),
+            OrderCancelled(day(3, 2), cancelled, CancelReason.insufficientCash),
+            MomentFired(
+              Moment(CompanionRule.firstLoss, '', day(3, 2), const {
+                'assetId': 'aapl',
+              }),
+            ),
+          ],
+          stop: const [ContributionStop(Money(20000, Currency.eur))],
+          endOfData: false,
+        ),
+        before: before,
+      );
+
+      final wallet = await repo.load('covid');
+      expect(wallet.simDate, day(3, 2));
+      expect(wallet.status, WalletStatus.stopped);
+      expect(wallet.pendingOrders, isEmpty);
+      expect(wallet.fills, hasLength(2));
+      expect(
+        [for (final v in wallet.values) v.date],
+        [day(2, 18), day(2, 19), day(3, 2)],
+      );
+      final reloaded = await repo.tripState('covid', livretRates: rates);
+      expect(reloaded.invested, eur('10200'));
+      expect(reloaded.breached, {'drawdown'});
+      expect(reloaded.companion.peaks['aapl'], Price(d('66'), Currency.usd));
+      expect(reloaded.companionLog.single.rule, CompanionRule.firstLoss);
+      // 10 000 + 200 − (118,80 + 0,12) − (81,00 + 0,12)
+      expect(reloaded.cash, eur('9999.96'));
+    });
+
+    test('no stop leaves the status as it was', () async {
+      final before = await repo.tripState('covid', livretRates: rates);
+      await repo.saveAdvance(
+        'covid',
+        TripAdvance(
+          state: before.copyWith(date: day(2, 19)),
+          events: const [],
+          stop: const [],
+          endOfData: false,
+        ),
+        before: before,
+      );
+      final wallet = await repo.load('covid');
+      expect(wallet.status, WalletStatus.active);
+      expect(wallet.simDate, day(2, 19));
+    });
   });
 }
