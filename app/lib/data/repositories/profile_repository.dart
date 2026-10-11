@@ -59,4 +59,27 @@ class ProfileRepository {
         if (row.status == NodeStatus.completed) row.nodeId,
     },
   );
+
+  /// Records a finished [nodeId] (BRIEF §4.3): one more attempt, the last
+  /// [answer] when the node asks one, and the first completion kept.
+  Future<void> completeNode(
+    String nodeId, {
+    String? answer,
+    required DateTime at,
+  }) => guardStorage(
+    () => _db.transaction(() async {
+      final before = (await _db.learningDao.progress())
+          .where((r) => r.nodeId == nodeId)
+          .firstOrNull;
+      await _db.learningDao.saveProgress(
+        NodeProgressCompanion.insert(
+          nodeId: nodeId,
+          status: NodeStatus.completed,
+          attempts: Value((before?.attempts ?? 0) + 1),
+          lastAnswer: Value(answer),
+          completedAt: Value(before?.completedAt ?? at),
+        ),
+      );
+    }),
+  );
 }

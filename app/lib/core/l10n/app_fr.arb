@@ -831,5 +831,143 @@
         "type": "String"
       }
     }
-  }
+  },
+  "node_not_playable": "Cette le\u00e7on n'est pas encore jouable.",
+  "node_check": "Valider",
+  "node_right": "Bien vu\u202f!",
+  "node_wrong": "Pas cette fois\u202f: c'\u00e9tait {answer}.",
+  "@node_wrong": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "node_invested": "Avec {amount} plac\u00e9s au d\u00e9part.",
+  "@node_invested": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "node_base_100": "Base 100 au d\u00e9part.",
+  "node_provenance": "Cours r\u00e9els, {interval, select, daily{cl\u00f4tures quotidiennes} weekly{cl\u00f4tures hebdomadaires} monthly{cl\u00f4tures mensuelles} other{cl\u00f4tures}}, {period}, {currency, select, USD{en dollars} EUR{en euros} other{en {currency}}}.",
+  "@node_provenance": {
+    "placeholders": {
+      "interval": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "node_today": "Et aujourd'hui\u202f?",
+  "node_today_caption": "Cours actuels, du {from} au {to}.",
+  "@node_today_caption": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "node_continue": "Continuer",
+  "node_chart_line": "{label} de {start} \u00e0 {end}",
+  "@node_chart_line": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "node_chart_semantics": "Courbes\u202f: {lines}.",
+  "@node_chart_semantics": {
+    "placeholders": {
+      "lines": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_years": "{years, plural, one{{years} an} other{{years} ans}}",
+  "@toy_years": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "toy_fee_line": "Frais de {fee} par an",
+  "@toy_fee_line": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_value": "Valeur",
+  "toy_money_in": "Argent vers\u00e9",
+  "toy_fees_result": "Au bout de {years}, l'\u00e9cart atteint {gap}.",
+  "@toy_fees_result": {
+    "placeholders": {
+      "years": {
+        "type": "String"
+      },
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_compound_result": "Au bout de {years}\u202f: {value}, dont {moneyIn} vers\u00e9s.",
+  "@toy_compound_result": {
+    "placeholders": {
+      "years": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "moneyIn": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_return_past": "{rate} par an\u202f: ce qu'a fait {label} de {from} \u00e0 {to}.",
+  "@toy_return_past": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_return_hypothesis": "Hypoth\u00e8se\u202f: {rate} par an, pour l'exemple.",
+  "@toy_return_hypothesis": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_touch_all": "Bouge chaque curseur pour terminer."
 }

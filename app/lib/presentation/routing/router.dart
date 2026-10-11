@@ -7,6 +7,7 @@ import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
+import '../features/node/node_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/trip/stop_screen.dart';
 import '../features/trip/summary_screen.dart';
@@ -53,7 +54,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     _pending('/settings'),
     _pending('/tools/dca'),
     _pending('/island/:islandId'),
-    _pending('/node/:nodeId'),
+    GoRoute(
+      path: '/node/:nodeId',
+      builder: (_, state) =>
+          NodeScreen(nodeId: state.pathParameters['nodeId']!),
+    ),
     GoRoute(
       path: '/wallets/new',
       builder: (_, state) => TripWizardScreen(

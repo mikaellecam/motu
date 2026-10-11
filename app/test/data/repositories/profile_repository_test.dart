@@ -66,4 +66,26 @@ void main() {
     expect(await db.learningDao.progress(), hasLength(1));
     expect(await db.learningDao.discovered(), hasLength(1));
   });
+
+  test(
+    'a completed node keeps its first completion and counts attempts',
+    () async {
+      final first = DateTime.utc(2026, 10, 11, 9);
+      await repo.completeNode('ae.apple', answer: 'world', at: first);
+      await repo.completeNode(
+        'ae.apple',
+        answer: 'apple',
+        at: first.add(const Duration(hours: 1)),
+      );
+      await repo.completeNode('ae.fees', at: first);
+      expect(await repo.completedNodes(), {'ae.apple', 'ae.fees'});
+      final row = (await db.learningDao.progress()).firstWhere(
+        (r) => r.nodeId == 'ae.apple',
+      );
+      expect(
+        (row.status, row.attempts, row.lastAnswer, row.completedAt),
+        (NodeStatus.completed, 2, 'apple', first),
+      );
+    },
+  );
 }

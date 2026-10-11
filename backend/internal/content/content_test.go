@@ -202,6 +202,14 @@ func TestTermLinksInTexts(t *testing.T) {
 	expectProblem(t, map[string]string{"glossary/volatilite.json": strings.Replace(volatilite,
 		`"How much prices swing."`, `"How much {{prices}} swing."`, 1)},
 		`glossary/volatilite.json: short.en: {{prices}} is not a term of the pack`)
+	// {{term|shown text}}: the text shown in the sentence.
+	if got := problems(t, pack(t, map[string]string{"nodes/ae.apple.json": strings.Replace(apple,
+		`"C'est la {{diversification}}."`, `"C'est la {{diversification|diversification}}."`, 1)}), false); got != "" {
+		t.Errorf("a link with its own text: %s", got)
+	}
+	expectProblem(t, map[string]string{"nodes/ae.apple.json": strings.Replace(apple,
+		`"C'est la {{diversification}}."`, `"C'est la {{diversity|diversification}}."`, 1)},
+		`nodes/ae.apple.json: explanation.fr: {{diversity}} is not a term of the pack`)
 }
 
 func TestDatasets(t *testing.T) {

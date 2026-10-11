@@ -4,6 +4,8 @@ import 'package:decimal/decimal.dart';
 
 import '../../domain/learning/content.dart';
 import '../../domain/learning/node.dart';
+import '../../domain/learning/reveal.dart';
+import '../../domain/learning/toys.dart';
 
 /// Reads a content pack: one JSON document `{island, nodes, datasets,
 /// glossary}` (ADR-006). Throws [FormatException] on anything the app cannot
@@ -117,6 +119,10 @@ Dataset _dataset(Map<String, Object?> json) {
   return Dataset(
     id: id,
     source: _string(json['source'], '$id source'),
+    asset: switch (json['asset']) {
+      null => null,
+      final Object a => _string(a, '$id asset'),
+    },
     adjusted: json['adjusted'] is bool
         ? json['adjusted']! as bool
         : throw FormatException('$id: adjusted is not a boolean'),
@@ -195,4 +201,126 @@ Period _period(Map<String, Object?> json, String id) {
   final to = _date(json['to'], '$id covers to');
   if (to.isBefore(from)) throw FormatException('$id covers an empty period');
   return Period(from, to);
+}
+
+/// The payload of a `predict_reveal` [node] of [pack] (BRIEF §4.3): the
+/// question and its choices, one of them the answer, the curves of datasets
+/// the node draws, and optionally the amount they start from and the live
+/// variant (only `compare_returns` is known).
+PredictReveal decodePredictReveal(NodeContent node, ContentPack pack) {
+  final id = node.id;
+  final json = node.payload;
+  final choices = [
+    for (final c in _list(json['choices'], '$id choices'))
+      RevealChoice(
+        _string(_map(c, '$id choice')['id'], '$id choice id'),
+        _localized(_map(c, '$id choice')['label'], '$id choice label'),
+      ),
+  ];
+  final answer = _string(json['answer'], '$id answer');
+  if (!choices.any((c) => c.id == answer)) {
+    throw FormatException('$id: the answer $answer is not a choice');
+  }
+  final series = [
+    for (final s in _list(json['series'], '$id series'))
+      RevealSeries(
+        _drawn(node, pack, _string(_map(s, '$id series')['dataset'], id)),
+        _localized(_map(s, '$id series')['label'], '$id series label'),
+      ),
+  ];
+  if (series.isEmpty) throw FormatException('$id draws no curve');
+  final invested = switch (json['invested']) {
+    null => null,
+    final Object v => _positive(v, '$id invested'),
+  };
+  final live = switch (json['live_variant']) {
+    null => null,
+    final Object v => _map(v, '$id live_variant'),
+  };
+  return PredictReveal(
+    question: _localized(json['question'], '$id question'),
+    choices: choices,
+    answer: answer,
+    series: series,
+    explanation: _localized(json['explanation'], '$id explanation'),
+    invested: invested,
+    liveVariant: live != null && live['widget'] == 'compare_returns'
+        ? LiveVariant(_string(live['period'], '$id live period'))
+        : null,
+  );
+}
+
+/// The payload of a `toy` [node] of [pack] (BRIEF §4.3): a known formula, a
+/// slider for each of its inputs and no other, and optionally the dataset
+/// whose past average seeds the `return` slider.
+Toy decodeToy(NodeContent node, ContentPack pack) {
+  final id = node.id;
+  final json = node.payload;
+  final name = _string(json['formula'], '$id formula');
+  final formula = ToyFormula.values.firstWhere(
+    (f) => f.json == name,
+    orElse: () => throw FormatException('$id has an unknown formula: $name'),
+  );
+  final controls = [
+    for (final c in _list(json['controls'], '$id controls'))
+      _control(_map(c, '$id control'), id),
+  ];
+  final ids = [for (final c in controls) c.id]..sort();
+  if (ids.join(',') != ([...formula.inputs]..sort()).join(',')) {
+    throw FormatException(
+      '$id: ${formula.json} reads ${formula.inputs}, not $ids',
+    );
+  }
+  final from = switch (json['return_from']) {
+    null => null,
+    final Object v => _map(v, '$id return_from'),
+  };
+  return Toy(
+    formula: formula,
+    controls: controls,
+    intro: _localized(json['intro'], '$id intro'),
+    explanation: _localized(json['explanation'], '$id explanation'),
+    returnFrom: from == null
+        ? null
+        : PastReturn(
+            _drawn(node, pack, _string(from['dataset'], '$id return_from')),
+            _localized(from['label'], '$id return_from label'),
+          ),
+  );
+}
+
+ToyControl _control(Map<String, Object?> json, String node) {
+  final id = _string(json['id'], '$node control id');
+  final what = '$node $id';
+  final control = ToyControl(
+    id: id,
+    label: _localized(json['label'], '$what label'),
+    min: _decimal(json['min'], '$what min'),
+    max: _decimal(json['max'], '$what max'),
+    step: _positive(json['step'], '$what step'),
+    initial: _decimal(json['default'], '$what default'),
+  );
+  if (control.min > control.max ||
+      control.initial < control.min ||
+      control.initial > control.max) {
+    throw FormatException('$what: min ≤ default ≤ max');
+  }
+  return control;
+}
+
+/// [dataset] when [node] draws it and [pack] holds it.
+String _drawn(NodeContent node, ContentPack pack, String dataset) =>
+    node.datasets.contains(dataset) && pack.datasets.containsKey(dataset)
+    ? dataset
+    : throw FormatException('${node.id} does not draw $dataset');
+
+Decimal _decimal(Object? value, String what) => value is num
+    ? Decimal.parse(value.toString())
+    : throw FormatException('$what is not a number');
+
+Decimal _positive(Object? value, String what) {
+  final number = _decimal(value, what);
+  return number > Decimal.zero
+      ? number
+      : throw FormatException('$what is not above zero');
 }

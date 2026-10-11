@@ -76,6 +76,12 @@ void main() {
     expect(fr.quantity(const Quantity.zero()), '0');
   });
 
+  test('a plain number, grouped, rounded half-even', () {
+    expect(fr.number(d('1234.567'), decimals: 1), '1${nnbsp}234,6');
+    expect(en.number(d('1234.567'), decimals: 1), '1,234.6');
+    expect(fr.number(d('-75.45'), decimals: 1), '\u221275,4');
+  });
+
   test('plural form of a count: French singular below 2, English at 1', () {
     expect(fr.countForm(d('0.5')), 'one');
     expect(fr.countForm(d('1.5')), 'one');

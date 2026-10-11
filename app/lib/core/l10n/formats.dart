@@ -57,6 +57,10 @@ class Formats {
         : 'other';
   }
 
+  /// A plain number, an index (base 100): `1 234,6`.
+  String number(Decimal value, {int decimals = 2}) =>
+      _number(value, decimals, false);
+
   /// [ratio] 0.0288 → `2,88 %` (`+2,88 %` when [signed]).
   String percent(Decimal ratio, {bool signed = false, int decimals = 2}) {
     final number = _number(ratio.shift(2), decimals, signed);

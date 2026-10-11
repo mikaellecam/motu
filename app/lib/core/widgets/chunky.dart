@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 
 /// "The game is talking to you" family (BRIEF §10.1): map, island path, node
@@ -124,6 +125,56 @@ class _ChunkyButtonState extends State<ChunkyButton> {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge
                   ?.copyWith(color: text),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One answer among several, as a toy block: the onboarding questions, a
+/// lesson's choices.
+class ChunkyChoice extends StatelessWidget {
+  const ChunkyChoice({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: ChunkyCard(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.x4,
+              vertical: AppSpace.x3,
+            ),
+            child: Row(
+              children: [
+                ExcludeSemantics(
+                  child: Icon(
+                    selected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(width: AppSpace.x3),
+                Expanded(child: Text(label, style: AppText.bodyStrong)),
+              ],
             ),
           ),
         ),

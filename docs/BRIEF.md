@@ -176,7 +176,10 @@ Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/c
               {"id": "world", "label": {"fr": "ETF Monde", "en": "World ETF"}}],
   "answer": "apple",
   "datasets": ["ds.aapl-2022-w", "ds.msci-world-2022-w"],
-  "explanation": {"fr": "Apple, c'est une seule entreprise… C'est la {{diversification}}.", "en": "..."},
+  "series": [{"dataset": "ds.aapl-2022-w", "label": {"fr": "Apple", "en": "Apple"}},
+             {"dataset": "ds.msci-world-2022-w", "label": {"fr": "ETF Monde", "en": "World ETF"}}],
+  "invested": 1000,
+  "explanation": {"fr": "Apple, c'est une seule entreprise… C'est la {{diversification|diversification}}.", "en": "..."},
   "glossary": ["diversification", "volatilite"],
   "live_variant": {"widget": "compare_returns", "period": "1y"},
   "bridge": null }
@@ -187,8 +190,24 @@ Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/c
   "points": [["2022-01-07", 168.14415], ["...", 0]] }
 ```
 
+Type payloads (M6-3; the player refuses a pack that breaks them):
+- `predict_reveal`: `question`, `choices[{id, label}]`, `answer` (a choice id), `series[{dataset, label}]` (the
+  curves, datasets the node draws), `explanation`, optional `invested` and `live_variant`. Each curve shows what
+  `invested` (in the dataset's currency) became, with its end value and signed change; base 100 without it
+  (decided 2026-10-11). `live_variant` `{"widget": "compare_returns", "period": "1y" | "6m" | …}` reruns the
+  curves on current prices of the datasets' `asset`s; any other widget is ignored.
+- `toy`: `formula` (`fees`: `amount`, `years`, `return`, `fee_low`, `fee_high`; `compound`: `amount`, `monthly`,
+  `years`, `return`), `controls[{id, label, min, max, step, default}]` (one per input, no other), `intro`,
+  `explanation`, optional `return_from` `{dataset, label}`: the `return` slider starts at that dataset's
+  average yearly return, shown as « ce qu'a fait {label} de {from} à {to} », and is called an assumption once
+  moved (decided 2026-10-11). Fees: each year the money grows by the return, then the fee takes its share;
+  compound: each year what is there grows, then the year's twelve monthly amounts come in.
+- Completion is saved in `node_progress` (status, attempts, last answer, first completion kept).
+
 Rules:
-- `{{term}}` in any text renders as a tappable glossary link; unknown terms fail `contentcheck`.
+- `{{term}}` in any text renders as a tappable glossary link showing the term's title; `{{term|text}}` shows
+  `text` instead, to fit the sentence (« la {{diversification|diversification}} »). Unknown terms fail
+  `contentcheck`.
 - Every text field has `fr` and `en`; missing locale fails `contentcheck`.
 - Datasets are produced by `cmd/freeze` from the same provider as live data, adjusted for splits, with
   provenance shown in-app ("Cours réels, clôtures hebdo, 2022, en dollars"). A weekly or monthly point is

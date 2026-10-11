@@ -418,7 +418,8 @@ func isText(v any) bool {
 	return fr || en
 }
 
-var termLink = regexp.MustCompile(`\{\{\s*([^{}]*?)\s*\}\}`)
+// termLink is {{term}}, or {{term|text shown}} (BRIEF §4.3).
+var termLink = regexp.MustCompile(`\{\{\s*([^{}|]*?)\s*(?:\|[^{}]*)?\}\}`)
 
 // texts walks v: every text has a non-empty "fr" and "en" and nothing else,
 // and every {{term}} names a term of the pack (BRIEF §4.3).

@@ -77,10 +77,14 @@ final class Dataset {
     required this.interval,
     required this.frozenAt,
     required this.points,
+    this.asset,
   });
 
   final String id;
   final String source;
+
+  /// The catalogue asset the prices are of; null when not an asset (a rate).
+  final String? asset;
   final bool adjusted;
   final String currency;
   final String interval;
