@@ -1,0 +1,60 @@
+{
+  "id": "volatilite",
+  "status": "draft",
+  "title": {
+    "fr": "Volatilité",
+    "en": "Volatility"
+  },
+  "short": {
+    "fr": "L'amplitude des variations d'un prix.",
+    "en": "How much a price swings."
+  },
+  "body": {
+    "fr": "Plus un prix monte et descend fort d'un jour à l'autre, plus il est volatil. La volatilité se mesure en pourcentage par an : autour de 17 % pour un ETF Monde en 2025, plus de 30 % pour Apple, 0 pour le {{livret-a|Livret A}}.\n\nElle ne dit pas si un placement a monté ou baissé : elle dit à quel point le chemin a été agité.",
+    "en": "The more a price moves up and down from one day to the next, the more volatile it is. Volatility is measured as a percentage per year: about 17% for a world ETF in 2025, over 30% for Apple, 0 for the {{livret-a|Livret A}}.\n\nIt doesn't say whether an investment rose or fell: it says how bumpy the road was."
+  },
+  "for_you": {
+    "fr": "Plus c'est volatil, plus la valeur de ton placement peut s'éloigner, dans un sens ou dans l'autre, de ce que tu y as mis.",
+    "en": "The more volatile, the further your investment's value can drift, either way, from what you put in."
+  },
+  "live_example": {
+    "widget": "volatility"
+  },
+  "related": [
+    "pire-baisse",
+    "diversification",
+    "horizon-de-placement"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Lequel a la volatilité la plus basse ?",
+        "en": "Which has the lowest volatility?"
+      },
+      "choices": [
+        {
+          "id": "livret",
+          "label": {
+            "fr": "Le Livret A",
+            "en": "The Livret A"
+          }
+        },
+        {
+          "id": "stock",
+          "label": {
+            "fr": "Une action seule",
+            "en": "A single stock"
+          }
+        },
+        {
+          "id": "world",
+          "label": {
+            "fr": "Un ETF Monde",
+            "en": "A world ETF"
+          }
+        }
+      ],
+      "answer": "livret"
+    }
+  ]
+}

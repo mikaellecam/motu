@@ -1,9 +1,90 @@
 {
   "id": "ae.fees-toy",
   "type": "toy",
+  "status": "draft",
   "title": {
     "fr": "Le jouet des frais",
     "en": "The fees toy"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.acwi-2008-2025-m"
+  ],
+  "glossary": [
+    "frais",
+    "interets-composes",
+    "etf"
+  ],
+  "formula": "fees",
+  "intro": {
+    "fr": "Deux ETF suivent le même indice. L'un prend peu de frais chaque année, l'autre beaucoup plus. Bouge les curseurs et regarde l'écart.",
+    "en": "Two ETFs track the same index. One takes small yearly fees, the other much more. Move the sliders and watch the gap."
+  },
+  "explanation": {
+    "fr": "Les {{frais|frais}} sont prélevés chaque année sur tout ce que tu as, gains compris : leur effet s'additionne d'année en année, comme les {{interets-composes|intérêts composés}}, mais dans l'autre sens.",
+    "en": "{{frais|Fees}} are taken every year on everything you hold, gains included: their effect adds up year after year, like {{interets-composes|compound interest}}, but the other way."
+  },
+  "return_from": {
+    "dataset": "ds.acwi-2008-2025-m",
+    "label": {
+      "fr": "l'ETF Monde",
+      "en": "the world ETF"
+    }
+  },
+  "controls": [
+    {
+      "id": "amount",
+      "label": {
+        "fr": "Somme placée",
+        "en": "Amount put in"
+      },
+      "min": 1000,
+      "max": 100000,
+      "step": 1000,
+      "default": 10000
+    },
+    {
+      "id": "years",
+      "label": {
+        "fr": "Durée",
+        "en": "Duration"
+      },
+      "min": 1,
+      "max": 40,
+      "step": 1,
+      "default": 30
+    },
+    {
+      "id": "return",
+      "label": {
+        "fr": "Rendement par an",
+        "en": "Yearly return"
+      },
+      "min": -0.05,
+      "max": 0.12,
+      "step": 0.005,
+      "default": 0.05
+    },
+    {
+      "id": "fee_low",
+      "label": {
+        "fr": "Frais de l'ETF bon marché",
+        "en": "Cheap ETF's fees"
+      },
+      "min": 0,
+      "max": 0.03,
+      "step": 0.001,
+      "default": 0.002
+    },
+    {
+      "id": "fee_high",
+      "label": {
+        "fr": "Frais de l'ETF cher",
+        "en": "Expensive ETF's fees"
+      },
+      "min": 0,
+      "max": 0.03,
+      "step": 0.001,
+      "default": 0.015
+    }
+  ]
 }

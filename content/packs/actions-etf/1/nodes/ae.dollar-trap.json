@@ -1,9 +1,74 @@
 {
   "id": "ae.dollar-trap",
   "type": "predict_reveal",
+  "status": "draft",
   "title": {
     "fr": "Le piège du dollar",
     "en": "The dollar trap"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.ko-2017-w",
+    "ds.ko-eur-2017-w",
+    "ds.usd-eur-2017-w"
+  ],
+  "glossary": [
+    "risque-de-change",
+    "taux-de-change"
+  ],
+  "question": {
+    "fr": "En 2017, l'action Coca-Cola a pris 14 % en dollars. Pour quelqu'un qui l'avait achetée en euros fin 2016, ça a donné…",
+    "en": "In 2017, Coca-Cola's share gained 14% in dollars. For someone who had bought it with euros at the end of 2016, that came to…"
+  },
+  "choices": [
+    {
+      "id": "more",
+      "label": {
+        "fr": "Plus de 14 %",
+        "en": "More than 14%"
+      }
+    },
+    {
+      "id": "same",
+      "label": {
+        "fr": "Environ 14 %",
+        "en": "About 14%"
+      }
+    },
+    {
+      "id": "little",
+      "label": {
+        "fr": "Presque rien",
+        "en": "Almost nothing"
+      }
+    }
+  ],
+  "answer": "little",
+  "series": [
+    {
+      "dataset": "ds.ko-2017-w",
+      "label": {
+        "fr": "Coca-Cola, en dollars",
+        "en": "Coca-Cola, in dollars"
+      }
+    },
+    {
+      "dataset": "ds.ko-eur-2017-w",
+      "label": {
+        "fr": "Coca-Cola, en euros",
+        "en": "Coca-Cola, in euros"
+      }
+    },
+    {
+      "dataset": "ds.usd-eur-2017-w",
+      "label": {
+        "fr": "Des dollars gardés tels quels",
+        "en": "Dollars kept as they are"
+      }
+    }
+  ],
+  "invested": 1000,
+  "explanation": {
+    "fr": "En 2017, le dollar a perdu 12 % face à l'euro. La hausse de Coca-Cola, gagnée en dollars, a fondu une fois reconvertie : +0,5 % en euros. C'est le {{risque-de-change|risque de change}}. Il joue dans les deux sens : un dollar qui monte ajoute du gain.",
+    "en": "In 2017, the dollar lost 12% against the euro. Coca-Cola's rise, earned in dollars, melted away once converted back: +0.5% in euros. That's {{risque-de-change|currency risk}}. It works both ways: a rising dollar adds to the gain."
+  }
 }

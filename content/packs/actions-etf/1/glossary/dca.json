@@ -1,0 +1,25 @@
+{
+  "id": "dca",
+  "status": "draft",
+  "title": {
+    "fr": "Investissement programmé (DCA)",
+    "en": "Dollar-cost averaging (DCA)"
+  },
+  "short": {
+    "fr": "Placer la même somme à intervalles réguliers.",
+    "en": "Investing the same amount at regular intervals."
+  },
+  "body": {
+    "fr": "Le DCA (de l'anglais « dollar-cost averaging ») consiste à placer une somme fixe, par exemple 100 € chaque mois, quel que soit le cours du moment.\n\nQuand les prix baissent, la même somme achète plus de parts ; quand ils montent, moins. Pas besoin de choisir « le bon moment », que personne ne connaît à l'avance.",
+    "en": "DCA (dollar-cost averaging) means investing a fixed amount, for example €100 every month, whatever the price at the time.\n\nWhen prices fall, the same amount buys more units; when they rise, fewer. No need to pick \"the right moment\", which nobody knows in advance."
+  },
+  "for_you": {
+    "fr": "Dans tes portefeuilles, un plan DCA achète tout seul à chaque échéance.",
+    "en": "In your wallets, a DCA plan buys by itself on every due date."
+  },
+  "related": [
+    "interets-composes",
+    "horizon-de-placement",
+    "volatilite"
+  ]
+}

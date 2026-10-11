@@ -1,9 +1,64 @@
 {
   "id": "ae.apple-vs-world-2022",
   "type": "predict_reveal",
+  "status": "draft",
   "title": {
     "fr": "Apple ou ETF Monde : lequel a le plus chuté en 2022 ?",
-    "en": "Apple or a World ETF: which fell more in 2022?"
+    "en": "Apple or a world ETF: which fell more in 2022?"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.aapl-2022-w",
+    "ds.acwi-2022-w"
+  ],
+  "glossary": [
+    "diversification",
+    "action",
+    "etf"
+  ],
+  "question": {
+    "fr": "Début 2022, tu places 1 000 $ dans Apple, ou dans un ETF Monde. Lequel a le plus baissé sur l'année ?",
+    "en": "Early 2022, you put $1,000 in Apple, or in a world ETF. Which fell more over the year?"
+  },
+  "choices": [
+    {
+      "id": "apple",
+      "label": {
+        "fr": "Apple",
+        "en": "Apple"
+      }
+    },
+    {
+      "id": "world",
+      "label": {
+        "fr": "L'ETF Monde",
+        "en": "The world ETF"
+      }
+    }
+  ],
+  "answer": "apple",
+  "series": [
+    {
+      "dataset": "ds.aapl-2022-w",
+      "label": {
+        "fr": "Apple",
+        "en": "Apple"
+      }
+    },
+    {
+      "dataset": "ds.acwi-2022-w",
+      "label": {
+        "fr": "ETF Monde",
+        "en": "World ETF"
+      }
+    }
+  ],
+  "invested": 1000,
+  "explanation": {
+    "fr": "Apple, c'est une seule entreprise : quand elle chute, rien ne compense. L'ETF Monde en détient des milliers, dans des dizaines de pays. C'est la {{diversification|diversification}} : la baisse a été réelle, mais moins forte.",
+    "en": "Apple is a single company: when it falls, nothing makes up for it. The world ETF holds thousands, across dozens of countries. That's {{diversification|diversification}}: the fall was real, but smaller."
+  },
+  "live_variant": {
+    "widget": "compare_returns",
+    "period": "1y"
+  }
 }

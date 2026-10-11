@@ -1,0 +1,51 @@
+{
+  "id": "diversification",
+  "status": "draft",
+  "title": {
+    "fr": "Diversification",
+    "en": "Diversification"
+  },
+  "short": {
+    "fr": "Répartir son argent entre des placements qui ne bougent pas pareil.",
+    "en": "Spreading money across investments that don't move alike."
+  },
+  "body": {
+    "fr": "Quand ton argent est réparti entre beaucoup d'entreprises, de secteurs et de pays, la chute de l'une pèse peu sur l'ensemble : les autres peuvent compenser.\n\nLa diversification ne supprime pas les baisses : en 2022, l'ETF Monde a perdu 17 %. Mais elle réduit le poids d'une seule mauvaise surprise : Apple, cette même année, a perdu 24 %.",
+    "en": "When your money is spread across many companies, sectors and countries, one falling weighs little on the whole: the others can make up for it.\n\nDiversification doesn't remove falls: in 2022, the world ETF lost 17%. But it shrinks the weight of a single bad surprise: that same year, Apple lost 24%."
+  },
+  "for_you": {
+    "fr": "Un {{etf|ETF}} Monde te diversifie en un seul achat. Plusieurs actions d'un même secteur, beaucoup moins.",
+    "en": "A world {{etf|ETF}} diversifies you in a single purchase. Several shares from the same sector, far less."
+  },
+  "related": [
+    "concentration",
+    "etf",
+    "volatilite",
+    "allocation"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Diversifier, c'est…",
+        "en": "Diversifying means…"
+      },
+      "choices": [
+        {
+          "id": "spread",
+          "label": {
+            "fr": "Répartir entre des placements différents",
+            "en": "Spreading across different investments"
+          }
+        },
+        {
+          "id": "more",
+          "label": {
+            "fr": "Acheter plus d'actions de la même entreprise",
+            "en": "Buying more shares of the same company"
+          }
+        }
+      ],
+      "answer": "spread"
+    }
+  ]
+}

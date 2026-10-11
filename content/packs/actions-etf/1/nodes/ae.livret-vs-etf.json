@@ -1,9 +1,68 @@
 {
   "id": "ae.livret-vs-etf",
   "type": "predict_reveal",
+  "status": "draft",
   "title": {
     "fr": "Livret ou ETF ?",
     "en": "Livret or ETF?"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.acwi-eur-2016-m",
+    "ds.livret-a-2016-m"
+  ],
+  "glossary": [
+    "livret-a",
+    "etf",
+    "rendement",
+    "volatilite"
+  ],
+  "question": {
+    "fr": "Fin 2015, tu as 10 000 €. Tu les mets sur un Livret A, ou dans un ETF Monde. Que sont-ils devenus fin septembre 2026 ?",
+    "en": "At the end of 2015, you have €10,000. You put it on a Livret A, or in a world ETF. What had it become by the end of September 2026?"
+  },
+  "choices": [
+    {
+      "id": "livret",
+      "label": {
+        "fr": "Le Livret A a fait mieux",
+        "en": "The Livret A did better"
+      }
+    },
+    {
+      "id": "same",
+      "label": {
+        "fr": "À peu près pareil",
+        "en": "About the same"
+      }
+    },
+    {
+      "id": "etf",
+      "label": {
+        "fr": "L'ETF Monde a fait bien mieux",
+        "en": "The world ETF did much better"
+      }
+    }
+  ],
+  "answer": "etf",
+  "series": [
+    {
+      "dataset": "ds.acwi-eur-2016-m",
+      "label": {
+        "fr": "ETF Monde, en euros",
+        "en": "World ETF, in euros"
+      }
+    },
+    {
+      "dataset": "ds.livret-a-2016-m",
+      "label": {
+        "fr": "Livret A",
+        "en": "Livret A"
+      }
+    }
+  ],
+  "invested": 10000,
+  "explanation": {
+    "fr": "En un peu moins de onze ans, l'ETF Monde a plus que triplé, quand le Livret A a gagné 15 %. Mais le chemin n'a pas été le même : début 2020, l'ETF a perdu 19 % en deux mois, alors que le {{livret-a|Livret A}} ne baisse jamais et reste disponible à tout moment. Ce {{rendement|rendement}} plus élevé est allé avec de la {{volatilite|volatilité}}.",
+    "en": "In a little under eleven years, the world ETF more than tripled, while the Livret A gained 15%. But the road wasn't the same: early 2020, the ETF lost 19% in two months, whereas the {{livret-a|Livret A}} never falls and stays available at any time. That higher {{rendement|return}} came with {{volatilite|volatility}}."
+  }
 }

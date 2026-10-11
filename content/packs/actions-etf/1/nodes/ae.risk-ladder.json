@@ -1,9 +1,72 @@
 {
   "id": "ae.risk-ladder",
   "type": "sort",
+  "status": "draft",
   "title": {
     "fr": "Classe par risque",
     "en": "Rank by risk"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.acwi-2025-d",
+    "ds.aapl-2025-d",
+    "ds.eem-2025-d"
+  ],
+  "glossary": [
+    "volatilite",
+    "livret-a",
+    "action",
+    "etf"
+  ],
+  "prompt": {
+    "fr": "Range ces placements du moins risqué au plus risqué, d'après leurs mouvements en 2025.",
+    "en": "Rank these from least to most risky, by how they moved in 2025."
+  },
+  "scale": {
+    "low": {
+      "fr": "Moins risqué",
+      "en": "Less risky"
+    },
+    "high": {
+      "fr": "Plus risqué",
+      "en": "More risky"
+    }
+  },
+  "items": [
+    {
+      "id": "apple",
+      "label": {
+        "fr": "Apple, une seule action",
+        "en": "Apple, a single stock"
+      },
+      "dataset": "ds.aapl-2025-d"
+    },
+    {
+      "id": "livret",
+      "label": {
+        "fr": "Le Livret A",
+        "en": "The Livret A"
+      },
+      "value": 0
+    },
+    {
+      "id": "emerging",
+      "label": {
+        "fr": "ETF Pays émergents",
+        "en": "Emerging markets ETF"
+      },
+      "dataset": "ds.eem-2025-d"
+    },
+    {
+      "id": "world",
+      "label": {
+        "fr": "ETF Monde",
+        "en": "World ETF"
+      },
+      "dataset": "ds.acwi-2025-d"
+    }
+  ],
+  "explanation": {
+    "fr": "La {{volatilite|volatilité}} mesure l'amplitude des variations. Le Livret A ne bouge pas. En 2025, l'ETF Monde et l'ETF Pays émergents ont bougé presque autant, autour de 17 % par an ; Apple, près de deux fois plus : une seule entreprise porte tout, un ETF répartit sur des centaines ou des milliers.",
+    "en": "{{volatilite|Volatility}} measures how much prices swing. The Livret A doesn't move. In 2025, the world ETF and the emerging markets ETF moved almost as much, around 17% a year; Apple, nearly twice as much: a single company carries everything, an ETF spreads it over hundreds or thousands."
+  }
 }

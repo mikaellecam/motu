@@ -1,0 +1,74 @@
+{
+  "id": "etf",
+  "status": "draft",
+  "title": {
+    "fr": "ETF",
+    "en": "ETF"
+  },
+  "short": {
+    "fr": "Un panier d'entreprises qui suit un indice.",
+    "en": "A basket of companies that tracks an index."
+  },
+  "body": {
+    "fr": "Un ETF (fonds indiciel coté) achète d'un coup toutes les entreprises d'un {{indice|indice}}, dans les mêmes proportions. Acheter une part d'ETF, c'est donc détenir un peu de chacune.\n\nUn ETF s'achète et se vend en Bourse comme une action. Ses {{frais|frais}} sont en général bas : il ne choisit pas les entreprises, il copie l'indice.",
+    "en": "An ETF (exchange-traded fund) buys every company of an {{indice|index}} at once, in the same proportions. Buying one unit of an ETF means owning a little of each.\n\nAn ETF is bought and sold on the stock exchange like a share. Its {{frais|fees}} are usually low: it doesn't pick companies, it copies the index."
+  },
+  "for_you": {
+    "fr": "Avec un seul achat, ton argent est réparti entre des centaines ou des milliers d'entreprises, souvent pour des frais bas.",
+    "en": "With a single purchase, your money is spread across hundreds or thousands of companies, often for low fees."
+  },
+  "related": [
+    "indice",
+    "diversification",
+    "frais",
+    "action"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Un ETF Monde, c'est…",
+        "en": "A world ETF is…"
+      },
+      "choices": [
+        {
+          "id": "one",
+          "label": {
+            "fr": "Une seule entreprise",
+            "en": "A single company"
+          }
+        },
+        {
+          "id": "many",
+          "label": {
+            "fr": "Des milliers d'entreprises",
+            "en": "Thousands of companies"
+          }
+        }
+      ],
+      "answer": "many"
+    },
+    {
+      "question": {
+        "fr": "Un ETF choisit les entreprises qu'il achète…",
+        "en": "An ETF picks the companies it buys…"
+      },
+      "choices": [
+        {
+          "id": "index",
+          "label": {
+            "fr": "D'après un indice, qu'il copie",
+            "en": "By an index, which it copies"
+          }
+        },
+        {
+          "id": "manager",
+          "label": {
+            "fr": "Selon l'avis d'un gérant",
+            "en": "By a manager's judgement"
+          }
+        }
+      ],
+      "answer": "index"
+    }
+  ]
+}

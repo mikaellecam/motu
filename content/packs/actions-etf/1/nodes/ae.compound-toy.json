@@ -1,9 +1,79 @@
 {
   "id": "ae.compound-toy",
   "type": "toy",
+  "status": "draft",
   "title": {
     "fr": "Les intérêts composés",
     "en": "Compound interest"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.acwi-2008-2025-m"
+  ],
+  "glossary": [
+    "interets-composes",
+    "rendement",
+    "horizon-de-placement"
+  ],
+  "formula": "compound",
+  "intro": {
+    "fr": "Une somme de départ, un versement chaque mois, une durée et un rendement. Bouge les curseurs : regarde la part qui vient de tes versements, et celle qui vient des gains.",
+    "en": "A starting amount, a payment every month, a duration and a return. Move the sliders: see the part that comes from your payments, and the part that comes from gains."
+  },
+  "explanation": {
+    "fr": "Chaque année, ce qui est placé rapporte, y compris ce qu'ont rapporté les années d'avant : ce sont les {{interets-composes|intérêts composés}}. L'effet est discret au début, puis la courbe se redresse. Le rendement choisi reste une hypothèse : aucun placement en Bourse ne le garantit.",
+    "en": "Every year, what is invested earns, including what earlier years earned: that's {{interets-composes|compound interest}}. The effect is small at first, then the curve bends upwards. The chosen return stays an assumption: no stock market investment guarantees it."
+  },
+  "return_from": {
+    "dataset": "ds.acwi-2008-2025-m",
+    "label": {
+      "fr": "l'ETF Monde",
+      "en": "the world ETF"
+    }
+  },
+  "controls": [
+    {
+      "id": "amount",
+      "label": {
+        "fr": "Somme de départ",
+        "en": "Starting amount"
+      },
+      "min": 0,
+      "max": 50000,
+      "step": 500,
+      "default": 1000
+    },
+    {
+      "id": "monthly",
+      "label": {
+        "fr": "Versement par mois",
+        "en": "Payment per month"
+      },
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "default": 100
+    },
+    {
+      "id": "years",
+      "label": {
+        "fr": "Durée",
+        "en": "Duration"
+      },
+      "min": 1,
+      "max": 40,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "id": "return",
+      "label": {
+        "fr": "Rendement par an",
+        "en": "Yearly return"
+      },
+      "min": -0.05,
+      "max": 0.12,
+      "step": 0.005,
+      "default": 0.05
+    }
+  ]
 }

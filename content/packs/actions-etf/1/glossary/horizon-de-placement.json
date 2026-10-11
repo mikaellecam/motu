@@ -1,0 +1,25 @@
+{
+  "id": "horizon-de-placement",
+  "status": "draft",
+  "title": {
+    "fr": "Horizon de placement",
+    "en": "Investment horizon"
+  },
+  "short": {
+    "fr": "Combien de temps ton argent peut rester placé.",
+    "en": "How long your money can stay invested."
+  },
+  "body": {
+    "fr": "L'horizon de placement, c'est la durée pendant laquelle tu n'auras pas besoin de cet argent : un an pour un projet proche, vingt ans pour la retraite.\n\nPlus il est long, plus il laisse de temps pour traverser une baisse sans devoir vendre. Sur une seule année, un ETF Monde a déjà perdu plus de 40 %, en 2008 ; et aucune durée ne garantit un gain.",
+    "en": "The investment horizon is how long you won't need that money: a year for a near project, twenty years for retirement.\n\nThe longer it is, the more time it leaves to get through a fall without having to sell. In a single year, a world ETF has lost over 40%, in 2008; and no length of time guarantees a gain."
+  },
+  "for_you": {
+    "fr": "Ta réponse à « Pourquoi veux-tu investir ? » sert d'horizon par défaut dans les projections de l'app.",
+    "en": "Your answer to \"Why do you want to invest?\" is the app's default horizon in its projections."
+  },
+  "related": [
+    "volatilite",
+    "interets-composes",
+    "matelas-de-securite"
+  ]
+}

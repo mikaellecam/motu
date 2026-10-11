@@ -1,9 +1,188 @@
 {
   "id": "ae.checkpoint-1",
   "type": "checkpoint",
+  "status": "draft",
   "title": {
     "fr": "Point d'étape",
     "en": "Checkpoint"
   },
-  "status": "draft"
+  "glossary": [
+    "etf",
+    "frais",
+    "rebond",
+    "volatilite",
+    "risque-de-change",
+    "interets-composes"
+  ],
+  "questions": [
+    {
+      "question": {
+        "fr": "Un ETF Monde, c'est…",
+        "en": "A world ETF is…"
+      },
+      "choices": [
+        {
+          "id": "one",
+          "label": {
+            "fr": "Une seule grande entreprise",
+            "en": "A single large company"
+          }
+        },
+        {
+          "id": "many",
+          "label": {
+            "fr": "Des milliers d'entreprises de nombreux pays",
+            "en": "Thousands of companies from many countries"
+          }
+        }
+      ],
+      "answer": "many",
+      "explanation": {
+        "fr": "Il suit un indice de milliers d'entreprises : c'est la {{diversification|diversification}} en un seul achat.",
+        "en": "It tracks an index of thousands of companies: that's {{diversification|diversification}} in a single purchase."
+      }
+    },
+    {
+      "question": {
+        "fr": "Sur 30 ans, 1 % de frais en plus par an…",
+        "en": "Over 30 years, 1% more in yearly fees…"
+      },
+      "choices": [
+        {
+          "id": "little",
+          "label": {
+            "fr": "Ne change presque rien",
+            "en": "Barely changes anything"
+          }
+        },
+        {
+          "id": "lot",
+          "label": {
+            "fr": "Peut coûter des milliers d'euros",
+            "en": "Can cost thousands of euros"
+          }
+        }
+      ],
+      "answer": "lot",
+      "explanation": {
+        "fr": "Les {{frais|frais}} se prélèvent sur tout, gains compris : leur effet s'additionne d'année en année.",
+        "en": "{{frais|Fees}} are taken on everything, gains included: their effect adds up year after year."
+      }
+    },
+    {
+      "question": {
+        "fr": "En mars 2020, l'ETF Monde a perdu 32 % en cinq semaines. Fin février 2021, il…",
+        "en": "In March 2020, the world ETF lost 32% in five weeks. By late February 2021, it…"
+      },
+      "choices": [
+        {
+          "id": "down",
+          "label": {
+            "fr": "Était toujours en baisse",
+            "en": "Was still down"
+          }
+        },
+        {
+          "id": "back",
+          "label": {
+            "fr": "Avait tout repris",
+            "en": "Had made it all back"
+          }
+        }
+      ],
+      "answer": "back",
+      "explanation": {
+        "fr": "Il avait regagné 70 % depuis le 20 mars 2020 : un {{rebond|rebond}} que personne ne pouvait prévoir ce jour-là.",
+        "en": "It had gained 70% from 20 March 2020: a {{rebond|rebound}} nobody could foresee that day."
+      }
+    },
+    {
+      "question": {
+        "fr": "Lequel a le moins bougé en 2025 ?",
+        "en": "Which moved the least in 2025?"
+      },
+      "choices": [
+        {
+          "id": "stock",
+          "label": {
+            "fr": "Une action seule",
+            "en": "A single stock"
+          }
+        },
+        {
+          "id": "livret",
+          "label": {
+            "fr": "Le Livret A",
+            "en": "The Livret A"
+          }
+        },
+        {
+          "id": "world",
+          "label": {
+            "fr": "Un ETF Monde",
+            "en": "A world ETF"
+          }
+        }
+      ],
+      "answer": "livret",
+      "explanation": {
+        "fr": "Le Livret A ne varie pas : sa {{volatilite|volatilité}} est nulle.",
+        "en": "The Livret A doesn't move: its {{volatilite|volatility}} is zero."
+      }
+    },
+    {
+      "question": {
+        "fr": "Coca-Cola a pris 14 % en dollars en 2017. En euros, c'était…",
+        "en": "Coca-Cola gained 14% in dollars in 2017. In euros, it was…"
+      },
+      "choices": [
+        {
+          "id": "more",
+          "label": {
+            "fr": "Plus de 14 %",
+            "en": "More than 14%"
+          }
+        },
+        {
+          "id": "little",
+          "label": {
+            "fr": "Presque rien",
+            "en": "Almost nothing"
+          }
+        }
+      ],
+      "answer": "little",
+      "explanation": {
+        "fr": "Le dollar avait perdu 12 % face à l'euro : c'est le {{risque-de-change|risque de change}}.",
+        "en": "The dollar had lost 12% against the euro: that's {{risque-de-change|currency risk}}."
+      }
+    },
+    {
+      "question": {
+        "fr": "1 000 € à 10 % par an pendant 2 ans, gains laissés placés, ça donne…",
+        "en": "€1,000 at 10% a year for 2 years, gains left invested, comes to…"
+      },
+      "choices": [
+        {
+          "id": "1200",
+          "label": {
+            "fr": "1 200 €",
+            "en": "€1,200"
+          }
+        },
+        {
+          "id": "1210",
+          "label": {
+            "fr": "1 210 €",
+            "en": "€1,210"
+          }
+        }
+      ],
+      "answer": "1210",
+      "explanation": {
+        "fr": "La deuxième année, les 100 € de gain rapportent aussi 10 € : ce sont les {{interets-composes|intérêts composés}}.",
+        "en": "In the second year, the €100 of gains also earn €10: that's {{interets-composes|compound interest}}."
+      }
+    }
+  ]
 }

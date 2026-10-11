@@ -1,0 +1,25 @@
+{
+  "id": "allocation",
+  "status": "draft",
+  "title": {
+    "fr": "Allocation",
+    "en": "Allocation"
+  },
+  "short": {
+    "fr": "Comment ton argent est réparti entre tes placements.",
+    "en": "How your money is split across your investments."
+  },
+  "body": {
+    "fr": "L'allocation, c'est la part de chaque placement dans ton portefeuille : par exemple 60 % d'ETF Monde, 30 % d'obligations et 10 % de liquidités.\n\nElle pèse souvent plus sur le comportement d'un portefeuille que le choix de chaque titre : un portefeuille tout en actions bouge bien plus qu'un portefeuille à moitié en obligations.",
+    "en": "Allocation is the share of each investment in your wallet: for example 60% world ETF, 30% bonds and 10% cash.\n\nIt often weighs more on how a wallet behaves than the choice of each security: an all-stock wallet moves far more than one half in bonds."
+  },
+  "for_you": {
+    "fr": "La carte « Répartition » de ton portefeuille montre ton allocation en pourcentages.",
+    "en": "Your wallet's \"Allocation\" card shows your allocation as percentages."
+  },
+  "related": [
+    "diversification",
+    "concentration",
+    "liquidites"
+  ]
+}

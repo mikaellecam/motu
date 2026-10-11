@@ -1,0 +1,46 @@
+{
+  "id": "ordre-stop",
+  "status": "draft",
+  "title": {
+    "fr": "Ordre stop",
+    "en": "Stop order"
+  },
+  "short": {
+    "fr": "Un ordre qui se déclenche quand le cours franchit un seuil.",
+    "en": "An order that triggers when the price crosses a threshold."
+  },
+  "body": {
+    "fr": "Un ordre stop dort jusqu'à ce que le cours atteigne ton seuil, puis il s'exécute. En vente, on l'appelle stop-loss : il sert à limiter une perte, en vendant par exemple si le cours descend à 90 $.\n\nAttention aux trous : si le cours ouvre directement à 80 $ après une mauvaise nouvelle, l'ordre s'exécute vers 80 $, pas à 90 $.",
+    "en": "A stop order sleeps until the price reaches your threshold, then it fills. On a sell, it's called a stop-loss: it's used to limit a loss, for example by selling if the price falls to $90.\n\nBeware of gaps: if the price opens straight at $80 after bad news, the order fills around $80, not at $90."
+  },
+  "related": [
+    "ordre-limite",
+    "ordre-au-marche",
+    "pire-baisse"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Stop de vente à 90 $. Le cours ouvre à 80 $ après une mauvaise nouvelle. Tu vends…",
+        "en": "Sell stop at $90. The price opens at $80 after bad news. You sell…"
+      },
+      "choices": [
+        {
+          "id": "80",
+          "label": {
+            "fr": "Vers 80 $",
+            "en": "Around $80"
+          }
+        },
+        {
+          "id": "90",
+          "label": {
+            "fr": "À 90 $ exactement",
+            "en": "At exactly $90"
+          }
+        }
+      ],
+      "answer": "80"
+    }
+  ]
+}

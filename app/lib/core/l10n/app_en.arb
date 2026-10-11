@@ -279,7 +279,7 @@
   "replay_reason": "\u201c{reason}\u201d",
   "node_check": "Check",
   "node_right": "Spot on!",
-  "node_wrong": "Not this time: it was {answer}.",
+  "node_wrong": "Not this time. The answer: {answer}.",
   "node_invested": "With {amount} put in at the start.",
   "node_base_100": "Base 100 at the start.",
   "node_provenance": "Real prices, {interval, select, daily{daily closes} weekly{weekly closes} monthly{monthly closes} other{closes}}, {period}, {currency, select, USD{in dollars} EUR{in euros} other{in {currency}}}.",

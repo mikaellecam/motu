@@ -1,12 +1,87 @@
 {
   "id": "ae.march-2020",
   "type": "decision",
+  "status": "draft",
   "title": {
     "fr": "Mars 2020 : vendre ou tenir ?",
     "en": "March 2020: sell or hold?"
   },
-  "status": "draft",
+  "datasets": [
+    "ds.acwi-2020-w"
+  ],
+  "glossary": [
+    "pire-baisse",
+    "rebond",
+    "horizon-de-placement"
+  ],
   "bridge": {
     "date": "2020-02-18"
+  },
+  "context": {
+    "fr": "Vendredi 20 mars 2020. Le Covid ferme les pays un à un, et l'ETF Monde a perdu 32 % en cinq semaines. Tu as 10 000 $ placés dessus.",
+    "en": "Friday 20 March 2020. Covid is closing countries one after another, and the world ETF has lost 32% in five weeks. You have $10,000 in it."
+  },
+  "moment": "2020-03-20",
+  "series": {
+    "dataset": "ds.acwi-2020-w",
+    "label": {
+      "fr": "ETF Monde",
+      "en": "World ETF"
+    }
+  },
+  "invested": 10000,
+  "choices": [
+    {
+      "id": "hold",
+      "label": {
+        "fr": "Garder",
+        "en": "Hold"
+      },
+      "upside": {
+        "fr": "Si les cours remontent, tu en profites en entier.",
+        "en": "If prices recover, you get all of it."
+      },
+      "downside": {
+        "fr": "Si la baisse continue, tu perds davantage.",
+        "en": "If the fall goes on, you lose more."
+      },
+      "kept": 1
+    },
+    {
+      "id": "half",
+      "label": {
+        "fr": "Vendre la moitié",
+        "en": "Sell half"
+      },
+      "upside": {
+        "fr": "Si la baisse continue, tu limites la perte.",
+        "en": "If the fall goes on, you limit the loss."
+      },
+      "downside": {
+        "fr": "Si les cours remontent, tu n'en profites qu'à moitié.",
+        "en": "If prices recover, you only get half of it."
+      },
+      "kept": 0.5
+    },
+    {
+      "id": "sell",
+      "label": {
+        "fr": "Tout vendre",
+        "en": "Sell everything"
+      },
+      "upside": {
+        "fr": "Plus aucune perte possible.",
+        "en": "No more loss possible."
+      },
+      "downside": {
+        "fr": "Tu ne profites d'aucune remontée.",
+        "en": "You miss any recovery."
+      },
+      "kept": 0
+    }
+  ],
+  "explanation": {
+    "fr": "Ce jour-là, personne ne savait que le marché toucherait son plus bas trois jours plus tard. Fin février 2021, l'ETF Monde avait regagné 70 % depuis le 20 mars : ceux qui avaient vendu avaient figé leur perte, ceux qui avaient gardé l'avaient effacée. Rien ne garantissait ce {{rebond|rebond}} : après 2008, il avait fallu plusieurs années.",
+    "en": "That day, nobody knew the market would hit its low three days later. By late February 2021, the world ETF had gained 70% from 20 March: those who had sold had locked in their loss, those who had held had wiped it out. Nothing guaranteed that {{rebond|rebound}}: after 2008, it had taken several years."
   }
 }

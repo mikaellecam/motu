@@ -30,6 +30,9 @@ type Dataset struct {
 	Symbol   string
 	Adjusted bool
 	Currency string
+	// FX is the source of the rates the values were converted with ("ecb");
+	// empty when they are as published.
+	FX       string
 	Interval string
 	From, To time.Time
 	FrozenAt time.Time
@@ -48,17 +51,13 @@ var decimalNumber = regexp.MustCompile(`^\d+(\.\d+)?$`)
 // spec.To]: every one for "1day", else the last close of each ISO week or
 // calendar month, dated by the day of that close.
 func Freeze(spec Spec, bars []store.Bar, frozenAt time.Time) (Dataset, error) {
-	if !slices.Contains(Intervals, spec.Interval) {
-		return Dataset{}, fmt.Errorf("interval %q is not one of %v", spec.Interval, Intervals)
-	}
-	if spec.From.After(spec.To) {
-		return Dataset{}, fmt.Errorf("from %s is after to %s", spec.From.Format(time.DateOnly), spec.To.Format(time.DateOnly))
+	if err := checkRange(spec.Interval, spec.From, spec.To); err != nil {
+		return Dataset{}, err
 	}
 	sorted := slices.Clone(bars)
 	slices.SortFunc(sorted, func(a, b store.Bar) int { return a.Date.Compare(b.Date) })
 
-	var points []Point
-	var lastPeriod string
+	var daily []Point
 	for _, bar := range sorted {
 		if bar.Date.Before(spec.From) || bar.Date.After(spec.To) {
 			continue
@@ -66,15 +65,9 @@ func Freeze(spec Spec, bars []store.Bar, frozenAt time.Time) (Dataset, error) {
 		if !decimalNumber.MatchString(bar.Close) {
 			return Dataset{}, fmt.Errorf("close %q of %s is not a number", bar.Close, bar.Date.Format(time.DateOnly))
 		}
-		point := Point{bar.Date, trimZeros(bar.Close)}
-		period := periodOf(bar.Date, spec.Interval)
-		if len(points) > 0 && period == lastPeriod {
-			points[len(points)-1] = point
-		} else {
-			points = append(points, point)
-		}
-		lastPeriod = period
+		daily = append(daily, Point{bar.Date, trimZeros(bar.Close)})
 	}
+	points := bucket(daily, spec.Interval)
 	if len(points) == 0 {
 		return Dataset{}, fmt.Errorf("no close of %s between %s and %s", spec.Asset.ProviderSymbol,
 			spec.From.Format(time.DateOnly), spec.To.Format(time.DateOnly))
@@ -84,6 +77,32 @@ func Freeze(spec Spec, bars []store.Bar, frozenAt time.Time) (Dataset, error) {
 		Adjusted: true, Currency: spec.Asset.Currency, Interval: spec.Interval,
 		From: spec.From, To: spec.To, FrozenAt: frozenAt, Points: points,
 	}, nil
+}
+
+func checkRange(interval string, from, to time.Time) error {
+	if !slices.Contains(Intervals, interval) {
+		return fmt.Errorf("interval %q is not one of %v", interval, Intervals)
+	}
+	if from.After(to) {
+		return fmt.Errorf("from %s is after to %s", from.Format(time.DateOnly), to.Format(time.DateOnly))
+	}
+	return nil
+}
+
+// bucket keeps the last of the daily points (oldest first) of each period.
+func bucket(daily []Point, interval string) []Point {
+	var points []Point
+	var lastPeriod string
+	for _, p := range daily {
+		period := periodOf(p.Date, interval)
+		if len(points) > 0 && period == lastPeriod {
+			points[len(points)-1] = p
+		} else {
+			points = append(points, p)
+		}
+		lastPeriod = period
+	}
+	return points
 }
 
 // periodOf names the bucket a day falls in; every day is its own for 1day.
@@ -107,7 +126,8 @@ func trimZeros(s string) string {
 }
 
 // Encode writes the dataset as the pack's datasets/<id>.json: one field per
-// line, one point per line.
+// line, one point per line. A series that is not an asset's leaves out asset
+// and symbol; fx only when the values were converted.
 func (d Dataset) Encode() []byte {
 	var b bytes.Buffer
 	b.WriteString("{\n")
@@ -116,10 +136,13 @@ func (d Dataset) Encode() []byte {
 		value any
 	}{
 		{"id", d.ID}, {"source", d.Source}, {"asset", d.Asset}, {"symbol", d.Symbol},
-		{"adjusted", d.Adjusted}, {"currency", d.Currency}, {"interval", d.Interval},
+		{"adjusted", d.Adjusted}, {"currency", d.Currency}, {"fx", d.FX}, {"interval", d.Interval},
 		{"from", d.From.Format(time.DateOnly)}, {"to", d.To.Format(time.DateOnly)},
 		{"frozen_at", d.FrozenAt.Format(time.DateOnly)},
 	} {
+		if f.value == "" {
+			continue
+		}
 		value, _ := json.Marshal(f.value)
 		fmt.Fprintf(&b, "  %q: %s,\n", f.key, value)
 	}

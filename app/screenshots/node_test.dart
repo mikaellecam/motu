@@ -11,15 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'screenshot.dart';
 
-// fixtures/actions-etf.json: lessons drafted for the screenshots, on
-// datasets frozen by cmd/freeze (Apple and the world ETF, weekly 2022; the
-// world ETF, monthly 2008–2025 and weekly 2020; 2025 daily closes of the
-// world ETF, Apple and emerging markets; 2023–2025 daily closes of four
-// ETFs). The island's real lessons come with M6-8.
+// The island's lessons as the app bundles them (M6-8, draft copy on
+// datasets frozen by cmd/freeze).
 
 void main() {
   final pack = decodePack(
-    File('screenshots/fixtures/actions-etf.json').readAsStringSync(),
+    File('assets/packs/actions-etf.json').readAsStringSync(),
   );
   final overrides = <Override>[
     contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
@@ -37,6 +34,39 @@ void main() {
       await tester.tap(find.text('Valider'));
       await tester.pumpAndSettle();
     },
+  );
+
+  screenshot(
+    'm6-8-livret-vs-etf',
+    const NodeScreen(nodeId: 'ae.livret-vs-etf'),
+    size: const Size(390, 1150),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.text('À peu près pareil'));
+      await tester.pump();
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  screenshot(
+    'm6-8-dollar-trap',
+    const NodeScreen(nodeId: 'ae.dollar-trap'),
+    size: const Size(390, 1250),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.text('Environ 14\u202f%'));
+      await tester.pump();
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  screenshot(
+    'm6-8-compound-toy',
+    const NodeScreen(nodeId: 'ae.compound-toy'),
+    size: const Size(390, 1050),
+    overrides: overrides,
   );
 
   screenshot(

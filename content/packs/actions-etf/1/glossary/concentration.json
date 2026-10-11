@@ -1,0 +1,49 @@
+{
+  "id": "concentration",
+  "status": "draft",
+  "title": {
+    "fr": "Concentration",
+    "en": "Concentration"
+  },
+  "short": {
+    "fr": "Une seule ligne qui pèse lourd dans le portefeuille.",
+    "en": "A single holding that weighs heavily in the wallet."
+  },
+  "body": {
+    "fr": "Un portefeuille est concentré quand une seule position en représente une grande part. Ses hauts et ses bas deviennent alors ceux du portefeuille.\n\nLe compagnon le signale au-delà de 30 % ou 40 % sur une seule ligne, selon ton profil : c'est un constat, pas une interdiction.",
+    "en": "A wallet is concentrated when a single position makes up a large share of it. Its ups and downs then become the wallet's.\n\nThe companion points it out above 30% or 40% on a single holding, depending on your profile: it's an observation, not a ban."
+  },
+  "for_you": {
+    "fr": "Avant chaque ordre, le coach te montre le poids qu'aurait la ligne après l'achat.",
+    "en": "Before every order, the coach shows you the weight the holding would have after the purchase."
+  },
+  "related": [
+    "diversification",
+    "allocation"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Une action pèse 60 % de ton portefeuille. Si elle perd 20 %, ton portefeuille…",
+        "en": "A share makes up 60% of your wallet. If it loses 20%, your wallet…"
+      },
+      "choices": [
+        {
+          "id": "12",
+          "label": {
+            "fr": "Perd environ 12 %",
+            "en": "Loses about 12%"
+          }
+        },
+        {
+          "id": "20",
+          "label": {
+            "fr": "Perd 20 %",
+            "en": "Loses 20%"
+          }
+        }
+      ],
+      "answer": "12"
+    }
+  ]
+}

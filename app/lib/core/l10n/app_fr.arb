@@ -834,7 +834,7 @@
   },
   "node_check": "Valider",
   "node_right": "Bien vu\u202f!",
-  "node_wrong": "Pas cette fois\u202f: c'\u00e9tait {answer}.",
+  "node_wrong": "Pas cette fois. Bonne r\u00e9ponse\u202f: {answer}.",
   "@node_wrong": {
     "placeholders": {
       "answer": {

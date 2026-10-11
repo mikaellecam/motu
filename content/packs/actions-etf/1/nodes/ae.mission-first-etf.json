@@ -1,11 +1,14 @@
 {
   "id": "ae.mission-first-etf",
   "type": "mission",
+  "status": "draft",
   "title": {
     "fr": "Ton premier ETF",
     "en": "Your first ETF"
   },
-  "status": "draft",
+  "glossary": [
+    "etf"
+  ],
   "goal": {
     "fr": "Ajoute un ETF, n'importe lequel, à ton portefeuille fictif.",
     "en": "Add an ETF, any one, to your practice wallet."

@@ -1,0 +1,50 @@
+{
+  "id": "frais",
+  "status": "draft",
+  "title": {
+    "fr": "Frais",
+    "en": "Fees"
+  },
+  "short": {
+    "fr": "Ce que coûte un placement, chaque année ou à chaque ordre.",
+    "en": "What an investment costs, every year or with every order."
+  },
+  "body": {
+    "fr": "Un {{etf|ETF}} prélève des frais de gestion chaque année, en pourcentage de ce que tu détiens : autour de 0,2 % pour beaucoup d'ETF Monde, souvent 1,5 % ou plus pour des fonds gérés activement. Un courtier peut aussi prendre des frais à chaque achat ou vente.\n\nLes frais annuels se prélèvent sur tout, gains compris : leur effet s'additionne d'année en année, comme les {{interets-composes|intérêts composés}}, mais dans l'autre sens.",
+    "en": "An {{etf|ETF}} takes management fees every year, as a percentage of what you hold: around 0.2% for many world ETFs, often 1.5% or more for actively managed funds. A broker can also charge on every buy or sell.\n\nYearly fees are taken on everything, gains included: their effect adds up year after year, like {{interets-composes|compound interest}}, but the other way."
+  },
+  "for_you": {
+    "fr": "Dans ce bac à sable, chaque ordre sur un actif en dollars coûte des frais de change : tu les vois dans le récapitulatif avant de valider.",
+    "en": "In this sandbox, every order on a dollar asset carries a currency fee: you see it in the summary before confirming."
+  },
+  "related": [
+    "etf",
+    "interets-composes",
+    "rendement"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Les frais annuels d'un ETF sont prélevés…",
+        "en": "An ETF's yearly fees are taken…"
+      },
+      "choices": [
+        {
+          "id": "all",
+          "label": {
+            "fr": "Sur tout ce que tu détiens, gains compris",
+            "en": "On everything you hold, gains included"
+          }
+        },
+        {
+          "id": "start",
+          "label": {
+            "fr": "Seulement sur la somme de départ",
+            "en": "Only on the starting amount"
+          }
+        }
+      ],
+      "answer": "all"
+    }
+  ]
+}

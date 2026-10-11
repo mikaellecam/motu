@@ -1,0 +1,52 @@
+{
+  "id": "pire-baisse",
+  "status": "draft",
+  "title": {
+    "fr": "Pire baisse",
+    "en": "Worst drop"
+  },
+  "short": {
+    "fr": "La plus forte chute depuis un sommet.",
+    "en": "The deepest fall from a peak."
+  },
+  "body": {
+    "fr": "La pire baisse mesure la plus grande chute d'un placement, entre un sommet et le creux qui a suivi. C'est ce qu'aurait perdu, au pire moment, quelqu'un qui avait acheté au plus haut.\n\nEntre mi-février et fin mars 2020, l'ETF Monde a perdu environ un tiers de sa valeur. Il l'a retrouvée en moins d'un an ; d'autres baisses ont pris des années.",
+    "en": "The worst drop measures an investment's biggest fall, from a peak to the trough that followed. It's what someone who bought at the top would have lost at the worst moment.\n\nBetween mid-February and late March 2020, the world ETF lost about a third of its value. It got it back in less than a year; other falls took years."
+  },
+  "for_you": {
+    "fr": "La pire baisse donne une idée de ce que tu aurais vu sur ton écran au pire moment : environ −3 200 $ sur 10 000 $ placés dans l'ETF Monde à la mi-février 2020.",
+    "en": "The worst drop gives an idea of what you would have seen on your screen at the worst moment: about −$3,200 on $10,000 put in the world ETF in mid-February 2020."
+  },
+  "live_example": {
+    "widget": "drawdown"
+  },
+  "related": [
+    "volatilite",
+    "rebond"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Une pire baisse de 30 %, c'est…",
+        "en": "A 30% worst drop is…"
+      },
+      "choices": [
+        {
+          "id": "peak",
+          "label": {
+            "fr": "Ce qu'a perdu, au pire moment, quelqu'un qui avait acheté au sommet",
+            "en": "What someone who bought at the top lost at the worst moment"
+          }
+        },
+        {
+          "id": "year",
+          "label": {
+            "fr": "Ce que le placement a perdu sur l'année",
+            "en": "What the investment lost over the year"
+          }
+        }
+      ],
+      "answer": "peak"
+    }
+  ]
+}

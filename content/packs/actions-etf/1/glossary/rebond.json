@@ -1,0 +1,21 @@
+{
+  "id": "rebond",
+  "status": "draft",
+  "title": {
+    "fr": "Rebond",
+    "en": "Rebound"
+  },
+  "short": {
+    "fr": "Une remontée après une baisse.",
+    "en": "A rise after a fall."
+  },
+  "body": {
+    "fr": "Après une forte baisse, les cours remontent parfois vite : c'est un rebond. En mars 2020, l'ETF Monde a touché son plus bas le 23, puis a regagné plus de 60 % en un an.\n\nUn rebond ne se voit qu'après coup : au plus bas, personne ne sait que c'est le plus bas. Et toutes les baisses n'ont pas rebondi aussi vite.",
+    "en": "After a big fall, prices sometimes climb back fast: that's a rebound. In March 2020, the world ETF hit its low on the 23rd, then gained over 60% within a year.\n\nA rebound only shows afterwards: at the low, nobody knows it's the low. And not every fall bounced back that fast."
+  },
+  "related": [
+    "pire-baisse",
+    "volatilite",
+    "horizon-de-placement"
+  ]
+}

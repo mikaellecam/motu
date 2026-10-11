@@ -164,7 +164,9 @@ void main() {
     await tap(tester, 'Une seule entreprise');
     await tap(tester, 'Valider');
     expect(
-      find.text("Pas cette fois$nnbsp: c'était Des milliers d'entreprises."),
+      find.text(
+        "Pas cette fois. Bonne réponse$nnbsp: Des milliers d'entreprises.",
+      ),
       findsOneWidget,
     );
     expect(

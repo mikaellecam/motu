@@ -1,0 +1,46 @@
+{
+  "id": "ordre-au-marche",
+  "status": "draft",
+  "title": {
+    "fr": "Ordre au marché",
+    "en": "Market order"
+  },
+  "short": {
+    "fr": "Acheter ou vendre tout de suite, au prix du moment.",
+    "en": "Buy or sell right away, at the current price."
+  },
+  "body": {
+    "fr": "Un ordre au marché s'exécute dès que possible, au prix disponible à ce moment-là. Si la Bourse est ouverte, c'est immédiat ; sinon, il part à l'ouverture suivante, au premier cours de la séance.\n\nTu es sûr que l'ordre passe, pas du prix exact : entre la clôture de la veille et l'ouverture, le cours peut avoir bougé.",
+    "en": "A market order fills as soon as possible, at the price available then. If the stock exchange is open, it's immediate; otherwise, it goes at the next opening, at the session's first price.\n\nYou're sure the order goes through, not of the exact price: between the previous close and the opening, the price may have moved."
+  },
+  "related": [
+    "ordre-limite",
+    "ordre-stop",
+    "cours-de-cloture"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "La Bourse est fermée. Ton ordre au marché…",
+        "en": "The stock exchange is closed. Your market order…"
+      },
+      "choices": [
+        {
+          "id": "open",
+          "label": {
+            "fr": "Part à l'ouverture suivante",
+            "en": "Goes at the next opening"
+          }
+        },
+        {
+          "id": "now",
+          "label": {
+            "fr": "S'exécute tout de suite au dernier cours",
+            "en": "Fills right away at the last price"
+          }
+        }
+      ],
+      "answer": "open"
+    }
+  ]
+}

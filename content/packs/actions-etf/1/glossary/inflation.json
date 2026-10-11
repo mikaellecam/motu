@@ -1,0 +1,24 @@
+{
+  "id": "inflation",
+  "status": "draft",
+  "title": {
+    "fr": "Inflation",
+    "en": "Inflation"
+  },
+  "short": {
+    "fr": "La hausse générale des prix, qui réduit ce que ton argent peut acheter.",
+    "en": "The general rise in prices, which shrinks what your money can buy."
+  },
+  "body": {
+    "fr": "Quand les prix montent de 2 % en un an, 100 € achètent ce qui en coûtait environ 98 un an plus tôt. Un placement qui rapporte moins que l'inflation fait perdre du pouvoir d'achat, même si son montant grandit.\n\nEn France, les prix ont augmenté de 5,2 % en 2022 et de 4,9 % en 2023 (Insee, moyennes annuelles).",
+    "en": "When prices rise by 2% in a year, €100 buys what cost about 98 a year earlier. An investment that earns less than inflation loses purchasing power, even if its amount grows.\n\nIn France, prices rose by 5.2% in 2022 and 4.9% in 2023 (Insee, yearly averages)."
+  },
+  "for_you": {
+    "fr": "Le {{livret-a|Livret A}} est garanti en euros, pas en pouvoir d'achat : en 2022, son taux de 1 % puis 2 % est resté sous l'inflation.",
+    "en": "The {{livret-a|Livret A}} is guaranteed in euros, not in purchasing power: in 2022, its 1% then 2% rate stayed below inflation."
+  },
+  "related": [
+    "livret-a",
+    "rendement"
+  ]
+}

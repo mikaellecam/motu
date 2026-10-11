@@ -1,9 +1,68 @@
 {
   "id": "ae.calm-portfolio",
   "type": "build_puzzle",
+  "status": "draft",
   "title": {
     "fr": "Construis un portefeuille calme",
     "en": "Build a calm portfolio"
   },
-  "status": "draft"
+  "datasets": [
+    "ds.acwi-3y-d",
+    "ds.agg-3y-d",
+    "ds.bwx-3y-d",
+    "ds.vgk-3y-d"
+  ],
+  "glossary": [
+    "volatilite",
+    "diversification",
+    "allocation"
+  ],
+  "prompt": {
+    "fr": "Répartis 100 % entre ces ETF pour que le portefeuille ait bougé de moins de 8 % par an de 2023 à 2025, avec au moins 3 ETF de 3 zones.",
+    "en": "Share 100% between these ETFs so the portfolio moved less than 8% a year from 2023 to 2025, with at least 3 ETFs from 3 regions."
+  },
+  "assets": [
+    {
+      "dataset": "ds.acwi-3y-d",
+      "label": {
+        "fr": "ETF Monde (actions)",
+        "en": "World ETF (stocks)"
+      },
+      "region": "world"
+    },
+    {
+      "dataset": "ds.agg-3y-d",
+      "label": {
+        "fr": "Obligations américaines",
+        "en": "US bonds"
+      },
+      "region": "us"
+    },
+    {
+      "dataset": "ds.bwx-3y-d",
+      "label": {
+        "fr": "Obligations internationales",
+        "en": "International bonds"
+      },
+      "region": "world"
+    },
+    {
+      "dataset": "ds.vgk-3y-d",
+      "label": {
+        "fr": "Actions européennes",
+        "en": "European stocks"
+      },
+      "region": "europe"
+    }
+  ],
+  "rules": {
+    "max_volatility": 0.08,
+    "min_assets": 3,
+    "min_regions": 3
+  },
+  "step": 0.1,
+  "explanation": {
+    "fr": "Les obligations ont bougé bien moins que les actions, et pas toujours en même temps qu'elles : mélangés, ces placements ont moins bougé que la plupart pris seuls. C'est l'{{allocation|allocation}}, plus que le choix de chaque ETF, qui a fixé la {{volatilite|volatilité}} du portefeuille.",
+    "en": "Bonds moved far less than stocks, and not always at the same time: mixed, these investments moved less than most of them alone. The {{allocation|allocation}}, more than the choice of each ETF, set the portfolio's {{volatilite|volatility}}."
+  }
 }

@@ -1,0 +1,51 @@
+{
+  "id": "livret-a",
+  "status": "draft",
+  "title": {
+    "fr": "Livret A",
+    "en": "Livret A"
+  },
+  "short": {
+    "fr": "Un compte d'épargne garanti par l'État, sans risque de perte.",
+    "en": "A state-backed savings account with no risk of loss."
+  },
+  "body": {
+    "fr": "Le Livret A rapporte un taux fixé par l'État et révisé deux fois par an : 1,7 % depuis août 2026. L'argent reste disponible à tout moment, sans frais ni impôt, jusqu'à un plafond de 22 950 €.\n\nLes intérêts se comptent par quinzaine et s'ajoutent au livret le 31 décembre. Ton argent ne baisse jamais en euros, mais il peut rapporter moins que l'{{inflation|inflation}}.",
+    "en": "The Livret A pays a rate set by the French state and reviewed twice a year: 1.7% since August 2026. The money stays available at any time, with no fees or tax, up to a ceiling of €22,950.\n\nInterest is counted by fortnight and added to the account on 31 December. Your money never falls in euros, but it can earn less than {{inflation|inflation}}."
+  },
+  "for_you": {
+    "fr": "C'est souvent là qu'on garde son {{matelas-de-securite|matelas de sécurité}} : l'argent dont on pourrait avoir besoin vite.",
+    "en": "It's often where people keep their {{matelas-de-securite|safety cushion}}: the money they might need quickly."
+  },
+  "related": [
+    "inflation",
+    "matelas-de-securite",
+    "liquidites",
+    "interets-composes"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Sur un Livret A, ton argent…",
+        "en": "On a Livret A, your money…"
+      },
+      "choices": [
+        {
+          "id": "never",
+          "label": {
+            "fr": "Ne peut pas baisser en euros",
+            "en": "Can't fall in euros"
+          }
+        },
+        {
+          "id": "can",
+          "label": {
+            "fr": "Peut baisser comme une action",
+            "en": "Can fall like a share"
+          }
+        }
+      ],
+      "answer": "never"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "cours-de-cloture",
+  "status": "draft",
+  "title": {
+    "fr": "Cours de clôture",
+    "en": "Closing price"
+  },
+  "short": {
+    "fr": "Le dernier prix d'une séance de Bourse.",
+    "en": "The last price of a trading session."
+  },
+  "body": {
+    "fr": "Chaque jour où la Bourse est ouverte, le cours de clôture est le dernier prix échangé avant la fermeture : à 17 h 30 à Paris, à 22 h (heure de Paris) à New York la plupart de l'année.\n\nLes courbes de cette app sont faites de cours de clôture : un point par jour, par semaine ou par mois.",
+    "en": "Every day the stock exchange is open, the closing price is the last price traded before it closes: at 5:30 pm in Paris, at 10 pm (Paris time) in New York most of the year.\n\nThis app's curves are made of closing prices: one point a day, a week or a month."
+  },
+  "related": [
+    "ordre-au-marche",
+    "volatilite"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "rendement",
+  "status": "draft",
+  "title": {
+    "fr": "Rendement",
+    "en": "Return"
+  },
+  "short": {
+    "fr": "Ce qu'un placement rapporte, en pourcentage.",
+    "en": "What an investment brings in, as a percentage."
+  },
+  "body": {
+    "fr": "Le rendement exprime le gain ou la perte d'un placement par rapport à la somme placée : 100 € qui deviennent 105 €, c'est 5 % de rendement.\n\nOn le donne souvent par an, pour comparer des placements de durées différentes. Celui du {{livret-a|Livret A}} est fixé à l'avance ; celui d'une action ou d'un {{etf|ETF}} n'est connu qu'après coup.",
+    "en": "Return expresses an investment's gain or loss relative to the amount put in: €100 that becomes €105 is a 5% return.\n\nIt's often given per year, to compare investments of different lengths. The {{livret-a|Livret A}}'s is set in advance; a share's or an {{etf|ETF}}'s is only known afterwards."
+  },
+  "related": [
+    "performance",
+    "plus-value",
+    "interets-composes"
+  ]
+}

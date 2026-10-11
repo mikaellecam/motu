@@ -148,7 +148,7 @@ V1 island "Actions & ETF" (order matters, ids stable):
 
 | # | id | Type | Title (fr) | Data |
 |---|---|---|---|---|
-| 1 | `ae.livret-vs-etf` | predict_reveal | Livret ou ETF ? | 10 000 € from 2016-01 to latest: Livret A (historical rates) vs the world ETF (ACWI, in EUR) |
+| 1 | `ae.livret-vs-etf` | predict_reveal | Livret ou ETF ? | 10 000 € from 2015-12-31 to the last full month (2026-09-30), monthly: the world ETF (ACWI, in EUR at ECB rates) vs a Livret A (historical rates) |
 | 2 | `ae.fees-toy` | toy | Le jouet des frais | Formula: 0.2 % vs 1.5 % yearly fees over 30 years |
 | 3 | `ae.mission-first-etf` | mission | Ton premier ETF | Live wallet holds ≥ 1 ETF |
 | 4 | `ae.apple-vs-world-2022` | predict_reveal | Apple ou ETF Monde : lequel a le plus chuté en 2022 ? | Weekly adjusted closes 2022, USD |
@@ -156,7 +156,7 @@ V1 island "Actions & ETF" (order matters, ids stable):
 | 6 | `ae.risk-ladder` | sort | Classe par risque | Livret, world ETF, single stock, EM ETF; 1-year volatility |
 | 7 | `ae.compound-toy` | toy | Les intérêts composés | Formula |
 | 8 | `ae.mission-three-regions` | mission | Trois zones géographiques | ≥ 3 distinct regions among the live wallet's positions (one region per asset; a world ETF counts as one) |
-| 9 | `ae.dollar-trap` | predict_reveal | Le piège du dollar | A US stock's return in USD vs EUR over a period with a big EUR/USD move |
+| 9 | `ae.dollar-trap` | predict_reveal | Le piège du dollar | Coca-Cola in 2017, weekly: in USD (+14 %), in EUR (+0,5 %), and the dollar in euros (−12 %) |
 | 10 | `ae.calm-portfolio` | build_puzzle | Construis un portefeuille calme | Volatility cap, ≥ 3 assets, frozen 3-year data |
 | 11 | `ae.mission-dca` | mission | Mets en place un DCA | Any wallet has an active DCA plan |
 | 12 | `ae.checkpoint-1` | checkpoint | Point d'étape | Quiz over nodes 1–11 |
@@ -237,7 +237,12 @@ Rules:
 - Every text field has `fr` and `en`; missing locale fails `contentcheck`.
 - Datasets are produced by `cmd/freeze` from the same provider as live data, adjusted for splits, with
   provenance shown in-app ("Cours réels, clôtures hebdo, 2022, en dollars"). A weekly or monthly point is
-  the last close of its ISO week or calendar month, dated by the day of that close.
+  the last close of its ISO week or calendar month, dated by the day of that close. Besides an asset's closes
+  (M6-8): `-currency EUR` converts each close at the ECB rate of its day or the last one before (`"fx":
+  "ecb"`); `-fx USD` is what one dollar was worth in euros (`"source": "ecb"`); `-livret` is a Livret A
+  holding of `-deposit` euros put in on `-from`, valued each day as the app values a Livret (§4.11) from the
+  backend's rate history (`"source": "livret-a"`). A series that is not an asset's has no `asset` nor
+  `symbol`, so it has no « Et aujourd'hui ? ».
 - The app bundles a baseline pack in assets (first launch works offline) and fetches newer versions from
   `/v1/content`. On the wire and in the bundle a pack is one document, `{island, nodes, datasets,
   glossary}`; glossary terms live in `glossary/<id>.json` inside the pack (ADR-006).
@@ -787,7 +792,9 @@ data, no key).
 - A release is the latest version of an island once `contentcheck -release` passes: no draft node or term
   (decided 2026-10-11). The server publishes only such versions; drafts stay in the app's bundle while the
   island is being built, and the graded build passes `-release` first.
-- Datasets only via `cmd/freeze` (provenance, adjusted prices, frozen_at date).
+- Datasets only via `cmd/freeze` (provenance, adjusted prices, frozen_at date). A lesson's copy quotes only
+  what its datasets show; `app/test/data/content/actions_etf_content_test.dart` checks each figure against
+  them.
 - `contentcheck` runs in CI, with the bundle check: `app/assets/packs/<island>.json` is the assembled latest
   version (`contentcheck -bundle ../app/assets/packs -write` rewrites it).
 

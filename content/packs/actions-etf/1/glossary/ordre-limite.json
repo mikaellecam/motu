@@ -1,0 +1,45 @@
+{
+  "id": "ordre-limite",
+  "status": "draft",
+  "title": {
+    "fr": "Ordre à cours limité",
+    "en": "Limit order"
+  },
+  "short": {
+    "fr": "Acheter ou vendre seulement à ton prix, ou mieux.",
+    "en": "Buy or sell only at your price, or better."
+  },
+  "body": {
+    "fr": "Avec un ordre à cours limité, tu fixes un prix : un achat ne s'exécute que si le cours descend à ce prix ou plus bas, une vente que s'il monte à ce prix ou plus haut.\n\nTu maîtrises le prix, pas le moment : si le cours n'atteint jamais ta limite, l'ordre attend, et peut ne jamais passer. Il reste valable jusqu'à ce que tu l'annules.",
+    "en": "With a limit order, you set a price: a buy only fills if the price falls to it or lower, a sell only if it rises to it or higher.\n\nYou control the price, not the timing: if the price never reaches your limit, the order waits, and may never go through. It stays valid until you cancel it."
+  },
+  "related": [
+    "ordre-au-marche",
+    "ordre-stop"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Achat limité à 100 $, le cours est à 110 $…",
+        "en": "Buy limit at $100, the price is at $110…"
+      },
+      "choices": [
+        {
+          "id": "wait",
+          "label": {
+            "fr": "L'ordre attend que le cours descende à 100 $",
+            "en": "The order waits for the price to fall to $100"
+          }
+        },
+        {
+          "id": "now",
+          "label": {
+            "fr": "L'ordre s'exécute à 110 $",
+            "en": "The order fills at $110"
+          }
+        }
+      ],
+      "answer": "wait"
+    }
+  ]
+}

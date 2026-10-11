@@ -1,0 +1,51 @@
+{
+  "id": "interets-composes",
+  "status": "draft",
+  "title": {
+    "fr": "Intérêts composés",
+    "en": "Compound interest"
+  },
+  "short": {
+    "fr": "Des gains qui rapportent à leur tour.",
+    "en": "Gains that earn in turn."
+  },
+  "body": {
+    "fr": "Quand les gains restent placés, ils rapportent eux aussi l'année suivante. 1 000 € à 5 % par an deviennent 1 050 € la première année, puis 1 102,50 € : les 50 € de gain ont eux-mêmes rapporté 2,50 €.\n\nSur quelques années, l'effet est discret. Sur trente ans à 5 %, il pèse plus que les intérêts sur la somme de départ : 1 000 € deviennent 4 322 €, contre 2 500 € sans lui.",
+    "en": "When gains stay invested, they earn too the following year. €1,000 at 5% a year becomes €1,050 the first year, then €1,102.50: the €50 of gains have themselves earned €2.50.\n\nOver a few years, the effect is small. Over thirty years at 5%, it outweighs the interest on the starting amount: €1,000 becomes €4,322, against €2,500 without it."
+  },
+  "for_you": {
+    "fr": "Le temps compte autant que le taux : plus les années sont nombreuses, plus les gains ont l'occasion de rapporter à leur tour.",
+    "en": "Time counts as much as the rate: the more years there are, the more chances gains have to earn in turn."
+  },
+  "related": [
+    "rendement",
+    "frais",
+    "dca",
+    "horizon-de-placement"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "1 000 € à 10 % par an pendant 2 ans, gains laissés placés, ça donne…",
+        "en": "€1,000 at 10% a year for 2 years, gains left invested, comes to…"
+      },
+      "choices": [
+        {
+          "id": "1200",
+          "label": {
+            "fr": "1 200 €",
+            "en": "€1,200"
+          }
+        },
+        {
+          "id": "1210",
+          "label": {
+            "fr": "1 210 €",
+            "en": "€1,210"
+          }
+        }
+      ],
+      "answer": "1210"
+    }
+  ]
+}

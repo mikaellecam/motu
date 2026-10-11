@@ -87,7 +87,10 @@ void main() {
     await tester.tap(find.text('Valider'));
     await tester.pumpAndSettle();
     expect(profiles.completed, [('ae.apple', 'world')]);
-    expect(find.text("Pas cette fois$nnbsp: c'était Apple."), findsOneWidget);
+    expect(
+      find.text("Pas cette fois. Bonne réponse$nnbsp: Apple."),
+      findsOneWidget,
+    );
 
     // The curves drew in: each line's end, signed.
     expect(find.text('754,66$nbsp\$'), findsOneWidget);

@@ -1,0 +1,24 @@
+{
+  "id": "taux-de-change",
+  "status": "draft",
+  "title": {
+    "fr": "Taux de change",
+    "en": "Exchange rate"
+  },
+  "short": {
+    "fr": "Le prix d'une monnaie dans une autre.",
+    "en": "The price of one currency in another."
+  },
+  "body": {
+    "fr": "Le taux de change dit combien vaut une monnaie dans une autre, et il change chaque jour : fin 2016, 1 euro valait 1,05 dollar ; fin 2017, 1,20 dollar.\n\nPour acheter une action américaine avec des euros, on convertit ses euros en dollars au taux du jour ; à la vente, on reconvertit au taux de ce jour-là.",
+    "en": "The exchange rate says how much one currency is worth in another, and it changes every day: at the end of 2016, 1 euro was worth 1.05 dollars; at the end of 2017, 1.20 dollars.\n\nTo buy a US share with euros, you convert your euros into dollars at the day's rate; when you sell, you convert back at that day's rate."
+  },
+  "for_you": {
+    "fr": "Ici, chaque conversion utilise le taux de référence du jour de la Banque centrale européenne, et le bac à sable ajoute des frais de change.",
+    "en": "Here, every conversion uses the European Central Bank's reference rate of the day, and the sandbox adds a currency fee."
+  },
+  "related": [
+    "risque-de-change",
+    "frais"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "action",
+  "status": "draft",
+  "title": {
+    "fr": "Action",
+    "en": "Share"
+  },
+  "short": {
+    "fr": "Une petite part d'une entreprise.",
+    "en": "A small slice of a company."
+  },
+  "body": {
+    "fr": "Acheter une action, c'est devenir copropriétaire d'une entreprise, pour une toute petite part. Si l'entreprise grandit et gagne de l'argent, la part peut valoir plus ; si elle va mal, elle peut valoir beaucoup moins.\n\nLe cours d'une action change tant que la Bourse est ouverte : il reflète ce que les acheteurs et les vendeurs pensent de l'avenir de l'entreprise. Certaines entreprises versent aussi une partie de leurs bénéfices : les dividendes.",
+    "en": "Buying a share makes you a part-owner of a company, for a very small part. If the company grows and makes money, the share can be worth more; if it struggles, it can be worth much less.\n\nA share's price changes as long as the stock exchange is open: it reflects what buyers and sellers think of the company's future. Some companies also pay out part of their profits: the dividends."
+  },
+  "for_you": {
+    "fr": "Une seule action dépend d'une seule entreprise : si elle chute, rien ne compense. Un {{etf|ETF}} en réunit des centaines ou des milliers.",
+    "en": "A single share depends on a single company: if it falls, nothing makes up for it. An {{etf|ETF}} brings together hundreds or thousands."
+  },
+  "related": [
+    "etf",
+    "diversification",
+    "indice"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Avoir une action Apple, c'est…",
+        "en": "Owning an Apple share means…"
+      },
+      "choices": [
+        {
+          "id": "own",
+          "label": {
+            "fr": "Posséder une toute petite part d'Apple",
+            "en": "Owning a tiny slice of Apple"
+          }
+        },
+        {
+          "id": "loan",
+          "label": {
+            "fr": "Avoir prêté de l'argent à Apple",
+            "en": "Having lent money to Apple"
+          }
+        }
+      ],
+      "answer": "own"
+    }
+  ]
+}

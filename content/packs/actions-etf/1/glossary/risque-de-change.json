@@ -1,0 +1,59 @@
+{
+  "id": "risque-de-change",
+  "status": "draft",
+  "title": {
+    "fr": "Risque de change",
+    "en": "Currency risk"
+  },
+  "short": {
+    "fr": "Ce que les variations des monnaies font à ton placement.",
+    "en": "What currency moves do to your investment."
+  },
+  "body": {
+    "fr": "Un actif coté en dollars gagne ou perd en euros quand le dollar monte ou baisse face à l'euro, même si son cours ne bouge pas.\n\nEn 2017, Coca-Cola a pris 14 % en dollars, mais le dollar a perdu 12 % face à l'euro : en euros, il ne restait que +0,5 %. L'effet joue aussi dans l'autre sens : un dollar qui monte ajoute du gain.",
+    "en": "An asset quoted in dollars gains or loses in euros when the dollar rises or falls against the euro, even if its price doesn't move.\n\nIn 2017, Coca-Cola gained 14% in dollars, but the dollar lost 12% against the euro: in euros, only +0.5% was left. It works the other way too: a rising dollar adds to the gain."
+  },
+  "for_you": {
+    "fr": "Tous les actifs de ce bac à sable sont cotés en dollars : la valeur de ton portefeuille, en euros, bouge aussi avec le dollar.",
+    "en": "Every asset in this sandbox is quoted in dollars: your wallet's value, in euros, also moves with the dollar."
+  },
+  "live_example": {
+    "widget": "currency"
+  },
+  "related": [
+    "taux-de-change",
+    "action"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Ton action prend 10 % en dollars, et le dollar perd 10 % face à l'euro. En euros…",
+        "en": "Your share gains 10% in dollars, and the dollar loses 10% against the euro. In euros…"
+      },
+      "choices": [
+        {
+          "id": "flat",
+          "label": {
+            "fr": "Tu es à peu près au même point",
+            "en": "You're about where you started"
+          }
+        },
+        {
+          "id": "up",
+          "label": {
+            "fr": "Tu as gagné 10 %",
+            "en": "You've gained 10%"
+          }
+        },
+        {
+          "id": "up20",
+          "label": {
+            "fr": "Tu as gagné 20 %",
+            "en": "You've gained 20%"
+          }
+        }
+      ],
+      "answer": "flat"
+    }
+  ]
+}

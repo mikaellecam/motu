@@ -1,0 +1,49 @@
+{
+  "id": "performance",
+  "status": "draft",
+  "title": {
+    "fr": "Performance",
+    "en": "Performance"
+  },
+  "short": {
+    "fr": "Comment un placement a évolué sur une période.",
+    "en": "How an investment did over a period."
+  },
+  "body": {
+    "fr": "La performance compare la valeur d'un placement à deux dates : +20 % sur un an veut dire que 100 € sont devenus 120 €.\n\nUne performance passée décrit ce qui s'est produit. Elle ne dit rien de la suite : une même action peut faire +30 % une année et −25 % la suivante.",
+    "en": "Performance compares an investment's value on two dates: +20% over a year means €100 became €120.\n\nPast performance describes what happened. It says nothing about what comes next: the same share can do +30% one year and −25% the next."
+  },
+  "live_example": {
+    "widget": "performance"
+  },
+  "related": [
+    "rendement",
+    "plus-value",
+    "volatilite"
+  ],
+  "quiz": [
+    {
+      "question": {
+        "fr": "Une performance de +20 % l'an dernier…",
+        "en": "A +20% performance last year…"
+      },
+      "choices": [
+        {
+          "id": "next",
+          "label": {
+            "fr": "Annonce +20 % cette année",
+            "en": "Means +20% this year"
+          }
+        },
+        {
+          "id": "nothing",
+          "label": {
+            "fr": "Ne dit rien de cette année",
+            "en": "Says nothing about this year"
+          }
+        }
+      ],
+      "answer": "nothing"
+    }
+  ]
+}

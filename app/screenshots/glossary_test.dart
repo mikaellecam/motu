@@ -16,10 +16,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'screenshot.dart';
 
-// fixtures/actions-etf.json: eight terms drafted for the screenshots (the
-// real glossary comes with M6-8). « Indice » and « Action » are discovered,
-// « Diversification » met in a completed lesson. The volatility example uses
-// the 2025 daily closes frozen in the fixture: Apple against the world ETF.
+// The glossary as the app bundles it (M6-8, draft copy). « Indice » and
+// « Action » are discovered, « Diversification » met in a completed lesson.
+// The volatility example uses the 2025 daily closes frozen in the pack:
+// Apple against the world ETF.
 
 Asset _asset(String id, String name, AssetType type) => Asset(
   id: id,
@@ -34,7 +34,7 @@ Asset _asset(String id, String name, AssetType type) => Asset(
 
 void main() {
   final pack = decodePack(
-    File('screenshots/fixtures/actions-etf.json').readAsStringSync(),
+    File('assets/packs/actions-etf.json').readAsStringSync(),
   );
   final apple = pack.datasets['ds.aapl-2025-d']!.points;
   final world = pack.datasets['ds.acwi-2025-d']!.points;

@@ -1,0 +1,24 @@
+{
+  "id": "plus-value",
+  "status": "draft",
+  "title": {
+    "fr": "Plus-value",
+    "en": "Capital gain"
+  },
+  "short": {
+    "fr": "Le gain quand un placement vaut plus que son prix d'achat.",
+    "en": "The gain when an investment is worth more than you paid."
+  },
+  "body": {
+    "fr": "Tu achètes une action 100 €, elle en vaut 130 € : ta plus-value est de 30 €. Tant que tu ne vends pas, elle est « latente » : elle peut encore grandir ou disparaître.\n\nQuand tu vends, elle devient réalisée. L'inverse s'appelle une moins-value.",
+    "en": "You buy a share for €100 and it's worth €130: your capital gain is €30. As long as you don't sell, it's \"unrealised\": it can still grow or vanish.\n\nWhen you sell, it becomes realised. The opposite is a capital loss."
+  },
+  "for_you": {
+    "fr": "Dans ton portefeuille, le pourcentage sous chaque position est sa plus-value ou sa moins-value latente.",
+    "en": "In your wallet, the percentage under each position is its unrealised gain or loss."
+  },
+  "related": [
+    "performance",
+    "rendement"
+  ]
+}

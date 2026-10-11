@@ -1,0 +1,20 @@
+{
+  "id": "indice",
+  "status": "draft",
+  "title": {
+    "fr": "Indice",
+    "en": "Index"
+  },
+  "short": {
+    "fr": "Un groupe d'entreprises suivi comme un tout.",
+    "en": "A group of companies followed as a whole."
+  },
+  "body": {
+    "fr": "Un indice mesure l'évolution d'un groupe d'entreprises choisies selon une règle : les 40 plus grandes entreprises françaises pour le CAC 40, plus de 1 000 grandes entreprises de 23 pays développés pour le MSCI World.\n\nOn ne peut pas acheter un indice directement : un {{etf|ETF}} le copie pour toi.",
+    "en": "An index tracks how a group of companies, chosen by a rule, is doing: France's 40 largest companies for the CAC 40, over 1,000 large companies from 23 developed countries for the MSCI World.\n\nYou can't buy an index directly: an {{etf|ETF}} copies it for you."
+  },
+  "related": [
+    "etf",
+    "diversification"
+  ]
+}

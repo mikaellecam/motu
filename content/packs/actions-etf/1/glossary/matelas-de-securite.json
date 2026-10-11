@@ -1,0 +1,25 @@
+{
+  "id": "matelas-de-securite",
+  "status": "draft",
+  "title": {
+    "fr": "Matelas de sécurité",
+    "en": "Safety cushion"
+  },
+  "short": {
+    "fr": "L'argent mis de côté pour les imprévus.",
+    "en": "Money set aside for the unexpected."
+  },
+  "body": {
+    "fr": "Un matelas de sécurité, c'est une épargne disponible tout de suite, pour une panne de voiture, une facture imprévue ou une baisse de revenus. On l'évalue souvent à trois à six mois de dépenses.\n\nIl est en général placé là où il ne peut pas baisser, comme le {{livret-a|Livret A}} : en Bourse, une chute peut tomber pile au moment où l'on a besoin de l'argent.",
+    "en": "A safety cushion is savings available straight away, for a car breakdown, an unexpected bill or a drop in income. It's often put at three to six months of spending.\n\nIt's usually kept where it can't fall, like the {{livret-a|Livret A}}: on the stock market, a fall can come right when the money is needed."
+  },
+  "for_you": {
+    "fr": "Avec un matelas en place, une baisse des marchés n'oblige pas à vendre au mauvais moment.",
+    "en": "With a cushion in place, a market fall doesn't force a sale at the wrong moment."
+  },
+  "related": [
+    "livret-a",
+    "liquidites",
+    "horizon-de-placement"
+  ]
+}
