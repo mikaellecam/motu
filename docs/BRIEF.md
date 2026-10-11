@@ -232,9 +232,11 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
    | Date précise | user input `JJ/MM/AAAA` | — |
 
    Each preset shows "N actifs sur M disponibles" (assets whose `listingDate ≤ startDate` and with history).
-   Validation: date parses; `dataFloor ≤ date ≤ today − 30 days`; non-trading day → roll forward to next
-   trading day (inform the user). Before `dataFloor`: error « Nos cours commencent le {dataFloor}. » with a
-   link to the matching lesson when one exists (e.g. 1929 → Les bases).
+   Validation: date parses; `dataFloor ≤ date ≤ today − 30 days`; a day that is not a trip day (no exchange
+   of the catalogue trades) → roll forward to the next trip day (inform the user), which must still be in
+   range. Before `dataFloor`: error « Nos cours commencent le {dataFloor}. » with a link to the lesson whose
+   node declares `covers: {from, to}` around the date, when a pack has one (e.g. 1929 → Les bases; none in
+   V1).
 
 2. *Difficulty*
 

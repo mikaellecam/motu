@@ -23,6 +23,16 @@ final class TripBridge {
   final String? difficulty;
 }
 
+/// The historical period a lesson is about, both days included. The trip
+/// wizard links a date before the data floor to the lesson covering it.
+final class Period {
+  const Period(this.from, this.to);
+  final DateTime from;
+  final DateTime to;
+
+  bool contains(DateTime day) => !day.isBefore(from) && !day.isAfter(to);
+}
+
 /// One node of an island, as its pack describes it. [payload] holds the
 /// fields of its type (question, choices…), read by that type's player.
 final class NodeContent {
@@ -34,6 +44,7 @@ final class NodeContent {
     this.glossary = const [],
     this.datasets = const [],
     this.bridge,
+    this.covers,
     this.payload = const {},
   });
 
@@ -50,6 +61,9 @@ final class NodeContent {
 
   /// Null when the lesson does not open a trip.
   final TripBridge? bridge;
+
+  /// Null when the lesson is not about a period.
+  final Period? covers;
   final Map<String, Object?> payload;
 }
 

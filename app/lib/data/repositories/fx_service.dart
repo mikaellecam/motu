@@ -6,6 +6,7 @@ import '../../core/money/money.dart';
 import '../local/daos/market_dao.dart';
 import '../local/database.dart';
 import '../remote/frankfurter_api.dart';
+import '../../domain/wallet/trip_start.dart' as trip_start;
 import 'guard.dart';
 
 /// Exchange rates, the only way money changes currency (CLAUDE.md rule 5).
@@ -27,9 +28,6 @@ class FxService {
   final MarketDao _dao;
   final FrankfurterApi _api;
   final SimulationClock _wall;
-
-  /// The first day of market history (ADR-004).
-  static final dataFloor = DateTime.utc(2000, 1, 3);
 
   /// How long a check for a newer rate holds: the ECB publishes once per
   /// business day, around 16:00 in Frankfurt.
@@ -105,7 +103,7 @@ class FxService {
     if (last != null && checked != null && now.difference(checked) < recheck) {
       return;
     }
-    final start = last?.add(const Duration(days: 1)) ?? dataFloor;
+    final start = last?.add(const Duration(days: 1)) ?? trip_start.dataFloor;
     final today = DateTime.utc(now.year, now.month, now.day);
     if (start.isAfter(today)) return;
     try {

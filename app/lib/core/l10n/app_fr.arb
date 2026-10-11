@@ -428,5 +428,83 @@
   "difficulty_decouverte": "D\u00e9couverte",
   "difficulty_realiste": "R\u00e9aliste",
   "difficulty_serre": "Serr\u00e9",
-  "difficulty_sur_mesure": "Sur mesure"
+  "difficulty_sur_mesure": "Sur mesure",
+  "wizard_step": "\u00c9tape {n} sur 3",
+  "@wizard_step": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "wizard_when": "Quand pars-tu\u202f?",
+  "wizard_history": "Moments historiques",
+  "wizard_preset_dotcom": "Bulle internet",
+  "wizard_teaser_dotcom": "Au sommet de l'euphorie technologique",
+  "wizard_preset_lehman": "Crise financi\u00e8re",
+  "wizard_teaser_lehman": "Le jour de la faillite de Lehman Brothers",
+  "wizard_preset_covid": "Covid",
+  "wizard_teaser_covid": "Juste avant l'une des chutes les plus rapides de l'histoire",
+  "wizard_preset_inflation": "Inflation et hausse des taux",
+  "wizard_teaser_inflation": "Avant une ann\u00e9e difficile pour les actions et les obligations",
+  "wizard_quick": "Raccourcis",
+  "wizard_years_ago": "{years, plural, =1{Il y a 1 an} other{Il y a {years} ans}}",
+  "@wizard_years_ago": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "wizard_available": "{n} actifs sur {m} disponibles",
+  "@wizard_available": {
+    "description": "Assets listed on that day, out of the catalogue.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "wizard_custom": "Date pr\u00e9cise",
+  "wizard_custom_hint": "JJ/MM/AAAA",
+  "wizard_date_unreadable": "Cette date n'existe pas. \u00c9cris-la comme 15/09/2008.",
+  "wizard_date_before_floor": "Nos cours commencent le {date}.",
+  "@wizard_date_before_floor": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_date_too_recent": "Pars au plus tard le {date}\u202f: il faut au moins 30 jours de cours devant toi.",
+  "@wizard_date_too_recent": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_date_rolled": "Le {date} n'a pas eu de s\u00e9ance\u202f: d\u00e9part le {start}.",
+  "@wizard_date_rolled": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_lesson_link": "Voir la le\u00e7on \u00ab\u00a0{title}\u00a0\u00bb",
+  "@wizard_lesson_link": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_next": "Suivant"
 }

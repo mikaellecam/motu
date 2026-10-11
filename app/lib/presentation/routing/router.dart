@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../application/trip/trip_wizard.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/trip_wizard/trip_wizard_screen.dart';
 import '../features/wallet/wallet_screen.dart';
 import '../features/wallets/wallets_screen.dart';
 import '../shell/app_shell.dart';
@@ -52,7 +54,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     _pending('/node/:nodeId'),
     GoRoute(
       path: '/wallets/new',
-      builder: (_, state) => PendingScreen(
+      builder: (_, state) => TripWizardScreen(
         args: TripWizardArgs.fromQuery(state.uri.queryParameters),
       ),
     ),
@@ -76,38 +78,6 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
 
 GoRoute _pending(String path) =>
     GoRoute(path: path, builder: (_, _) => const PendingScreen());
-
-/// Prefill of the trip wizard, from a deep link such as
-/// `/wallets/new?step=1&date=2020-02-18&difficulty=realiste&from=ae.march-2020`
-/// (a lesson's "Rejoue-le toi-même" bridge, BRIEF §1.2). Values that don't
-/// parse are dropped; the wizard then asks for them.
-final class TripWizardArgs {
-  const TripWizardArgs({
-    this.step = 1,
-    this.date,
-    this.difficulty,
-    this.fromNode,
-  });
-
-  factory TripWizardArgs.fromQuery(Map<String, String> query) {
-    final step = int.tryParse(query['step'] ?? '');
-    final date = DateTime.tryParse(query['date'] ?? '');
-    return TripWizardArgs(
-      step: step != null && step >= 1 && step <= 3 ? step : 1,
-      date: date == null ? null : DateTime.utc(date.year, date.month, date.day),
-      difficulty: query['difficulty'],
-      fromNode: query['from'],
-    );
-  }
-
-  /// Wizard step, 1 to 3.
-  final int step;
-  final DateTime? date;
-  final String? difficulty;
-
-  /// The node the bridge came from.
-  final String? fromNode;
-}
 
 /// Stands in for a screen its own issue has not built yet: a way back, no
 /// made-up content.

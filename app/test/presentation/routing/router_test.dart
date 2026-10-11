@@ -1,12 +1,14 @@
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/trip/trip_wizard.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
+import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_screen.dart';
 import 'package:finance_companion/presentation/features/wallets/wallets_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
@@ -28,6 +30,14 @@ Future<void> open(WidgetTester tester, String location) async {
         explorerRowsProvider.overrideWith((ref, walletId) async => const []),
         favoritesProvider.overrideWithBuild(
           (ref, notifier) => Stream.value({}),
+        ),
+        wizardDatesProvider.overrideWith(
+          (ref) async => const WizardDates(
+            presets: [],
+            catalogueSize: 0,
+            exchanges: {},
+            listingDates: [],
+          ),
         ),
         walletsListProvider.overrideWith(
           (ref) async =>
@@ -89,7 +99,6 @@ void main() {
     '/tools/dca',
     '/island/actions-etf',
     '/node/ae.fees-toy',
-    '/wallets/new',
     '/wallet/t1/stop/e1',
     '/wallet/t1/summary',
     '/wallet/t1/order/o1',
@@ -134,9 +143,10 @@ void main() {
       tester,
       '/wallets/new?step=1&date=2020-02-18&difficulty=realiste&from=ae.march-2020',
     );
-    final args =
-        tester.widget<PendingScreen>(find.byType(PendingScreen)).args!
-            as TripWizardArgs;
+    final args = tester
+        .widget<TripWizardScreen>(find.byType(TripWizardScreen))
+        .args;
+    expect(find.byType(NavigationBar), findsNothing);
     expect(args.step, 1);
     expect(args.date, DateTime.utc(2020, 2, 18));
     expect(args.difficulty, 'realiste');

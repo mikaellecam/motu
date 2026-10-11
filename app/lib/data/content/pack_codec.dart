@@ -71,6 +71,7 @@ const _nodeFields = {
   'glossary',
   'datasets',
   'bridge',
+  'covers',
 };
 
 NodeContent _node(Map<String, Object?> json) {
@@ -99,6 +100,10 @@ NodeContent _node(Map<String, Object?> json) {
           final Object d => _string(d, '$id bridge difficulty'),
         },
       ),
+    },
+    covers: switch (json['covers']) {
+      null => null,
+      final Object covers => _period(_map(covers, '$id covers'), id),
     },
     payload: {
       for (final e in json.entries)
@@ -183,4 +188,11 @@ DateTime _date(Object? value, String what) {
   final parsed = DateTime.tryParse(text);
   if (parsed == null) throw FormatException('$what is not a date: $text');
   return DateTime.utc(parsed.year, parsed.month, parsed.day);
+}
+
+Period _period(Map<String, Object?> json, String id) {
+  final from = _date(json['from'], '$id covers from');
+  final to = _date(json['to'], '$id covers to');
+  if (to.isBefore(from)) throw FormatException('$id covers an empty period');
+  return Period(from, to);
 }

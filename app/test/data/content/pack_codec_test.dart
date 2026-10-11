@@ -33,6 +33,7 @@ String pack({void Function(Map<String, dynamic> json)? edit}) {
         'datasets': ['ds.aapl'],
         'glossary': ['volatilite'],
         'bridge': {'date': '2020-02-18', 'difficulty': 'realiste'},
+        'covers': {'from': '1929-01-01', 'to': '1933-12-31'},
       },
     ],
     'datasets': [
@@ -113,6 +114,10 @@ void main() {
     expect(one.bridge!.difficulty, 'realiste');
     expect(one.payload.containsKey('bridge'), isFalse);
     expect(p.nodes.last.bridge, isNull);
+    expect(one.covers!.contains(DateTime.utc(1929, 10, 24)), isTrue);
+    expect(one.covers!.contains(DateTime.utc(1934, 1, 1)), isFalse);
+    expect(one.payload.containsKey('covers'), isFalse);
+    expect(p.nodes.last.covers, isNull);
   });
 
   group('a corrupt pack is refused', () {
@@ -143,6 +148,13 @@ void main() {
       (
         'a bridge without a date',
         (j) => j['nodes'][1]['bridge'] = {'difficulty': 'serre'},
+      ),
+      (
+        'an empty period',
+        (j) => j['nodes'][1]['covers'] = {
+          'from': '1933-01-01',
+          'to': '1929-01-01',
+        },
       ),
     ]) {
       test(what, () {
