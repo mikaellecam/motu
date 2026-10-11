@@ -162,7 +162,7 @@ void main() {
     await wallets.placeOrder(live, buy('o1'));
     c.listen(walletOverviewProvider(live), (_, _) {});
     expect((await c.read(walletOverviewProvider(live).future)).pendingOrders, [
-      isA<({Order order, dynamic asset})>().having(
+      isA<({Order order, dynamic asset, Money reserved})>().having(
         (p) => p.order.id,
         'id',
         'o1',

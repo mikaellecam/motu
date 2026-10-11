@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -29,38 +30,44 @@ void main() {
     }
   });
 
-  test('the painter draws every island without error', () {
+  const b1 = DrawnBuilding(height: 1, built: 1, scaffold: 0);
+  const b2 = DrawnBuilding(height: 2, built: 1, scaffold: 0);
+  const b3 = DrawnBuilding(height: 2, built: 0.5, scaffold: 1);
+
+  test('the painter draws every island, buildings and scaffolds, without '
+      'error', () {
     final recorder = PictureRecorder();
     ArchipelagoPainter(
       geometry,
-      buildingHeights: const [1, 2, 0, 3],
+      buildings: const [
+        DrawnBuilding(height: 2.5, built: 1, scaffold: 0),
+        DrawnBuilding(height: 1.5, built: 0.6, scaffold: 1),
+        DrawnBuilding(height: 0, built: 1, scaffold: 0),
+        DrawnBuilding(height: 1, built: 0, scaffold: 0.5),
+      ],
     ).paint(Canvas(recorder), geometry.size);
     expect(recorder.endRecording(), isNotNull);
   });
 
   test('repaints when the buildings change, not otherwise', () {
-    final a = ArchipelagoPainter(geometry, buildingHeights: const [1, 2]);
+    final a = ArchipelagoPainter(geometry, buildings: const [b1, b2]);
     expect(
-      a.shouldRepaint(
-        ArchipelagoPainter(geometry, buildingHeights: const [1, 2]),
-      ),
+      a.shouldRepaint(ArchipelagoPainter(geometry, buildings: const [b1, b2])),
       isFalse,
     );
     expect(
-      a.shouldRepaint(
-        ArchipelagoPainter(geometry, buildingHeights: const [1, 3]),
-      ),
+      a.shouldRepaint(ArchipelagoPainter(geometry, buildings: const [b1, b3])),
       isTrue,
     );
     expect(
-      a.shouldRepaint(ArchipelagoPainter(geometry, buildingHeights: const [1])),
+      a.shouldRepaint(ArchipelagoPainter(geometry, buildings: const [b1])),
       isTrue,
     );
     expect(
       a.shouldRepaint(
         ArchipelagoPainter(
           ArchipelagoGeometry(tile: 32),
-          buildingHeights: const [1, 2],
+          buildings: const [b1, b2],
         ),
       ),
       isTrue,

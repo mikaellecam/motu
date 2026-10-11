@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../core/theme/tokens.dart';
 import 'iso.dart';
+import 'living_island.dart';
 
 enum IslandId { actionsEtf, trading, realEstate, crypto, basics }
 
@@ -82,20 +84,33 @@ final class ArchipelagoGeometry {
 
 /// Draws the archipelago in chunky toy blocks (BRIEF §10.1): white tops,
 /// light sides, ink outlines. Locked islands are greyed and under clouds.
-/// [buildingHeights] are the Actions & ETF buildings, in height units.
+/// [buildings] stand on Actions & ETF, the largest first (M7-2).
 class ArchipelagoPainter extends CustomPainter {
-  ArchipelagoPainter(this.geometry, {this.buildingHeights = const []});
+  ArchipelagoPainter(this.geometry, {this.buildings = const []});
 
   final ArchipelagoGeometry geometry;
-  final List<double> buildingHeights;
+  final List<DrawnBuilding> buildings;
 
+  /// Where the buildings stand: a skyline across the island, the largest in
+  /// the middle, then outwards left and right. All at the same depth, so
+  /// none hides another.
   static const _buildingSpots = [
-    (0.6, 0.6),
-    (2.4, 0.6),
-    (0.6, 2.4),
-    (2.4, 2.4),
-    (1.5, 1.5),
+    (2.0, 2.0),
+    (1.4, 2.6),
+    (2.6, 1.4),
+    (0.8, 3.2),
+    (3.2, 0.8),
   ];
+
+  /// The spots back to front, so that nearer buildings hide farther ones.
+  static final _paintingOrder =
+      [for (var i = 0; i < _buildingSpots.length; i++) i]..sort((a, b) {
+        final (ax, ay) = _buildingSpots[a];
+        final (bx, by) = _buildingSpots[b];
+        return (ax + ay).compareTo(bx + by);
+      });
+
+  static const _footprint = 0.8;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -133,14 +148,32 @@ class ArchipelagoPainter extends CustomPainter {
     final (x, y) = (island.x, island.y);
     switch (island.id) {
       case IslandId.actionsEtf:
-        for (var i = 0; i < _buildingSpots.length; i++) {
+        for (final i in _paintingOrder) {
+          if (i >= buildings.length) continue;
+          final b = buildings[i];
+          if (b.height <= 0) continue;
           final (bx, by) = _buildingSpots[i];
-          final h = i < buildingHeights.length ? buildingHeights[i] : 0.4;
-          if (h <= 0) continue;
-          shade.draw(
-            canvas,
-            boxFacets(p, x + bx - 0.4, y + by - 0.4, 0.8, 0.8, h),
+          final (left, top) = (
+            x + bx - _footprint / 2,
+            y + by - _footprint / 2,
           );
+          final standing = b.height * b.built.clamp(0, 1);
+          if (standing > 0) {
+            shade.draw(
+              canvas,
+              boxFacets(p, left, top, _footprint, _footprint, standing),
+            );
+          }
+          if (b.scaffold > 0) {
+            if (standing <= 0) {
+              // Nothing built yet: the foundation slab.
+              shade.draw(
+                canvas,
+                boxFacets(p, left, top, _footprint, _footprint, 0.06),
+              );
+            }
+            _scaffold(canvas, p, left, top, b.height, b.scaffold, shade);
+          }
         }
       case IslandId.trading:
         for (final (i, (low, high)) in [
@@ -180,6 +213,49 @@ class ArchipelagoPainter extends CustomPainter {
     }
   }
 
+  /// A construction frame round a building's footprint, up to [height]
+  /// (BRIEF §10.5: a pending buy is a building under construction): a pole
+  /// at each corner, and on each visible side a rail every half unit, braced
+  /// across.
+  void _scaffold(
+    Canvas canvas,
+    IsoProjection p,
+    double x,
+    double y,
+    double height,
+    double opacity,
+    _Shade shade,
+  ) {
+    const gap = 0.08;
+    final (x0, y0) = (x - gap, y - gap);
+    final (x1, y1) = (x + _footprint + gap, y + _footprint + gap);
+    final paint = shade.outlinePaint(1.5)
+      ..color = shade.ink.withValues(alpha: opacity);
+    void line(
+      double ax,
+      double ay,
+      double az,
+      double bx,
+      double by,
+      double bz,
+    ) => canvas.drawLine(p.project(ax, ay, az), p.project(bx, by, bz), paint);
+    // The back pole first: the others stand in front of it.
+    for (final (cx, cy) in [(x0, y0), (x1, y0), (x0, y1), (x1, y1)]) {
+      line(cx, cy, 0, cx, cy, height);
+    }
+    final levels = [for (var z = 0.0; z < height - 0.05; z += 0.5) z, height];
+    for (var i = 0; i < levels.length; i++) {
+      final z = levels[i];
+      // The two visible sides: y = y1 (left) and x = x1 (right).
+      line(x0, y1, z, x1, y1, z);
+      line(x1, y0, z, x1, y1, z);
+      if (i == 0) continue;
+      final below = levels[i - 1];
+      line(x0, y1, below, x1, y1, z);
+      line(x1, y0, below, x1, y1, z);
+    }
+  }
+
   void _clouds(Canvas canvas, Offset centre) {
     final fill = Paint()..color = AppColors.surface.withValues(alpha: 0.9);
     final outline = Paint()
@@ -203,16 +279,7 @@ class ArchipelagoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ArchipelagoPainter old) =>
-      old.geometry != geometry ||
-      !_sameHeights(old.buildingHeights, buildingHeights);
-
-  static bool _sameHeights(List<double> a, List<double> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
+      old.geometry != geometry || !listEquals(old.buildings, buildings);
 }
 
 /// Neutral tokens only: the art carries no meaning a colour could suggest.
@@ -227,6 +294,8 @@ class _Shade {
   final Color _left;
   final Color _right;
   final Color _ink;
+
+  Color get ink => _ink;
 
   Paint outlinePaint(double width) => Paint()
     ..color = _ink

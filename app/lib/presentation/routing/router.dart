@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/trip/trip_wizard.dart';
+import '../../application/wallet/living_island.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
@@ -119,16 +121,21 @@ class PendingScreen extends StatelessWidget {
 }
 
 /// The map tab: « Ton archipel », settings in the header (BRIEF §3, §4.2).
-class MapTab extends StatelessWidget {
+class MapTab extends ConsumerWidget {
   const MapTab({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    // Offline or still loading, the island stands as it last did, or bare.
+    final buildings = ref.watch(livingIslandProvider).value ?? const [];
     return Scaffold(
       // World screens sit on the sea (BRIEF §10.2).
       backgroundColor: AppColors.sea,
-      body: ArchipelagoMap(onOpen: (_) => context.push('/island/actions-etf')),
+      body: ArchipelagoMap(
+        buildings: buildings,
+        onOpen: (_) => context.push('/island/actions-etf'),
+      ),
       appBar: AppBar(
         title: Text(l10n.map_title),
         actions: [

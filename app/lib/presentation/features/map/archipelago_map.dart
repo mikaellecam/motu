@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../domain/wallet/island_buildings.dart';
 import 'archipelago.dart';
+import 'living_island.dart';
 
 /// The archipelago, drawn in code, with pan and zoom (BRIEF §4.2). Each
 /// island's label is its tap target and its screen-reader entry.
@@ -11,26 +14,53 @@ class ArchipelagoMap extends StatefulWidget {
   const ArchipelagoMap({
     super.key,
     required this.onOpen,
-    this.buildingHeights = const [],
+    this.buildings = const [],
   });
 
   /// Called with the playable island the user taps.
   final ValueChanged<IslandId> onOpen;
 
-  /// Heights of the Actions & ETF buildings (the living island, M7-2).
-  final List<double> buildingHeights;
+  /// The live wallet on Actions & ETF, the largest first (the living island,
+  /// M7-2). A change animates in stages (BRIEF §10.5).
+  final List<IslandBuilding> buildings;
 
   @override
   State<ArchipelagoMap> createState() => _ArchipelagoMapState();
 }
 
-class _ArchipelagoMapState extends State<ArchipelagoMap> {
+class _ArchipelagoMapState extends State<ArchipelagoMap>
+    with SingleTickerProviderStateMixin {
   final _geometry = ArchipelagoGeometry();
   final _transform = TransformationController();
   bool _centred = false;
 
+  /// One staged run from [_from] to [_to] (BRIEF §10.5).
+  late final _growth = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+    value: 1,
+  );
+  late var _from = drawnBuildings(widget.buildings);
+  late var _to = _from;
+
+  List<DrawnBuilding> get _frame => islandFrame(_from, _to, _growth.value);
+
+  @override
+  void didUpdateWidget(ArchipelagoMap old) {
+    super.didUpdateWidget(old);
+    if (listEquals(old.buildings, widget.buildings)) return;
+    _from = _frame;
+    _to = drawnBuildings(widget.buildings);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _growth.value = 1;
+    } else {
+      _growth.forward(from: 0);
+    }
+  }
+
   @override
   void dispose() {
+    _growth.dispose();
     _transform.dispose();
     super.dispose();
   }
@@ -69,10 +99,10 @@ class _ArchipelagoMapState extends State<ArchipelagoMap> {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: ArchipelagoPainter(
-                      _geometry,
-                      buildingHeights: widget.buildingHeights,
+                  child: AnimatedBuilder(
+                    animation: _growth,
+                    builder: (context, _) => CustomPaint(
+                      painter: ArchipelagoPainter(_geometry, buildings: _frame),
                     ),
                   ),
                 ),

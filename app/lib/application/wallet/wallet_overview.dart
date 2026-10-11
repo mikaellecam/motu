@@ -105,8 +105,9 @@ final class WalletOverview {
   /// Open positions, largest first.
   final List<PositionView> positions;
 
-  /// Orders waiting to fill, oldest first, with their asset (M4-6).
-  final List<({Order order, Asset asset})> pendingOrders;
+  /// Orders waiting to fill, oldest first, with their asset (M4-6) and what
+  /// each holds back: a buy's estimated cost with fees, nothing for a sell.
+  final List<({Order order, Asset asset, Money reserved})> pendingOrders;
 
   /// The stored daily values, today's being the current value.
   final List<DailyValue> series;
@@ -143,17 +144,20 @@ WalletOverview buildOverview({
   final total = valuation.total;
 
   var reserved = const Money.zero(Currency.eur);
+  final reserves = <String, Money>{};
   for (final order in wallet.pendingOrders) {
     final price = prices[order.assetId];
     if (price == null) {
       throw ArgumentError('No price for pending order ${order.id}');
     }
-    reserved += cashToReserve(
+    final reserve = cashToReserve(
       order,
       rules: wallet.params.rules,
       referencePrice: price.price.price,
       fxRate: rateOf(price.price.price.currency),
     );
+    reserves[order.id] = reserve;
+    reserved += reserve;
   }
 
   final stored = [
@@ -221,7 +225,11 @@ WalletOverview buildOverview({
     ],
     pendingOrders: [
       for (final order in wallet.pendingOrders)
-        (order: order, asset: assets[order.assetId]!),
+        (
+          order: order,
+          asset: assets[order.assetId]!,
+          reserved: reserves[order.id]!,
+        ),
     ],
     series: series,
   );

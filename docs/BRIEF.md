@@ -124,6 +124,10 @@ Rules:
   than the pacing (Q5) were completed today; an open trip; the live wallet.
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
+  Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back
+  (sells change nothing until they fill); the 5 largest stand in a row across the island, the largest in the
+  middle, each as tall as its size against the largest's (0,4 to 1,6 height units). The part a pending buy
+  adds is scaffolding round the building, a bare foundation for an asset not held yet.
 
 ### 4.3 Islands, nodes and content packs
 
@@ -843,7 +847,9 @@ French formatting: narrow no-break space before « : ? ! », thousands with narr
 
 Hand-coded (count for the school requirement):
 1. Map buildings grow/shrink with positions (`AnimationController` + `CustomPainter`).
-2. Pending order: building under construction → completes on fill (staged controller).
+2. Pending order: building under construction → completes on fill (staged controller). One 1,4 s controller,
+   three intervals (`islandFrame`): heights 0–0.6, the built part rising into its frame 0.3–0.9, a completed
+   frame coming down 0.85–1. With animations turned off in the system, the island changes at once.
 3. Predict-reveal: curves draw progressively (`Tween<double>` over `PathMetric`).
 Others: value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
 (package-provided, counts as the third non-coded animation).

@@ -1,5 +1,8 @@
+import 'package:decimal/decimal.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:finance_companion/presentation/features/map/archipelago_map.dart';
+import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -81,5 +84,92 @@ void main() {
     expect(viewer.maxScale, 2.5);
     expect(viewer.panEnabled, isTrue);
     expect(viewer.scaleEnabled, isTrue);
+  });
+
+  group('the living island (M7-2)', () {
+    final world = IslandBuilding(
+      'world',
+      height: Decimal.one,
+      built: Decimal.one,
+    );
+    final apple = IslandBuilding(
+      'apple',
+      height: Decimal.parse('0.5'),
+      built: Decimal.zero,
+    );
+
+    /// The map, its buildings in [island]; the painter on each frame.
+    Future<List<DrawnBuilding> Function()> pumpIsland(
+      WidgetTester tester,
+      ValueNotifier<List<IslandBuilding>> island, {
+      bool reducedMotion = false,
+    }) async {
+      tester.view.physicalSize = const Size(1170, 2532);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await pumpApp(
+        tester,
+        MediaQuery(
+          data: MediaQueryData(disableAnimations: reducedMotion),
+          child: ValueListenableBuilder(
+            valueListenable: island,
+            builder: (_, buildings, _) =>
+                ArchipelagoMap(onOpen: (_) {}, buildings: buildings),
+          ),
+        ),
+      );
+      return () => tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .map((p) => p.painter)
+          .whereType<ArchipelagoPainter>()
+          .single
+          .buildings;
+    }
+
+    testWidgets('buildings grow when positions arrive, in stages', (
+      tester,
+    ) async {
+      final island = ValueNotifier<List<IslandBuilding>>(const []);
+      final drawn = await pumpIsland(tester, island);
+      expect(drawn(), isEmpty);
+
+      island.value = [world, apple];
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      final [growing, site] = drawn();
+      expect(growing.height, inExclusiveRange(0, maxBuildingHeight));
+      expect(site.scaffold, 1, reason: 'a pending buy: its frame goes up');
+
+      await tester.pumpAndSettle();
+      expect(drawn(), drawnBuildings([world, apple]));
+    });
+
+    testWidgets('a buy that fills completes its building', (tester) async {
+      final island = ValueNotifier([world, apple]);
+      final drawn = await pumpIsland(tester, island);
+      final filled = IslandBuilding(
+        'apple',
+        height: Decimal.parse('0.5'),
+        built: Decimal.one,
+      );
+
+      island.value = [world, filled];
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 840));
+      expect(drawn()[1].built, inExclusiveRange(0, 1));
+      await tester.pumpAndSettle();
+      expect(drawn()[1], drawnBuildings([filled]).single);
+      expect(drawn()[1].scaffold, 0);
+    });
+
+    testWidgets('with animations off, the island changes at once', (
+      tester,
+    ) async {
+      final island = ValueNotifier<List<IslandBuilding>>(const []);
+      final drawn = await pumpIsland(tester, island, reducedMotion: true);
+      island.value = [world];
+      await tester.pump();
+      expect(drawn(), drawnBuildings([world]));
+    });
   });
 }

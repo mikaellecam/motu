@@ -542,7 +542,7 @@ class _PendingCard extends StatelessWidget {
               child: Text(l10n.wallet_pending_title, style: text.titleMedium),
             ),
             const SizedBox(height: AppSpace.x2),
-            for (final (:order, :asset) in o.pendingOrders)
+            for (final (:order, :asset, reserved: _) in o.pendingOrders)
               InkWell(
                 onTap: () => context.push('/wallet/${o.id}/order/${order.id}'),
                 child: ConstrainedBox(
