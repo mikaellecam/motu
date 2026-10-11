@@ -36,6 +36,20 @@ void main() {
     },
   );
 
+  // Captured a second into the reveal: the curves half drawn, the figures
+  // still counting (M7-4).
+  screenshot(
+    'm7-4-reveal-drawing',
+    const NodeScreen(nodeId: 'ae.livret-vs-etf'),
+    size: const Size(390, 1150),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.text('À peu près pareil'));
+      await tester.pump();
+      await tester.tap(find.text('Valider'));
+    },
+  );
+
   screenshot(
     'm6-8-livret-vs-etf',
     const NodeScreen(nodeId: 'ae.livret-vs-etf'),

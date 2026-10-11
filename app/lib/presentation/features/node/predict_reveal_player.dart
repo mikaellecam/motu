@@ -217,6 +217,12 @@ class CurvesBlock extends StatelessWidget {
             color: lineColors[i % lineColors.length],
             label: c.label.of(language),
             value: valueOf(c.points.last.$2, c.currency),
+            count: (
+              from: c.points.first.$2,
+              to: c.points.last.$2,
+              format: (v) => valueOf(v, c.currency),
+              percent: (r) => formats.percent(r, signed: true),
+            ),
             change: c.change == null
                 ? null
                 : formats.percent(c.change!, signed: true),

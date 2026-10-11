@@ -854,7 +854,12 @@ Hand-coded (count for the school requirement):
 2. Pending order: building under construction → completes on fill (staged controller). One 1,4 s controller,
    three intervals (`islandFrame`): heights 0–0.6, the built part rising into its frame 0.3–0.9, a completed
    frame coming down 0.85–1. With animations turned off in the system, the island changes at once.
-3. Predict-reveal: curves draw progressively (`Tween<double>` over `PathMetric`).
+3. Predict-reveal: curves draw progressively (`Tween<double>` over `PathMetric`). Built (M6-3, M7-4): 1,6 s,
+   ease in-out, a dot at each line's tip; the decision's curve draws the same way once a choice is made.
+All three run at once, without motion, when the system's animations are off.
+Value counters (M7-4, `CountUp`): under a reveal and a decision, each end value counts up from the amount it
+started from, with its signed change, in step with the curve (same duration and curve), then shows the exact
+figures; screen readers hear the end figures only.
 Others: value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
 (package-provided, counts as the third non-coded animation).
 

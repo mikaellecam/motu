@@ -18,6 +18,10 @@ class ChartLine {
 /// line in primary, the one it is compared with in ink).
 const lineColors = [AppColors.primary, AppColors.ink, AppColors.muted];
 
+/// How long a lesson's curves take to draw, and its figures to count.
+const revealDuration = Duration(milliseconds: 1600);
+const revealCurve = Curves.easeInOut;
+
 /// Lines that draw themselves from left to right when [animate] (BRIEF
 /// §10.5, hand-coded animation 3: a `Tween<double>` over each path's
 /// `PathMetric`). With reduced motion, or [animate] off, they show whole.
@@ -43,12 +47,12 @@ class _RevealChartState extends State<RevealChart>
     with SingleTickerProviderStateMixin {
   late final _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1600),
+    duration: revealDuration,
   );
   late final _progress = Tween<double>(
     begin: 0,
     end: 1,
-  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  ).animate(CurvedAnimation(parent: _controller, curve: revealCurve));
   var _started = false;
 
   @override
@@ -165,9 +169,53 @@ class LinesPainter extends CustomPainter {
       old.progress != progress || old.lines != lines;
 }
 
+/// Figures counting from [from] to [to] as a curve draws (BRIEF §10.5:
+/// value counters): [builder] gets the value of each frame, [to] itself on
+/// the last; [to] at once with reduced motion. Screen readers hear
+/// [semanticsLabel], the end figures, all along.
+class CountUp extends StatelessWidget {
+  const CountUp({
+    super.key,
+    required this.from,
+    required this.to,
+    required this.semanticsLabel,
+    required this.builder,
+  });
+
+  final Decimal from;
+  final Decimal to;
+  final String semanticsLabel;
+  final Widget Function(BuildContext context, Decimal value, bool done) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final still = MediaQuery.disableAnimationsOf(context);
+    return Semantics(
+      label: semanticsLabel,
+      excludeSemantics: true,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: still ? 1 : 0, end: 1),
+        duration: still ? Duration.zero : revealDuration,
+        curve: revealCurve,
+        builder: (context, t, _) => t >= 1
+            ? builder(context, to, true)
+            // Display only: the figures shown are the decimal ones at the end.
+            : builder(
+                context,
+                from +
+                    (to - from) *
+                        Decimal.parse(t.clamp(0, 1).toStringAsFixed(4)),
+                false,
+              ),
+      ),
+    );
+  }
+}
+
 /// One row under a chart: the line's color (none for a row that is not a
 /// line), its name, where it ended and, when given, its signed change in a
-/// gain or loss color.
+/// gain or loss color. With [count], the end value counts up from where the
+/// line started.
 class ChartLegendRow extends StatelessWidget {
   const ChartLegendRow({
     super.key,
@@ -176,6 +224,7 @@ class ChartLegendRow extends StatelessWidget {
     required this.value,
     this.change,
     this.changeColor,
+    this.count,
   });
 
   final Color? color;
@@ -183,6 +232,28 @@ class ChartLegendRow extends StatelessWidget {
   final String value;
   final String? change;
   final Color? changeColor;
+
+  /// Counts the value up from where the line started, and the change with
+  /// it (the value over that start, less one), [percent] formatting it.
+  final ({
+    Decimal from,
+    Decimal to,
+    String Function(Decimal value) format,
+    String Function(Decimal ratio) percent,
+  })?
+  count;
+
+  /// The end value, then the change in its gain or loss colour.
+  Widget figures(String value, String? change, TextTheme text) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(value, style: AppText.figure.copyWith(color: AppColors.ink)),
+      if (change != null) ...[
+        const SizedBox(width: AppSpace.x2),
+        Text(change, style: text.bodyMedium?.copyWith(color: changeColor)),
+      ],
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -205,11 +276,28 @@ class ChartLegendRow extends StatelessWidget {
             const SizedBox(width: AppSpace.x2),
           ],
           Expanded(child: Text(label, style: text.bodyMedium)),
-          Text(value, style: AppText.figure.copyWith(color: AppColors.ink)),
-          if (change != null) ...[
-            const SizedBox(width: AppSpace.x2),
-            Text(change!, style: text.bodyMedium?.copyWith(color: changeColor)),
-          ],
+          if (count case (
+            :final from,
+            :final to,
+            :final format,
+            :final percent,
+          ))
+            CountUp(
+              from: from,
+              to: to,
+              semanticsLabel: [value, ?change].join(' '),
+              builder: (context, v, done) => figures(
+                done ? value : format(v),
+                change == null
+                    ? null
+                    : done || from == Decimal.zero
+                    ? change
+                    : percent(ratio(v, from) - Decimal.one),
+                text,
+              ),
+            )
+          else
+            figures(value, change, text),
         ],
       ),
     );

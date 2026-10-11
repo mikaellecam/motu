@@ -121,6 +121,12 @@ class DecisionPlayer extends ConsumerWidget {
                     view.outcomes[choice.id]!,
                     view.currency,
                   ),
+                  count: (
+                    from: decision.invested,
+                    to: view.outcomes[choice.id]!,
+                    format: (v) => formatValue(formats, v, view.currency),
+                    percent: (r) => formats.percent(r, signed: true),
+                  ),
                   change: formats.percent(
                     choice.kept * view.change,
                     signed: true,
