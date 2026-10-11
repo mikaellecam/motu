@@ -3,7 +3,7 @@ import 'dart:convert';
 /// A lesson pack for the node players: `ae.apple` (predict_reveal: Apple vs
 /// the world ETF in 2022, from 1 000 $, live over a year), `ae.fees` (toy:
 /// two fee levels, the return from a world ETF that doubled from 2010 to
-/// 2020), and `ae.march`, a decision the players do not play yet.
+/// 2020), and `ae.mission`, a mission: played in the sandbox, not here.
 
 Map<String, Object> text(String s) => {'fr': s, 'en': s};
 
@@ -27,7 +27,7 @@ String packJson({String? worldAsset = 'world', Object? choices}) => jsonEncode({
     'id': 'actions-etf',
     'version': 1,
     'title': text('Actions & ETF'),
-    'nodes': ['ae.apple', 'ae.fees', 'ae.march'],
+    'nodes': ['ae.apple', 'ae.fees', 'ae.mission'],
   },
   'nodes': [
     {
@@ -84,9 +84,9 @@ String packJson({String? worldAsset = 'world', Object? choices}) => jsonEncode({
       ],
     },
     {
-      'id': 'ae.march',
-      'type': 'decision',
-      'title': text('Mars 2020'),
+      'id': 'ae.mission',
+      'type': 'mission',
+      'title': text('Ton premier ETF'),
       'status': 'draft',
     },
   ],

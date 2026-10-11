@@ -134,18 +134,23 @@ class _ChunkyButtonState extends State<ChunkyButton> {
 }
 
 /// One answer among several, as a toy block: the onboarding questions, a
-/// lesson's choices.
+/// lesson's choices, an automatic stop's answers. A choice with a trade-off
+/// shows what it gains (+) and what it risks (−) under its label.
 class ChunkyChoice extends StatelessWidget {
   const ChunkyChoice({
     super.key,
     required this.label,
     required this.selected,
     required this.onTap,
+    this.upside,
+    this.downside,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final String? upside;
+  final String? downside;
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +178,43 @@ class ChunkyChoice extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpace.x3),
-                Expanded(child: Text(label, style: AppText.bodyStrong)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label, style: AppText.bodyStrong),
+                      for (final (icon, line) in [
+                        (Icons.add, upside),
+                        (Icons.remove, downside),
+                      ])
+                        if (line != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: AppSpace.x1),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ExcludeSemantics(
+                                  child: Icon(
+                                    icon,
+                                    size: AppSpace.x4,
+                                    color: AppColors.muted,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpace.x2),
+                                Expanded(
+                                  child: Text(
+                                    line,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

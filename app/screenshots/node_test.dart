@@ -11,9 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'screenshot.dart';
 
-// fixtures/actions-etf.json: two lessons drafted for the screenshots, on
+// fixtures/actions-etf.json: lessons drafted for the screenshots, on
 // datasets frozen by cmd/freeze (Apple and the world ETF, weekly 2022; the
-// world ETF, monthly 2008–2025). The island's real lessons come with M6-8.
+// world ETF, monthly 2008–2025 and weekly 2020; 2025 daily closes of the
+// world ETF, Apple and emerging markets; 2023–2025 daily closes of four
+// ETFs). The island's real lessons come with M6-8.
 
 void main() {
   final pack = decodePack(
@@ -42,5 +44,71 @@ void main() {
     const NodeScreen(nodeId: 'ae.fees-toy'),
     size: const Size(390, 1110),
     overrides: overrides,
+  );
+
+  screenshot(
+    'm6-4-decision',
+    const NodeScreen(nodeId: 'ae.march-2020'),
+    size: const Size(390, 1330),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.text('Garder'));
+      await tester.pump();
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  screenshot(
+    'm6-4-sort',
+    const NodeScreen(nodeId: 'ae.risk-ladder'),
+    size: const Size(390, 760),
+    overrides: overrides,
+    act: (tester) async {
+      // Apple from the top to the bottom, then the real order.
+      final handle = find.byIcon(Icons.drag_handle).first;
+      final gesture = await tester.startGesture(tester.getCenter(handle));
+      await tester.pump();
+      await gesture.moveBy(const Offset(0, 300));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  screenshot(
+    'm6-4-build-puzzle',
+    const NodeScreen(nodeId: 'ae.calm-portfolio'),
+    size: const Size(390, 900),
+    overrides: overrides,
+    act: (tester) async {
+      // US bonds 50 %, international bonds 30 %, European stocks 20 %.
+      for (final (i, share) in [(1, 0.5), (2, 0.3), (3, 0.2)]) {
+        final slider = tester.getRect(find.byType(Slider).at(i));
+        // The track starts and ends 24 px inside the slider.
+        await tester.tapAt(
+          Offset(
+            slider.left + 24 + (slider.width - 48) * share,
+            slider.center.dy,
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+    },
+  );
+
+  screenshot(
+    'm6-4-checkpoint',
+    const NodeScreen(nodeId: 'ae.checkpoint-1'),
+    size: const Size(390, 760),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.textContaining("Des milliers d'entreprises"));
+      await tester.pump();
+      await tester.tap(find.text('Valider'));
+      await tester.pumpAndSettle();
+    },
   );
 }

@@ -46,7 +46,7 @@ void main() {
     expect(rows(view), [
       ('ae.apple', NodeState.current),
       ('ae.fees', NodeState.locked),
-      ('ae.march', NodeState.locked),
+      ('ae.mission', NodeState.locked),
     ]);
     expect(view.done, 0);
   });

@@ -208,6 +208,21 @@ Type payloads (M6-3; the player refuses a pack that breaks them):
   average yearly return, shown as « ce qu'a fait {label} de {from} à {to} », and is called an assumption once
   moved (decided 2026-10-11). Fees: each year the money grows by the return, then the fee takes its share;
   compound: each year what is there grows, then the year's twelve monthly amounts come in.
+- `decision` (M6-4): `context` (the moment as known then), `moment` (a day inside the curve), `series {dataset,
+  label}`, `invested` (in the dataset's currency), `choices[{id, label, upside, downside, kept}]` (two or more;
+  `kept` is the share left invested, 0 to 1), `explanation`. Before the choice the curve stops at the moment;
+  after it, the whole curve draws itself and each choice shows what `invested` became by the end: the kept
+  share follows the market, the rest stays as cash.
+- `sort` (M6-4): `prompt`, `scale {low, high}` (what the top and the bottom of the list mean),
+  `items[{id, label, dataset | value}]` (two or more; a daily dataset ranks by its annualised volatility, §7.7,
+  a fixed `value` such as the Livret's 0 as is), `explanation`. Done once the user validates the order; then
+  « {n} sur {total} à la bonne place » and the real order with each value.
+- `build_puzzle` (M6-4): `prompt`, `assets[{dataset, label, region}]` (daily datasets), `rules {max_volatility,
+  min_assets?, min_regions?}`, `step` (the weight step, dividing 100 %), `explanation`. The portfolio's
+  volatility (rebalanced daily, over the days every weighted asset has; below 100 % the rest is cash) and each
+  rule are checked live by domain calculations; « Valider » once they all hold.
+- `checkpoint` (M6-4): `questions[{question, choices[{id, label}], answer, explanation?}]` (4–6 in content),
+  one at a time; done at the end whatever the score.
 - Completion is saved in `node_progress` (status, attempts, last answer, first completion kept).
 
 Rules:

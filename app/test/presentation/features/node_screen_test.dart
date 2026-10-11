@@ -6,9 +6,7 @@ import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
 import 'package:finance_companion/core/theme/tokens.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
-import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/content.dart';
-import 'package:finance_companion/domain/learning/profile.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,32 +14,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/lesson_pack.dart';
+import '../../fakes/recording_profiles.dart';
 
 const nnbsp = ' ';
 const nbsp = ' ';
-
-/// Records the completed nodes.
-class RecordingProfiles implements ProfileRepository {
-  final completed = <(String, String?)>[];
-
-  @override
-  Future<void> completeNode(
-    String nodeId, {
-    String? answer,
-    required DateTime at,
-  }) async => completed.add((nodeId, answer));
-
-  @override
-  Future<Profile?> load() async => null;
-  @override
-  Future<void> save(Profile profile) async {}
-  @override
-  Future<bool> showAll() async => false;
-  @override
-  Future<Set<String>> completedNodes() async => const {};
-  @override
-  Stream<Set<String>> watchCompletedNodes() => Stream.value(const {});
-}
 
 class _Fixed implements SimulationClock {
   const _Fixed();
@@ -192,8 +168,8 @@ void main() {
     expect(profiles.completed, [('ae.fees', null)]);
   });
 
-  testWidgets('a type not playable yet says so', (tester) async {
-    await show(tester, 'ae.march');
+  testWidgets('a mission is not played here', (tester) async {
+    await show(tester, 'ae.mission');
     expect(find.text("Cette leçon n'est pas encore jouable."), findsOneWidget);
   });
 }

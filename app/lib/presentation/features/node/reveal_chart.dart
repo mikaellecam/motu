@@ -1,5 +1,8 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/formats.dart';
+import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 
@@ -162,19 +165,20 @@ class LinesPainter extends CustomPainter {
       old.progress != progress || old.lines != lines;
 }
 
-/// One row under a chart: the line's color, its name, where it ended and,
-/// when given, its signed change in a gain or loss color.
+/// One row under a chart: the line's color (none for a row that is not a
+/// line), its name, where it ended and, when given, its signed change in a
+/// gain or loss color.
 class ChartLegendRow extends StatelessWidget {
   const ChartLegendRow({
     super.key,
-    required this.color,
+    this.color,
     required this.label,
     required this.value,
     this.change,
     this.changeColor,
   });
 
-  final Color color;
+  final Color? color;
   final String label;
   final String value;
   final String? change;
@@ -187,17 +191,19 @@ class ChartLegendRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
       child: Row(
         children: [
-          ExcludeSemantics(
-            child: Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(3),
+          if (color != null) ...[
+            ExcludeSemantics(
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: AppSpace.x2),
+            const SizedBox(width: AppSpace.x2),
+          ],
           Expanded(child: Text(label, style: text.bodyMedium)),
           Text(value, style: AppText.figure.copyWith(color: AppColors.ink)),
           if (change != null) ...[
@@ -209,3 +215,12 @@ class ChartLegendRow extends StatelessWidget {
     );
   }
 }
+
+/// A lesson value in [currency] (an ISO code), or a plain index (base 100)
+/// without one.
+String formatValue(Formats formats, Decimal value, String? currency) =>
+    switch (Currency.values.where((c) => c.code == currency).firstOrNull) {
+      final c? => formats.amount(value, c),
+      null when currency != null => '${formats.number(value)} $currency',
+      null => formats.number(value, decimals: 1),
+    };

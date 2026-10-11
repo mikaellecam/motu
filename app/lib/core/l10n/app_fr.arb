@@ -1009,5 +1009,114 @@
   "node_type_sort": "Classement",
   "node_type_build_puzzle": "Construction",
   "node_type_mission": "Mission",
-  "node_type_checkpoint": "Point d'\u00e9tape"
+  "node_type_checkpoint": "Point d'\u00e9tape",
+  "decision_question": "Que fais-tu\u202f?",
+  "decision_after": "Ce qui s'est pass\u00e9 ensuite",
+  "decision_outcomes": "{amount} au {start}, devenus au {end}\u202f:",
+  "@decision_outcomes": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "decision_your_choice": "ton choix",
+  "sort_hint": "Fais glisser pour ranger.",
+  "sort_move": "D\u00e9placer",
+  "sort_result": "{placed} sur {total} \u00e0 la bonne place",
+  "@sort_result": {
+    "placeholders": {
+      "placed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sort_truth": "L'ordre r\u00e9el, par volatilit\u00e9",
+  "puzzle_weight_semantics": "Part de {asset}",
+  "@puzzle_weight_semantics": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      }
+    }
+  },
+  "puzzle_total": "Total\u202f: {total}",
+  "@puzzle_total": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "puzzle_volatility": "Volatilit\u00e9 du portefeuille\u202f: {value}",
+  "@puzzle_volatility": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "puzzle_volatility_none": "Volatilit\u00e9 du portefeuille\u202f: donne une part \u00e0 un actif.",
+  "puzzle_rule_total": "100\u202f% r\u00e9partis",
+  "puzzle_rule_volatility": "Volatilit\u00e9 sous {max}",
+  "@puzzle_rule_volatility": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "puzzle_rule_assets": "{count, plural, one{Au moins {count} actif} other{Au moins {count} actifs}}",
+  "@puzzle_rule_assets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "puzzle_rule_regions": "{count, plural, one{Au moins {count} zone g\u00e9ographique} other{Au moins {count} zones g\u00e9ographiques}}",
+  "@puzzle_rule_regions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "puzzle_rule_met": "respect\u00e9e",
+  "puzzle_rule_unmet": "pas encore respect\u00e9e",
+  "puzzle_done": "Toutes les r\u00e8gles sont respect\u00e9es.",
+  "checkpoint_progress": "Question {number} sur {total}",
+  "@checkpoint_progress": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "checkpoint_next": "Question suivante",
+  "checkpoint_finish": "Voir mon r\u00e9sultat",
+  "checkpoint_score": "{score} sur {total}",
+  "@checkpoint_score": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "checkpoint_done": "Point d'\u00e9tape termin\u00e9."
 }

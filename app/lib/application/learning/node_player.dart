@@ -14,12 +14,13 @@ part 'node_player.g.dart';
 
 /// A node of the Actions & ETF island (BRIEF §4.3).
 @riverpod
-Future<NodeContent> islandNode(Ref ref, String nodeId) async => _find(
+Future<NodeContent> islandNode(Ref ref, String nodeId) async => findNode(
   await ref.watch(contentPackProvider(actionsEtfIsland).future),
   nodeId,
 );
 
-NodeContent _find(ContentPack pack, String nodeId) {
+/// The node [nodeId] of [pack], or a [NotFoundFailure].
+NodeContent findNode(ContentPack pack, String nodeId) {
   for (final node in pack.nodes) {
     if (node.id == nodeId) return node;
   }
@@ -104,9 +105,9 @@ List<LessonCurve> _curves(
 @riverpod
 Future<RevealView> revealView(Ref ref, String nodeId) async {
   final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final node = _find(pack, nodeId);
+  final node = findNode(pack, nodeId);
   if (node.type != NodeType.predictReveal) throw const NotFoundFailure();
-  final reveal = _decode(() => decodePredictReveal(node, pack));
+  final reveal = playable(() => decodePredictReveal(node, pack));
   final datasets = [for (final s in reveal.series) pack.datasets[s.dataset]!];
   final first = datasets.first;
   return RevealView(
@@ -120,7 +121,7 @@ Future<RevealView> revealView(Ref ref, String nodeId) async {
       first.currency,
     ),
     assets: [for (final d in datasets) d.asset],
-    terms: _titles(pack),
+    terms: termTitles(pack),
   );
 }
 
@@ -219,9 +220,9 @@ final class ToyView {
 @riverpod
 Future<ToyView> toyView(Ref ref, String nodeId) async {
   final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final node = _find(pack, nodeId);
+  final node = findNode(pack, nodeId);
   if (node.type != NodeType.toy) throw const NotFoundFailure();
-  final toy = _decode(() => decodeToy(node, pack));
+  final toy = playable(() => decodeToy(node, pack));
   final points = switch (toy.returnFrom) {
     null => null,
     final from => pack.datasets[from.dataset]!.points,
@@ -233,7 +234,7 @@ Future<ToyView> toyView(Ref ref, String nodeId) async {
     past: rate == null
         ? null
         : (rate: rate, from: points!.first.$1, to: points.last.$1),
-    terms: _titles(pack),
+    terms: termTitles(pack),
   );
 }
 
@@ -362,15 +363,17 @@ class ToyPlay extends _$ToyPlay {
   }
 }
 
-Map<String, Localized> _titles(ContentPack pack) => {
+/// The title of each glossary term of [pack], for `{{term}}` links.
+Map<String, Localized> termTitles(ContentPack pack) => {
   for (final t in pack.glossary.values) t.id: t.title,
 };
 
 Decimal _clamp(Decimal value, Decimal min, Decimal max) =>
     value < min ? min : (value > max ? max : value);
 
-/// A payload the app cannot play is the pack's fault: a server-side error.
-T _decode<T>(T Function() decode) {
+/// [decode] a node's payload; one the app cannot play is the pack's fault:
+/// a server-side error.
+T playable<T>(T Function() decode) {
   try {
     return decode();
   } on FormatException {

@@ -7,7 +7,6 @@ import '../../../application/providers.dart';
 import '../../../core/cache_status.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/l10n/formats.dart';
-import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
@@ -190,11 +189,7 @@ class CurvesBlock extends StatelessWidget {
     final muted = Theme.of(context).textTheme.bodySmall
         ?.copyWith(color: AppColors.muted);
     String valueOf(Decimal v, String? currency) =>
-        switch (Currency.values.where((c) => c.code == currency).firstOrNull) {
-          final c? => formats.amount(v, c),
-          null when currency != null => '${formats.number(v)} $currency',
-          null => formats.number(v, decimals: 1),
-        };
+        formatValue(formats, v, currency);
 
     final first = curves.first;
     return Column(

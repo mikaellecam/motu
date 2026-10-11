@@ -122,10 +122,10 @@ class _StopScreenState extends ConsumerState<StopScreen> {
               ])
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpace.x3),
-                  child: _ChoiceCard(
-                    title: title,
-                    up: up,
-                    down: down,
+                  child: ChunkyChoice(
+                    label: title,
+                    upside: up,
+                    downside: down,
                     selected: _choice == decision,
                     onTap: () => setState(() => _choice = decision),
                   ),
@@ -200,66 +200,6 @@ String _sentence(
 };
 
 /// One answer, with what it gains and what it risks.
-class _ChoiceCard extends StatelessWidget {
-  const _ChoiceCard({
-    required this.title,
-    required this.up,
-    required this.down,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String title;
-  final String up;
-  final String down;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    Widget line(IconData icon, String label) => Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ExcludeSemantics(
-          child: Icon(icon, size: AppSpace.x4, color: AppColors.muted),
-        ),
-        const SizedBox(width: AppSpace.x2),
-        Expanded(child: Text(label, style: text.bodyMedium)),
-      ],
-    );
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: GestureDetector(
-        onTap: onTap,
-        child: ChunkyCard(
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: text.titleMedium),
-                    const SizedBox(height: AppSpace.x1),
-                    line(Icons.add, up),
-                    line(Icons.remove, down),
-                  ],
-                ),
-              ),
-              if (selected)
-                const Padding(
-                  padding: EdgeInsets.only(left: AppSpace.x2),
-                  child: Icon(Icons.check_circle, color: AppColors.ink),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _StopChartCard extends StatelessWidget {
   const _StopChartCard(this.chart);
   final StopChart chart;

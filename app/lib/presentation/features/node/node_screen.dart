@@ -8,7 +8,11 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/learning/node.dart';
+import 'checkpoint_player.dart';
+import 'decision_player.dart';
 import 'predict_reveal_player.dart';
+import 'puzzle_player.dart';
+import 'sort_player.dart';
 import 'toy_player.dart';
 
 /// The node player (BRIEF §3: `/node/:nodeId`): one lesson, played by the
@@ -36,7 +40,12 @@ class NodeScreen extends ConsumerWidget {
         data: (value) => switch (value.type) {
           NodeType.predictReveal => PredictRevealPlayer(nodeId: nodeId),
           NodeType.toy => ToyPlayer(nodeId: nodeId),
-          _ => Center(
+          NodeType.decision => DecisionPlayer(nodeId: nodeId),
+          NodeType.sort => SortPlayer(nodeId: nodeId),
+          NodeType.buildPuzzle => PuzzlePlayer(nodeId: nodeId),
+          NodeType.checkpoint => CheckpointPlayer(nodeId: nodeId),
+          // Missions play in the sandbox (M6-5).
+          NodeType.mission => Center(
             child: Padding(
               padding: const EdgeInsets.all(AppSpace.screenPadding),
               child: Text(l10n.node_not_playable, textAlign: TextAlign.center),
