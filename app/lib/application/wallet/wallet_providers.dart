@@ -173,13 +173,16 @@ Future<ChartData> walletChart(
   ChartPeriod period,
   Benchmark? benchmark,
 ) async {
-  final (overview, points) = await (
-    ref.watch(walletOverviewProvider(walletId).future),
-    benchmark == null
-        ? Future<List<ValuePoint>?>.value()
-        : ref.watch(walletBenchmarkProvider(walletId, benchmark).future),
-  ).wait;
-  return chartFor(overview.series, period, benchmark: points);
+  // Both start at once; each is awaited in turn so that a failure arrives as
+  // itself (a record `.wait` wraps it in a ParallelWaitError).
+  final overviewF = ref.watch(walletOverviewProvider(walletId).future)
+    ..ignore();
+  final pointsF = benchmark == null
+      ? null
+      : (ref.watch(walletBenchmarkProvider(walletId, benchmark).future)
+          ..ignore());
+  final overview = await overviewF;
+  return chartFor(overview.series, period, benchmark: await pointsF);
 }
 
 DateTime _day(DateTime t) {

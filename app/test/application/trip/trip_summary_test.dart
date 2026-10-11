@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
+import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/data/remote/backend_api.dart';
@@ -71,6 +72,8 @@ void main() {
       '2026-10-07': '48',
     };
     container = ProviderContainer(
+      // A failure surfaces as is instead of being retried.
+      retry: (_, _) => null,
       overrides: [
         databaseProvider.overrideWithValue(db),
         liveClockProvider.overrideWithValue(wall),
@@ -232,5 +235,12 @@ void main() {
   test('a trip ended by hand is finished', () async {
     await container.read(tripFinishProvider('trip').notifier).finish();
     expect((await wallets.load('trip')).status, WalletStatus.finished);
+  });
+
+  test('a failing read reaches the summary as its own failure', () async {
+    await expectLater(
+      container.read(tripSummaryProvider('nope').future),
+      throwsA(isA<NotFoundFailure>()),
+    );
   });
 }

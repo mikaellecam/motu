@@ -3,6 +3,7 @@ import 'package:drift/native.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
+import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/data/remote/backend_api.dart';
@@ -51,6 +52,8 @@ void main() {
     // Thursday 2026-10-08, 08:00 in New York.
     wall = WallClock(DateTime.utc(2026, 10, 8, 12));
     container = ProviderContainer(
+      // A failure surfaces as is instead of being retried.
+      retry: (_, _) => null,
       overrides: [
         databaseProvider.overrideWithValue(db),
         liveClockProvider.overrideWithValue(wall),
@@ -177,5 +180,18 @@ void main() {
     );
     expect(none.benchmark, isNull);
     expect(none.moneyIn, [d('50000'), d('50000')]);
+  });
+
+  test('a failing read reaches the chart as its own failure', () async {
+    // No such wallet: the overview fails, and so does the chart with it.
+    for (final benchmark in [null, Benchmark.world]) {
+      await expectLater(
+        container.read(
+          walletChartProvider('nope', ChartPeriod.all, benchmark).future,
+        ),
+        throwsA(isA<NotFoundFailure>()),
+        reason: '$benchmark',
+      );
+    }
   });
 }

@@ -89,17 +89,26 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
   final market = ref.watch(marketRepositoryProvider);
   final fx = ref.watch(fxServiceProvider);
   final wallets = ref.watch(walletRepositoryProvider);
-  final (overview, world, livret, pack) = await (
-    ref.watch(walletOverviewProvider(walletId).future),
-    ref.watch(walletBenchmarkProvider(walletId, Benchmark.world).future),
-    ref.watch(walletLivretProvider(walletId).future),
-    ref.watch(contentPackProvider(actionsEtfIsland).future),
-  ).wait;
-  final (wallet, journal, moments) = await (
-    wallets.load(walletId),
-    wallets.journal(walletId),
-    wallets.moments(walletId),
-  ).wait;
+  // Everything starts at once; each is awaited in turn so that a failure
+  // arrives as itself (a record `.wait` wraps it in a ParallelWaitError).
+  final overviewF = ref.watch(walletOverviewProvider(walletId).future)
+    ..ignore();
+  final worldF = ref.watch(
+    walletBenchmarkProvider(walletId, Benchmark.world).future,
+  )..ignore();
+  final livretF = ref.watch(walletLivretProvider(walletId).future)..ignore();
+  final packF = ref.watch(contentPackProvider(actionsEtfIsland).future)
+    ..ignore();
+  final walletF = wallets.load(walletId)..ignore();
+  final journalF = wallets.journal(walletId)..ignore();
+  final momentsF = wallets.moments(walletId)..ignore();
+  final overview = await overviewF;
+  final world = await worldF;
+  final livret = await livretF;
+  final pack = await packF;
+  final wallet = await walletF;
+  final journal = await journalF;
+  final moments = await momentsF;
   final end = overview.asOf;
   final assets = {for (final a in await market.assets(asOf: end)) a.id: a};
 
