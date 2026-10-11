@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/trip/trip_runner.dart';
+import 'package:finance_companion/application/trip/trip_stop.dart';
+import 'package:finance_companion/core/clock/simulation_clock.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
@@ -25,8 +27,24 @@ class FakeRunner extends TripRunner {
   @override
   FutureOr<TripAdvance?> build(String walletId) => null;
 
+  final targets = <DateTime>[];
+
   @override
   Future<void> advance(TripStep step) async => steps.add(step);
+
+  @override
+  Future<void> advanceTo(DateTime target) async => targets.add(target);
+}
+
+/// Records the stops saved.
+class FakeStopActions extends StopActions {
+  final saved = <StopConditions>[];
+
+  @override
+  FutureOr<void> build(String walletId) {}
+
+  @override
+  Future<void> updateStops(StopConditions stops) async => saved.add(stops);
 }
 
 DateTime day(int m, int d) => DateTime.utc(2008, m, d);
@@ -68,6 +86,14 @@ WalletOverview trip({WalletStatus status = WalletStatus.active}) =>
       livret: Decimal.zero,
     );
 
+late FakeStopActions stopActions;
+
+class _Fixed implements SimulationClock {
+  const _Fixed();
+  @override
+  DateTime now() => DateTime.utc(2026, 10, 11, 10);
+}
+
 Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -75,6 +101,7 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   final runner = FakeRunner();
+  stopActions = FakeStopActions();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -84,6 +111,8 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
           (ref, args) async => chartFor(o.series, args.$2),
         ),
         tripRunnerProvider.overrideWith2((_) => runner),
+        stopActionsProvider.overrideWith2((_) => stopActions),
+        liveClockProvider.overrideWithValue(const _Fixed()),
       ],
       child: MainApp.screen(const WalletScreen(walletId: 'trip')),
     ),
@@ -115,5 +144,56 @@ void main() {
     await tester.tap(find.text('+1 mois'));
     await tester.pump();
     expect(runner.steps, isEmpty);
+  });
+
+  testWidgets("« Avancer jusqu'à… »: a span or a day, then time moves", (
+    tester,
+  ) async {
+    final runner = await show(tester, trip());
+    await tester.tap(find.text('Avancer jusqu\'à…'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('+3 mois'));
+    await tester.pumpAndSettle();
+    expect(find.text('Avancer jusqu\'au 1er janvier 2009'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '15/09/2008');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Choisis une date après le 1er octobre 2008.'),
+      findsOneWidget,
+    );
+    await tester.enterText(find.byType(TextField), '11/10/2026');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Au plus tard le 10 octobre 2026, le dernier jour de cours.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextField), '09/03/2009');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Avancer jusqu\'au 9 mars 2009'));
+    await tester.pumpAndSettle();
+    expect(runner.targets, [DateTime.utc(2009, 3, 9)]);
+  });
+
+  testWidgets('the automatic stops, from the header', (tester) async {
+    await show(tester, trip());
+    await tester.tap(find.byTooltip('Arrêts automatiques'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('un versement mensuel arrive'),
+      findsOneWidget,
+      reason: '200 € a month',
+    );
+    await tester.tap(find.text('un de tes ordres est exécuté'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enregistrer'));
+    await tester.pumpAndSettle();
+    final saved = stopActions.saved.single;
+    expect(
+      saved.orderFilled,
+      isTrue,
+      reason: 'off in the fixture, switched on',
+    );
   });
 }

@@ -181,6 +181,10 @@ class Wallets extends Table {
   /// The companion's running facts (JSON); null before the first day.
   TextColumn get companionState => text().nullable()();
 
+  /// Why the trip stopped by itself (JSON list), until the user decides;
+  /// null otherwise. Added in schema v2.
+  TextColumn get stopReasons => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

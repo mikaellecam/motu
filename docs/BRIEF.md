@@ -283,6 +283,12 @@ default 15), any position loss > Y % (default 20), an order the user placed fill
 count), a contribution arrived. Threshold conditions fire when they start to hold and re-arm once false
 again, so a portfolio stuck below the line stops the trip once. The automatic-stop screen shows the drop chart with the threshold,
 three neutral choices (each with upside and downside), an optional "Pourquoi ?" text saved to the journal.
+The choices (decided 2026-10-11): for a portfolio or position drop, « Garder », « Vendre la moitié », « Tout
+vendre » (every position for a portfolio drop, the dropped one otherwise; halves round down, to whole shares
+when fractions are off), the sells being market orders filled at the next session; for an order filled or a
+contribution, « Continuer ». The trip stays stopped (time controls off) until the user answers. The
+automatic stops can be changed any time from the trip header or the stop screen. « Avancer jusqu'à… »
+accepts +3 / +6 months, +1 year or a typed day, strictly after the trip's day and up to yesterday.
 
 **End of trip** (any time, or when the clock reaches the last available trading day): summary with the
 user's time-weighted return (§7.6) compared with counterfactuals computed from the same start date and the
@@ -535,7 +541,7 @@ User data (only the user creates it; rows of a wallet cascade when it is deleted
 
 | Table | Key columns |
 |---|---|
-| `wallets` | id, kind, name, startDate, simDate (trip), difficulty, params json, status, createdAt, breachedStops json, companionState json |
+| `wallets` | id, kind, name, startDate, simDate (trip), difficulty, params json, status, createdAt, breachedStops json, companionState json, stopReasons json (v2: why a trip stopped, until the user answers) |
 | `cash_ledger` | walletId, date, amountCents, kind (start, contribution, buy, sell, fee, livretIn, livretOut), refId — cash = Σ amounts; Livret interest is computed, not stored |
 | `orders` | id, walletId, assetId, side, type, amountCents xor quantityMicros, limitPrice?, stopPrice?, priceCurrency?, status, cancelReason?, planId?, createdAt |
 | `fills` | id (execution order), orderId (unique), walletId, assetId, side, date, price, currency, quantityMicros, fxRate, feesCents |

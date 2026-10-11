@@ -1,10 +1,12 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'generated/schema.dart';
+import 'generated/schema_v1.dart' as v1;
+import 'generated/schema_v2.dart' as v2;
 
 /// Every schema ever shipped (drift_schemas/) must migrate to the current
 /// one. After a schema change: bump `schemaVersion`, add the step, run
@@ -22,6 +24,38 @@ void main() {
       await verifier.migrateAndValidate(db, db.schemaVersion);
     });
   }
+
+  test('v1 → v2: a trip keeps its row and has no stop reasons yet', () async {
+    await verifier.testWithDataIntegrity(
+      oldVersion: 1,
+      newVersion: 2,
+      createOld: v1.DatabaseAtV1.new,
+      createNew: v2.DatabaseAtV2.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) => batch.insert(
+        oldDb.wallets,
+        const v1.WalletsData(
+          id: 'trip',
+          kind: 'trip',
+          name: 'Lehman',
+          startDate: '2008-09-15T00:00:00.000Z',
+          simDate: '2008-10-03T00:00:00.000Z',
+          difficulty: 'realiste',
+          params: '{}',
+          status: 'stopped',
+          createdAt: '2026-10-11T00:00:00.000Z',
+          breachedStops: '["drawdown"]',
+          companionState: null,
+        ),
+      ),
+      validateItems: (newDb) async {
+        final row = await newDb.select(newDb.wallets).getSingle();
+        expect(row.name, 'Lehman');
+        expect(row.breachedStops, '["drawdown"]');
+        expect(row.stopReasons, isNull);
+      },
+    );
+  });
 
   test('the code matches the latest recorded schema', () async {
     // Fails when a table changes without a new schema version and dump.

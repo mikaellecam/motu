@@ -617,5 +617,112 @@
   "trip_step_month": "+1 mois",
   "trip_exit": "Quitter le voyage",
   "trip_end_of_data": "Tu es arriv\u00e9 au dernier jour de cours disponible.",
-  "trip_moving": "Le temps avance\u2026"
+  "trip_moving": "Le temps avance\u2026",
+  "stop_title": "Arr\u00eat automatique",
+  "stop_drawdown": "Ton portefeuille vaut {value}, sous la ligne de {threshold}\u202f: 15\u202f% sous l'argent vers\u00e9.",
+  "@stop_drawdown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "threshold": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_position": "{name} a perdu {loss} par rapport \u00e0 son prix d'achat.",
+  "@stop_position": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "loss": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_order": "Ton ordre sur {name} a \u00e9t\u00e9 ex\u00e9cut\u00e9.",
+  "@stop_order": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_contribution": "Ton versement mensuel de {amount} est arriv\u00e9.",
+  "@stop_contribution": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_line": "Ligne d'arr\u00eat",
+  "stop_question": "Que fais-tu\u202f?",
+  "stop_hold": "Garder",
+  "stop_hold_up": "Si les cours remontent, tu en profites.",
+  "stop_hold_down": "Si la baisse continue, tu perds davantage.",
+  "stop_sell_half": "Vendre la moiti\u00e9",
+  "stop_sell_half_up": "Si la baisse continue, tu limites la perte.",
+  "stop_sell_half_down": "Si les cours remontent, tu n'en profites qu'\u00e0 moiti\u00e9.",
+  "stop_sell_all": "Tout vendre",
+  "stop_sell_all_up": "Plus aucune perte possible sur ces positions.",
+  "stop_sell_all_down": "Tu ne profites pas d\u2019une remont\u00e9e, et tu paies des frais.",
+  "stop_sells_next": "Les ventes passent au prochain jour de cotation.",
+  "stop_continue": "Continuer",
+  "stop_why": "Pourquoi\u202f? (facultatif)",
+  "stop_confirm": "Valider",
+  "stop_edit_stops": "Modifier les arr\u00eats automatiques",
+  "stops_save": "Enregistrer",
+  "trip_forward": "Avancer jusqu'\u00e0\u2026",
+  "trip_see_stop": "Voir l'arr\u00eat",
+  "trip_stops": "Arr\u00eats automatiques",
+  "forward_months": "+{months} mois",
+  "@forward_months": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "forward_year": "+1 an",
+  "forward_not_after": "Choisis une date apr\u00e8s le {date}.",
+  "@forward_not_after": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "forward_too_late": "Au plus tard le {date}, le dernier jour de cours.",
+  "@forward_too_late": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "forward_go": "Avancer jusqu'au {date}",
+  "@forward_go": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "forward_may_stop": "Le voyage peut s'arr\u00eater avant, si un arr\u00eat automatique se d\u00e9clenche.",
+  "stop_chart_semantics": "Valeur de {start} \u00e0 {end}, ligne d'arr\u00eat \u00e0 {line}.",
+  "@stop_chart_semantics": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "line": {
+        "type": "String"
+      }
+    }
+  }
 }

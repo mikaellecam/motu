@@ -95,3 +95,44 @@ DateTime _day(DateTime t) {
   final utc = t.toUtc();
   return DateTime.utc(utc.year, utc.month, utc.day);
 }
+
+/// The outcome of checking a fast-forward target (« Avancer jusqu'à… »).
+sealed class ForwardCheck {
+  const ForwardCheck();
+}
+
+final class ForwardOk extends ForwardCheck {
+  const ForwardOk(this.target);
+  final DateTime target;
+}
+
+final class ForwardUnreadable extends ForwardCheck {
+  const ForwardUnreadable();
+}
+
+/// Not after the trip's day.
+final class ForwardNotAfter extends ForwardCheck {
+  const ForwardNotAfter(this.from);
+  final DateTime from;
+}
+
+/// After the last day with prices: yesterday's close.
+final class ForwardTooLate extends ForwardCheck {
+  const ForwardTooLate(this.latest);
+  final DateTime latest;
+}
+
+/// A fast-forward goes strictly after the trip's day [from], up to the day
+/// before [today] at the latest. The trip may still stop sooner.
+ForwardCheck checkForward(
+  DateTime? target, {
+  required DateTime from,
+  required DateTime today,
+}) {
+  if (target == null) return const ForwardUnreadable();
+  final day = _day(target);
+  if (!day.isAfter(_day(from))) return ForwardNotAfter(_day(from));
+  final latest = _day(today).subtract(const Duration(days: 1));
+  if (day.isAfter(latest)) return ForwardTooLate(latest);
+  return ForwardOk(day);
+}

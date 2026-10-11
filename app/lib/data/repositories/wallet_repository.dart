@@ -16,6 +16,7 @@ import '../../domain/wallet/trip_engine.dart';
 import '../../domain/wallet/wallet.dart';
 import '../companion/companion_codec.dart';
 import '../local/database.dart';
+import '../trip/stop_codec.dart';
 import '../local/tables.dart';
 import 'guard.dart';
 
@@ -115,6 +116,7 @@ final class WalletState {
     required this.values,
     required this.livretMovements,
     required this.plans,
+    this.stopReasons = const [],
   });
 
   final String id;
@@ -139,6 +141,10 @@ final class WalletState {
   /// Transfers into (+) and out of (−) the Livret, from the ledger.
   final List<LivretMovement> livretMovements;
   final List<DcaPlan> plans;
+
+  /// Why the trip stopped by itself, until the user decides; empty
+  /// otherwise.
+  final List<StopReason> stopReasons;
 }
 
 /// Reads and writes wallets (ADR-002: repositories own persistence). Every
@@ -277,6 +283,10 @@ class WalletRepository {
             // Cash out of the wallet is money into the Livret.
             LivretMovement(entry.date, Money(-entry.amountCents, Currency.eur)),
       ],
+      stopReasons: switch (row.stopReasons) {
+        final json? => decodeStops(json),
+        null => const [],
+      },
       plans: [
         for (final p in await dao.plansOf(id))
           DcaPlan(
@@ -368,12 +378,73 @@ class WalletRepository {
           status: advance.stop.isEmpty
               ? const Value.absent()
               : const Value(WalletStatus.stopped),
+          stopReasons: advance.stop.isEmpty
+              ? const Value.absent()
+              : Value(encodeStops(advance.stop)),
           breachedStops: Value(jsonEncode([...advance.state.breached]..sort())),
           companionState: Value(encodeTracker(advance.state.companion)),
         ),
       );
     }),
   );
+
+  /// The user's answer to an automatic stop (BRIEF §4.5, §4.13): the sells
+  /// it places, a journal entry with the optional reason, and the trip
+  /// running again. All or nothing.
+  Future<void> decide(
+    String walletId, {
+    required DateTime simDate,
+    required String eventId,
+    required String decision,
+    required List<Order> sells,
+    String? reason,
+  }) => guardStorage(
+    () => _db.transaction(() async {
+      for (final order in sells) {
+        await placeOrder(walletId, order);
+      }
+      await _db.walletDao.addJournalEntry(
+        JournalEntriesCompanion.insert(
+          walletId: walletId,
+          simDate: simDate,
+          eventId: Value(eventId),
+          decision: decision,
+          reason: Value(reason),
+        ),
+      );
+      await _db.walletDao.updateWallet(
+        walletId,
+        const WalletsCompanion(
+          status: Value(WalletStatus.active),
+          stopReasons: Value(null),
+        ),
+      );
+    }),
+  );
+
+  /// The asset an order traded; null for an unknown order.
+  Future<String?> orderAsset(String orderId) =>
+      guardStorage(() async => (await _db.walletDao.order(orderId))?.assetId);
+
+  /// Replaces a trip's automatic stops.
+  Future<void> updateStops(String walletId, StopConditions stops) =>
+      guardStorage(() async {
+        final wallet = await load(walletId);
+        final params = wallet.params;
+        await _db.walletDao.updateWallet(
+          walletId,
+          WalletsCompanion(
+            params: Value(
+              WalletParams(
+                rules: params.rules,
+                monthlyContribution: params.monthlyContribution,
+                stops: stops,
+                difficulty: params.difficulty,
+              ).toJson(),
+            ),
+          ),
+        );
+      });
 
   Future<void> placeOrder(String walletId, Order order) => guardStorage(() {
     final (amount, quantity) = switch (order.size) {

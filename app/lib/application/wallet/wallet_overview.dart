@@ -7,6 +7,7 @@ import '../../domain/market/asset.dart';
 import '../../domain/market/price_bar.dart';
 import '../../domain/wallet/dca.dart';
 import '../../domain/wallet/order.dart';
+import '../../domain/wallet/trip_engine.dart';
 import '../../domain/wallet/valuation.dart';
 import '../../domain/wallet/wallet.dart';
 
@@ -45,6 +46,8 @@ final class WalletOverview {
     required this.name,
     this.difficulty,
     this.status = WalletStatus.active,
+    this.stops = const StopConditions(),
+    this.monthlyContribution = const Money.zero(Currency.eur),
     required this.rules,
     required this.asOf,
     required this.pricesAsOf,
@@ -66,6 +69,10 @@ final class WalletOverview {
   /// A trip's difficulty id; null for the live wallet.
   final String? difficulty;
   final WalletStatus status;
+
+  /// A trip's automatic stops and monthly contribution.
+  final StopConditions stops;
+  final Money monthlyContribution;
   final TradingRules rules;
   final DateTime asOf;
 
@@ -181,6 +188,8 @@ WalletOverview buildOverview({
     name: wallet.name,
     difficulty: wallet.params.difficulty,
     status: wallet.status,
+    stops: wallet.params.stops,
+    monthlyContribution: wallet.params.monthlyContribution,
     rules: wallet.params.rules,
     asOf: asOf,
     pricesAsOf: holdings.isEmpty

@@ -104,4 +104,16 @@ void main() {
       reason: '28/02/2027 is a Sunday',
     );
   });
+
+  test('fast-forward: after the trip day, up to yesterday', () {
+    final from = day(2008, 10, 3);
+    ForwardCheck check(DateTime? d) =>
+        checkForward(d, from: from, today: today);
+    expect((check(day(2009, 3, 9)) as ForwardOk).target, day(2009, 3, 9));
+    expect((check(from) as ForwardNotAfter).from, from);
+    expect(check(day(2008, 9, 1)), isA<ForwardNotAfter>());
+    expect((check(today) as ForwardTooLate).latest, day(2026, 10, 10));
+    expect(check(day(2026, 10, 10)), isA<ForwardOk>());
+    expect(check(null), isA<ForwardUnreadable>());
+  });
 }

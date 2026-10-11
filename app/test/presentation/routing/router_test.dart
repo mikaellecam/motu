@@ -8,6 +8,7 @@ import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
+import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
 import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_screen.dart';
 import 'package:finance_companion/presentation/features/wallets/wallets_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
@@ -99,7 +100,6 @@ void main() {
     '/tools/dca',
     '/island/actions-etf',
     '/node/ae.fees-toy',
-    '/wallet/t1/stop/e1',
     '/wallet/t1/summary',
     '/wallet/t1/order/o1',
   ]) {
@@ -116,6 +116,14 @@ void main() {
     await open(tester, '/asset/cw8?wallet=t1');
     final screen = tester.widget<AssetScreen>(find.byType(AssetScreen));
     expect((screen.assetId, screen.walletId), ('cw8', 't1'));
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('/wallet/:id/stop/:event opens the stop full screen', (
+    tester,
+  ) async {
+    await open(tester, '/wallet/t1/stop/stop-2008-10-03');
+    expect(tester.widget<StopScreen>(find.byType(StopScreen)).walletId, 't1');
     expect(find.byType(NavigationBar), findsNothing);
   });
 

@@ -8,6 +8,7 @@ import '../features/map/archipelago_map.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/trip/stop_screen.dart';
 import '../features/trip_wizard/trip_wizard_screen.dart';
 import '../features/wallet/wallet_screen.dart';
 import '../features/wallets/wallets_screen.dart';
@@ -63,7 +64,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       builder: (_, state) =>
           WalletScreen(walletId: state.pathParameters['walletId']!),
     ),
-    _pending('/wallet/:walletId/stop/:eventId'),
+    GoRoute(
+      path: '/wallet/:walletId/stop/:eventId',
+      builder: (_, state) =>
+          StopScreen(walletId: state.pathParameters['walletId']!),
+    ),
     _pending('/wallet/:walletId/summary'),
     _pending('/wallet/:walletId/order/:orderId'),
     GoRoute(

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../application/trip/trip_runner.dart';
+import '../../../application/trip/trip_stop.dart';
 import '../../../application/wallet/wallet_overview.dart';
 import '../../../application/wallet/wallet_providers.dart';
 import '../../../core/failure.dart';
@@ -18,6 +19,7 @@ import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
 import '../../widgets/asset_avatar.dart';
+import '../trip/trip_sheets.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
 
@@ -670,6 +672,16 @@ class _TripHeader extends StatelessWidget {
                 ],
               ),
             ),
+            IconButton(
+              tooltip: l10n.trip_stops,
+              icon: const Icon(Icons.tune),
+              onPressed: () => showStopsSheet(
+                context,
+                walletId: o.id,
+                current: o.stops,
+                contribution: o.monthlyContribution,
+              ),
+            ),
           ],
         ),
       ),
@@ -688,6 +700,16 @@ class _TimeControls extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final runner = ref.watch(tripRunnerProvider(o.id));
+    final stopRoute = '/wallet/${o.id}/stop/${stopEventId(o.asOf)}';
+    // A stop opens its screen as soon as the advance lands.
+    ref.listen(tripRunnerProvider(o.id), (previous, next) {
+      final advance = next.value;
+      if (previous?.isLoading == true && (advance?.stop.isNotEmpty ?? false)) {
+        context.push(
+          '/wallet/${o.id}/stop/${stopEventId(advance!.state.date)}',
+        );
+      }
+    });
     final moving = runner.isLoading;
     final endOfData = runner.value?.endOfData ?? false;
     final stopped = o.status == WalletStatus.stopped;
@@ -749,6 +771,23 @@ class _TimeControls extends ConsumerWidget {
                     ],
                   ],
                 ),
+                const SizedBox(height: AppSpace.x2),
+                if (stopped)
+                  FilledButton(
+                    onPressed: () => context.push(stopRoute),
+                    child: Text(l10n.trip_see_stop),
+                  )
+                else
+                  TextButton(
+                    onPressed: canMove
+                        ? () => showForwardSheet(
+                            context,
+                            walletId: o.id,
+                            from: o.asOf,
+                          )
+                        : null,
+                    child: Text(l10n.trip_forward),
+                  ),
                 if (moving) ...[
                   const SizedBox(height: AppSpace.x2),
                   Semantics(

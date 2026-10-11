@@ -17,6 +17,8 @@ import 'daos/market_dao.dart';
 import 'daos/wallet_dao.dart';
 import 'tables.dart';
 
+import 'database.steps.dart';
+
 part 'database.g.dart';
 
 /// The app's SQLite database (ADR-002). Repositories reach it through the
@@ -59,11 +61,16 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'investment_companion'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
+    onUpgrade: stepByStep(
+      // v2: why a trip stopped, until the user decides (M5-4).
+      from1To2: (m, schema) =>
+          m.addColumn(schema.wallets, schema.wallets.stopReasons),
+    ),
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );
 }

@@ -369,6 +369,71 @@ void main() {
       expect(reloaded.cash, eur('9999.96'));
     });
 
+    test('a stop keeps its reasons until the user decides', () async {
+      final before = await repo.tripState('covid', livretRates: rates);
+      const drop = DrawdownStop(
+        value: Money(840000, Currency.eur),
+        threshold: Money(850000, Currency.eur),
+      );
+      await repo.saveAdvance(
+        'covid',
+        TripAdvance(
+          state: before.copyWith(date: day(3, 9)),
+          events: const [],
+          stop: const [drop],
+          endOfData: false,
+        ),
+        before: before,
+      );
+      var wallet = await repo.load('covid');
+      expect(wallet.status, WalletStatus.stopped);
+      final reason = wallet.stopReasons.single as DrawdownStop;
+      expect((reason.value, reason.threshold), (drop.value, drop.threshold));
+
+      final sell = Order(
+        id: 'stop-aapl-2020-03-09',
+        assetId: 'aapl',
+        side: Side.sell,
+        type: OrderType.market,
+        size: QuantitySize(Quantity.whole(1)),
+        createdAt: day(3, 9),
+      );
+      await repo.decide(
+        'covid',
+        simDate: day(3, 9),
+        eventId: 'stop-2020-03-09',
+        decision: 'sell_half',
+        sells: [sell],
+        reason: 'Trop de stress',
+      );
+      wallet = await repo.load('covid');
+      expect(wallet.status, WalletStatus.active);
+      expect(wallet.stopReasons, isEmpty);
+      expect(wallet.pendingOrders.single.id, 'stop-aapl-2020-03-09');
+      final journal = await db.walletDao.journalOf('covid');
+      expect(
+        (
+          journal.single.decision,
+          journal.single.reason,
+          journal.single.eventId,
+        ),
+        ('sell_half', 'Trop de stress', 'stop-2020-03-09'),
+      );
+    });
+
+    test('the automatic stops can be changed', () async {
+      await repo.updateStops(
+        'covid',
+        StopConditions(positionLoss: d('0.20'), contribution: true),
+      );
+      final stops = (await repo.load('covid')).params.stops;
+      expect(stops.drawdown, isNull);
+      expect(stops.positionLoss, d('0.20'));
+      expect(stops.contribution, isTrue);
+      expect(stops.orderFilled, isFalse);
+      expect((await repo.load('covid')).params.monthlyContribution, eur('200'));
+    });
+
     test('no stop leaves the status as it was', () async {
       final before = await repo.tripState('covid', livretRates: rates);
       await repo.saveAdvance(

@@ -94,16 +94,21 @@ class TripRunner extends _$TripRunner {
   @override
   FutureOr<TripAdvance?> build(String walletId) => null;
 
-  Future<void> advance(TripStep step) async {
+  Future<void> advance(TripStep step) => _run(step: step);
+
+  /// « Avancer jusqu'à… » [target] (checked with `checkForward`).
+  Future<void> advanceTo(DateTime target) => _run(target: target);
+
+  Future<void> _run({TripStep? step, DateTime? target}) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _advance(step));
+    state = await AsyncValue.guard(() => _advance(step: step, to: target));
     ref
       ..invalidate(walletOverviewProvider(walletId))
       ..invalidate(walletsListProvider);
   }
 
-  Future<TripAdvance> _advance(TripStep step) async {
+  Future<TripAdvance> _advance({TripStep? step, DateTime? to}) async {
     final market = ref.read(marketRepositoryProvider);
     final wallets = ref.read(walletRepositoryProvider);
     final fx = ref.read(fxServiceProvider);
@@ -122,7 +127,7 @@ class TripRunner extends _$TripRunner {
     );
     bool tripDay(DateTime d) =>
         allExchanges.any((e) => calendar.isTradingDay(e, d));
-    final target = stepTarget(step, from, isTripDay: tripDay);
+    final target = to ?? stepTarget(step!, from, isTripDay: tripDay);
     calendar = await market.calendar(
       allExchanges,
       fromYear: from.year,
