@@ -458,5 +458,21 @@
   "next_step_trip_go": "Resume",
   "next_step_wallet": "Your wallet",
   "next_step_wallet_title": "See how your positions are doing",
-  "next_step_wallet_go": "Open"
+  "next_step_wallet_go": "Open",
+  "livret_title": "Livret A",
+  "livret_interest": "This year's interest: {amount}, paid on 31 December",
+  "livret_terms": "{rate} a year \u00b7 ceiling {ceiling}",
+  "livret_deposit": "Deposit",
+  "livret_withdraw": "Withdraw",
+  "livret_deposit_title": "Deposit on the Livret A",
+  "livret_withdraw_title": "Withdraw from the Livret A",
+  "livret_available_cash": "Available cash: {cash}",
+  "livret_available_balance": "On the Livret A: {balance}",
+  "livret_note_deposit": "Instant and free. Money deposited earns from the next fortnight.",
+  "livret_note_withdraw": "Instant and free. Money withdrawn stops earning from the start of the current fortnight.",
+  "livret_error_cash": "You have {cash} of available cash.",
+  "livret_error_ceiling": "The ceiling is {ceiling}: you can still deposit {room}.",
+  "livret_error_balance": "Your Livret A holds {balance}.",
+  "livret_done_deposit": "{amount} deposited on your Livret A.",
+  "livret_done_withdraw": "{amount} withdrawn from your Livret A."
 }

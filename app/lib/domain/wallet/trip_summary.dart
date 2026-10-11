@@ -42,25 +42,34 @@ final class JournalEntry {
   bool get sells => isSell || decision == 'sell';
 }
 
-/// [series] had everything been sold at the close of [date] and kept as
-/// cash: the values up to the day before, that day's value less [fees], then
-/// that cash plus the later flows. A day without a value sells at the last
-/// one before it; a day before the series changes nothing.
-// ponytail: a Livret balance counts as sold too, at 0 % afterwards; trips
-// have no Livret line yet (M8-1).
+/// [series] had every position been sold at the close of [date] and kept
+/// as cash: the values up to the day before, that day's value less [fees],
+/// then that cash plus the later flows. A Livret A keeps earning (decided
+/// 2026-10-11): [livretInterest] is what it has earned in all by a day, and
+/// what it earns after the sale is added. A day without a value sells at the
+/// last one before it; a day before the series changes nothing.
 List<DailyValue> soldEverythingOn(
   DateTime date,
   List<DailyValue> series, {
   required Money fees,
+  Decimal Function(DateTime day)? livretInterest,
 }) {
   final sale = series.lastIndexWhere((v) => !v.date.isAfter(date));
   if (sale < 0) return series;
   var cash = series[sale].value - fees;
+  final earned = livretInterest ?? (_) => Decimal.zero;
+  final atSale = earned(series[sale].date);
   return [
     ...series.take(sale),
     DailyValue(date: series[sale].date, value: cash, flow: series[sale].flow),
     for (final v in series.skip(sale + 1))
-      DailyValue(date: v.date, value: cash += v.flow, flow: v.flow),
+      DailyValue(
+        date: v.date,
+        value:
+            (cash += v.flow) +
+            Money.book(earned(v.date) - atSale, Currency.eur),
+        flow: v.flow,
+      ),
   ];
 }
 
@@ -70,12 +79,18 @@ List<DailyValue> soldEverythingOn(
 /// on a tie. Null without a day or a series.
 ({DateTime date, List<DailyValue> series})? worstSell(
   List<DailyValue> series,
-  Map<DateTime, Money> fees,
-) {
+  Map<DateTime, Money> fees, {
+  Decimal Function(DateTime day)? livretInterest,
+}) {
   if (series.isEmpty) return null;
   ({DateTime date, List<DailyValue> series})? worst;
   for (final date in [...fees.keys]..sort()) {
-    final sold = soldEverythingOn(date, series, fees: fees[date]!);
+    final sold = soldEverythingOn(
+      date,
+      series,
+      fees: fees[date]!,
+      livretInterest: livretInterest,
+    );
     if (worst == null || sold.last.value < worst.series.last.value) {
       worst = (date: date, series: sold);
     }

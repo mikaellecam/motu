@@ -23,6 +23,7 @@ import '../../../domain/wallet/wallet.dart';
 import '../../widgets/asset_avatar.dart';
 import '../order/order_screen.dart';
 import '../trip/trip_sheets.dart';
+import 'livret_card.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
 
@@ -98,6 +99,11 @@ class WalletScreen extends ConsumerWidget {
               _AllocationCard(o),
               const SizedBox(height: AppSpace.x4),
               _PositionsCard(o),
+              const SizedBox(height: AppSpace.x4),
+              LivretCard(
+                walletId: o.id,
+                canMove: o.status != WalletStatus.finished,
+              ),
             ],
           ),
         ),

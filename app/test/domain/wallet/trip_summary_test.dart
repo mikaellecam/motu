@@ -86,6 +86,35 @@ void main() {
     test('an empty series stays empty', () {
       expect(soldEverythingOn(d(4), const [], fees: eur('5')), isEmpty);
     });
+
+    test('a Livret keeps earning: its interest since the sale is added '
+        '(decided 2026-10-11)', () {
+      // Interest earned so far: 1 € by the 4th, 1,50 € by the 6th, 2,25 € by
+      // the 9th; what came before the sale is in its value already.
+      Decimal interest(DateTime day) => switch (day.day) {
+        < 4 => dec('0.40'),
+        < 6 => dec('1.00'),
+        < 9 => dec('1.50'),
+        _ => dec('2.25'),
+      };
+      expect(
+        rows(
+          soldEverythingOn(
+            d(4),
+            series,
+            fees: eur('10'),
+            livretInterest: interest,
+          ),
+        ),
+        [
+          (d(2), eur('10000'), eur('10000')),
+          (d(3), eur('9000'), eur('0')),
+          (d(4), eur('7990'), eur('0')),
+          (d(6), eur('7990.50'), eur('0')),
+          (d(9), eur('8991.25'), eur('1000')),
+        ],
+      );
+    });
   });
 
   group('worstSell', () {
@@ -110,6 +139,18 @@ void main() {
       final flat = [v(2, '100', '100'), v(3, '100'), v(4, '100')];
       final worst = worstSell(flat, {d(4): eur('0'), d(3): eur('0')})!;
       expect(worst.date, d(3));
+    });
+
+    test('the Livret earns in every replay', () {
+      // Selling on the 4th or the 6th ends at the same value without the
+      // Livret (a tie: the 4th). With it, the earlier sale earns its
+      // interest for longer in the replay: the 6th ends lower.
+      final flat = [v(2, '100', '100'), v(4, '100'), v(6, '100'), v(9, '100')];
+      final worst = worstSell(flat, {
+        d(4): eur('0'),
+        d(6): eur('0'),
+      }, livretInterest: (day) => day.day < 6 ? Decimal.zero : dec('1'))!;
+      expect(worst.date, d(6));
     });
 
     test('an empty series: none', () {

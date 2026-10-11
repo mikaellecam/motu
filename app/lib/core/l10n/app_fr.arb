@@ -1586,5 +1586,90 @@
   "next_step_trip_go": "Reprendre",
   "next_step_wallet": "Ton portefeuille",
   "next_step_wallet_title": "Vois o\u00f9 en sont tes positions",
-  "next_step_wallet_go": "Ouvrir"
+  "next_step_wallet_go": "Ouvrir",
+  "livret_title": "Livret A",
+  "livret_interest": "Int\u00e9r\u00eats de l'ann\u00e9e\u202f: {amount}, vers\u00e9s le 31 d\u00e9cembre",
+  "@livret_interest": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_terms": "{rate} par an \u00b7 plafond {ceiling}",
+  "@livret_terms": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "ceiling": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_deposit": "Verser",
+  "livret_withdraw": "Retirer",
+  "livret_deposit_title": "Verser sur le Livret A",
+  "livret_withdraw_title": "Retirer du Livret A",
+  "livret_available_cash": "Liquidit\u00e9s disponibles\u202f: {cash}",
+  "@livret_available_cash": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_available_balance": "Sur le Livret A\u202f: {balance}",
+  "@livret_available_balance": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_note_deposit": "Instantan\u00e9 et sans frais. L'argent vers\u00e9 rapporte \u00e0 partir de la prochaine quinzaine.",
+  "livret_note_withdraw": "Instantan\u00e9 et sans frais. L'argent retir\u00e9 ne rapporte plus d\u00e8s le d\u00e9but de la quinzaine en cours.",
+  "livret_error_cash": "Tu as {cash} de liquidit\u00e9s disponibles.",
+  "@livret_error_cash": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_error_ceiling": "Le plafond est de {ceiling}\u202f: tu peux encore verser {room}.",
+  "@livret_error_ceiling": {
+    "placeholders": {
+      "ceiling": {
+        "type": "String"
+      },
+      "room": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_error_balance": "Ton Livret A contient {balance}.",
+  "@livret_error_balance": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_done_deposit": "{amount} vers\u00e9s sur ton Livret A.",
+  "@livret_done_deposit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "livret_done_withdraw": "{amount} retir\u00e9s de ton Livret A.",
+  "@livret_done_withdraw": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

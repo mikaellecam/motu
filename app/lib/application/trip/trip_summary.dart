@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
+import '../../domain/livret/livret_interest.dart';
 import '../../domain/analytics/returns.dart';
 import '../../domain/learning/content.dart';
 import '../../domain/wallet/position.dart';
@@ -144,7 +145,25 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
       rules: wallet.params.rules,
     );
   }
-  final worst = worstSell(overview.series, fees);
+  // The Livret keeps earning in « Ta pire décision » (decided 2026-10-11):
+  // what it has earned in all by each day.
+  final rates = wallet.livretMovements.isEmpty
+      ? null
+      : (await market.livret(asOf: end)).rates;
+  final worst = worstSell(
+    overview.series,
+    fees,
+    livretInterest: rates == null
+        ? null
+        : (day) {
+            final account = livretAt(
+              wallet.livretMovements,
+              rates: rates,
+              asOf: day,
+            );
+            return account.credited.amount + account.accrued;
+          },
+  );
 
   // The sold shares, valued at the end of the trip.
   final endPrices = <String, Decimal>{};

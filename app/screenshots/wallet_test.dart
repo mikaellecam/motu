@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/livret_line.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
@@ -79,7 +80,12 @@ List<DailyValue> path(num end, {double wave = 450}) {
   ];
 }
 
-WalletOverview overview({List<Order> pending = const []}) {
+/// [onLivret]: 3 000 € moved to the Livret in the spring, 21,25 € of
+/// interest earned on it this year.
+WalletOverview overview({
+  List<Order> pending = const [],
+  bool onLivret = false,
+}) {
   final rules = TradingRules(
     fxFeeRate: d('0.0015'),
     fixedFee: eur(0),
@@ -117,7 +123,7 @@ WalletOverview overview({List<Order> pending = const []}) {
         monthlyContribution: eur(0),
         stops: const StopConditions(),
       ),
-      cash: cash,
+      cash: onLivret ? cash - eur(3000) : cash,
       fills: fills,
       positions: positionsFrom(fills),
       pendingOrders: pending,
@@ -139,11 +145,26 @@ WalletOverview overview({List<Order> pending = const []}) {
         ),
     },
     fxRates: {Currency.usd: d('0.8547')},
-    livret: Decimal.zero,
+    livret: onLivret ? d('3021.25') : Decimal.zero,
   );
 }
 
+/// The Livret line of [overview]: 3 000 € on it, 21,25 € of interest this
+/// year.
+final livret = livretLineProvider.overrideWith(
+  (ref, id) async => LivretLine(
+    day: DateTime.utc(2026, 10, 8),
+    balance: eur(3000),
+    accrued: d('21.25'),
+    rate: d('0.017'),
+    ceiling: eur(22950),
+    availableCash: (await ref.watch(walletOverviewProvider(id).future))
+        .availableCash,
+  ),
+);
+
 final overrides = [
+  livret,
   cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
   walletOverviewProvider.overrideWith((ref, id) async => overview()),
   walletChartProvider.overrideWith((ref, args) async {
@@ -189,7 +210,8 @@ void main() {
     const WalletScreen(walletId: 'live'),
     size: const Size(390, 760),
     overrides: [
-      ...overrides.skip(2),
+      livret,
+      ...overrides.skip(3),
       cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
       walletOverviewProvider.overrideWith(
         (ref, id) async => overview(pending: pending),
@@ -213,6 +235,44 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await tester.drag(find.byType(ListView), const Offset(0, -330));
+    },
+  );
+
+  final onLivret = [
+    livret,
+    cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
+    walletOverviewProvider.overrideWith(
+      (ref, id) async => overview(onLivret: true),
+    ),
+    ...overrides.skip(3),
+  ];
+  Future<void> toLivret(WidgetTester tester) async {
+    await tester.dragUntilVisible(
+      find.widgetWithText(OutlinedButton, 'Verser'),
+      find.byType(ListView),
+      const Offset(0, -300),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pump();
+  }
+
+  screenshot(
+    'm8-1-livret',
+    const WalletScreen(walletId: 'live'),
+    overrides: onLivret,
+    act: toLivret,
+  );
+
+  screenshot(
+    'm8-1-livret-sheet',
+    const WalletScreen(walletId: 'live'),
+    overrides: onLivret,
+    act: (tester) async {
+      await toLivret(tester);
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Verser'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.enterText(find.byType(TextField), '25000');
     },
   );
 }

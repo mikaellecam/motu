@@ -30,6 +30,16 @@ void main() {
     });
   });
 
+  test('the rate valid on a day: the latest that started on or before it', () {
+    final rates = [
+      LivretRate(day(2025, 8, 1), d('0.017')),
+      LivretRate(day(2026, 2, 1), d('0.015')),
+    ];
+    expect(rateAt(day(2026, 1, 31), rates), d('0.017'));
+    expect(rateAt(day(2026, 2, 1), rates), d('0.015'));
+    expect(() => rateAt(day(2025, 7, 31), rates), throwsArgumentError);
+  });
+
   group('deposits earn from the next fortnight', () {
     test('a deposit on the 15th earns from the 16th', () {
       final movements = [move(day(2025, 1, 15), '1000')];

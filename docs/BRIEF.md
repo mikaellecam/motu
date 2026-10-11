@@ -367,7 +367,9 @@ same contributions:
 Plus journal replay ("Le 12 mars, tu as vendu 30 %… ils ont ensuite regagné 61 %") and glossary terms met.
 Decided 2026-10-11: with several sell decisions, *Ta pire décision* is the one whose "everything sold"
 line ends lowest (earliest on a tie); everything is sold at that day's close, after the selling fees (§4.6),
-then kept as cash, later contributions added as cash. The replay shows, for a sell, how the shares it sold
+then kept as cash, later contributions added as cash. A Livret A keeps earning in that line (decided
+2026-10-11, M8-1): « everything » is the positions, as with the stop's « Tout vendre », and the interest
+the Livret earns after that day is added. The replay shows, for a sell, how the shares it sold
 moved from their sale price to the end of the trip (EUR); for « Garder », the portfolio's time-weighted
 return from that day to the end; for « Continuer », the event and its reason only. The glossary terms met
 are those of the companion moments that fired during the trip (§4.12), in the order they first came up.
@@ -512,7 +514,12 @@ rate in force on the data floor:
   and capitalised on 31 December.
 
 Uses:
-- Simulated Livret line in any wallet (transfer cash ↔ Livret, instant, no fees).
+- Simulated Livret line in any wallet (transfer cash ↔ Livret, instant, no fees). Built (M8-1): a « Livret A »
+  card under the positions: balance, « Intérêts de l'année : +x €, versés le 31 décembre », the rate and
+  ceiling of the wallet's day, « Verser » · « Retirer » (none on a finished trip; « Retirer » needs a
+  balance). The sheet shows the cash available (deposit) or the balance (withdrawal) and the room under the
+  ceiling, checks each amount with `validateLivretTransfer`, and books it on the wallet's day (today, or the
+  trip's day); the allocation and the chart's « Livret A » comparison follow.
 - Benchmark line on the wallet chart; counterfactual in trip summary; comparison in DCA; island node 1.
   These comparisons respect the ceiling valid at each date: money above it stays as uninvested cash at 0 %,
   and the result says it was capped.

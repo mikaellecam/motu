@@ -124,7 +124,7 @@ final class LivretAccount {
     // costs interest either.
     if (eligible.isPositive) {
       accrued += ratio(
-        eligible.amount * _rateAt(quinzaine, rates),
+        eligible.amount * rateAt(quinzaine, rates),
         Decimal.fromInt(24),
       );
     }
@@ -148,7 +148,8 @@ final class LivretAccount {
   }
 }
 
-Decimal _rateAt(DateTime date, List<LivretRate> rates) =>
+/// The annual rate valid on [date].
+Decimal rateAt(DateTime date, List<LivretRate> rates) =>
     _validOn(date, rates, (r) => r.validFrom, 'rate').annualRate;
 
 /// The entry of a dated history in force on [date]: the latest that starts on
