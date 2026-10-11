@@ -15,7 +15,7 @@
   },
   "for_you": {
     "fr": "Dans ton portefeuille, le pourcentage sous chaque position est sa plus-value ou sa moins-value latente.",
-    "en": "In your wallet, the percentage under each position is its unrealised gain or loss."
+    "en": "In your portfolio, the percentage under each position is its unrealised gain or loss."
   },
   "related": [
     "performance",

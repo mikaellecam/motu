@@ -15,7 +15,7 @@
   },
   "for_you": {
     "fr": "Tous les actifs de ce bac à sable sont cotés en dollars : la valeur de ton portefeuille, en euros, bouge aussi avec le dollar.",
-    "en": "Every asset in this sandbox is quoted in dollars: your wallet's value, in euros, also moves with the dollar."
+    "en": "Every asset in this sandbox is quoted in dollars: your portfolio's value, in euros, also moves with the dollar."
   },
   "live_example": {
     "widget": "currency"

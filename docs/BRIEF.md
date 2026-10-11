@@ -915,6 +915,11 @@ Others: value counters (`TweenAnimationBuilder`), favorite star pop, sheet trans
 ARB files `app_fr.arb` (default) and `app_en.arb`. Keys by feature (`wallet_header_invested`). Plurals via
 ICU. Content packs carry their own fr/en. Language switch in Settings applies immediately.
 
+English pass (M9-2): « portefeuille » is « portfolio » throughout the English (UI and content), never
+« wallet »; English typography (no space before % or :, no guillemets). `test/core/l10n/arb_test.dart` keeps
+both files with the same keys and placeholders, English free of French typography, and English equal to the
+French only for the names and symbols both share.
+
 ---
 
 ## 12. Testing strategy

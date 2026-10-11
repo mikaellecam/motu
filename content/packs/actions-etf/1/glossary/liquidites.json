@@ -11,11 +11,11 @@
   },
   "body": {
     "fr": "Dans un portefeuille, les liquidités sont l'argent qui n'est pas investi : il ne monte ni ne baisse, et il sert à acheter.\n\nUn ordre d'achat en attente bloque la somme qu'il lui faut : c'est pourquoi tes « liquidités disponibles » peuvent être inférieures à tes liquidités.",
-    "en": "In a wallet, cash is the money that isn't invested: it neither rises nor falls, and it's what you buy with.\n\nA pending buy order holds back the amount it needs: that's why your \"available cash\" can be lower than your cash."
+    "en": "In a portfolio, cash is the money that isn't invested: it neither rises nor falls, and it's what you buy with.\n\nA pending buy order holds back the amount it needs: that's why your \"available cash\" can be lower than your cash."
   },
   "for_you": {
     "fr": "Beaucoup de liquidités rendent un portefeuille plus calme, mais elles ne rapportent rien et perdent face à l'{{inflation|inflation}}.",
-    "en": "A lot of cash makes a wallet calmer, but it earns nothing and loses to {{inflation|inflation}}."
+    "en": "A lot of cash makes a portfolio calmer, but it earns nothing and loses to {{inflation|inflation}}."
   },
   "related": [
     "matelas-de-securite",

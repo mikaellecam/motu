@@ -11,7 +11,7 @@
   ],
   "goal": {
     "fr": "Mets en place un versement programmé (DCA) dans l'un de tes portefeuilles.",
-    "en": "Set up a recurring investment (DCA) in one of your wallets."
+    "en": "Set up a recurring investment (DCA) in one of your portfolios."
   },
   "go": "wallet"
 }
