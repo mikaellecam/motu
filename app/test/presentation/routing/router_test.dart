@@ -27,6 +27,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fakes/quiet_map.dart';
+
 Future<void> open(WidgetTester tester, String location) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -67,6 +69,7 @@ Future<void> open(WidgetTester tester, String location) async {
         glossaryIndexProvider.overrideWith(
           (ref, language) async => const GlossaryIndex([], total: 0),
         ),
+        ...quietMap,
       ],
       child: MainApp(router: buildRouter(initialLocation: location)),
     ),
@@ -79,6 +82,8 @@ void main() {
     await open(tester, '/');
     expect(find.byType(MapTab), findsOneWidget);
     expect(find.text('Ton archipel'), findsOneWidget);
+    expect(find.text('1 île ouverte sur 5'), findsOneWidget);
+    expect(find.text('Niveau 1'), findsOneWidget);
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(4));
     expect(bar.selectedIndex, 0);

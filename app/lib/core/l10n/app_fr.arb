@@ -1556,5 +1556,35 @@
   "order_cancel": "Annuler l'ordre",
   "order_cancel_title": "Annuler cet ordre\u202f?",
   "order_cancel_body": "Il ne partira pas, et ce qu'il r\u00e9servait redevient disponible.",
-  "order_cancel_keep": "Garder l'ordre"
+  "order_cancel_keep": "Garder l'ordre",
+  "map_islands_open": "{count, plural, one{{count} \u00eele ouverte sur {total}} other{{count} \u00eeles ouvertes sur {total}}}",
+  "@map_islands_open": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "map_level": "Niveau {level}",
+  "@map_level": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "next_step_lesson": "Prochaine le\u00e7on",
+  "next_step_play": "Jouer",
+  "next_step_mission": "Ta mission",
+  "next_step_mission_go": "Voir la mission",
+  "next_step_cushion": "Avant d'investir",
+  "next_step_read": "Lire",
+  "next_step_trip": "Ton voyage dans le temps",
+  "next_step_trip_go": "Reprendre",
+  "next_step_wallet": "Ton portefeuille",
+  "next_step_wallet_title": "Vois o\u00f9 en sont tes positions",
+  "next_step_wallet_go": "Ouvrir"
 }

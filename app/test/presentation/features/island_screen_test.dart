@@ -40,6 +40,10 @@ class StreamedProfiles implements ProfileRepository {
   @override
   Future<Set<String>> completedNodes() async => last;
   @override
+  Stream<Map<String, DateTime>> watchCompletions() => watchCompletedNodes().map(
+    (ids) => {for (final id in ids) id: DateTime.utc(2026, 10, 1)},
+  );
+  @override
   Future<void> completeNode(
     String nodeId, {
     String? answer,

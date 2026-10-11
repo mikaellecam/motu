@@ -445,5 +445,18 @@
   "order_cancel": "Cancel the order",
   "order_cancel_title": "Cancel this order?",
   "order_cancel_body": "It won't go, and what it held back becomes available again.",
-  "order_cancel_keep": "Keep the order"
+  "order_cancel_keep": "Keep the order",
+  "map_islands_open": "{count} of {total} islands open",
+  "map_level": "Level {level}",
+  "next_step_lesson": "Next lesson",
+  "next_step_play": "Play",
+  "next_step_mission": "Your mission",
+  "next_step_mission_go": "See the mission",
+  "next_step_cushion": "Before investing",
+  "next_step_read": "Read",
+  "next_step_trip": "Your time trip",
+  "next_step_trip_go": "Resume",
+  "next_step_wallet": "Your wallet",
+  "next_step_wallet_title": "See how your positions are doing",
+  "next_step_wallet_go": "Open"
 }

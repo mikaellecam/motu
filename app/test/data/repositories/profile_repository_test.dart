@@ -88,4 +88,22 @@ void main() {
       );
     },
   );
+
+  test('completions as they happen: each node with its first one', () async {
+    final first = DateTime.utc(2026, 10, 11, 9);
+    final seen = <Map<String, DateTime>>[];
+    final sub = repo.watchCompletions().listen(seen.add);
+    addTearDown(sub.cancel);
+    await pumpEventQueue();
+    await repo.completeNode('ae.apple', at: first);
+    await pumpEventQueue();
+    await repo.completeNode('ae.apple', at: first.add(const Duration(days: 1)));
+    await repo.completeNode('ae.fees', at: first.add(const Duration(hours: 2)));
+    await pumpEventQueue();
+    expect(seen.first, isEmpty);
+    expect(seen.last, {
+      'ae.apple': first,
+      'ae.fees': first.add(const Duration(hours: 2)),
+    });
+  });
 }

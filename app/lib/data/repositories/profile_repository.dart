@@ -52,6 +52,17 @@ class ProfileRepository {
         },
       );
 
+  /// The nodes the user completed, each with its first completion, then
+  /// every change (the next-step card's pacing counts today's).
+  Stream<Map<String, DateTime>> watchCompletions() =>
+      _db.learningDao.watchProgress().map(
+        (rows) => {
+          for (final row in rows)
+            if (row.status == NodeStatus.completed && row.completedAt != null)
+              row.nodeId: row.completedAt!,
+        },
+      );
+
   /// Ids of the nodes the user completed.
   Future<Set<String>> completedNodes() => guardStorage(
     () async => {

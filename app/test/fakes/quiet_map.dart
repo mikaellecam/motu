@@ -1,0 +1,12 @@
+import 'package:finance_companion/application/learning/next_step_card.dart';
+import 'package:finance_companion/application/learning/ui_level.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
+
+/// The map with nothing behind it, for tests that only pass through it: no
+/// wallet on the island, no next step, level 1.
+final quietMap = <Override>[
+  livingIslandProvider.overrideWith((ref) async => const []),
+  nextStepViewProvider.overrideWith((ref) async => null),
+  currentUiLevelProvider.overrideWith((ref) async => 1),
+];

@@ -21,5 +21,7 @@ class RecordingProfiles implements ProfileRepository {
   @override
   Future<Set<String>> completedNodes() async => const {};
   @override
+  Stream<Map<String, DateTime>> watchCompletions() => Stream.value(const {});
+  @override
   Stream<Set<String>> watchCompletedNodes() => Stream.value(const {});
 }

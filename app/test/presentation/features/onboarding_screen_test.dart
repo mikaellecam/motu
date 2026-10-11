@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fakes/quiet_map.dart';
+
 const nbsp = ' ';
 
 void main() {
@@ -24,7 +26,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(db)],
+        overrides: [databaseProvider.overrideWithValue(db), ...quietMap],
         child: MainApp(router: buildRouter(initialLocation: '/onboarding')),
       ),
     );

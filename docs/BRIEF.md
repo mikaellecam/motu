@@ -122,6 +122,10 @@ Rules:
   `nextStep(state)`, first match wins: an unread companion moment; the safety-cushion sheet (Q4 "Pas
   d'épargne", until read); the current node if it is a mission; the current lesson node while fewer nodes
   than the pacing (Q5) were completed today; an open trip; the live wallet.
+  Built (M7-3): the card names what it opens (the lesson, the mission, the term, the trip) and follows the
+  user's progress as it happens; "today" is the user's local day; an open trip is one not finished, the newest
+  first. Header: « {n} île(s) ouverte(s) sur 5 » under the title, and « Niveau {n} » (§4.15) in the level
+  colour. Unread companion moments join the card with their cards (M8-3).
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back

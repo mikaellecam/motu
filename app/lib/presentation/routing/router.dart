@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/trip/trip_wizard.dart';
+import '../../application/learning/ui_level.dart';
 import '../../application/wallet/living_island.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
+import '../features/map/archipelago.dart';
 import '../features/map/archipelago_map.dart';
+import '../features/map/next_step_card.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/glossary/glossary_screen.dart';
@@ -120,7 +124,8 @@ class PendingScreen extends StatelessWidget {
       Scaffold(appBar: AppBar(), body: const SizedBox.shrink());
 }
 
-/// The map tab: « Ton archipel », settings in the header (BRIEF §3, §4.2).
+/// The map tab (BRIEF §3, §4.2): « Ton archipel », the islands opened and
+/// the level in the header, settings, and the next-step card at the bottom.
 class MapTab extends ConsumerWidget {
   const MapTab({super.key});
 
@@ -129,16 +134,40 @@ class MapTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     // Offline or still loading, the island stands as it last did, or bare.
     final buildings = ref.watch(livingIslandProvider).value ?? const [];
+    final level = ref.watch(currentUiLevelProvider).value;
+    final open = archipelago.where((i) => !i.locked).length;
     return Scaffold(
       // World screens sit on the sea (BRIEF §10.2).
       backgroundColor: AppColors.sea,
-      body: ArchipelagoMap(
-        buildings: buildings,
-        onOpen: (_) => context.push('/island/actions-etf'),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: ArchipelagoMap(
+              buildings: buildings,
+              onOpen: (_) => context.push('/island/actions-etf'),
+            ),
+          ),
+          const Positioned(
+            left: AppSpace.screenPadding,
+            right: AppSpace.screenPadding,
+            bottom: AppSpace.screenPadding,
+            child: NextStepCard(),
+          ),
+        ],
       ),
       appBar: AppBar(
-        title: Text(l10n.map_title),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.map_title),
+            Text(
+              l10n.map_islands_open(open, archipelago.length),
+              style: AppText.caption.copyWith(color: AppColors.muted),
+            ),
+          ],
+        ),
         actions: [
+          if (level != null) _LevelChip(level),
           IconButton(
             tooltip: l10n.map_settings,
             icon: const Icon(Icons.settings_outlined),
@@ -148,6 +177,29 @@ class MapTab extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// « Niveau 2 » (BRIEF §4.15), in the level colour.
+class _LevelChip extends StatelessWidget {
+  const _LevelChip(this.level);
+  final int level;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpace.x3,
+      vertical: AppSpace.x1,
+    ),
+    decoration: BoxDecoration(
+      color: AppColors.progress,
+      borderRadius: BorderRadius.circular(AppShape.chunkyButtonRadius),
+      border: Border.all(color: AppColors.ink, width: 2),
+    ),
+    child: Text(
+      AppLocalizations.of(context).map_level(level),
+      style: AppText.label.copyWith(color: AppColors.ink),
+    ),
+  );
 }
 
 class GlossaryTab extends StatelessWidget {
