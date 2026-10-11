@@ -41,14 +41,13 @@ List<Order> stopSells(
     for (final r in reasons)
       if (r is PositionLossStop) r.assetId,
   };
-  final day = date.toIso8601String().substring(0, 10);
   return [
     for (final p in positions.values)
       if (p.isOpen && (everything || dropped.contains(p.assetId)))
         if (_quantity(decision, p.quantity, fractional) case final q
             when q.isPositive)
           Order(
-            id: 'stop-${p.assetId}-$day',
+            id: stopSellId(p.assetId, date),
             assetId: p.assetId,
             side: Side.sell,
             type: OrderType.market,
@@ -57,6 +56,10 @@ List<Order> stopSells(
           ),
   ];
 }
+
+/// The id of the sell of [assetId] a stop on [date] places.
+String stopSellId(String assetId, DateTime date) =>
+    'stop-$assetId-${date.toIso8601String().substring(0, 10)}';
 
 Quantity _quantity(StopDecision decision, Quantity held, bool fractional) {
   if (decision == StopDecision.sellAll) return held;

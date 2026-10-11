@@ -9,6 +9,7 @@ import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/trip/stop_screen.dart';
+import '../features/trip/summary_screen.dart';
 import '../features/trip_wizard/trip_wizard_screen.dart';
 import '../features/wallet/wallet_screen.dart';
 import '../features/wallets/wallets_screen.dart';
@@ -69,7 +70,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       builder: (_, state) =>
           StopScreen(walletId: state.pathParameters['walletId']!),
     ),
-    _pending('/wallet/:walletId/summary'),
+    GoRoute(
+      path: '/wallet/:walletId/summary',
+      builder: (_, state) =>
+          TripSummaryScreen(walletId: state.pathParameters['walletId']!),
+    ),
     _pending('/wallet/:walletId/order/:orderId'),
     GoRoute(
       path: '/asset/:assetId',

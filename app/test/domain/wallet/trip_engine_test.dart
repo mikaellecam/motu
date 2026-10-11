@@ -624,6 +624,35 @@ void main() {
       expect(result.endOfData, isTrue);
     });
 
+    test('landing on the last day of the data is its end too', () {
+      Map<String, bool> endsAt(DateTime target) => {
+        for (final t in [day(6, 2), target])
+          '$t': advance(
+            engine(),
+            TripState.start(day(6, 1), eur('100')),
+            t,
+            const {},
+            lastDate: day(6, 3),
+          ).endOfData,
+      };
+      expect(endsAt(day(6, 3)).values, [false, true]);
+    });
+
+    test('a stop on the last day of the data comes first', () {
+      // The June contribution lands on the 1st, the last day of the data.
+      final result = advance(
+        engine(contribution: eur('50')),
+        TripState.start(day(5, 20), eur('100')),
+        day(6, 30),
+        const {},
+        stops: const StopConditions(contribution: true),
+        lastDate: day(6, 1),
+      );
+      expect(result.state.date, day(6, 1));
+      expect(result.stop, isNotEmpty);
+      expect(result.endOfData, isFalse);
+    });
+
     test('a target on or before the current day changes nothing', () {
       final start = TripState.start(day(6, 3), eur('100'));
       final result = advance(engine(), start, day(6, 3), const {});

@@ -39,7 +39,7 @@ Future<WalletOverview> walletOverview(Ref ref, String walletId) async {
   for (final id in ids) {
     final asset = assets[id];
     if (asset == null) throw const NotFoundFailure();
-    prices[id] = await _priceOf(market, asset, asOf: asOf, live: live);
+    prices[id] = await priceOf(market, asset, asOf: asOf, live: live);
   }
   final fxRates = <Currency, Decimal>{
     for (final currency in {
@@ -71,7 +71,7 @@ Future<WalletOverview> walletOverview(Ref ref, String walletId) async {
 
 /// The live wallet prices from quotes; a trip, or an asset without a quote,
 /// from the last close on or before [asOf].
-Future<ObservedPrice> _priceOf(
+Future<ObservedPrice> priceOf(
   MarketRepository market,
   Asset asset, {
   required DateTime asOf,
@@ -116,47 +116,53 @@ Future<List<ValuePoint>> walletBenchmark(
   String walletId,
   Benchmark benchmark,
 ) async {
+  if (benchmark == Benchmark.livret) {
+    return (await ref.watch(walletLivretProvider(walletId).future)).series;
+  }
   final market = ref.watch(marketRepositoryProvider);
   final fx = ref.watch(fxServiceProvider);
   final overview = await ref.watch(walletOverviewProvider(walletId).future);
-  final flows = externalFlows(overview.series);
   final asOf = overview.asOf;
   final start = overview.series.first.date;
-  switch (benchmark) {
-    case Benchmark.world:
-      final bars = await market.history(
-        worldAssetId,
-        from: start,
-        to: asOf,
-        asOf: asOf,
-      );
-      if (bars.isEmpty) return const [];
-      final rate = await fx.lookup(
-        bars.first.currency,
-        Currency.eur,
-        start: start,
-        asOf: asOf,
-      );
-      return investFlows(
-        flows,
-        bars: bars,
-        fxRate: rate,
-        rules: TradingRules(
-          fxFeeRate: overview.rules.fxFeeRate,
-          fixedFee: overview.rules.fixedFee,
-          fractionalShares: true,
-        ),
-        end: _day(asOf),
-      ).series;
-    case Benchmark.livret:
-      final history = await market.livret(asOf: asOf);
-      return livretFlows(
-        flows,
-        rates: history.rates,
-        ceilings: history.ceilings,
-        dates: [for (final v in overview.series) v.date],
-      ).series;
-  }
+  final bars = await market.history(
+    worldAssetId,
+    from: start,
+    to: asOf,
+    asOf: asOf,
+  );
+  if (bars.isEmpty) return const [];
+  final rate = await fx.lookup(
+    bars.first.currency,
+    Currency.eur,
+    start: start,
+    asOf: asOf,
+  );
+  return investFlows(
+    externalFlows(overview.series),
+    bars: bars,
+    fxRate: rate,
+    rules: TradingRules(
+      fxFeeRate: overview.rules.fxFeeRate,
+      fixedFee: overview.rules.fixedFee,
+      fractionalShares: true,
+    ),
+    end: _day(asOf),
+  ).series;
+}
+
+/// The wallet's money put on a Livret A on the same days, within its
+/// ceiling (BRIEF §4.11); its run says when the ceiling kept money out.
+@riverpod
+Future<LivretRun> walletLivret(Ref ref, String walletId) async {
+  final market = ref.watch(marketRepositoryProvider);
+  final overview = await ref.watch(walletOverviewProvider(walletId).future);
+  final history = await market.livret(asOf: overview.asOf);
+  return livretFlows(
+    externalFlows(overview.series),
+    rates: history.rates,
+    ceilings: history.ceilings,
+    dates: [for (final v in overview.series) v.date],
+  );
 }
 
 /// The wallet chart over [period], with [benchmark] when one is chosen.

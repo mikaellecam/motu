@@ -167,17 +167,21 @@ void main() {
       },
     );
 
-    test('past the last close: as far as the data goes', () async {
-      await container
-          .read(tripRunnerProvider('trip').notifier)
-          .advance(TripStep.month);
-      final advance = container.read(tripRunnerProvider('trip')).value!;
-      expect(advance.endOfData, isTrue);
-      expect(advance.state.date, day(2026, 10, 7));
-      final trip = await wallets.load('trip');
-      expect(trip.simDate, day(2026, 10, 7));
-      expect(trip.status, WalletStatus.active);
-      expect(trip.values, hasLength(3));
-    });
+    test(
+      'past the last close: as far as the data goes, then the end',
+      () async {
+        await container
+            .read(tripRunnerProvider('trip').notifier)
+            .advance(TripStep.month);
+        final advance = container.read(tripRunnerProvider('trip')).value!;
+        expect(advance.endOfData, isTrue);
+        expect(advance.state.date, day(2026, 10, 7));
+        final trip = await wallets.load('trip');
+        expect(trip.simDate, day(2026, 10, 7));
+        // BRIEF §4.5: the trip ends on the last available trading day.
+        expect(trip.status, WalletStatus.finished);
+        expect(trip.values, hasLength(3));
+      },
+    );
   });
 }

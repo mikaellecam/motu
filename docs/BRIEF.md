@@ -297,6 +297,14 @@ same contributions:
 - *Sur un Livret A*: everything into the Livret (historical rates, §4.11).
 - *Ta pire décision*: if the journal has a sell decision, "if you had sold everything at that moment".
 Plus journal replay ("Le 12 mars, tu as vendu 30 %… ils ont ensuite regagné 61 %") and glossary terms met.
+Decided 2026-10-11: with several sell decisions, *Ta pire décision* is the one whose "everything sold"
+line ends lowest (earliest on a tie); everything is sold at that day's close, after the selling fees (§4.6),
+then kept as cash, later contributions added as cash. The replay shows, for a sell, how the shares it sold
+moved from their sale price to the end of the trip (EUR); for « Garder », the portfolio's time-weighted
+return from that day to the end; for « Continuer », the event and its reason only. The glossary terms met
+are those of the companion moments that fired during the trip (§4.12), in the order they first came up.
+« Terminer le voyage » (confirmed) or the last day of the data sets the trip `finished`: time controls and
+« Investir » give way to « Voir le bilan »; the wallet stays readable.
 
 **No lookahead (enforced in data layer):** a trip can only see bars, quotes, FX rates, assets and Livret
 rates dated ≤ its clock. Assets with `listingDate > clock.now()` are hidden in Explorer and unavailable

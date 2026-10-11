@@ -616,7 +616,6 @@
   "trip_step_week": "+1 semaine",
   "trip_step_month": "+1 mois",
   "trip_exit": "Quitter le voyage",
-  "trip_end_of_data": "Tu es arriv\u00e9 au dernier jour de cours disponible.",
   "trip_moving": "Le temps avance\u2026",
   "stop_title": "Arr\u00eat automatique",
   "stop_drawdown": "Ton portefeuille vaut {value}, sous la ligne de {threshold}\u202f: 15\u202f% sous l'argent vers\u00e9.",
@@ -721,6 +720,114 @@
         "type": "String"
       },
       "line": {
+        "type": "String"
+      }
+    }
+  },
+  "trip_finish": "Terminer le voyage",
+  "trip_finish_title": "Terminer le voyage\u202f?",
+  "trip_finish_body": "Le voyage s'arr\u00eate au {date} et ton bilan s'affiche. Le temps ne pourra plus avancer.",
+  "@trip_finish_body": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "trip_finish_confirm": "Terminer",
+  "trip_finished": "Voyage termin\u00e9 le {date}.",
+  "@trip_finished": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "trip_see_summary": "Voir le bilan",
+  "summary_title": "Bilan du voyage",
+  "summary_period": "Du {start} au {end}",
+  "@summary_period": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "summary_money_in": "Argent vers\u00e9\u202f: {amount}",
+  "@summary_money_in": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "summary_compare_title": "Et si\u2026",
+  "summary_compare_note": "M\u00eames dates, m\u00eames versements. Performance pond\u00e9r\u00e9e dans le temps\u202f: les versements ne comptent pas comme des gains.",
+  "summary_you": "Ton voyage",
+  "summary_world": "Sans rien toucher",
+  "summary_world_detail": "Tout sur l'ETF Monde, d\u00e8s son arriv\u00e9e",
+  "summary_livret": "Sur un Livret A",
+  "summary_livret_detail": "Au taux de chaque \u00e9poque",
+  "summary_livret_capped": "Plafond atteint\u202f: le surplus est rest\u00e9 en liquidit\u00e9s",
+  "summary_worst": "Ta pire d\u00e9cision",
+  "summary_worst_detail": "Si tu avais tout vendu le {date}",
+  "@summary_worst_detail": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "summary_journal_title": "Ton journal",
+  "summary_journal_empty": "Aucune d\u00e9cision not\u00e9e pendant ce voyage.",
+  "summary_terms_title": "Notions rencontr\u00e9es",
+  "replay_hold": "Tu as gard\u00e9 tes positions.",
+  "replay_sell_half": "{filled, select, yes{Tu as vendu la moiti\u00e9\u202f: {assets}.} other{Tu as choisi de vendre la moiti\u00e9.}}",
+  "@replay_sell_half": {
+    "placeholders": {
+      "filled": {
+        "type": "String"
+      },
+      "assets": {
+        "type": "String"
+      }
+    }
+  },
+  "replay_sell_all": "{filled, select, yes{Tu as tout vendu\u202f: {assets}.} other{Tu as choisi de tout vendre.}}",
+  "@replay_sell_all": {
+    "placeholders": {
+      "filled": {
+        "type": "String"
+      },
+      "assets": {
+        "type": "String"
+      }
+    }
+  },
+  "replay_continue": "Tu as continu\u00e9 le voyage.",
+  "replay_sold_moved": "Depuis, ces parts ont fait {change}.",
+  "@replay_sold_moved": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "replay_hold_moved": "Depuis, ton portefeuille a fait {change}, versements mis \u00e0 part.",
+  "@replay_hold_moved": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "replay_reason": "\u00ab\u00a0{reason}\u00a0\u00bb",
+  "@replay_reason": {
+    "placeholders": {
+      "reason": {
         "type": "String"
       }
     }

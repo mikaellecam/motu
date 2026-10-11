@@ -13,6 +13,7 @@ import '../../domain/wallet/order.dart';
 import '../../domain/wallet/order_matcher.dart';
 import '../../domain/wallet/position.dart';
 import '../../domain/wallet/trip_engine.dart';
+import '../../domain/wallet/trip_summary.dart';
 import '../../domain/wallet/wallet.dart';
 import '../companion/companion_codec.dart';
 import '../local/database.dart';
@@ -330,10 +331,7 @@ class WalletRepository {
         final json? => decodeTracker(json),
         null => CompanionTracker.empty(),
       },
-      companionLog: [
-        for (final m in await _db.learningDao.momentsOf(walletId))
-          CompanionLogEntry(m.rule, m.key, m.firedAt),
-      ],
+      companionLog: await moments(walletId),
     );
   });
 
@@ -375,9 +373,11 @@ class WalletRepository {
         walletId,
         WalletsCompanion(
           simDate: Value(advance.state.date),
-          status: advance.stop.isEmpty
-              ? const Value.absent()
-              : const Value(WalletStatus.stopped),
+          status: advance.stop.isNotEmpty
+              ? const Value(WalletStatus.stopped)
+              : advance.endOfData
+              ? const Value(WalletStatus.finished)
+              : const Value.absent(),
           stopReasons: advance.stop.isEmpty
               ? const Value.absent()
               : Value(encodeStops(advance.stop)),
@@ -420,6 +420,36 @@ class WalletRepository {
         ),
       );
     }),
+  );
+
+  /// Ends trip [walletId] on its current day (BRIEF §4.5): time no longer
+  /// moves, the summary is available.
+  Future<void> finish(String walletId) => guardStorage(
+    () => _db.walletDao.updateWallet(
+      walletId,
+      const WalletsCompanion(status: Value(WalletStatus.finished)),
+    ),
+  );
+
+  /// The journal of [walletId] (BRIEF §4.13), oldest first.
+  Future<List<JournalEntry>> journal(String walletId) => guardStorage(
+    () async => [
+      for (final row in await _db.walletDao.journalOf(walletId))
+        JournalEntry(
+          date: row.simDate,
+          decision: row.decision,
+          eventId: row.eventId,
+          reason: row.reason,
+        ),
+    ],
+  );
+
+  /// The companion moments of [walletId], as logged.
+  Future<List<CompanionLogEntry>> moments(String walletId) => guardStorage(
+    () async => [
+      for (final m in await _db.learningDao.momentsOf(walletId))
+        CompanionLogEntry(m.rule, m.key, m.firedAt),
+    ],
   );
 
   /// The asset an order traded; null for an unknown order.
@@ -588,6 +618,7 @@ class WalletRepository {
     price: Price(f.price, f.currency),
     fxRate: f.fxRate,
     fees: Money(f.feesCents, Currency.eur),
+    orderId: f.orderId,
   );
 
   Order _order(OrderRow o) {

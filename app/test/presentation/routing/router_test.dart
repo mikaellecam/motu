@@ -1,14 +1,17 @@
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/trip/trip_summary.dart';
 import 'package:finance_companion/application/trip/trip_wizard.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
+import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
+import 'package:finance_companion/presentation/features/trip/summary_screen.dart';
 import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_screen.dart';
 import 'package:finance_companion/presentation/features/wallets/wallets_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
@@ -27,7 +30,7 @@ Future<void> open(WidgetTester tester, String location) async {
       overrides: [
         databaseProvider.overrideWithValue(db),
         // Navigation only: no catalogue behind the Explorer tab, no wallet
-        // behind the Portefeuille tab.
+        // behind the Portefeuille tab, no trip behind its summary.
         explorerRowsProvider.overrideWith((ref, walletId) async => const []),
         favoritesProvider.overrideWithBuild(
           (ref, notifier) => Stream.value({}),
@@ -43,6 +46,9 @@ Future<void> open(WidgetTester tester, String location) async {
         walletsListProvider.overrideWith(
           (ref) async =>
               const WalletsList(live: null, trips: [], suggestions: []),
+        ),
+        tripSummaryProvider.overrideWith(
+          (ref, id) async => throw const NotFoundFailure(),
         ),
       ],
       child: MainApp(router: buildRouter(initialLocation: location)),
@@ -100,7 +106,6 @@ void main() {
     '/tools/dca',
     '/island/actions-etf',
     '/node/ae.fees-toy',
-    '/wallet/t1/summary',
     '/wallet/t1/order/o1',
   ]) {
     testWidgets('$location opens full screen', (tester) async {
@@ -124,6 +129,17 @@ void main() {
   ) async {
     await open(tester, '/wallet/t1/stop/stop-2008-10-03');
     expect(tester.widget<StopScreen>(find.byType(StopScreen)).walletId, 't1');
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('/wallet/:id/summary opens the trip summary full screen', (
+    tester,
+  ) async {
+    await open(tester, '/wallet/t1/summary');
+    expect(
+      tester.widget<TripSummaryScreen>(find.byType(TripSummaryScreen)).walletId,
+      't1',
+    );
     expect(find.byType(NavigationBar), findsNothing);
   });
 

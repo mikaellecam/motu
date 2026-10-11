@@ -224,7 +224,8 @@ final class TripAdvance {
   /// Why the trip stopped on `state.date`; empty when it did not.
   final List<StopReason> stop;
 
-  /// The target lies beyond the data: the trip went as far as it could.
+  /// The trip is on the last date of the data and did not stop there: it
+  /// cannot go further (BRIEF §4.5: the end of the trip).
   final bool endOfData;
 }
 
@@ -324,7 +325,7 @@ final class TripEngine {
       state: current,
       events: events,
       stop: const [],
-      endOfData: target.isAfter(market.lastDate),
+      endOfData: !current.date.isBefore(market.lastDate),
     );
   }
 

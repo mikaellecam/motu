@@ -15,6 +15,7 @@ final class Fill {
     required this.price,
     required this.fxRate,
     required this.fees,
+    this.orderId,
   });
 
   final String assetId;
@@ -30,6 +31,9 @@ final class Fill {
 
   /// All fees of the fill (FX + fixed), in EUR.
   final Money fees;
+
+  /// The order it filled; null when not known.
+  final String? orderId;
 
   /// Price × quantity in EUR, booked to the cent (ADR-003).
   Money get notional =>

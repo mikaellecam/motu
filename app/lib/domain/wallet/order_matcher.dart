@@ -150,6 +150,7 @@ MatchResult _execute(
     price: price,
     fxRate: fxRate,
     fees: orderFees(notional, price.currency, rules),
+    orderId: order.id,
   );
   switch (order.side) {
     case Side.buy when -fill.cashFlow > spendableCash:

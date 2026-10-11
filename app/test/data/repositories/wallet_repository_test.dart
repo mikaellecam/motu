@@ -149,6 +149,7 @@ void main() {
     expect(w.cash, eur('9881.08'));
     expect(w.fills.single.price, Price(d('66'), Currency.usd));
     expect(w.fills.single.fees, eur('0.12'));
+    expect(w.fills.single.orderId, 'o1');
 
     // Positions are derived from the fills on every load.
     final position = w.positions['aapl']!;
@@ -365,6 +366,11 @@ void main() {
       expect(reloaded.breached, {'drawdown'});
       expect(reloaded.companion.peaks['aapl'], Price(d('66'), Currency.usd));
       expect(reloaded.companionLog.single.rule, CompanionRule.firstLoss);
+      final moment = (await repo.moments('covid')).single;
+      expect(
+        (moment.rule, moment.firedAt),
+        (CompanionRule.firstLoss, day(3, 2)),
+      );
       // 10 000 + 200 − (118,80 + 0,12) − (81,00 + 0,12)
       expect(reloaded.cash, eur('9999.96'));
     });
@@ -410,15 +416,67 @@ void main() {
       expect(wallet.status, WalletStatus.active);
       expect(wallet.stopReasons, isEmpty);
       expect(wallet.pendingOrders.single.id, 'stop-aapl-2020-03-09');
-      final journal = await db.walletDao.journalOf('covid');
+      final journal = await repo.journal('covid');
       expect(
         (
+          journal.single.date,
           journal.single.decision,
           journal.single.reason,
           journal.single.eventId,
         ),
-        ('sell_half', 'Trop de stress', 'stop-2020-03-09'),
+        (day(3, 9), 'sell_half', 'Trop de stress', 'stop-2020-03-09'),
       );
+    });
+
+    test('the journal reads back in date order', () async {
+      for (final (date, decision) in [
+        (day(4, 2), 'hold'),
+        (day(3, 9), 'continue'),
+      ]) {
+        await repo.decide(
+          'covid',
+          simDate: date,
+          eventId: 'stop',
+          decision: decision,
+          sells: const [],
+        );
+      }
+      final journal = await repo.journal('covid');
+      expect([for (final e in journal) e.decision], ['continue', 'hold']);
+      expect(journal.first.reason, isNull);
+    });
+
+    test('the end of the data finishes the trip', () async {
+      final before = await repo.tripState('covid', livretRates: rates);
+      await repo.saveAdvance(
+        'covid',
+        TripAdvance(
+          state: before.copyWith(date: day(2, 19)),
+          events: const [],
+          stop: const [],
+          endOfData: true,
+        ),
+        before: before,
+      );
+      final wallet = await repo.load('covid');
+      expect(
+        (wallet.status, wallet.simDate),
+        (WalletStatus.finished, day(2, 19)),
+      );
+    });
+
+    test('a trip can be finished any time', () async {
+      await repo.finish('covid');
+      final wallet = await repo.load('covid');
+      expect(
+        (wallet.status, wallet.simDate),
+        (WalletStatus.finished, day(2, 18)),
+      );
+    });
+
+    test('an unknown wallet has no journal and no moment', () async {
+      expect(await repo.journal('nope'), isEmpty);
+      expect(await repo.moments('nope'), isEmpty);
     });
 
     test('the automatic stops can be changed', () async {

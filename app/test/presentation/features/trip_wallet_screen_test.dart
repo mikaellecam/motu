@@ -4,6 +4,7 @@ import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/trip/trip_runner.dart';
 import 'package:finance_companion/application/trip/trip_stop.dart';
+import 'package:finance_companion/application/trip/trip_summary.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
@@ -19,10 +20,13 @@ import 'package:finance_companion/presentation/features/wallet/wallet_screen.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
-/// Records the steps asked for instead of moving time.
+/// Records the steps asked for instead of moving time; lands on [result]
+/// when one is set.
 class FakeRunner extends TripRunner {
   final steps = <TripStep>[];
+  TripAdvance? result;
 
   @override
   FutureOr<TripAdvance?> build(String walletId) => null;
@@ -30,7 +34,13 @@ class FakeRunner extends TripRunner {
   final targets = <DateTime>[];
 
   @override
-  Future<void> advance(TripStep step) async => steps.add(step);
+  Future<void> advance(TripStep step) async {
+    steps.add(step);
+    if (result case final r?) {
+      state = const AsyncLoading();
+      state = AsyncData(r);
+    }
+  }
 
   @override
   Future<void> advanceTo(DateTime target) async => targets.add(target);
@@ -86,7 +96,19 @@ WalletOverview trip({WalletStatus status = WalletStatus.active}) =>
       livret: Decimal.zero,
     );
 
+/// Records the trips ended by hand.
+class FakeFinish extends TripFinish {
+  var finished = 0;
+
+  @override
+  FutureOr<void> build(String walletId) {}
+
+  @override
+  Future<void> finish() async => finished++;
+}
+
 late FakeStopActions stopActions;
+late FakeFinish finish;
 
 class _Fixed implements SimulationClock {
   const _Fixed();
@@ -102,6 +124,7 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
   addTearDown(tester.view.reset);
   final runner = FakeRunner();
   stopActions = FakeStopActions();
+  finish = FakeFinish();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -112,9 +135,23 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
         ),
         tripRunnerProvider.overrideWith2((_) => runner),
         stopActionsProvider.overrideWith2((_) => stopActions),
+        tripFinishProvider.overrideWith2((_) => finish),
         liveClockProvider.overrideWithValue(const _Fixed()),
       ],
-      child: MainApp.screen(const WalletScreen(walletId: 'trip')),
+      child: MainApp(
+        router: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => const WalletScreen(walletId: 'trip'),
+            ),
+            GoRoute(
+              path: '/wallet/:id/summary',
+              builder: (_, s) => Text('summary ${s.pathParameters['id']}'),
+            ),
+          ],
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -195,5 +232,56 @@ void main() {
       isTrue,
       reason: 'off in the fixture, switched on',
     );
+  });
+
+  testWidgets('« Terminer le voyage »: once confirmed, then the summary', (
+    tester,
+  ) async {
+    await show(tester, trip());
+    await tester.tap(find.text('Terminer le voyage'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        "Le voyage s'arrête au 1er octobre 2008 et ton bilan s'affiche. "
+        'Le temps ne pourra plus avancer.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Annuler'));
+    await tester.pumpAndSettle();
+    expect(finish.finished, 0);
+
+    await tester.tap(find.text('Terminer le voyage'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Terminer'));
+    await tester.pumpAndSettle();
+    expect(finish.finished, 1);
+    expect(find.text('summary trip'), findsOneWidget);
+  });
+
+  testWidgets('the end of the data opens the summary', (tester) async {
+    final runner = await show(tester, trip());
+    runner.result = TripAdvance(
+      state: TripState.start(day(10, 2), eur('10000')),
+      events: const [],
+      stop: const [],
+      endOfData: true,
+    );
+    await tester.tap(find.text('+1 jour'));
+    await tester.pumpAndSettle();
+    expect(find.text('summary trip'), findsOneWidget);
+  });
+
+  testWidgets('finished: the summary, no more time or trading', (tester) async {
+    final runner = await show(tester, trip(status: WalletStatus.finished));
+    expect(find.text('Voyage terminé le 1er octobre 2008.'), findsOneWidget);
+    expect(find.text('+1 jour'), findsNothing);
+    expect(find.text('Investir'), findsNothing);
+    expect(find.byTooltip('Arrêts automatiques'), findsNothing);
+    expect(runner.steps, isEmpty);
+
+    await tester.tap(find.text('Voir le bilan'));
+    await tester.pumpAndSettle();
+    expect(find.text('summary trip'), findsOneWidget);
   });
 }
