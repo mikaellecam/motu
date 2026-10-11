@@ -1,4 +1,5 @@
 import 'node.dart';
+import 'path.dart';
 import 'profile.dart';
 import 'profile_rules.dart';
 
@@ -116,7 +117,7 @@ NextStep nextStep(LearningState s) {
   if (cushionFirst(s.profile) && !s.discoveredTerms.contains(cushionTerm)) {
     return const OpenGlossary(cushionTerm);
   }
-  final current = _currentNode(s);
+  final current = currentNode(s.profile, s.path, s.completedOn.keys.toSet());
   if (current != null) {
     if (current.type == NodeType.mission) return DoMission(current.id);
     final doneToday = s.completedOn.values
@@ -131,18 +132,4 @@ NextStep nextStep(LearningState s) {
   }
   if (s.openTrips.isNotEmpty) return ContinueTrip(s.openTrips.first);
   return const OpenLiveWallet();
-}
-
-IslandNode? _currentNode(LearningState s) {
-  final start = startingNode(s.profile) - 1;
-  final forced = forcedFirstNode(s.profile);
-  final order = <IslandNode>{
-    if (forced != null && forced <= s.path.length) s.path[forced - 1],
-    ...s.path.skip(start),
-    ...s.path.take(start),
-  };
-  for (final node in order) {
-    if (!s.completedOn.containsKey(node.id)) return node;
-  }
-  return null;
 }

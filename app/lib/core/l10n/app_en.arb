@@ -297,5 +297,19 @@
   "toy_compound_result": "After {years}: {value}, of which {moneyIn} put in.",
   "toy_return_past": "{rate} a year: what {label} did from {from} to {to}.",
   "toy_return_hypothesis": "Assumption: {rate} a year, for the example.",
-  "toy_touch_all": "Move every slider to finish."
+  "toy_touch_all": "Move every slider to finish.",
+  "island_progress": "{done} of {total} done",
+  "island_your_turn": "Your turn",
+  "island_node_semantics": "{number}. {title}, {type}, {state}",
+  "island_state_done": "done",
+  "island_state_current": "your turn",
+  "island_state_open": "open",
+  "island_state_locked": "locked",
+  "node_type_predict_reveal": "Prediction",
+  "node_type_toy": "Toy",
+  "node_type_decision": "Decision",
+  "node_type_sort": "Ranking",
+  "node_type_build_puzzle": "Build",
+  "node_type_mission": "Mission",
+  "node_type_checkpoint": "Checkpoint"
 }

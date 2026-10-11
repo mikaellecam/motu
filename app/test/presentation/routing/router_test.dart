@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/learning/node_player.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
@@ -10,6 +11,7 @@ import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
+import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
@@ -33,7 +35,7 @@ Future<void> open(WidgetTester tester, String location) async {
         databaseProvider.overrideWithValue(db),
         // Navigation only: no catalogue behind the Explorer tab, no wallet
         // behind the Portefeuille tab, no trip behind its summary, no lesson
-        // behind the node player.
+        // behind the node player or the island path.
         explorerRowsProvider.overrideWith((ref, walletId) async => const []),
         favoritesProvider.overrideWithBuild(
           (ref, notifier) => Stream.value({}),
@@ -54,6 +56,9 @@ Future<void> open(WidgetTester tester, String location) async {
           (ref, id) async => throw const NotFoundFailure(),
         ),
         islandNodeProvider.overrideWith(
+          (ref, id) async => throw const NotFoundFailure(),
+        ),
+        islandPathProvider.overrideWith(
           (ref, id) async => throw const NotFoundFailure(),
         ),
       ],
@@ -107,12 +112,7 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
-  for (final location in [
-    '/settings',
-    '/tools/dca',
-    '/island/actions-etf',
-    '/wallet/t1/order/o1',
-  ]) {
+  for (final location in ['/settings', '/tools/dca', '/wallet/t1/order/o1']) {
     testWidgets('$location opens full screen', (tester) async {
       await open(tester, location);
       expect(find.byType(PendingScreen), findsOneWidget);
@@ -144,6 +144,15 @@ void main() {
     expect(
       tester.widget<TripSummaryScreen>(find.byType(TripSummaryScreen)).walletId,
       't1',
+    );
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('/island/:id opens the island path full screen', (tester) async {
+    await open(tester, '/island/actions-etf');
+    expect(
+      tester.widget<IslandScreen>(find.byType(IslandScreen)).islandId,
+      'actions-etf',
     );
     expect(find.byType(NavigationBar), findsNothing);
   });

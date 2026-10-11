@@ -161,6 +161,12 @@ V1 island "Actions & ETF" (order matters, ids stable):
 | 11 | `ae.mission-dca` | mission | Mets en place un DCA | Any wallet has an active DCA plan |
 | 12 | `ae.checkpoint-1` | checkpoint | Point d'étape | Quiz over nodes 1–11 |
 
+Island path (`/island/:islandId`): the nodes in order, each done (✓, replayable), current (the node the
+next-step card points to), open or locked, with « {done} sur {total} terminées » on top. Decided 2026-10-11:
+nodes skipped at onboarding stay open; a pending mission does not lock what follows (the lessons after it
+open, the mission completes whenever the wallet satisfies it); « Tout afficher dès maintenant » changes the
+UI level only, never the node order.
+
 Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/contentcheck`:
 
 ```jsonc

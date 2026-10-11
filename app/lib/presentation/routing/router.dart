@@ -7,6 +7,7 @@ import '../../core/theme/tokens.dart';
 import '../features/map/archipelago_map.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
+import '../features/island/island_screen.dart';
 import '../features/node/node_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/trip/stop_screen.dart';
@@ -53,7 +54,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
     _pending('/settings'),
     _pending('/tools/dca'),
-    _pending('/island/:islandId'),
+    GoRoute(
+      path: '/island/:islandId',
+      builder: (_, state) =>
+          IslandScreen(islandId: state.pathParameters['islandId']!),
+    ),
     GoRoute(
       path: '/node/:nodeId',
       builder: (_, state) =>

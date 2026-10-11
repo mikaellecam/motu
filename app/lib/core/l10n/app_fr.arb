@@ -969,5 +969,45 @@
       }
     }
   },
-  "toy_touch_all": "Bouge chaque curseur pour terminer."
+  "toy_touch_all": "Bouge chaque curseur pour terminer.",
+  "island_progress": "{done} sur {total} termin\u00e9es",
+  "@island_progress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "island_your_turn": "\u00c0 toi",
+  "island_node_semantics": "{number}. {title}, {type}, {state}",
+  "@island_node_semantics": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "island_state_done": "termin\u00e9e",
+  "island_state_current": "\u00e0 toi de jouer",
+  "island_state_open": "ouverte",
+  "island_state_locked": "verrouill\u00e9e",
+  "node_type_predict_reveal": "Pr\u00e9diction",
+  "node_type_toy": "Jouet",
+  "node_type_decision": "D\u00e9cision",
+  "node_type_sort": "Classement",
+  "node_type_build_puzzle": "Construction",
+  "node_type_mission": "Mission",
+  "node_type_checkpoint": "Point d'\u00e9tape"
 }
