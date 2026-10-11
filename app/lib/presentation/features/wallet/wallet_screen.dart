@@ -21,6 +21,7 @@ import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
 import '../../widgets/asset_avatar.dart';
+import '../companion/companion_card.dart';
 import '../order/order_screen.dart';
 import '../trip/trip_sheets.dart';
 import 'livret_card.dart';
@@ -90,6 +91,7 @@ class WalletScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpace.x4),
               ],
+              WalletCompanionCard(walletId: o.id),
               if (o.pendingOrders.isNotEmpty) ...[
                 _PendingCard(o),
                 const SizedBox(height: AppSpace.x4),

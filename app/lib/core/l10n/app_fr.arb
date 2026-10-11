@@ -1842,5 +1842,115 @@
   },
   "dca_rerun": "Relancer",
   "wallets_dca_title": "Simulateur DCA",
-  "wallets_dca_body": "Et si tu avais investi un peu chaque mois\u202f?"
+  "wallets_dca_body": "Et si tu avais investi un peu chaque mois\u202f?",
+  "companion_kicker": "Ton compagnon",
+  "companion_got_it": "J'ai compris",
+  "companion_lesson": "Revoir la le\u00e7on\u202f: {title}",
+  "@companion_lesson": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_first_loss_title": "Une premi\u00e8re baisse",
+  "companion_first_loss_body": "{asset} vaut aujourd'hui moins que ce que tu l'as pay\u00e9. Tant que tu ne vends pas, la perte reste \u00ab latente \u00bb\u202f: elle peut encore grandir ou se r\u00e9sorber.",
+  "@companion_first_loss_body": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_position_drop_title": "{asset} a recul\u00e9",
+  "@companion_position_drop_title": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_position_drop_body": "{asset} a perdu {drop} depuis son plus haut atteint depuis ton achat. Une seule ligne peut bouger bien plus que l'ensemble du portefeuille.",
+  "@companion_position_drop_body": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "drop": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_portfolio_drawdown_title": "Ton portefeuille recule",
+  "companion_portfolio_drawdown_body": "Ta performance est \u00e0 {drawdown} sous son plus haut, versements mis \u00e0 part. Les baisses font partie du chemin d'un placement en actions.",
+  "@companion_portfolio_drawdown_body": {
+    "placeholders": {
+      "drawdown": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_concentration_title": "Une ligne p\u00e8se lourd",
+  "companion_concentration_body": "{asset} repr\u00e9sente {weight} de ton portefeuille\u202f: ses hauts et ses bas deviennent ceux de tout le portefeuille.",
+  "@companion_concentration_body": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_idle_cash_title": "Des liquidit\u00e9s qui attendent",
+  "companion_idle_cash_body": "{weight} de ton portefeuille est en liquidit\u00e9s depuis plus d'un mois. Elles ne baissent pas, mais ne rapportent rien face \u00e0 l'inflation.",
+  "@companion_idle_cash_body": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_panic_sell_title": "Vendu apr\u00e8s une chute",
+  "companion_panic_sell_body": "Tu as vendu {asset} \u00e0 {price}, peu apr\u00e8s une baisse de plus de 15\u202f%. Dans trois mois, ton compagnon te montrera ce qu'il est devenu.",
+  "@companion_panic_sell_body": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_panic_sell_followup_title": "Trois mois apr\u00e8s ta vente",
+  "companion_panic_sell_followup_body": "Tu avais vendu {asset} \u00e0 {sold}. Il vaut aujourd'hui {now} ({change}).",
+  "@companion_panic_sell_followup_body": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "sold": {
+        "type": "String"
+      },
+      "now": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "companion_fx_swing_title": "Le dollar a boug\u00e9",
+  "companion_fx_swing_body": "Le dollar a boug\u00e9 de {move} face \u00e0 l'euro en un mois, et {exposure} de ton portefeuille est en dollars\u202f: sa valeur en euros a boug\u00e9 avec lui.",
+  "@companion_fx_swing_body": {
+    "placeholders": {
+      "move": {
+        "type": "String"
+      },
+      "exposure": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:drift/native.dart';
+import 'package:finance_companion/application/companion/companion.dart';
+import 'package:finance_companion/data/companion/companion_codec.dart';
+import 'package:finance_companion/domain/companion/rules.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/learning/ui_level.dart';
@@ -150,4 +153,28 @@ void main() {
     await pumpEventQueue();
     expect(await c.read(currentUiLevelProvider.future), 2);
   });
+
+  test(
+    'an unread companion moment comes first; read, the lesson is back',
+    () async {
+      await c.read(profileRepositoryProvider).save(profile());
+      await c.read(walletRepositoryProvider).ensureLiveWallet(now);
+      await db.learningDao.logMoment(
+        CompanionLogCompanion.insert(
+          walletId: 'live',
+          rule: CompanionRule.idleCash,
+          key: '',
+          firedAt: now,
+          params: encodeParams({'cashWeight': Decimal.parse('0.6')}),
+        ),
+      );
+      c.invalidate(nextStepViewProvider);
+      final v = (await view())!;
+      expect(v.step, isA<ReadMoment>());
+      expect(v.moment!.rule, CompanionRule.idleCash);
+
+      await c.read(companionActionsProvider.notifier).dismiss(v.moment!);
+      expect((await view())!.step, const PlayNode('ae.livret-vs-etf'));
+    },
+  );
 }

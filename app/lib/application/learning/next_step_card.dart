@@ -1,8 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../data/repositories/companion_repository.dart';
 import '../../domain/learning/content.dart';
 import '../../domain/learning/next_step.dart';
 import '../../domain/wallet/wallet.dart';
+import '../companion/companion.dart';
 import '../providers.dart';
 import '../wallet/wallets_list.dart' show walletSummariesProvider;
 import 'content.dart';
@@ -12,9 +14,12 @@ part 'next_step_card.g.dart';
 
 /// The map's next-step card (BRIEF §4.2): the one step, and what it names.
 final class NextStepView {
-  const NextStepView(this.step, {this.title, this.tripName});
+  const NextStepView(this.step, {this.title, this.tripName, this.moment});
 
   final NextStep step;
+
+  /// The companion moment it opens.
+  final ActiveMoment? moment;
 
   /// The lesson, mission or glossary term it opens.
   final Localized? title;
@@ -40,11 +45,13 @@ Future<NextStepView?> nextStepView(Ref ref) async {
   final doneF = ref.watch(completionsProvider.future)..ignore();
   final termsF = ref.watch(glossaryProgressProvider.future)..ignore();
   final walletsF = ref.watch(walletSummariesProvider.future)..ignore();
+  final momentsF = ref.watch(activeMomentsProvider.future)..ignore();
   final profile = await profiles.load();
   if (profile == null) return null;
   final pack = await packF;
   final done = await doneF;
   final terms = await termsF;
+  final moments = await momentsF;
   final trips = [
     for (final w in await walletsF)
       if (w.kind == WalletKind.trip && w.status != WalletStatus.finished) w,
@@ -60,9 +67,7 @@ Future<NextStepView?> nextStepView(Ref ref) async {
       },
       today: now,
       discoveredTerms: terms.keys.toSet(),
-      // ponytail: no companion moment yet; M8-3 adds them with the cards
-      // that read them (until then, one would hold the card for good).
-      unreadMoments: const [],
+      unreadMoments: [for (final m in moments) '${m.id}'],
       openTrips: [for (final t in trips) t.id],
     ),
   );
@@ -79,6 +84,10 @@ Future<NextStepView?> nextStepView(Ref ref) async {
       step,
       tripName: trips.firstWhere((t) => t.id == walletId).name,
     ),
-    ReadMoment() || OpenLiveWallet() => NextStepView(step),
+    ReadMoment(:final momentId) => NextStepView(
+      step,
+      moment: moments.firstWhere((m) => '${m.id}' == momentId),
+    ),
+    OpenLiveWallet() => NextStepView(step),
   };
 }

@@ -8,22 +8,37 @@ import 'events.dart';
 /// Teachable moments (BRIEF §4.12). Each describes what happened, never what
 /// to do; copy lives in the ARB files, keyed by [id].
 enum CompanionRule {
-  firstLoss('first_loss', null, ['volatilite', 'horizon-de-placement']),
-  positionDrop('position_drop', 30, ['pire-baisse', 'volatilite']),
+  firstLoss('first_loss', null, [
+    'volatilite',
+    'horizon-de-placement',
+  ], 'ae.risk-ladder'),
+  positionDrop('position_drop', 30, [
+    'pire-baisse',
+    'volatilite',
+  ], 'ae.apple-vs-world-2022'),
   portfolioDrawdown('portfolio_drawdown', 30, [
     'pire-baisse',
     'diversification',
-  ]),
-  concentration('concentration', 14, ['concentration', 'diversification']),
-  idleCash('idle_cash', 30, ['liquidites', 'inflation']),
-  panicSell('panic_sell', null, ['horizon-de-placement', 'rebond']),
+  ], 'ae.march-2020'),
+  concentration('concentration', 14, [
+    'concentration',
+    'diversification',
+  ], 'ae.apple-vs-world-2022'),
+  idleCash('idle_cash', 30, ['liquidites', 'inflation'], 'ae.livret-vs-etf'),
+  panicSell('panic_sell', null, [
+    'horizon-de-placement',
+    'rebond',
+  ], 'ae.march-2020'),
   panicSellFollowUp('panic_sell_followup', null, [
     'rebond',
     'horizon-de-placement',
-  ]),
-  fxSwing('fx_swing', 30, ['risque-de-change', 'taux-de-change']);
+  ], 'ae.march-2020'),
+  fxSwing('fx_swing', 30, [
+    'risque-de-change',
+    'taux-de-change',
+  ], 'ae.dollar-trap');
 
-  const CompanionRule(this.id, this.cooldownDays, this.glossary);
+  const CompanionRule(this.id, this.cooldownDays, this.glossary, this.lesson);
 
   final String id;
 
@@ -32,6 +47,9 @@ enum CompanionRule {
 
   /// Glossary terms the card links to.
   final List<String> glossary;
+
+  /// The Actions & ETF lesson the card links to (M8-3).
+  final String lesson;
 }
 
 /// A fired rule: one card. [key] scopes the cooldown (an asset, a sell, or

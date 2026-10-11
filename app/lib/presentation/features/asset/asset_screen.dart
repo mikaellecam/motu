@@ -17,6 +17,7 @@ import '../../../domain/market/market_calendar.dart';
 import '../../../domain/wallet/position.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
+import '../companion/companion_card.dart';
 import '../glossary/term_sheet.dart';
 import '../order/order_sheet.dart';
 
@@ -53,6 +54,7 @@ class AssetScreen extends ConsumerWidget {
               const SizedBox(height: AppSpace.x2),
               _Header(o),
               const SizedBox(height: AppSpace.x4),
+              WalletCompanionCard(walletId: o.walletId, assetId: o.asset.id),
               _ChartAndWhy(o, walletId: walletId),
               const SizedBox(height: AppSpace.x4),
               _Essentials(o),

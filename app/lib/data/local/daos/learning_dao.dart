@@ -91,6 +91,16 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(m) => OrderingTerm(expression: m.firedAt)]))
           .get();
 
+  /// [unreadMoments], then every change.
+  Stream<List<CompanionLogRow>> watchUnreadMoments() =>
+      (select(companionLog)
+            ..where((m) => m.dismissedAt.isNull())
+            ..orderBy([
+              (m) => OrderingTerm(expression: m.firedAt),
+              (m) => OrderingTerm(expression: m.id),
+            ]))
+          .watch();
+
   Future<void> dismissMoment(int id, DateTime at) =>
       (update(companionLog)..where((m) => m.id.equals(id))).write(
         CompanionLogCompanion(dismissedAt: Value(at)),

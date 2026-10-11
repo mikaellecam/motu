@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../application/companion/companion.dart';
 import '../../../application/learning/next_step_card.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/l10n/formats.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../data/repositories/wallet_repository.dart';
 import '../../../domain/learning/next_step.dart';
+import '../companion/companion_card.dart';
 import '../glossary/term_sheet.dart';
 
 /// The one action the map recommends (BRIEF §4.2), as `nextStep` picks it;
@@ -60,8 +63,27 @@ class NextStepCard extends ConsumerWidget {
         ChunkyButtonKind.primary,
         () => context.push('/wallet/${WalletRepository.liveWalletId}'),
       ),
-      // Companion moments get their card with M8-3; none reach here yet.
-      ReadMoment() => null,
+      ReadMoment() => switch (view.moment) {
+        final moment? => (
+          l10n.companion_kicker,
+          companionCopy(
+            l10n,
+            Formats(language),
+            moment,
+            asset:
+                ref
+                    .watch(companionNamesProvider)
+                    .value
+                    ?.assets[moment.assetId] ??
+                moment.assetId ??
+                '',
+          ).$1,
+          l10n.next_step_read,
+          ChunkyButtonKind.progress,
+          () => showCompanionSheet(context, moment),
+        ),
+        null => null,
+      },
     };
     if (card == null) return const SizedBox.shrink();
     final (kicker, name, action, kind, go) = card;

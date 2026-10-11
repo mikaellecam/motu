@@ -125,7 +125,7 @@ Rules:
   Built (M7-3): the card names what it opens (the lesson, the mission, the term, the trip) and follows the
   user's progress as it happens; "today" is the user's local day; an open trip is one not finished, the newest
   first. Header: « {n} île(s) ouverte(s) sur 5 » under the title, and « Niveau {n} » (§4.15) in the level
-  colour. Unread companion moments join the card with their cards (M8-3).
+  colour. Unread companion moments lead the card (M8-3, §4.12).
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back
@@ -555,6 +555,16 @@ Pure rule engine over domain events, outputs `CompanionCard{ruleId, title, body,
 | `fx_swing` | EUR/USD move > 3 % in a month with USD exposure > 20 % | 30 days |
 
 Cards link to glossary terms or nodes. Wording describes, never prescribes.
+
+Built (M8-3): a moment stays « non lu » until its card's « J'ai compris » (`companion_log.dismissedAt`); the
+cooldowns run on the log whether read or not. Where cards show: the oldest unread moment of any wallet leads the
+map's next-step card (« Ton compagnon », its title, « Lire » opens the card in a sheet); a wallet shows its oldest
+unread moment under « Investir »; an asset page shows the oldest unread moment of its wallet about that asset.
+A card: « Ton compagnon », a title and a body per rule (figures from the moment's params, signed only where the
+words do not already say which way), chips to its glossary terms, « Revoir la leçon : … » to its lesson
+(`CompanionRule.lesson`: first loss → risk ladder; position drop and concentration → Apple vs world 2022;
+portfolio drawdown and panic sells → March 2020; idle cash → Livret vs ETF; FX swing → the dollar trap), and
+« J'ai compris ».
 
 ### 4.13 Trip journal
 

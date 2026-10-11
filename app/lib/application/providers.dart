@@ -7,6 +7,7 @@ import '../data/local/database.dart';
 import '../data/remote/backend_api.dart';
 import '../data/remote/connectivity.dart';
 import '../data/remote/frankfurter_api.dart';
+import '../data/repositories/companion_repository.dart';
 import '../data/repositories/content_repository.dart';
 import '../data/repositories/dca_repository.dart';
 import '../data/repositories/favorites_repository.dart';
@@ -68,6 +69,10 @@ Stream<CacheStatus> cacheStatus(Ref ref) =>
 @Riverpod(keepAlive: true)
 FxService fxService(Ref ref) =>
     FxService(ref.watch(databaseProvider), FrankfurterApi());
+
+@Riverpod(keepAlive: true)
+CompanionRepository companionRepository(Ref ref) =>
+    CompanionRepository(ref.watch(databaseProvider));
 
 @Riverpod(keepAlive: true)
 DcaRepository dcaRepository(Ref ref) =>
