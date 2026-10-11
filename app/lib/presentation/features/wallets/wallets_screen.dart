@@ -62,6 +62,18 @@ class WalletsScreen extends ConsumerWidget {
                 _SuggestionCard(s),
               ],
             ],
+            const SizedBox(height: AppSpace.x6),
+            // The sandbox's other tool (BRIEF §4.10).
+            Card(
+              child: ListTile(
+                minTileHeight: AppSpace.minTarget + AppSpace.x4,
+                leading: const Icon(Icons.calendar_month),
+                title: Text(l10n.wallets_dca_title),
+                subtitle: Text(l10n.wallets_dca_body),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/tools/dca'),
+              ),
+            ),
           ],
         ),
         null when state.hasError => Center(

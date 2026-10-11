@@ -12,6 +12,7 @@ import '../features/map/archipelago.dart';
 import '../features/map/archipelago_map.dart';
 import '../features/map/next_step_card.dart';
 import '../features/asset/asset_screen.dart';
+import '../features/dca/dca_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/glossary/glossary_screen.dart';
 import '../features/island/island_screen.dart';
@@ -61,7 +62,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     ),
     GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
     _pending('/settings'),
-    _pending('/tools/dca'),
+    GoRoute(path: '/tools/dca', builder: (_, _) => const DcaScreen()),
     GoRoute(
       path: '/island/:islandId',
       builder: (_, state) =>

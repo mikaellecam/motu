@@ -502,6 +502,20 @@ voyage » (trip). In a trip, an optional « Pourquoi ? » saves the order to the
   cassés…").
 - Save simulation (persisted, listed in the tool), rerun with another asset.
 
+Built (M8-2), decided 2026-10-11:
+- Fees: the live wallet's rules (0,15 % FX fee on dollar assets, no fixed fee; the Settings FX fee later).
+- Start: « 1 an · 3 ans · 5 ans · 10 ans » (default: the preset nearest below the Q1 horizon) or an exact date,
+  checked like the trip wizard from the asset's first close; a day without a session rolls to the next.
+- Amount: > 0, ≤ 100 000 €, above the fixed fee (`validateDcaAmount`). Purchases at each scheduled day's
+  close (`dcaSchedule`, `investFlows`); the lump sum puts the same total in on the first purchase day; the
+  Livret gets the same deposits within its ceiling.
+- Insight, first match wins (`dcaInsight`): ended below the money put in → « Le DCA lisse le prix d'achat : il
+  n'empêche pas une baisse »; else the calendar year whose buys cost on average at least 15 % under the last
+  close, the cheapest → « Tes achats de {year} se sont faits à prix cassés »; else which of DCA and the lump sum
+  ended ahead, and by how much.
+- Saved: inputs and what they gave (`dca_simulations`), newest first; « Relancer » puts them back in the form
+  and runs them again on the latest data, where the asset can be changed. Reached from the Portefeuille tab.
+
 ### 4.11 Livret A
 
 Facts encoded in the backend (`backend/internal/catalogue/livret.go`, never hardcoded in the app), from the

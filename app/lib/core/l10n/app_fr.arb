@@ -1671,5 +1671,176 @@
         "type": "String"
       }
     }
-  }
+  },
+  "dca_title": "Simulateur DCA",
+  "dca_intro": "Et si tu avais investi la m\u00eame somme \u00e0 intervalles r\u00e9guliers\u202f? Cours r\u00e9els, frais du bac \u00e0 sable.",
+  "dca_asset": "Actif",
+  "dca_amount": "Montant par achat",
+  "dca_monthly": "Chaque mois",
+  "dca_weekly": "Chaque semaine",
+  "dca_since": "Depuis",
+  "dca_years": "{count, plural, one{{count} an} other{{count} ans}}",
+  "@dca_years": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dca_date": "Date pr\u00e9cise (JJ/MM/AAAA)",
+  "dca_date_too_recent": "Commence au plus tard le {date}\u202f: il faut au moins 30 jours de cours.",
+  "@dca_date_too_recent": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_date_rolled": "Le {date} n'a pas eu de s\u00e9ance\u202f: premier achat le {start}.",
+  "@dca_date_rolled": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_error_too_large": "Au plus {max} par achat.",
+  "@dca_error_too_large": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_error_fees": "Le montant doit d\u00e9passer les frais fixes ({fees}).",
+  "@dca_error_fees": {
+    "placeholders": {
+      "fees": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_simulate": "Simuler",
+  "dca_period": "Du {from} au {to} \u00b7 {count, plural, one{{count} achat} other{{count} achats}}",
+  "@dca_period": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dca_invested": "Vers\u00e9",
+  "dca_final": "Valeur finale",
+  "dca_gain": "Gain",
+  "dca_value": "Valeur",
+  "dca_chart_semantics": "Valeur de tes achats, de {from} \u00e0 {to}, pour {invested} vers\u00e9s.",
+  "@dca_chart_semantics": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "invested": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_compare_title": "Avec la m\u00eame somme",
+  "dca_compare_dca": "Ton DCA",
+  "dca_compare_lump_sum": "Tout plac\u00e9 le premier jour",
+  "dca_compare_livret": "Sur un Livret A",
+  "dca_livret_capped": "Le plafond du Livret A a laiss\u00e9 {amount} de c\u00f4t\u00e9, \u00e0 0\u202f%.",
+  "@dca_livret_capped": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_insight_loss": "Tu termines \u00e0 {value} pour {invested} vers\u00e9s ({change}). Le DCA lisse le prix d'achat\u202f: il n'emp\u00eache pas une baisse.",
+  "@dca_insight_loss": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "invested": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_insight_cheap_year": "Tes achats de {year} se sont faits \u00e0 prix cass\u00e9s\u202f: {discount} sous le dernier cours.",
+  "@dca_insight_cheap_year": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      },
+      "discount": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_insight_dca_ahead": "Le DCA a fini devant le placement en une fois, de {difference}\u202f: une partie de tes achats s'est faite moins cher qu'au premier jour.",
+  "@dca_insight_dca_ahead": {
+    "placeholders": {
+      "difference": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_insight_lump_ahead": "Tout placer le premier jour a fini devant, de {difference}\u202f: tes achats suivants ont co\u00fbt\u00e9 plus cher en moyenne, et l'argent plac\u00e9 t\u00f4t a profit\u00e9 plus longtemps de la hausse.",
+  "@dca_insight_lump_ahead": {
+    "placeholders": {
+      "difference": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_save": "Enregistrer",
+  "dca_saved_done": "Simulation enregistr\u00e9e.",
+  "dca_saved_title": "Tes simulations",
+  "dca_saved_row": "{amount} {frequency, select, monthly{par mois} other{par semaine}} depuis le {date}",
+  "@dca_saved_row": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "frequency": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_saved_result": "{value} pour {invested} vers\u00e9s, au {date}",
+  "@dca_saved_result": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "invested": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_rerun": "Relancer",
+  "wallets_dca_title": "Simulateur DCA",
+  "wallets_dca_body": "Et si tu avais investi un peu chaque mois\u202f?"
 }

@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:finance_companion/application/dca/dca_simulator.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
@@ -12,6 +13,7 @@ import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
+import 'package:finance_companion/presentation/features/dca/dca_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
@@ -70,6 +72,10 @@ Future<void> open(WidgetTester tester, String location) async {
           (ref, language) async => const GlossaryIndex([], total: 0),
         ),
         ...quietMap,
+        // No catalogue behind the DCA simulator.
+        dcaFormViewProvider.overrideWith(
+          (ref) async => throw const NotFoundFailure(),
+        ),
       ],
       child: MainApp(router: buildRouter(initialLocation: location)),
     ),
@@ -123,7 +129,13 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
-  for (final location in ['/settings', '/tools/dca']) {
+  testWidgets('/tools/dca opens the DCA simulator full screen', (tester) async {
+    await open(tester, '/tools/dca');
+    expect(find.byType(DcaScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  for (final location in ['/settings']) {
     testWidgets('$location opens full screen', (tester) async {
       await open(tester, location);
       expect(find.byType(PendingScreen), findsOneWidget);
