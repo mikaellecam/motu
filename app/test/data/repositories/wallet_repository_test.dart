@@ -689,4 +689,51 @@ void main() {
     expect(await repo.cancelByUser('p'), isFalse, reason: 'already filled');
     expect(await repo.orderDetail('nope'), isNull);
   });
+
+  group('the live wallet from Settings', () {
+    final now = DateTime.utc(2026, 10, 12, 9);
+
+    test(
+      'a new FX fee applies to what comes next, not to past fills',
+      () async {
+        await repo.ensureLiveWallet(now);
+        await repo.setLiveFxFee(Decimal.parse('0.005'));
+        final w = await repo.load(WalletRepository.liveWalletId);
+        expect(w.params.rules.fxFeeRate, Decimal.parse('0.005'));
+        expect(w.params.rules.fractionalShares, isTrue);
+      },
+    );
+
+    test('a reset starts again today with the new capital, the fee kept, '
+        'nothing left of before', () async {
+      await repo.ensureLiveWallet(DateTime.utc(2026, 9, 1));
+      await repo.setLiveFxFee(Decimal.parse('0.01'));
+      await repo.moveToLivret(
+        WalletRepository.liveWalletId,
+        DateTime.utc(2026, 9, 2),
+        const Money(100000, Currency.eur),
+      );
+      await repo.resetLiveWallet(
+        now,
+        startingCash: const Money(1000000, Currency.eur),
+      );
+      final w = await repo.load(WalletRepository.liveWalletId);
+      expect(w.startDate, DateTime.utc(2026, 10, 12));
+      expect(w.cash, const Money(1000000, Currency.eur));
+      expect(w.livretMovements, isEmpty);
+      expect(w.values.single.value, const Money(1000000, Currency.eur));
+      expect(w.params.rules.fxFeeRate, Decimal.parse('0.01'));
+    });
+
+    test('a reset without a live wallet creates one', () async {
+      await repo.resetLiveWallet(
+        now,
+        startingCash: WalletRepository.defaultLiveCash,
+      );
+      expect(
+        (await repo.load(WalletRepository.liveWalletId)).cash,
+        WalletRepository.defaultLiveCash,
+      );
+    });
+  });
 }

@@ -61,7 +61,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'investment_companion'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -70,6 +70,9 @@ class AppDatabase extends _$AppDatabase {
       // v2: why a trip stopped, until the user decides (M5-4).
       from1To2: (m, schema) =>
           m.addColumn(schema.wallets, schema.wallets.stopReasons),
+      // v3: the live wallet's starting cash for its next reset (M9-1).
+      from2To3: (m, schema) =>
+          m.addColumn(schema.profiles, schema.profiles.liveStartingCents),
     ),
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );

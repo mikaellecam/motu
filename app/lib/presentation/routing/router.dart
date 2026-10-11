@@ -19,6 +19,7 @@ import '../features/island/island_screen.dart';
 import '../features/node/node_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/order/order_screen.dart';
+import '../features/settings/settings_screen.dart';
 import '../features/trip/stop_screen.dart';
 import '../features/trip/summary_screen.dart';
 import '../features/trip_wizard/trip_wizard_screen.dart';
@@ -61,7 +62,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       ],
     ),
     GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
-    _pending('/settings'),
+    GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
     GoRoute(path: '/tools/dca', builder: (_, _) => const DcaScreen()),
     GoRoute(
       path: '/island/:islandId',
@@ -108,22 +109,6 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     ),
   ],
 );
-
-GoRoute _pending(String path) =>
-    GoRoute(path: path, builder: (_, _) => const PendingScreen());
-
-/// Stands in for a screen its own issue has not built yet: a way back, no
-/// made-up content.
-class PendingScreen extends StatelessWidget {
-  const PendingScreen({super.key, this.args});
-
-  /// What the screen will be opened with (tests read it).
-  final Object? args;
-
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(appBar: AppBar(), body: const SizedBox.shrink());
-}
 
 /// The map tab (BRIEF §3, §4.2): « Ton archipel », the islands opened and
 /// the level in the header, settings, and the next-step card at the bottom.

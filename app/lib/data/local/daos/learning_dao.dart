@@ -23,6 +23,8 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 
   Future<ProfileRow?> profile() => select(profiles).getSingleOrNull();
 
+  Stream<ProfileRow?> watchProfile() => select(profiles).watchSingleOrNull();
+
   /// Saves the single profile row (id 1).
   Future<void> saveProfile(ProfilesCompanion row) =>
       into(profiles).insertOnConflictUpdate(row.copyWith(id: const Value(1)));

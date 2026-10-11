@@ -7,11 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'generated/schema.dart';
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
+import 'generated/schema_v3.dart' as v3;
 
 /// Every schema ever shipped (drift_schemas/) must migrate to the current
 /// one. After a schema change: bump `schemaVersion`, add the step, run
 /// `dart run drift_dev make-migrations` and
-/// `dart run drift_dev schema generate drift_schemas/app_database/ test/drift/app_database/generated/`.
+/// `dart run drift_dev schema generate --data-classes --companions drift_schemas/app_database/ test/drift/app_database/generated/`
+/// (the data classes are what the data-integrity tests insert).
 void main() {
   late SchemaVerifier verifier;
 
@@ -56,6 +58,37 @@ void main() {
       },
     );
   });
+
+  test(
+    'v2 → v3: the profile keeps its answers and settings, no capital yet',
+    () async {
+      await verifier.testWithDataIntegrity(
+        oldVersion: 2,
+        newVersion: 3,
+        createOld: v2.DatabaseAtV2.new,
+        createNew: v3.DatabaseAtV3.new,
+        openTestedDatabase: AppDatabase.new,
+        createItems: (batch, oldDb) => batch.insert(
+          oldDb.profiles,
+          const v2.ProfilesData(
+            id: 1,
+            goal: 'longTerm',
+            dropReaction: 'wait',
+            knowledge: 'etfs',
+            savings: 'livret',
+            weeklyTime: 'fifteen',
+            showAll: 1,
+            language: 'en',
+          ),
+        ),
+        validateItems: (newDb) async {
+          final row = await newDb.select(newDb.profiles).getSingle();
+          expect((row.knowledge, row.showAll, row.language), ('etfs', 1, 'en'));
+          expect(row.liveStartingCents, isNull);
+        },
+      );
+    },
+  );
 
   test('the code matches the latest recorded schema', () async {
     // Fails when a table changes without a new schema version and dump.

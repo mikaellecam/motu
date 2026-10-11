@@ -217,10 +217,20 @@ class WalletRepository {
     }),
   );
 
+  /// The live wallet's starting cash and FX fee unless Settings says
+  /// otherwise (BRIEF §4.5, §4.14).
+  static const defaultLiveCash = Money(5000000, Currency.eur);
+  static final defaultLiveFxFee = Decimal.parse('0.0015');
+
   /// The live wallet's id; created on first launch (BRIEF §4.5) with
-  /// 50 000 €, a 0.15 % FX fee, fractional shares, no monthly contribution
-  /// and no automatic stop. Its name comes from the UI copy, not from here.
-  Future<String> ensureLiveWallet(DateTime now) => guardStorage(() async {
+  /// [startingCash] (50 000 € by default), an [fxFeeRate] (0.15 %),
+  /// fractional shares, no monthly contribution and no automatic stop. Its
+  /// name comes from the UI copy, not from here.
+  Future<String> ensureLiveWallet(
+    DateTime now, {
+    Money startingCash = defaultLiveCash,
+    Decimal? fxFeeRate,
+  }) => guardStorage(() async {
     final existing = await _db.walletDao.liveWallet();
     if (existing != null) return existing.id;
     final utc = now.toUtc();
@@ -229,10 +239,10 @@ class WalletRepository {
       kind: WalletKind.live,
       name: liveWalletId,
       startDate: DateTime.utc(utc.year, utc.month, utc.day),
-      startingCash: Money(5000000, Currency.eur),
+      startingCash: startingCash,
       params: WalletParams(
         rules: TradingRules(
-          fxFeeRate: Decimal.parse('0.0015'),
+          fxFeeRate: fxFeeRate ?? defaultLiveFxFee,
           fixedFee: const Money.zero(Currency.eur),
           fractionalShares: true,
         ),
@@ -245,6 +255,50 @@ class WalletRepository {
   });
 
   static const liveWalletId = 'live';
+
+  /// « Frais de change simulés » (decided 2026-10-12): the live wallet's FX
+  /// fee for the orders placed from now on; past fills keep theirs.
+  Future<void> setLiveFxFee(Decimal rate) => guardStorage(() async {
+    final row = await _db.walletDao.wallet(liveWalletId);
+    if (row == null) throw const NotFoundFailure();
+    final params = WalletParams.fromJson(row.params);
+    await _db.walletDao.updateWallet(
+      liveWalletId,
+      WalletsCompanion(
+        params: Value(
+          WalletParams(
+            rules: TradingRules(
+              fxFeeRate: rate,
+              fixedFee: params.rules.fixedFee,
+              fractionalShares: params.rules.fractionalShares,
+            ),
+            monthlyContribution: params.monthlyContribution,
+            stops: params.stops,
+          ).toJson(),
+        ),
+      ),
+    );
+  });
+
+  /// « Réinitialiser le portefeuille live »: everything in it goes (orders,
+  /// fills, values, plans, companion moments) and it starts again today with
+  /// [startingCash], its FX fee kept. Island progress lives elsewhere and
+  /// stays. All or nothing.
+  Future<void> resetLiveWallet(DateTime now, {required Money startingCash}) =>
+      guardStorage(
+        () => _db.transaction(() async {
+          final row = await _db.walletDao.wallet(liveWalletId);
+          final fee = row == null
+              ? null
+              : WalletParams.fromJson(row.params).rules.fxFeeRate;
+          if (row != null) await _db.walletDao.deleteWallet(liveWalletId);
+          await ensureLiveWallet(
+            now,
+            startingCash: startingCash,
+            fxFeeRate: fee,
+          );
+        }),
+      );
 
   /// Every wallet, then every change, oldest first.
   Stream<List<WalletSummary>> watchWallets() =>

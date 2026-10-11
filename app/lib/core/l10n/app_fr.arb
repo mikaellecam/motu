@@ -1952,5 +1952,83 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settings_title": "Param\u00e8tres",
+  "settings_language": "Langue",
+  "settings_language_device": "Celle de l'appareil",
+  "settings_language_fr": "Fran\u00e7ais",
+  "settings_language_en": "English",
+  "settings_level": "Niveau",
+  "settings_level_value": "Niveau {level} sur 3",
+  "@settings_level_value": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "settings_show_all": "Tout afficher d\u00e8s maintenant",
+  "settings_show_all_note": "Tous les chiffres et outils, quel que soit ton niveau. L'ordre des le\u00e7ons ne change pas.",
+  "settings_retake": "Refaire le questionnaire",
+  "settings_retake_note": "Tes r\u00e9ponses choisissent ton point de d\u00e9part et tes seuils. Ta progression est gard\u00e9e.",
+  "settings_data": "Donn\u00e9es",
+  "settings_last_update": "Derni\u00e8re mise \u00e0 jour des cours\u202f: le {date} \u00e0 {time}",
+  "@settings_last_update": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_never_updated": "Pas encore de cours en cache.",
+  "settings_cache": "{histories, plural, one{{histories} historique} other{{histories} historiques}}, {closes} cours, {size} sur l'appareil",
+  "@settings_cache": {
+    "placeholders": {
+      "histories": {
+        "type": "int"
+      },
+      "closes": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_size_mb": "{size} Mo",
+  "@settings_size_mb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_refresh": "Actualiser maintenant",
+  "settings_refreshed": "Les cours seront mis \u00e0 jour \u00e0 la prochaine lecture.",
+  "settings_clear": "Vider le cache",
+  "settings_cleared": "Cache vid\u00e9\u202f: les cours reviendront quand tu en auras besoin.",
+  "settings_simulation": "Simulation",
+  "settings_capital": "Capital de d\u00e9part du portefeuille live",
+  "settings_capital_note": "S'applique \u00e0 la prochaine r\u00e9initialisation.",
+  "settings_fx_fee": "Frais de change simul\u00e9s",
+  "settings_fx_fee_note": "Pour les prochains ordres du portefeuille live et le simulateur DCA. Les voyages gardent les leurs.",
+  "settings_reset": "R\u00e9initialiser le portefeuille live",
+  "settings_reset_title": "R\u00e9initialiser le portefeuille live\u202f?",
+  "settings_reset_body": "Ses positions, ses ordres, son historique et son Livret A seront effac\u00e9s. Il repartira aujourd'hui avec {capital}. Ta progression sur les \u00eeles est gard\u00e9e.",
+  "@settings_reset_body": {
+    "placeholders": {
+      "capital": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_reset_confirm": "R\u00e9initialiser",
+  "settings_reset_done": "Portefeuille live r\u00e9initialis\u00e9.",
+  "settings_about": "\u00c0 propos",
+  "settings_about_money": "Tout l'argent de cette app est fictif\u202f: aucun compte, aucune banque, aucun courtier.",
+  "settings_about_advice": "Rien ici n'est un conseil en investissement ni une pr\u00e9vision.",
+  "settings_about_sources": "Cours\u202f: Twelve Data, diff\u00e9r\u00e9s. Taux de change\u202f: Banque centrale europ\u00e9enne, via Frankfurter. Livret A\u202f: taux officiels. Les le\u00e7ons utilisent des cours r\u00e9els, fig\u00e9s."
 }

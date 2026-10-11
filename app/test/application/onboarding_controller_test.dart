@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Fails the first [failures] saves.
-class FlakyRepository implements ProfileRepository {
+class FlakyRepository extends Fake implements ProfileRepository {
   FlakyRepository({this.failures = 0});
   int failures;
   Profile? saved;

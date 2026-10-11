@@ -578,6 +578,20 @@ cached histories count and size, refresh now, clear cache), simulation (starting
 simulated FX fee), reset live wallet (keeps island progress, confirmation required), about (fictional money,
 no advice, data sources).
 
+Built (M9-1), decided 2026-10-12:
+- Language: « Celle de l'appareil » · Français · English, applied at once (`profiles.language`).
+- Level: « Niveau n sur 3 », and « Tout afficher dès maintenant » (`profiles.showAll`), which sets level 3.
+- « Refaire le questionnaire » opens it with the previous answers; progress and settings are kept.
+- Data: when prices last came from the network, the histories and closes cached and the database's size on the
+  device; « Actualiser maintenant » makes every price due again; « Vider le cache » deletes prices, quotes and
+  rates (wallets, lessons, the catalogue and calendars stay).
+- Starting capital: 1 000 · 10 000 · 50 000 · 100 000 €, applied at the next reset (`profiles.liveStartingCents`,
+  schema v3).
+- FX fee: 0 · 0,15 · 0,5 · 1 %, for the live wallet's orders from now on and the DCA simulator; trips keep
+  theirs, past fills keep their fees.
+- Reset: confirmed in a dialog naming the capital; the live wallet and everything in it go, and it starts again
+  today with the chosen capital and its FX fee.
+
 ### 4.15 Levels and progressive UI
 
 - `uiLevel` 1–3. Level 1: risk meter instead of volatility numbers; essentials tiles show bands

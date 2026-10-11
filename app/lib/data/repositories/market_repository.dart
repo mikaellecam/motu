@@ -246,6 +246,32 @@ class MarketRepository {
   /// fetched once; the current year and later are checked once a day, since
   /// an unscheduled closure may be added. A year the backend does not serve
   /// has weekends only.
+  /// The cache, for Settings (BRIEF §4.14).
+  Future<({int histories, int closes, DateTime? lastFetch, int bytes})>
+  cacheInfo() => guardStorage(() async {
+    final stats = await _dao.cacheStats();
+    return (
+      histories: stats.histories,
+      closes: stats.closes,
+      lastFetch: stats.lastFetch,
+      bytes: await _dao.databaseBytes(),
+    );
+  });
+
+  /// « Actualiser maintenant »: everything is fetched again on its next read.
+  Future<void> refreshNow() => guardStorage(() async {
+    await _dao.markStale();
+    _assetsCheckedAt = null;
+    _livretCheckedAt = null;
+  });
+
+  /// « Vider le cache »: prices go; they come back from the network as
+  /// screens need them.
+  Future<void> clearCache() => guardStorage(() async {
+    await _dao.clearPrices();
+    _assetsCheckedAt = null;
+  });
+
   Future<MarketCalendar> calendar(
     Set<Exchange> exchanges, {
     required int fromYear,

@@ -463,4 +463,31 @@ void main() {
       expect(seen.last, const Offline(null));
     });
   });
+
+  group('the cache, for Settings', () {
+    test('what it holds, when prices last came, and its size', () async {
+      final empty = await repo.cacheInfo();
+      expect((empty.histories, empty.closes, empty.lastFetch), (0, 0, null));
+      expect(empty.bytes, greaterThan(0));
+
+      await closes();
+      final info = await repo.cacheInfo();
+      expect((info.histories, info.closes), (1, 3));
+      expect(info.lastFetch, wall.now());
+    });
+
+    test('« Actualiser maintenant »: the next read fetches again', () async {
+      await closes();
+      await repo.refreshNow();
+      await closes();
+      expect(backend.to('/v1/assets/apple/history'), hasLength(2));
+    });
+
+    test('« Vider le cache »: the prices go, then come back', () async {
+      await closes();
+      await repo.clearCache();
+      expect((await repo.cacheInfo()).closes, 0);
+      expect(await closes(), ['5:100', '6:101', '7:102']);
+    });
+  });
 }

@@ -1,8 +1,9 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
 
 /// Records the completed nodes.
-class RecordingProfiles implements ProfileRepository {
+class RecordingProfiles extends Fake implements ProfileRepository {
   final completed = <(String, String?)>[];
 
   @override

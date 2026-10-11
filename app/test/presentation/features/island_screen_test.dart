@@ -16,7 +16,7 @@ import 'package:go_router/go_router.dart';
 import '../../fakes/lesson_pack.dart';
 
 /// No profile; completions come from [completions].
-class StreamedProfiles implements ProfileRepository {
+class StreamedProfiles extends Fake implements ProfileRepository {
   final completions = StreamController<Set<String>>.broadcast();
   Set<String> last = const {};
 

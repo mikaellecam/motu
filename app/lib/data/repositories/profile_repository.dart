@@ -1,9 +1,26 @@
 import 'package:drift/drift.dart';
 
+import '../../core/money/money.dart';
 import '../../domain/learning/profile.dart';
 import '../local/database.dart';
 import '../local/tables.dart';
 import 'guard.dart';
+
+/// What Settings keeps (BRIEF §4.14) beside the questionnaire's answers.
+final class AppSettings {
+  const AppSettings({
+    this.language,
+    this.showAll = false,
+    this.liveStartingCash,
+  });
+
+  /// `fr` or `en`; null follows the device.
+  final String? language;
+  final bool showAll;
+
+  /// The live wallet's next starting cash; null for the default.
+  final Money? liveStartingCash;
+}
 
 /// The onboarding answers (BRIEF §4.1). Saving replaces the answers only:
 /// retaking the questionnaire never touches progress, discoveries or
@@ -35,6 +52,36 @@ class ProfileRepository {
         savings: Value(profile.savings),
         weeklyTime: Value(profile.weeklyTime),
       ),
+    ),
+  );
+
+  /// The settings (BRIEF §4.14), then every change; the defaults before the
+  /// first onboarding.
+  Stream<AppSettings> watchSettings() => _db.learningDao.watchProfile().map(
+    (row) => AppSettings(
+      language: row?.language,
+      showAll: row?.showAll ?? false,
+      liveStartingCash: row?.liveStartingCents == null
+          ? null
+          : Money(row!.liveStartingCents!, Currency.eur),
+    ),
+  );
+
+  /// `fr` or `en`; null follows the device.
+  Future<void> setLanguage(String? code) => guardStorage(
+    () =>
+        _db.learningDao.updateProfile(ProfilesCompanion(language: Value(code))),
+  );
+
+  Future<void> setShowAll(bool on) => guardStorage(
+    () => _db.learningDao.updateProfile(ProfilesCompanion(showAll: Value(on))),
+  );
+
+  /// The live wallet's starting cash the next time it is created (decided
+  /// 2026-10-12: it applies at the next reset).
+  Future<void> setLiveStartingCash(Money amount) => guardStorage(
+    () => _db.learningDao.updateProfile(
+      ProfilesCompanion(liveStartingCents: Value(amount.minorUnits)),
     ),
   );
 

@@ -25,6 +25,50 @@ part 'market_dao.g.dart';
 class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
   MarketDao(super.attachedDatabase);
 
+  /// What the cache holds (Settings, BRIEF §4.14): price histories, their
+  /// closes, and when prices last came from the network.
+  Future<({int histories, int closes, DateTime? lastFetch})>
+  cacheStats() async {
+    final histories = historySync.assetId.count();
+    final lastHistory = historySync.fetchedAt.max();
+    final h = await (selectOnly(
+      historySync,
+    )..addColumns([histories, lastHistory])).getSingle();
+    final closes = priceBars.assetId.count();
+    final c = await (selectOnly(priceBars)..addColumns([closes])).getSingle();
+    final lastQuote = quotes.fetchedAt.max();
+    final q = await (selectOnly(quotes)..addColumns([lastQuote])).getSingle();
+    final times = [?h.read(lastHistory), ?q.read(lastQuote)]..sort();
+    return (
+      histories: h.read(histories) ?? 0,
+      closes: c.read(closes) ?? 0,
+      lastFetch: times.lastOrNull,
+    );
+  }
+
+  /// The database file's size on the device, in bytes.
+  Future<int> databaseBytes() async {
+    final pages = await customSelect('PRAGMA page_count').getSingle();
+    final size = await customSelect('PRAGMA page_size').getSingle();
+    return (pages.data.values.first as int) * (size.data.values.first as int);
+  }
+
+  /// « Actualiser maintenant »: every history and quote is due again.
+  Future<void> markStale() => transaction(() async {
+    await delete(quotes).go();
+    await update(historySync)
+        .write(HistorySyncCompanion(fetchedAt: Value(DateTime.utc(2000))));
+  });
+
+  /// « Vider le cache »: the prices, quotes and rates go; wallets, lessons,
+  /// the catalogue and calendars stay.
+  Future<void> clearPrices() => transaction(() async {
+    await delete(priceBars).go();
+    await delete(historySync).go();
+    await delete(quotes).go();
+    await delete(fxRates).go();
+  });
+
   Future<void> upsertAssets(List<AssetsCompanion> rows) =>
       batch((b) => b.insertAllOnConflictUpdate(assets, rows));
 

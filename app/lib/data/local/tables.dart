@@ -329,6 +329,10 @@ class Profiles extends Table {
   /// `fr` or `en`; null follows the device.
   TextColumn get language => text().nullable()();
 
+  /// The live wallet's starting cash the next time it is created (v3, M9-1);
+  /// null for the default.
+  IntColumn get liveStartingCents => integer().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 

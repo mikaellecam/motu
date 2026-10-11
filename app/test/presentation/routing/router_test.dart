@@ -5,6 +5,7 @@ import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/learning/node_player.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/settings/settings.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
 import 'package:finance_companion/application/trip/trip_wizard.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
@@ -19,6 +20,7 @@ import 'package:finance_companion/presentation/features/island/island_screen.dar
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/features/order/order_screen.dart';
+import 'package:finance_companion/presentation/features/settings/settings_screen.dart';
 import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
 import 'package:finance_companion/presentation/features/trip/summary_screen.dart';
 import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_screen.dart';
@@ -72,6 +74,10 @@ Future<void> open(WidgetTester tester, String location) async {
           (ref, language) async => const GlossaryIndex([], total: 0),
         ),
         ...quietMap,
+        // Nothing behind the settings.
+        settingsViewProvider.overrideWith(
+          (ref) async => throw const NotFoundFailure(),
+        ),
         // No catalogue behind the DCA simulator.
         dcaFormViewProvider.overrideWith(
           (ref) async => throw const NotFoundFailure(),
@@ -125,7 +131,7 @@ void main() {
     );
     await tester.tap(settings);
     await tester.pumpAndSettle();
-    expect(find.byType(PendingScreen), findsOneWidget);
+    expect(find.byType(SettingsScreen), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
   });
 
@@ -135,13 +141,11 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
-  for (final location in ['/settings']) {
-    testWidgets('$location opens full screen', (tester) async {
-      await open(tester, location);
-      expect(find.byType(PendingScreen), findsOneWidget);
-      expect(find.byType(NavigationBar), findsNothing);
-    });
-  }
+  testWidgets('/settings opens the settings full screen', (tester) async {
+    await open(tester, '/settings');
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
 
   testWidgets('/asset/:id opens the asset full screen, in its wallet', (
     tester,

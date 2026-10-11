@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
+import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/data/local/tables.dart';
 import 'package:finance_companion/data/repositories/profile_repository.dart';
@@ -106,4 +107,42 @@ void main() {
       'ae.fees': first.add(const Duration(hours: 2)),
     });
   });
+
+  test(
+    'settings: defaults, then each one kept, a retake keeping them',
+    () async {
+      final seen = <AppSettings>[];
+      final sub = repo.watchSettings().listen(seen.add);
+      addTearDown(sub.cancel);
+      await pumpEventQueue();
+      expect(
+        (seen.last.language, seen.last.showAll, seen.last.liveStartingCash),
+        (null, false, null),
+      );
+
+      const answers = Profile(
+        goal: Goal.longTerm,
+        dropReaction: DropReaction.wait,
+        knowledge: Knowledge.etfs,
+        savings: Savings.livret,
+        weeklyTime: WeeklyTime.fifteen,
+      );
+      await repo.save(answers);
+      await repo.setLanguage('en');
+      await repo.setShowAll(true);
+      await repo.setLiveStartingCash(const Money(1000000, Currency.eur));
+      // Retaking the questionnaire saves the answers only.
+      await repo.save(answers);
+      await pumpEventQueue();
+      expect(
+        (seen.last.language, seen.last.showAll, seen.last.liveStartingCash),
+        ('en', true, const Money(1000000, Currency.eur)),
+      );
+      expect(await repo.showAll(), isTrue);
+
+      await repo.setLanguage(null);
+      await pumpEventQueue();
+      expect(seen.last.language, isNull);
+    },
+  );
 }
