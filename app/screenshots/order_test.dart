@@ -1,10 +1,13 @@
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/order/order_ticket.dart';
+import 'package:finance_companion/application/order/order_tracker.dart';
 import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/position.dart';
+import 'package:finance_companion/presentation/features/order/order_screen.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -94,4 +97,64 @@ void main() {
     overrides: overrides,
     act: (tester) => open(tester, '25000'),
   );
+
+  // The 500 € sent on Wednesday evening: waiting for Thursday's open, then
+  // filled at its 336,40 $ open: 1,739002 share, 0,75 € of FX fee.
+  final order = Order(
+    id: 'o',
+    assetId: 'apple',
+    side: Side.buy,
+    type: OrderType.market,
+    size: AmountSize(const Money(50000, Currency.eur)),
+    createdAt: DateTime.utc(2026, 10, 7, 21),
+  );
+  OrderView view({Fill? fill}) => OrderView(
+    detail: OrderDetail(
+      order: order,
+      walletId: 'live',
+      status: fill == null ? OrderStatus.pending : OrderStatus.filled,
+      fill: fill,
+    ),
+    asset: _context.asset,
+    trip: false,
+    opensAt: DateTime.utc(2026, 10, 8, 13, 30),
+    opened: fill != null,
+  );
+
+  screenshot(
+    'm4-6-order-pending',
+    const OrderScreen(orderId: 'o'),
+    overrides: [orderTrackerProvider.overrideWith2((_) => _Tracker(view()))],
+  );
+
+  screenshot(
+    'm4-6-order-filled',
+    const OrderScreen(orderId: 'o'),
+    overrides: [
+      orderTrackerProvider.overrideWith2(
+        (_) => _Tracker(
+          view(
+            fill: Fill(
+              orderId: 'o',
+              assetId: 'apple',
+              side: Side.buy,
+              date: DateTime.utc(2026, 10, 8),
+              quantity: Quantity.truncate(Decimal.parse('1.739002')),
+              price: Price(Decimal.parse('336.40'), Currency.usd),
+              fxRate: Decimal.parse('0.8547'),
+              fees: const Money(75, Currency.eur),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class _Tracker extends OrderTracker {
+  _Tracker(this.view);
+  final OrderView view;
+
+  @override
+  Future<OrderView> build(String orderId) async => view;
 }

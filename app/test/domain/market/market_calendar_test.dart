@@ -192,6 +192,21 @@ void main() {
     );
   });
 
+  test('openAt: the session open as an instant, DST on each side', () {
+    expect(
+      calendar.openAt(Exchange.nasdaq, day(2026, 10, 7)),
+      paris(2026, 10, 7, 15, 30, summer: true),
+    );
+    expect(
+      calendar.openAt(Exchange.nyse, day(2026, 3, 20)),
+      paris(2026, 3, 20, 14, 30, summer: false),
+    );
+    expect(
+      calendar.openAt(Exchange.euronext, day(2026, 12, 1)),
+      paris(2026, 12, 1, 9, 0, summer: false),
+    );
+  });
+
   group('next open', () {
     test('before the open: today at the open', () {
       expect(

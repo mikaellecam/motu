@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../application/asset/asset_page.dart';
 import '../../../core/failure.dart';
@@ -696,16 +697,24 @@ class _TradeBar extends StatelessWidget {
   final AssetOverview o;
 
   Future<void> _trade(BuildContext context, Side side) async {
-    final message = await showOrderSheet(
+    final placed = await showOrderSheet(
       context,
       assetId: o.asset.id,
       walletId: o.walletId,
       side: side,
     );
-    if (message != null && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
-    }
+    if (placed == null || !context.mounted) return;
+    final router = GoRouter.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(placed.message),
+        action: SnackBarAction(
+          label: AppLocalizations.of(context).order_view,
+          onPressed: () =>
+              router.push('/wallet/${o.walletId}/order/${placed.orderId}'),
+        ),
+      ),
+    );
   }
 
   @override

@@ -614,4 +614,79 @@ void main() {
       reason: 'no reason, no entry',
     );
   });
+
+  group('the live wallet as the engine takes it', () {
+    final rates = [LivretRate(DateTime.utc(2019, 8, 1), d('0.0075'))];
+
+    test('its day is the last valued one', () async {
+      await repo.ensureLiveWallet(DateTime.utc(2026, 10, 5, 9));
+      final state = await repo.liveState(livretRates: rates);
+      expect(state.date, DateTime.utc(2026, 10, 5));
+      expect((state.cash, state.invested), (eur('50000'), eur('50000')));
+    });
+
+    test('an advance books its days but never makes it a trip', () async {
+      await repo.ensureLiveWallet(DateTime.utc(2026, 10, 5, 9));
+      final before = await repo.liveState(livretRates: rates);
+      await repo.saveAdvance(
+        'live',
+        TripAdvance(
+          state: before.copyWith(
+            date: DateTime.utc(2026, 10, 7),
+            values: [
+              ...before.values,
+              DailyValue(
+                date: DateTime.utc(2026, 10, 6),
+                value: eur('50010'),
+                flow: eur('0'),
+              ),
+              DailyValue(
+                date: DateTime.utc(2026, 10, 7),
+                value: eur('50020'),
+                flow: eur('0'),
+              ),
+            ],
+          ),
+          events: const [],
+          stop: const [],
+          endOfData: true,
+        ),
+        before: before,
+      );
+      final live = await repo.load('live');
+      expect((live.simDate, live.status), (null, WalletStatus.active));
+      expect(live.values.last.date, DateTime.utc(2026, 10, 7));
+      expect(
+        (await repo.liveState(livretRates: rates)).date,
+        DateTime.utc(2026, 10, 7),
+      );
+    });
+  });
+
+  test('an order\'s detail: pending, filled, cancelled by the user', () async {
+    final pending = buyApple('p');
+    await repo.placeOrder('covid', pending);
+    var detail = (await repo.orderDetail('p'))!;
+    expect(
+      (detail.walletId, detail.status, detail.fill),
+      ('covid', OrderStatus.pending, null),
+    );
+    expect(detail.order.limitPrice, Price(d('70'), Currency.usd));
+
+    await repo.recordFill('covid', pending, fillOf(pending, price: '66'));
+    detail = (await repo.orderDetail('p'))!;
+    expect(detail.status, OrderStatus.filled);
+    expect(detail.fill!.price, Price(d('66'), Currency.usd));
+
+    await repo.placeOrder('covid', buyApple('c'));
+    expect(await repo.cancelByUser('c'), isTrue);
+    detail = (await repo.orderDetail('c'))!;
+    expect(
+      (detail.status, detail.cancelReason),
+      (OrderStatus.cancelled, CancelReason.byUser),
+    );
+    expect((await repo.load('covid')).pendingOrders, isEmpty);
+    expect(await repo.cancelByUser('p'), isFalse, reason: 'already filled');
+    expect(await repo.orderDetail('nope'), isNull);
+  });
 }

@@ -11,6 +11,7 @@ import '../features/glossary/glossary_screen.dart';
 import '../features/island/island_screen.dart';
 import '../features/node/node_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/order/order_screen.dart';
 import '../features/trip/stop_screen.dart';
 import '../features/trip/summary_screen.dart';
 import '../features/trip_wizard/trip_wizard_screen.dart';
@@ -86,7 +87,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       builder: (_, state) =>
           TripSummaryScreen(walletId: state.pathParameters['walletId']!),
     ),
-    _pending('/wallet/:walletId/order/:orderId'),
+    GoRoute(
+      path: '/wallet/:walletId/order/:orderId',
+      builder: (_, state) =>
+          OrderScreen(orderId: state.pathParameters['orderId']!),
+    ),
     GoRoute(
       path: '/asset/:assetId',
       builder: (_, state) => AssetScreen(

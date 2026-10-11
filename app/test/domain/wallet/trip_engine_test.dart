@@ -152,10 +152,12 @@ TripAdvance advance(
   Map<String, Map<DateTime, String>> prices, {
   StopConditions stops = const StopConditions(),
   DateTime? lastDate,
+  bool Function(Order order, DateTime day)? eligible,
 }) => e.advance(
   state,
   target: target,
   stops: stops,
+  eligible: eligible,
   market: FakeMarket(
     prices,
     lastDate: lastDate ?? day(12, 31),
@@ -545,6 +547,39 @@ void main() {
       }, stops: const StopConditions(orderFilled: true));
       expect(result.state.date, day(6, 3));
       expect((result.stop.single as OrderFilledStop).orderId, 'o1');
+    });
+
+    test('an order waits for the first day it is eligible on', () {
+      // The live wallet: a limit order placed during the session of 06-02
+      // takes part from the next session on, not on the bar it saw start.
+      final state = TripState.start(day(6, 1), eur('1000')).copyWith(
+        pendingOrders: [
+          buy(
+            'o1',
+            'cw8',
+            QuantitySize(Quantity.whole(1)),
+            day(6, 2),
+            limit: Price(d('95'), Currency.eur),
+          ),
+        ],
+      );
+      final result = advance(
+        engine(),
+        state,
+        day(6, 30),
+        {
+          'cw8': series(
+            'cw8',
+            day(6, 1),
+            day(6, 30),
+            overrides: {day(6, 2): '94', day(6, 4): '94'},
+          ),
+        },
+        stops: const StopConditions(orderFilled: true),
+        eligible: (order, day) => day.isAfter(order.createdAt),
+      );
+      expect(result.state.date, day(6, 4));
+      expect(result.events.whereType<OrderFilled>().single.date, day(6, 4));
     });
 
     test('a DCA purchase does not count as the user\'s order', () {

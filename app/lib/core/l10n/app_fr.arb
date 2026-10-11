@@ -1430,5 +1430,131 @@
       }
     }
   },
-  "order_coach_term": "concentration"
+  "order_coach_term": "concentration",
+  "wallet_pending_title": "Ordres en attente",
+  "order_view": "Voir l'ordre",
+  "order_screen_title": "Ton ordre",
+  "order_row_title": "{side, select, buy{Achat} other{Vente}} \u00b7 {name}",
+  "@order_row_title": {
+    "placeholders": {
+      "side": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "order_row_detail": "{size} \u00b7 {type}",
+  "@order_row_detail": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_state": "{state, select, done{Fait} current{En cours} other{\u00c0 venir}}",
+  "@order_step_state": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_sent": "Envoy\u00e9",
+  "order_step_at": "Le {day} \u00e0 {time}",
+  "@order_step_at": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_on": "Le {day}",
+  "@order_step_on": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_opening": "Ouverture du march\u00e9",
+  "order_step_opened": "Le march\u00e9 a ouvert\u202f: le r\u00e9sultat de l'ordre appara\u00eet apr\u00e8s la cl\u00f4ture.",
+  "order_step_trip": "Prochain jour de cotation du voyage",
+  "order_step_trip_note": "Il part quand le voyage avance.",
+  "order_step_price": "En attente du cours",
+  "order_step_price_limit_buy": "S'ex\u00e9cute quand le cours descend \u00e0 {price} ou moins.",
+  "@order_step_price_limit_buy": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_price_limit_sell": "S'ex\u00e9cute quand le cours monte \u00e0 {price} ou plus.",
+  "@order_step_price_limit_sell": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_price_stop_sell": "Se d\u00e9clenche quand le cours descend \u00e0 {price}.",
+  "@order_step_price_stop_sell": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_price_stop_buy": "Se d\u00e9clenche quand le cours monte \u00e0 {price}.",
+  "@order_step_price_stop_buy": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_filled": "Ex\u00e9cut\u00e9",
+  "order_step_filled_detail": "{quantity} \u00e0 {price}, le {day}",
+  "@order_step_filled_detail": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_fees": "Frais\u202f: {fees}",
+  "@order_step_fees": {
+    "placeholders": {
+      "fees": {
+        "type": "String"
+      }
+    }
+  },
+  "order_step_cancelled": "Annul\u00e9",
+  "order_cancel_reason": "{reason, select, insufficientCash{Les liquidit\u00e9s ne suffisaient plus quand il s'est d\u00e9clench\u00e9.} insufficientQuantity{Tu ne d\u00e9tenais plus assez de parts quand il s'est d\u00e9clench\u00e9.} amountBelowOneShare{Le montant n'achetait pas une part enti\u00e8re \u00e0 ce cours.} proceedsBelowFees{Les frais d\u00e9passaient ce que la vente rapportait.} other{Tu l'as annul\u00e9.}}",
+  "@order_cancel_reason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "order_cancel": "Annuler l'ordre",
+  "order_cancel_title": "Annuler cet ordre\u202f?",
+  "order_cancel_body": "Il ne partira pas, et ce qu'il r\u00e9servait redevient disponible.",
+  "order_cancel_keep": "Garder l'ordre"
 }

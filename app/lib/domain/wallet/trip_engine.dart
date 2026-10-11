@@ -279,11 +279,17 @@ final class TripEngine {
   ///    one fires, the trip stops after that day.
   ///
   /// Reads nothing dated after the day being computed.
+  ///
+  /// [eligible] says whether a pending order takes part on a day; every
+  /// order does when null. The live wallet passes « the session opened after
+  /// the order was placed », so an order never fills on prices from before
+  /// it existed.
   TripAdvance advance(
     TripState state, {
     required DateTime target,
     required StopConditions stops,
     required TripMarket market,
+    bool Function(Order order, DateTime day)? eligible,
   }) {
     final end = target.isAfter(market.lastDate) ? market.lastDate : target;
     final dueDates = {
@@ -309,6 +315,7 @@ final class TripEngine {
         dueDates,
         stops,
         market,
+        eligible,
       );
       current = next;
       events.addAll(dayEvents);
@@ -335,6 +342,7 @@ final class TripEngine {
     Map<String, Set<DateTime>> dueDates,
     StopConditions stops,
     TripMarket market,
+    bool Function(Order order, DateTime day)? eligible,
   ) {
     final events = <TripEvent>[];
     var cash = s.cash;
@@ -372,7 +380,7 @@ final class TripEngine {
     for (var i = 0; i < queue.length; i++) {
       final order = queue[i];
       final bar = market.bar(order.assetId, day);
-      if (bar == null) {
+      if (bar == null || !(eligible?.call(order, day) ?? true)) {
         pending.add(order);
         continue;
       }

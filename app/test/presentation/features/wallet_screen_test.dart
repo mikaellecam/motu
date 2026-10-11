@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/live_catch_up.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
@@ -21,6 +24,7 @@ import 'package:finance_companion/presentation/features/wallet/wallet_screen.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 Decimal d(String s) => Decimal.parse(s);
 Money eur(String s) => Money.book(d(s), Currency.eur);
@@ -51,7 +55,11 @@ Fill buy(String id, String qty, String price) => Fill(
 
 final observed = DateTime.utc(2026, 10, 8, 14, 45);
 
-WalletOverview overview({List<Fill> fills = const [], Money? cash}) {
+WalletOverview overview({
+  List<Fill> fills = const [],
+  Money? cash,
+  List<Order> pending = const [],
+}) {
   final assets = {
     'apple': stock('apple', 'Apple'),
     'nvidia': stock('nvidia', 'Nvidia'),
@@ -76,7 +84,7 @@ WalletOverview overview({List<Fill> fills = const [], Money? cash}) {
       cash: cash ?? eur('50000'),
       fills: fills,
       positions: positionsFrom(fills),
-      pendingOrders: const [],
+      pendingOrders: pending,
       values: [
         DailyValue(date: day(10, 1), value: eur('50000'), flow: eur('50000')),
         if (fills.isNotEmpty)
@@ -99,10 +107,24 @@ WalletOverview overview({List<Fill> fills = const [], Money? cash}) {
   );
 }
 
+/// Counts the catch-ups asked for.
+class FakeCatchUp extends LiveCatchUp {
+  var runs = 0;
+
+  @override
+  FutureOr<TripAdvance?> build() => null;
+
+  @override
+  Future<void> run() async => runs++;
+}
+
+late FakeCatchUp catchUp;
+
 Future<void> show(
   WidgetTester tester,
   Future<WalletOverview> Function() o,
 ) async {
+  catchUp = FakeCatchUp();
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 4000);
@@ -113,6 +135,7 @@ Future<void> show(
       overrides: [
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) => o()),
+        liveCatchUpProvider.overrideWith(() => catchUp),
         walletChartProvider.overrideWith((ref, args) async {
           final (_, period, benchmark) = args;
           final series = (await o()).series;
@@ -125,7 +148,21 @@ Future<void> show(
           );
         }),
       ],
-      child: MainApp.screen(const WalletScreen(walletId: 'live')),
+      child: MainApp(
+        router: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => const WalletScreen(walletId: 'live'),
+            ),
+            GoRoute(
+              path: '/wallet/:walletId/order/:orderId',
+              builder: (_, state) =>
+                  Text('order ${state.pathParameters['orderId']}'),
+            ),
+          ],
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -213,6 +250,45 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('Cours du'), findsNothing);
+  });
+
+  testWidgets('pending orders: each opens its order screen', (tester) async {
+    await show(
+      tester,
+      () async => overview(
+        pending: [
+          Order(
+            id: 'o1',
+            assetId: 'nvidia',
+            side: Side.buy,
+            type: OrderType.limit,
+            size: QuantitySize(Quantity.whole(3)),
+            limitPrice: Price(d('140'), Currency.usd),
+            createdAt: day(10, 7),
+          ),
+        ],
+      ),
+    );
+    expect(find.text('Ordres en attente'), findsOneWidget);
+    expect(find.text('Achat · Nvidia'), findsOneWidget);
+    expect(find.text('3 actions · À cours limité'), findsOneWidget);
+    await tester.tap(find.text('Achat · Nvidia'));
+    await tester.pumpAndSettle();
+    expect(find.text('order o1'), findsOneWidget);
+  });
+
+  testWidgets('no pending order, no card', (tester) async {
+    await show(tester, () async => overview());
+    expect(find.text('Ordres en attente'), findsNothing);
+  });
+
+  testWidgets('pulling to refresh catches the live wallet up first', (
+    tester,
+  ) async {
+    await show(tester, () async => overview());
+    await tester.fling(find.byType(ListView), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+    expect(catchUp.runs, 1);
   });
 
   testWidgets('an error offers a retry', (tester) async {

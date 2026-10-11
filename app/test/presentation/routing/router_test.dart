@@ -16,6 +16,7 @@ import 'package:finance_companion/presentation/features/explorer/explorer_screen
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
+import 'package:finance_companion/presentation/features/order/order_screen.dart';
 import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
 import 'package:finance_companion/presentation/features/trip/summary_screen.dart';
 import 'package:finance_companion/presentation/features/trip_wizard/trip_wizard_screen.dart';
@@ -117,7 +118,7 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
-  for (final location in ['/settings', '/tools/dca', '/wallet/t1/order/o1']) {
+  for (final location in ['/settings', '/tools/dca']) {
     testWidgets('$location opens full screen', (tester) async {
       await open(tester, location);
       expect(find.byType(PendingScreen), findsOneWidget);
@@ -139,6 +140,14 @@ void main() {
   ) async {
     await open(tester, '/wallet/t1/stop/stop-2008-10-03');
     expect(tester.widget<StopScreen>(find.byType(StopScreen)).walletId, 't1');
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('/wallet/:id/order/:order opens the order full screen', (
+    tester,
+  ) async {
+    await open(tester, '/wallet/t1/order/o1');
+    expect(tester.widget<OrderScreen>(find.byType(OrderScreen)).orderId, 'o1');
     expect(find.byType(NavigationBar), findsNothing);
   });
 

@@ -89,7 +89,7 @@ class FakeTicket extends OrderTicket {
     state = AsyncData(submitted);
     if (!submitted.canSubmit) return null;
     placed.add(submitted.order!);
-    return OrderSent(opensAt: fixed.nextOpen, trip: fixed.isTrip);
+    return OrderSent('o', opensAt: fixed.nextOpen, trip: fixed.isTrip);
   }
 }
 
@@ -100,7 +100,7 @@ class _Fixed implements SimulationClock {
 }
 
 late FakeTicket ticket;
-String? result;
+({String message, String orderId})? result;
 
 Future<void> show(
   WidgetTester tester, {
@@ -191,7 +191,8 @@ void main() {
     await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
     await tester.pumpAndSettle();
     expect(ticket.placed.single.size, isA<AmountSize>());
-    expect(result, contains('Ordre envoyé'));
+    expect(result!.message, contains('Ordre envoyé'));
+    expect(result!.orderId, 'o');
   });
 
   testWidgets('every error in words; the coach flags a heavy line', (
@@ -293,7 +294,7 @@ void main() {
     await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
     await tester.pumpAndSettle();
     expect(
-      result,
+      result!.message,
       'Ordre envoyé$nnbsp: il partira au prochain jour de cotation du voyage.',
     );
   });

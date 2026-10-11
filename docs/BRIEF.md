@@ -409,6 +409,17 @@ NYSE/Nasdaq 15:30–22:00 (adjust for US/EU DST mismatch via exchange time zones
 Order lifecycle UI: sent → market opens → executed. The map shows a pending buy as a building under
 construction that completes on fill.
 
+**Pending orders, live wallet** (M4-6, decided 2026-10-11): at launch and on the wallet's pull-to-refresh, a
+catch-up runs the trip engine over the live wallet up to the last day whose sessions have all closed. A pending
+order takes part from the first session that opened after it was placed (a limit set mid-session never fills on
+that session's earlier prices), and each closed session gets its end-of-day value. Offline, nothing is booked
+and the wallet works on what it has. The order screen (`/wallet/:walletId/order/:orderId`) shows the steps:
+« Envoyé » → « Ouverture du marché » (live market order sent while closed) / « Prochain jour de cotation du
+voyage » (trip market order) / « En attente du cours » (limit, stop) → « Exécuté » with its fill and fees, or
+« Annulé » with its reason. « Annuler l'ordre » (confirmed) cancels a pending order and frees what it held
+back. The wallet screen lists « Ordres en attente », each opening its screen; the message after placing an
+order carries « Voir l'ordre ».
+
 **Pre-trade coach** (companion card in the order sheet): new weight of the asset in the wallet ("Apple
 pèserait 8 % de ton portefeuille, contre 4 % aujourd'hui"), threshold from `momentThresholds(profile)`.
 Never blocks. Shown on every order; above the threshold it adds « Au-delà de {seuil}, une seule ligne pèse

@@ -79,7 +79,7 @@ List<DailyValue> path(num end, {double wave = 450}) {
   ];
 }
 
-WalletOverview overview() {
+WalletOverview overview({List<Order> pending = const []}) {
   final rules = TradingRules(
     fxFeeRate: d('0.0015'),
     fixedFee: eur(0),
@@ -120,7 +120,7 @@ WalletOverview overview() {
       cash: cash,
       fills: fills,
       positions: positionsFrom(fills),
-      pendingOrders: const [],
+      pendingOrders: pending,
       values: path(51050),
       livretMovements: const [],
       plans: const [],
@@ -161,7 +161,41 @@ final overrides = [
   }),
 ];
 
+// Sent on Wednesday evening, the Nasdaq and the NYSE closed: a 500 € buy of
+// Apple at the open, a limit sell of Coca-Cola.
+final pending = [
+  Order(
+    id: 'o1',
+    assetId: 'apple',
+    side: Side.buy,
+    type: OrderType.market,
+    size: AmountSize(eur(500)),
+    createdAt: DateTime.utc(2026, 10, 7, 21),
+  ),
+  Order(
+    id: 'o2',
+    assetId: 'coca-cola',
+    side: Side.sell,
+    type: OrderType.limit,
+    size: QuantitySize(Quantity.whole(10)),
+    limitPrice: Price(d('72'), Currency.usd),
+    createdAt: DateTime.utc(2026, 10, 7, 21, 5),
+  ),
+];
+
 void main() {
+  screenshot(
+    'm4-6-wallet-pending',
+    const WalletScreen(walletId: 'live'),
+    size: const Size(390, 760),
+    overrides: [
+      ...overrides.skip(2),
+      cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
+      walletOverviewProvider.overrideWith(
+        (ref, id) async => overview(pending: pending),
+      ),
+    ],
+  );
   screenshot(
     'm4-2-wallet',
     const WalletScreen(walletId: 'live'),

@@ -93,6 +93,10 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
 
   Future<void> insertFill(FillsCompanion row) => into(fills).insert(row);
 
+  Future<FillRow?> fillOf(String orderId) => (select(
+    fills,
+  )..where((f) => f.orderId.equals(orderId))).getSingleOrNull();
+
   /// Fills in execution order, ready for `positionsFrom`.
   Future<List<FillRow>> fillsOf(String walletId) =>
       (select(fills)

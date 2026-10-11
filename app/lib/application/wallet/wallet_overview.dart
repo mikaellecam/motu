@@ -59,6 +59,7 @@ final class WalletOverview {
     required this.changeRatio,
     required this.allocation,
     required this.positions,
+    required this.pendingOrders,
     required this.series,
   });
 
@@ -103,6 +104,9 @@ final class WalletOverview {
 
   /// Open positions, largest first.
   final List<PositionView> positions;
+
+  /// Orders waiting to fill, oldest first, with their asset (M4-6).
+  final List<({Order order, Asset asset})> pendingOrders;
 
   /// The stored daily values, today's being the current value.
   final List<DailyValue> series;
@@ -214,6 +218,10 @@ WalletOverview buildOverview({
           value: h.marketValue,
           pnlRatio: h.unrealisedPnlRatio,
         ),
+    ],
+    pendingOrders: [
+      for (final order in wallet.pendingOrders)
+        (order: order, asset: assets[order.assetId]!),
     ],
     series: series,
   );

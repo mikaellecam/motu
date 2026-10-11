@@ -20,6 +20,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 Decimal d(String s) => Decimal.parse(s);
 DateTime day(int y, int m, int dd) => DateTime.utc(y, m, dd);
@@ -137,7 +138,23 @@ Future<void> show(WidgetTester tester, AssetOverview o) async {
           return assetChartFor(o, period, benchmark: benchmark);
         }),
       ],
-      child: MainApp.screen(const AssetScreen(assetId: 'apple')),
+      child: MainApp(
+        router: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => const AssetScreen(assetId: 'apple'),
+            ),
+            GoRoute(
+              path: '/wallet/:walletId/order/:orderId',
+              builder: (_, state) => Text(
+                'order ${state.pathParameters['walletId']}/'
+                '${state.pathParameters['orderId']}',
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -267,6 +284,22 @@ void main() {
       (sheet.assetId, sheet.walletId, sheet.side),
       ('apple', 'live', Side.buy),
     );
+  });
+
+  testWidgets('once placed: the message, and « Voir l\'ordre »', (
+    tester,
+  ) async {
+    await show(tester, overview());
+    await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    Navigator.of(tester.element(find.byType(OrderSheet)))
+        .pop((message: 'Ordre envoyé', orderId: 'o9'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ordre envoyé'), findsOneWidget);
+    await tester.tap(find.text('Voir l\'ordre'));
+    await tester.pumpAndSettle();
+    expect(find.text('order live/o9'), findsOneWidget);
   });
 
   testWidgets('level 2: the band and its figure', (tester) async {

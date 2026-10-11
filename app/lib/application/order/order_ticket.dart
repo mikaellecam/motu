@@ -166,19 +166,22 @@ final class TicketState {
 
 /// What placing did, for the message the sheet leaves behind.
 sealed class OrderOutcome {
-  const OrderOutcome();
+  const OrderOutcome(this.orderId);
+
+  /// The order placed, for « Voir l'ordre ».
+  final String orderId;
 }
 
 /// Live, market open: filled at the quote.
 final class OrderExecuted extends OrderOutcome {
-  const OrderExecuted(this.fill);
+  const OrderExecuted(super.orderId, this.fill);
   final Fill fill;
 }
 
 /// Pending: until the market opens ([opensAt], live), the trip moves on
 /// ([trip]), or else the price is reached (limit, stop).
 final class OrderSent extends OrderOutcome {
-  const OrderSent({this.opensAt, this.trip = false});
+  const OrderSent(super.orderId, {this.opensAt, this.trip = false});
   final DateTime? opensAt;
   final bool trip;
 }
@@ -353,7 +356,7 @@ class OrderTicket extends _$OrderTicket {
           simDate: c.asOf,
           reason: submitted.form.reason.trim(),
         );
-        outcome = const OrderSent(trip: true);
+        outcome = OrderSent(order.id, trip: true);
       } else if (c.marketOpen && order.type == OrderType.market) {
         final match = fillAtQuote(
           order,
@@ -367,7 +370,7 @@ class OrderTicket extends _$OrderTicket {
         switch (match) {
           case Filled(:final fill):
             await wallets.executeOrder(c.walletId, order, fill);
-            outcome = OrderExecuted(fill);
+            outcome = OrderExecuted(order.id, fill);
           case Cancelled() || Unfilled():
             // Validation checked the same rules: only a race lands here.
             state = AsyncData(
@@ -378,6 +381,7 @@ class OrderTicket extends _$OrderTicket {
       } else {
         await wallets.placeOrder(c.walletId, order);
         outcome = OrderSent(
+          order.id,
           opensAt: order.type == OrderType.market ? c.nextOpen : null,
         );
       }

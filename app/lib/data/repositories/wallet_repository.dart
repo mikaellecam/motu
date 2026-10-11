@@ -148,6 +148,23 @@ final class WalletState {
   final List<StopReason> stopReasons;
 }
 
+/// An order as its screen shows it (M4-6).
+final class OrderDetail {
+  const OrderDetail({
+    required this.order,
+    required this.walletId,
+    required this.status,
+    this.cancelReason,
+    this.fill,
+  });
+
+  final Order order;
+  final String walletId;
+  final OrderStatus status;
+  final CancelReason? cancelReason;
+  final Fill? fill;
+}
+
 /// Reads and writes wallets (ADR-002: repositories own persistence). Every
 /// storage error surfaces as a [StorageFailure].
 class WalletRepository {
@@ -312,6 +329,23 @@ class WalletRepository {
     final wallet = await load(walletId);
     final date = wallet.simDate;
     if (date == null) throw const NotFoundFailure();
+    return _engineState(wallet, date, livretRates);
+  });
+
+  /// The live wallet as the engine takes it to catch up with the sessions
+  /// that closed (M4-6): its day is the last one valued.
+  Future<TripState> liveState({required List<LivretRate> livretRates}) =>
+      guardStorage(() async {
+        final wallet = await load(liveWalletId);
+        return _engineState(wallet, wallet.values.last.date, livretRates);
+      });
+
+  Future<TripState> _engineState(
+    WalletState wallet,
+    DateTime date,
+    List<LivretRate> livretRates,
+  ) async {
+    final walletId = wallet.id;
     final row = (await _db.walletDao.wallet(walletId))!;
     return TripState(
       date: date,
@@ -333,11 +367,12 @@ class WalletRepository {
       },
       companionLog: await moments(walletId),
     );
-  });
+  }
 
   /// Books what [advance] did since [before], all or nothing: contributions,
   /// DCA orders, fills, cancellations, companion moments, the new daily
   /// values, then the wallet's day, status, breached stops and companion.
+  /// The live wallet keeps no day, status nor stop of its own.
   Future<void> saveAdvance(
     String walletId,
     TripAdvance advance, {
@@ -369,16 +404,20 @@ class WalletRepository {
       for (final value in advance.state.values.skip(before.values.length)) {
         await appendValue(walletId, value);
       }
+      final trip =
+          (await _db.walletDao.wallet(walletId))!.kind == WalletKind.trip;
       await _db.walletDao.updateWallet(
         walletId,
         WalletsCompanion(
-          simDate: Value(advance.state.date),
-          status: advance.stop.isNotEmpty
+          simDate: trip ? Value(advance.state.date) : const Value.absent(),
+          status: !trip
+              ? const Value.absent()
+              : advance.stop.isNotEmpty
               ? const Value(WalletStatus.stopped)
               : advance.endOfData
               ? const Value(WalletStatus.finished)
               : const Value.absent(),
-          stopReasons: advance.stop.isEmpty
+          stopReasons: !trip || advance.stop.isEmpty
               ? const Value.absent()
               : Value(encodeStops(advance.stop)),
           breachedStops: Value(jsonEncode([...advance.state.breached]..sort())),
@@ -387,6 +426,30 @@ class WalletRepository {
       );
     }),
   );
+
+  /// An order, its wallet, where it stands, and its fill once filled; null
+  /// for an unknown order.
+  Future<OrderDetail?> orderDetail(String orderId) => guardStorage(() async {
+    final row = await _db.walletDao.order(orderId);
+    if (row == null) return null;
+    final fill = await _db.walletDao.fillOf(orderId);
+    return OrderDetail(
+      order: _order(row),
+      walletId: row.walletId,
+      status: row.status,
+      cancelReason: row.cancelReason,
+      fill: fill == null ? null : _fill(fill),
+    );
+  });
+
+  /// « Annuler l'ordre » (decided 2026-10-11): a pending order closes, its
+  /// reservation released. False when it was no longer pending.
+  Future<bool> cancelByUser(String orderId) => guardStorage(() async {
+    final row = await _db.walletDao.order(orderId);
+    if (row == null || row.status != OrderStatus.pending) return false;
+    await cancelOrder(orderId, CancelReason.byUser);
+    return true;
+  });
 
   /// The user's answer to an automatic stop (BRIEF §4.5, §4.13): the sells
   /// it places, a journal entry with the optional reason, and the trip

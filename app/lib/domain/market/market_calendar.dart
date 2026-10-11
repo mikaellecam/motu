@@ -110,6 +110,10 @@ class MarketCalendar {
     }
   }
 
+  /// When the regular session of [day] opens, as a UTC instant.
+  DateTime openAt(Exchange exchange, DateTime day) =>
+      _at(exchange, _day(day), exchange.opens).toUtc();
+
   /// When the regular session of [day] closes, as a UTC instant.
   DateTime closeAt(Exchange exchange, DateTime day) =>
       _at(exchange, _day(day), exchange.closes).toUtc();

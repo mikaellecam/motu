@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../application/trip/trip_runner.dart';
 import '../../../application/trip/trip_stop.dart';
 import '../../../application/trip/trip_summary.dart';
+import '../../../application/wallet/live_catch_up.dart';
 import '../../../application/wallet/wallet_overview.dart';
 import '../../../application/wallet/wallet_providers.dart';
 import '../../../core/failure.dart';
@@ -20,6 +21,7 @@ import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
 import '../../widgets/asset_avatar.dart';
+import '../order/order_screen.dart';
 import '../trip/trip_sheets.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
@@ -35,9 +37,14 @@ class WalletScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(walletOverviewProvider(walletId));
-    Future<void> refresh() =>
-        ref.refresh(walletOverviewProvider(walletId).future).then((_) {});
     final overview = state.value;
+    // The live wallet first catches up with the sessions that closed.
+    Future<void> refresh() async {
+      if (overview?.kind == WalletKind.live) {
+        await ref.read(liveCatchUpProvider.notifier).run();
+      }
+      await ref.refresh(walletOverviewProvider(walletId).future).then((_) {});
+    }
 
     final trip = overview?.kind == WalletKind.trip;
     return Scaffold(
@@ -80,6 +87,10 @@ class WalletScreen extends ConsumerWidget {
                   onPressed: () => context.go('/explore?wallet=${o.id}'),
                   child: Text(l10n.wallet_invest),
                 ),
+                const SizedBox(height: AppSpace.x4),
+              ],
+              if (o.pendingOrders.isNotEmpty) ...[
+                _PendingCard(o),
                 const SizedBox(height: AppSpace.x4),
               ],
               _ChartCard(walletId),
@@ -502,6 +513,57 @@ class _AllocationCard extends StatelessWidget {
                     Expanded(child: Text(name, style: text.bodyMedium)),
                     Text(formats.percent(weight), style: text.bodyMedium),
                   ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// « Ordres en attente » (decided 2026-10-11): each opens its order screen.
+class _PendingCard extends StatelessWidget {
+  const _PendingCard(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
+              child: Text(l10n.wallet_pending_title, style: text.titleMedium),
+            ),
+            const SizedBox(height: AppSpace.x2),
+            for (final (:order, :asset) in o.pendingOrders)
+              InkWell(
+                onTap: () => context.push('/wallet/${o.id}/order/${order.id}'),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 56),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpace.x3,
+                      vertical: AppSpace.x2,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(child: OrderHeading(order, asset)),
+                        const ExcludeSemantics(
+                          child: Icon(
+                            Icons.chevron_right,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
           ],

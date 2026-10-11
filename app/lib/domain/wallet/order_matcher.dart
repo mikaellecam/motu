@@ -40,6 +40,9 @@ enum CancelReason {
 
   /// The sell's fees would take all its proceeds.
   proceedsBelowFees,
+
+  /// The user cancelled it while it was pending (M4-6).
+  byUser,
 }
 
 /// Applies [order] to the daily [bar] of a session that started after the
