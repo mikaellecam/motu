@@ -5,5 +5,8 @@
     "fr": "Mars 2020 : vendre ou tenir ?",
     "en": "March 2020: sell or hold?"
   },
-  "status": "draft"
+  "status": "draft",
+  "bridge": {
+    "date": "2020-02-18"
+  }
 }

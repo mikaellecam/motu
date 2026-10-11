@@ -63,7 +63,15 @@ ContentPack decodePack(String source) {
   );
 }
 
-const _nodeFields = {'id', 'type', 'title', 'status', 'glossary', 'datasets'};
+const _nodeFields = {
+  'id',
+  'type',
+  'title',
+  'status',
+  'glossary',
+  'datasets',
+  'bridge',
+};
 
 NodeContent _node(Map<String, Object?> json) {
   final id = _string(json['id'], 'node id');
@@ -82,6 +90,16 @@ NodeContent _node(Map<String, Object?> json) {
     },
     glossary: _strings(json['glossary'] ?? const [], '$id glossary'),
     datasets: _strings(json['datasets'] ?? const [], '$id datasets'),
+    bridge: switch (json['bridge']) {
+      null => null,
+      final Object bridge => TripBridge(
+        _date(_map(bridge, '$id bridge')['date'], '$id bridge date'),
+        difficulty: switch (_map(bridge, '$id bridge')['difficulty']) {
+          null => null,
+          final Object d => _string(d, '$id bridge difficulty'),
+        },
+      ),
+    },
     payload: {
       for (final e in json.entries)
         if (!_nodeFields.contains(e.key)) e.key: e.value,

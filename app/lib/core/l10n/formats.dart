@@ -66,7 +66,11 @@ class Formats {
   /// `7 octobre 2026`, `October 7, 2026`. Needs the intl date data, which
   /// Flutter's localization delegates load (tests call
   /// `initializeDateFormatting`).
-  String date(DateTime d) => DateFormat.yMMMMd(_locale).format(d);
+  String date(DateTime d) {
+    final text = DateFormat.yMMMMd(_locale).format(d);
+    // French writes the first of the month as an ordinal: « 1er octobre ».
+    return _fr && d.day == 1 ? text.replaceFirst('1', '1er') : text;
+  }
 
   /// `15 h 30`, `3:30 PM`.
   String time(DateTime d) => _fr

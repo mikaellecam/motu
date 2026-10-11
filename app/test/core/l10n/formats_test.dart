@@ -125,6 +125,9 @@ void main() {
     test('long date', () {
       expect(fr.date(DateTime(2026, 10, 7)), '7 octobre 2026');
       expect(en.date(DateTime(2026, 10, 7)), 'October 7, 2026');
+      expect(fr.date(DateTime(2008, 10, 1)), '1er octobre 2008');
+      expect(fr.date(DateTime(2026, 1, 11)), '11 janvier 2026');
+      expect(en.date(DateTime(2008, 10, 1)), 'October 1, 2008');
     });
 
     test('time', () {

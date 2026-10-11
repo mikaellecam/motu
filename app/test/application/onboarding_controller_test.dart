@@ -25,6 +25,9 @@ class FlakyRepository implements ProfileRepository {
   Future<Set<String>> completedNodes() async => const {};
 
   @override
+  Stream<Set<String>> watchCompletedNodes() => Stream.value(const {});
+
+  @override
   Future<void> save(Profile profile) async {
     if (failures > 0) {
       failures--;

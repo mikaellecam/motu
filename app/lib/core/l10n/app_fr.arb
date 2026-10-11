@@ -398,5 +398,35 @@
   "asset_position_quantity": "Quantit\u00e9",
   "asset_position_value": "Valeur",
   "asset_position_pnl": "Plus-value latente",
-  "asset_position_fx": "dont effet de change"
+  "asset_position_fx": "dont effet de change",
+  "wallets_live_subtitle": "Aux cours d'aujourd'hui",
+  "wallets_trips_title": "Voyages dans le temps",
+  "wallets_trip_date": "Le {date}",
+  "@wallets_trip_date": {
+    "description": "A trip's simulated day.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wallets_status_stopped": "Arr\u00eat automatique\u202f: \u00e0 toi de d\u00e9cider",
+  "wallets_status_finished": "Termin\u00e9",
+  "wallets_no_trips": "Aucun voyage pour l'instant. Pars \u00e0 une date du pass\u00e9 et avance dans le temps.",
+  "wallets_new_trip": "Nouveau voyage",
+  "wallets_suggestions_title": "\u00c0 rejouer toi-m\u00eame",
+  "wallets_suggestion_date": "Voyage au {date}",
+  "@wallets_suggestion_date": {
+    "description": "The day a lesson's bridge starts a trip on.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wallets_suggestion_go": "Rejoue-le toi-m\u00eame",
+  "difficulty_decouverte": "D\u00e9couverte",
+  "difficulty_realiste": "R\u00e9aliste",
+  "difficulty_serre": "Serr\u00e9",
+  "difficulty_sur_mesure": "Sur mesure"
 }

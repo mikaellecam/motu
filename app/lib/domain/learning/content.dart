@@ -15,6 +15,14 @@ final class Localized {
 /// Agent-drafted text stays `draft` until it is validated (BRIEF §9).
 enum ContentStatus { draft, published }
 
+/// A lesson's way into the sandbox: « Rejoue-le toi-même » opens the trip
+/// wizard on [date], with [difficulty] when the lesson sets one (§1.2).
+final class TripBridge {
+  const TripBridge(this.date, {this.difficulty});
+  final DateTime date;
+  final String? difficulty;
+}
+
 /// One node of an island, as its pack describes it. [payload] holds the
 /// fields of its type (question, choices…), read by that type's player.
 final class NodeContent {
@@ -25,6 +33,7 @@ final class NodeContent {
     required this.status,
     this.glossary = const [],
     this.datasets = const [],
+    this.bridge,
     this.payload = const {},
   });
 
@@ -38,6 +47,9 @@ final class NodeContent {
 
   /// Ids of the frozen datasets it draws.
   final List<String> datasets;
+
+  /// Null when the lesson does not open a trip.
+  final TripBridge? bridge;
   final Map<String, Object?> payload;
 }
 

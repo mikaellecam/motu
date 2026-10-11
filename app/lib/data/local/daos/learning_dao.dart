@@ -33,6 +33,8 @@ class LearningDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<NodeProgressRow>> progress() => select(nodeProgress).get();
 
+  Stream<List<NodeProgressRow>> watchProgress() => select(nodeProgress).watch();
+
   Future<void> saveProgress(NodeProgressCompanion row) =>
       into(nodeProgress).insertOnConflictUpdate(row);
 

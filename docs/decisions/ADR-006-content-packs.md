@@ -41,7 +41,8 @@ islands share terms; moving terms out then is a format change of the tool, not o
 - **Document:** `{"island": …, "nodes": […], "datasets": […], "glossary": […]}`. The app bundles one per
   island in `app/assets/packs/<islandId>.json`. The backend serves `GET /v1/content/manifest`
   (`{"packs": [{"islandId", "version"}]}`) and `GET /v1/content/packs/{islandId}/{version}`.
-- **Node fields:** `id`, `type`, `title`, `status` (`draft` until validated), `glossary`, `datasets`.
+- **Node fields:** `id`, `type`, `title`, `status` (`draft` until validated), `glossary`, `datasets`,
+  `bridge` (`{date, difficulty?}`: the trip the lesson opens).
   Everything else is the type's payload, read by that type's player.
 - **Loading** (`ContentRepository`):
   - Start from the bundled pack. A cached pack wins only if it reads and is newer, so an app update that

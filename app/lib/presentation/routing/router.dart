@@ -8,6 +8,7 @@ import '../features/asset/asset_screen.dart';
 import '../features/explorer/explorer_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/wallet/wallet_screen.dart';
+import '../features/wallets/wallets_screen.dart';
 import '../shell/app_shell.dart';
 
 /// Routes of the app (BRIEF §3). The four tabs share a shell with the bottom
@@ -25,7 +26,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/wallets', builder: (_, _) => const WalletsTab()),
+            GoRoute(path: '/wallets', builder: (_, _) => const WalletsScreen()),
           ],
         ),
         StatefulShellBranch(
@@ -144,15 +145,6 @@ class MapTab extends StatelessWidget {
       ),
     );
   }
-}
-
-class WalletsTab extends StatelessWidget {
-  const WalletsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(AppLocalizations.of(context).tab_wallets)),
-  );
 }
 
 class GlossaryTab extends StatelessWidget {

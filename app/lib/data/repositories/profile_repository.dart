@@ -43,6 +43,15 @@ class ProfileRepository {
     () async => (await _db.learningDao.profile())?.showAll ?? false,
   );
 
+  /// Ids of the nodes the user completed, then every change.
+  Stream<Set<String>> watchCompletedNodes() =>
+      _db.learningDao.watchProgress().map(
+        (rows) => {
+          for (final row in rows)
+            if (row.status == NodeStatus.completed) row.nodeId,
+        },
+      );
+
   /// Ids of the nodes the user completed.
   Future<Set<String>> completedNodes() => guardStorage(
     () async => {

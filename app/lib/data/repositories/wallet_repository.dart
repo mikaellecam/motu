@@ -72,6 +72,29 @@ final class WalletParams {
   }
 }
 
+/// What a wallets list shows of a wallet before valuing it.
+final class WalletSummary {
+  const WalletSummary({
+    required this.id,
+    required this.kind,
+    required this.name,
+    required this.status,
+    required this.startDate,
+    required this.simDate,
+    required this.difficulty,
+    required this.createdAt,
+  });
+
+  final String id;
+  final WalletKind kind;
+  final String name;
+  final WalletStatus status;
+  final DateTime startDate;
+  final DateTime? simDate;
+  final String? difficulty;
+  final DateTime createdAt;
+}
+
 /// A wallet as stored, read into domain objects. Positions are derived from
 /// the fills on every read, never stored (BRIEF §6.1).
 final class WalletState {
@@ -196,6 +219,24 @@ class WalletRepository {
   });
 
   static const liveWalletId = 'live';
+
+  /// Every wallet, then every change, oldest first.
+  Stream<List<WalletSummary>> watchWallets() =>
+      _db.walletDao.watchWallets().map(
+        (rows) => [
+          for (final row in rows)
+            WalletSummary(
+              id: row.id,
+              kind: row.kind,
+              name: row.name,
+              status: row.status,
+              startDate: row.startDate,
+              simDate: row.simDate,
+              difficulty: row.difficulty,
+              createdAt: row.createdAt,
+            ),
+        ],
+      );
 
   /// The wallet [id], or a [NotFoundFailure].
   Future<WalletState> load(String id) => guardStorage(() async {

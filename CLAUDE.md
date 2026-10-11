@@ -109,7 +109,8 @@ Frontmatter: `status` (todo | doing | blocked | done), `priority` (`must` = cove
 - Never weaken, skip or delete a test to make CI pass. Fix the code or ask.
 - Never commit secrets. Provider API keys exist only in the backend environment.
 - Commits and PRs carry no AI or tool attribution: no Co-Authored-By trailer, no "generated with" line.
-- No lorem ipsum or invented copy in the UI. Use the French copy given in the spec or the issue; if missing, ask.
+- No lorem ipsum in the UI. Use the copy given in the spec or the issue; when it is missing, draft it (fr + en)
+  in the spec's voice and list every new string in the PR for review: no approval round needed.
 - Accessibility: `Semantics` labels on icon-only controls, touch targets ≥ 44×44, gains and losses always
   carry a + or − sign (never color alone).
 - Financial wording: describe what happened, never what will happen. No "you should buy", no forecasts.

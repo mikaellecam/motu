@@ -72,7 +72,7 @@ Bottom tabs: **Carte** (home), **Portefeuille**, **Explorer**, **Glossaire**. Se
 | Map | `/` | Islands, next-step card, level chip |
 | Island path | `/island/:islandId` | Node list, progress |
 | Node player | `/node/:nodeId` | Renders one node type (§4.3) |
-| Wallets list | `/wallets` | Live wallet + trips + lesson suggestions + "Nouveau voyage" |
+| Wallets list | `/wallets` | Live wallet + trips (newest first, with status) + "Nouveau voyage" + lesson suggestions: the bridges of completed lessons |
 | Wallet (portfolio) | `/wallet/:walletId` | Same layout live and trip; trips add the trip header + time controls |
 | Trip wizard | `/wallets/new?step=1..3` | Prefill via query (`date`, `difficulty`, `from=nodeId`) |
 | Fast-forward sheet | modal on wallet | Trip only |
@@ -142,7 +142,7 @@ Node types (each a widget + a pure evaluator):
 Every node may end with:
 - **"Et aujourd'hui ?"** — reruns the same widget on current data; hidden when offline or when the node
   has no live variant.
-- **Bridge** — opens the trip wizard prefilled.
+- **Bridge** — opens the trip wizard prefilled: node field `"bridge": {"date": "2020-02-18", "difficulty"?}`.
 
 V1 island "Actions & ETF" (order matters, ids stable):
 

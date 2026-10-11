@@ -1,11 +1,13 @@
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/wallets_list.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
+import 'package:finance_companion/presentation/features/wallets/wallets_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +23,15 @@ Future<void> open(WidgetTester tester, String location) async {
     ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(db),
-        // Navigation only: no catalogue behind the Explorer tab.
+        // Navigation only: no catalogue behind the Explorer tab, no wallet
+        // behind the Portefeuille tab.
         explorerRowsProvider.overrideWith((ref, walletId) async => const []),
         favoritesProvider.overrideWithBuild(
           (ref, notifier) => Stream.value({}),
+        ),
+        walletsListProvider.overrideWith(
+          (ref) async =>
+              const WalletsList(live: null, trips: [], suggestions: []),
         ),
       ],
       child: MainApp(router: buildRouter(initialLocation: location)),
@@ -47,7 +54,7 @@ void main() {
   testWidgets('each tab is one tap away', (tester) async {
     await open(tester, '/');
     for (final (label, screen) in [
-      ('Portefeuille', WalletsTab),
+      ('Portefeuille', WalletsScreen),
       ('Explorer', ExplorerScreen),
       ('Glossaire', GlossaryTab),
       ('Carte', MapTab),

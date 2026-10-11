@@ -32,6 +32,7 @@ String pack({void Function(Map<String, dynamic> json)? edit}) {
         'answer': 'apple',
         'datasets': ['ds.aapl'],
         'glossary': ['volatilite'],
+        'bridge': {'date': '2020-02-18', 'difficulty': 'realiste'},
       },
     ],
     'datasets': [
@@ -80,6 +81,13 @@ void main() {
     expect(bundled.nodes.first.title.of('fr'), 'Livret ou ETF ?');
     expect(bundled.nodes.last.type, NodeType.checkpoint);
     expect(
+      [
+        for (final n in bundled.nodes)
+          if (n.bridge != null) (n.id, n.bridge!.date),
+      ],
+      [('ae.march-2020', DateTime.utc(2020, 2, 18))],
+    );
+    expect(
       [for (final n in bundled.path) n.type]
           .where((t) => t == NodeType.mission),
       hasLength(3),
@@ -101,6 +109,10 @@ void main() {
     expect(points.first, (DateTime.utc(2022, 1, 3), Decimal.parse('177.57')));
     expect(points.last.$2, Decimal.parse('172'));
     expect(p.glossary['volatilite']!.related, ['pire-baisse']);
+    expect(one.bridge!.date, DateTime.utc(2020, 2, 18));
+    expect(one.bridge!.difficulty, 'realiste');
+    expect(one.payload.containsKey('bridge'), isFalse);
+    expect(p.nodes.last.bridge, isNull);
   });
 
   group('a corrupt pack is refused', () {
@@ -128,6 +140,10 @@ void main() {
       ('a bad date', (j) => j['datasets'][0]['frozen_at'] = 'hier'),
       ('a version that is not a number', (j) => j['island']['version'] = '3'),
       ('no glossary list', (j) => j.remove('glossary')),
+      (
+        'a bridge without a date',
+        (j) => j['nodes'][1]['bridge'] = {'difficulty': 'serre'},
+      ),
     ]) {
       test(what, () {
         expect(() => decodePack(pack(edit: edit)), throwsFormatException);
