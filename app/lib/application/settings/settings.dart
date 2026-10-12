@@ -75,8 +75,9 @@ Future<SettingsView> settingsView(Ref ref) async {
   );
 }
 
-/// Every Settings action, and what each one changes on screen.
-@riverpod
+/// Every Settings action, and what each one changes on screen. Kept alive:
+/// the screen holds it from its build, and nothing listens to it.
+@Riverpod(keepAlive: true)
 class SettingsController extends _$SettingsController {
   @override
   void build() {}

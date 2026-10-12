@@ -95,6 +95,17 @@ void main() {
     expect(v.startingCash, const Money(1000000, Currency.eur));
   });
 
+  test('read once, as the screen does: it still acts later', () async {
+    final held = actions();
+    await pumpEventQueue();
+    await held.setLanguage('fr');
+    await held.setShowAll(true);
+    await held.refreshNow();
+    final v = await view();
+    expect(v.settings.language, 'fr');
+    expect(v.level, 3);
+  });
+
   test('a reset starts the live wallet with the chosen capital', () async {
     await actions().setStartingCash(const Money(10000000, Currency.eur));
     await actions().resetLiveWallet();

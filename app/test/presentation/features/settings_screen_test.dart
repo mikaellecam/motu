@@ -15,8 +15,7 @@ import '../../helpers.dart';
 const nnbsp = ' ';
 const nbsp = ' ';
 
-/// Records what the screen asks for in [calls]; one instance per use, as
-/// the controller is disposed between taps.
+/// Records what the screen asks for in [calls].
 class FakeSettings extends SettingsController {
   FakeSettings(this.calls);
   final List<String> calls;
