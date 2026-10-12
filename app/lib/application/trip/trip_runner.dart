@@ -150,6 +150,21 @@ class TripRunner extends _$TripRunner {
         id: await market.history(id, from: window, to: target, asOf: target),
     };
     final world = bars[worldAssetId]!;
+    // The last day with data is known as of today, not as of the target: a
+    // trip ends when it reaches it (BRIEF §4.5). Only its date reaches the
+    // engine, never a price after the target.
+    final now = ref.read(liveClockProvider).now();
+    final ahead = await market.history(
+      worldAssetId,
+      from: target,
+      to: now,
+      asOf: now,
+    );
+    final lastDate = ahead.isNotEmpty
+        ? ahead.last.date
+        : world.isEmpty
+        ? from
+        : world.last.date;
     final livret = await market.livret(asOf: target);
     final before = await wallets.tripState(walletId, livretRates: livret.rates);
     final usdEur = await fx.lookup(
@@ -174,7 +189,7 @@ class TripRunner extends _$TripRunner {
           target: target,
           stops: wallet.params.stops,
           market: SnapshotTripMarket(
-            lastDate: world.isEmpty ? from : world.last.date,
+            lastDate: lastDate,
             bars: bars,
             exchanges: exchanges,
             calendar: calendar,

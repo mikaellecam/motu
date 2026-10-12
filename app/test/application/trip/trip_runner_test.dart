@@ -67,11 +67,12 @@ void main() {
     late AppDatabase db;
     late ProviderContainer container;
     late WalletRepository wallets;
+    late FakeBackend backend;
 
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
       final wall = WallClock(DateTime.utc(2026, 10, 8, 12));
-      final backend = FakeBackend()
+      backend = FakeBackend()
         ..assets.add({
           'id': 'world',
           'symbol': 'ACWI',
@@ -166,6 +167,28 @@ void main() {
         );
       },
     );
+
+    test('a step with data after it: the trip runs on', () async {
+      await container
+          .read(tripRunnerProvider('trip').notifier)
+          .advance(TripStep.day);
+      final advance = container.read(tripRunnerProvider('trip')).value!;
+      expect(advance.state.date, day(2026, 10, 6));
+      expect(advance.endOfData, isFalse);
+      expect((await wallets.load('trip')).status, WalletStatus.active);
+    });
+
+    test('a day the world ETF has no bar, data after it: runs on', () async {
+      // As on a holiday of the world ETF's exchange that another trades.
+      backend.closes['world']!.remove('2026-10-06');
+      await container
+          .read(tripRunnerProvider('trip').notifier)
+          .advanceTo(day(2026, 10, 6));
+      final advance = container.read(tripRunnerProvider('trip')).value!;
+      expect(advance.state.date, day(2026, 10, 6));
+      expect(advance.endOfData, isFalse);
+      expect((await wallets.load('trip')).status, WalletStatus.active);
+    });
 
     test(
       'past the last close: as far as the data goes, then the end',
