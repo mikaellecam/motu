@@ -130,6 +130,41 @@ void main() {
     expect(v.opensAt, isNull);
   });
 
+  test(
+    'a market order sent offline mid-session waits for the next open',
+    () async {
+      await wallets.placeOrder(
+        live,
+        buy('o4', at: DateTime.utc(2026, 10, 7, 15)),
+      );
+      final v = await view('o4');
+      expect(v.detail.status, OrderStatus.pending);
+      expect(v.opensAt, DateTime.utc(2026, 10, 8, 13, 30));
+      expect(v.opened, isFalse);
+    },
+  );
+
+  test('filled at that open, it still shows the open it waited for', () async {
+    final order = buy('o5', at: DateTime.utc(2026, 10, 7, 15));
+    await wallets.executeOrder(
+      live,
+      order,
+      Fill(
+        orderId: 'o5',
+        assetId: 'apple',
+        side: Side.buy,
+        date: DateTime.utc(2026, 10, 8),
+        quantity: Quantity.whole(4),
+        price: Price(Decimal.parse('125'), Currency.usd),
+        fxRate: Decimal.parse('0.9'),
+        fees: const Money(68, Currency.eur),
+      ),
+    );
+    final v = await view('o5');
+    expect(v.detail.status, OrderStatus.filled);
+    expect(v.opensAt, DateTime.utc(2026, 10, 8, 13, 30));
+  });
+
   test('a trip order goes when the trip moves on', () async {
     await wallets.createWallet(
       id: 'trip',

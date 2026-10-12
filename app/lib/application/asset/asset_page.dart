@@ -17,6 +17,7 @@ import '../explorer/explorer.dart';
 import '../learning/ui_level.dart';
 import '../providers.dart';
 import '../wallet/wallet_overview.dart' show worldAssetId;
+import '../wallet/wallet_providers.dart' show liveQuotes;
 
 part 'asset_page.g.dart';
 
@@ -380,7 +381,9 @@ Future<AssetOverview> assetOverview(
   final world = assetId == worldAssetId
       ? bars
       : await market.history(worldAssetId, from: from, to: asOf, asOf: asOf);
-  final quote = live ? await market.latest(assetId, asOf: asOf) : null;
+  final quote = live
+      ? (await liveQuotes(market, [assetId], asOf: asOf))[assetId]
+      : null;
   final calendar = await market.calendar(
     {asset.exchange},
     fromYear: day.year - 1,

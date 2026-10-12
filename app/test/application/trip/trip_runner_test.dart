@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/trip/trip_runner.dart';
+import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/data/remote/backend_api.dart';
@@ -68,10 +69,11 @@ void main() {
     late ProviderContainer container;
     late WalletRepository wallets;
     late FakeBackend backend;
+    late WallClock wall;
 
     setUp(() async {
       db = AppDatabase(NativeDatabase.memory());
-      final wall = WallClock(DateTime.utc(2026, 10, 8, 12));
+      wall = WallClock(DateTime.utc(2026, 10, 8, 12));
       backend = FakeBackend()
         ..assets.add({
           'id': 'world',
@@ -206,5 +208,26 @@ void main() {
         expect(trip.values, hasLength(3));
       },
     );
+
+    test('offline past the cached history: no data, the trip stays', () async {
+      final runner = container.read(tripRunnerProvider('trip').notifier);
+      await runner.advance(TripStep.day);
+      backend.offline = true;
+      wall.advance(const Duration(hours: 1));
+
+      // BRIEF §6.4: past the cache is not the end of the data.
+      await runner.advance(TripStep.month);
+      expect(
+        container.read(tripRunnerProvider('trip')).error,
+        isA<DataUnavailableFailure>(),
+      );
+      final trip = await wallets.load('trip');
+      expect(trip.simDate, day(2026, 10, 6));
+      expect(trip.status, WalletStatus.active);
+
+      // Within the cache, it still moves.
+      await runner.advance(TripStep.day);
+      expect((await wallets.load('trip')).simDate, day(2026, 10, 7));
+    });
   });
 }

@@ -107,6 +107,21 @@ void main() {
     expect(wallet.pendingOrders, isEmpty);
   });
 
+  test(
+    'a market order sent offline mid-session fills at the next open',
+    () async {
+      // Tuesday 15:00 UTC, Nasdaq open but no connection: the order waited
+      // (BRIEF §14.1) and fills at Wednesday's open, not on Tuesday's bar.
+      await wallets.placeOrder(live, buy('o4', DateTime.utc(2026, 10, 6, 15)));
+      await run();
+
+      final detail = (await wallets.orderDetail('o4'))!;
+      expect(detail.status, OrderStatus.filled);
+      expect(detail.fill!.date, day(2026, 10, 7));
+      expect(detail.fill!.price, Price(d('102'), Currency.usd));
+    },
+  );
+
   test('a limit set mid-session waits for the next session', () async {
     // Tuesday 15:00 UTC, Nasdaq open: Tuesday's bar (101) already crossed
     // the limit, but that session's prices came before the order.

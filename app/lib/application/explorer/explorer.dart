@@ -12,6 +12,7 @@ import '../../domain/market/price_bar.dart';
 import '../../domain/market/quote.dart';
 import '../../domain/wallet/wallet.dart';
 import '../providers.dart';
+import '../wallet/wallet_providers.dart' show liveQuotes;
 
 part 'explorer.g.dart';
 
@@ -148,7 +149,7 @@ Future<List<ExplorerRow>> explorerRows(Ref ref, String? walletId) async {
   final assets = await market.assets(asOf: asOf)
     ..sort((a, b) => searchKey(a.name).compareTo(searchKey(b.name)));
   final quotes = live
-      ? await market.latestAll([for (final a in assets) a.id], asOf: asOf)
+      ? await liveQuotes(market, [for (final a in assets) a.id], asOf: asOf)
       : const <String, Quote>{};
   final from = yearBefore(DateTime.utc(asOf.year, asOf.month, asOf.day))
       .subtract(const Duration(days: 10));

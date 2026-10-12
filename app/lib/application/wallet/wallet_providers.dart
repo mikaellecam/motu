@@ -8,6 +8,7 @@ import '../../data/repositories/market_repository.dart';
 import '../../domain/livret/livret_interest.dart';
 import '../../domain/market/asset.dart';
 import '../../domain/market/price_bar.dart';
+import '../../domain/market/quote.dart';
 import '../../domain/wallet/dca.dart';
 import '../../domain/wallet/order.dart';
 import '../../domain/wallet/wallet.dart';
@@ -78,7 +79,7 @@ Future<ObservedPrice> priceOf(
   required bool live,
 }) async {
   if (live) {
-    final quote = await market.latest(asset.id, asOf: asOf);
+    final quote = (await liveQuotes(market, [asset.id], asOf: asOf))[asset.id];
     if (quote != null) {
       return ObservedPrice(
         PriceAsOf(quote.price, _day(quote.asOf), stale: false),
@@ -105,6 +106,22 @@ Future<ObservedPrice> priceOf(
   );
   if (price == null) throw DataUnavailableFailure(asOf);
   return ObservedPrice(price, calendar.closeAt(asset.exchange, price.date));
+}
+
+/// The live quotes of [assetIds], without those that can neither be fetched
+/// nor read from the cache: the last close stands in for them, offline
+/// included (BRIEF §6.4).
+Future<Map<String, Quote>> liveQuotes(
+  MarketRepository market,
+  Iterable<String> assetIds, {
+  required DateTime asOf,
+}) async {
+  try {
+    return await market.latestAll(assetIds, asOf: asOf);
+  } on Failure catch (failure) {
+    if (failure is StorageFailure) rethrow;
+    return const {};
+  }
 }
 
 /// What the wallet's money would be worth in [benchmark], put in on the

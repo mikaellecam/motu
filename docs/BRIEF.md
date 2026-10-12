@@ -723,8 +723,11 @@ fetch is needed, and emit updates. UI never knows the source except through `Cac
 
 Everything readable offline: map, islands (bundled packs), wallets, positions, charts (cached), glossary,
 saved simulations, trip advancing (only within cached history; past that → `DataUnavailableFailure` with a
-clear message). Live orders while offline: open decision (§14). Stale-data banner shows date and time of
-the last successful price fetch, in local time.
+clear message). A live order while offline (or while the price fetch fails) never fills at a cached
+price: a market order waits as pending for the first session that opens after it was placed, as when the
+market is closed, and the catch-up fills it at that open once back online (§14.1, decided 2026-10-12). A
+held asset without any cached quote is valued at its last cached close. Stale-data banner shows date and
+time of the last successful price fetch, in local time. Manual check: `docs/qa/offline.md`.
 
 `CacheStatus` (from `MarketRepository.status()`): `Offline(lastUpdated)` when the device has no connection
 (`connectivity_plus`); `Stale(lastUpdated)` when it has one but the last price fetch (history or quote)
@@ -945,7 +948,7 @@ Milestones and issue breakdown: `docs/ROADMAP.md`. Each architecture choice gets
 
 ## 14. Open decisions (ask, do not guess)
 
-1. Live orders while offline: block with an explanation, or queue until next sync?
+1. ~~Live orders while offline~~: decided 2026-10-12, queued as pending until the next session's open (§6.4).
 2. Trip maximum length (open-ended to today, or capped at 1–3 years)?
 3. Cash shared across future islands, or one wallet per island?
 4. Explainable asset scoring in V1 or later?

@@ -400,6 +400,7 @@
   "order_coach": "{name} would make up {after} of your portfolio, compared with {before} today.",
   "order_coach_over": "Beyond {threshold}, a single holding weighs heavily: that's {term}.",
   "order_market_closed": "{exchange, select, nasdaq{The Nasdaq is closed} nyse{The NYSE is closed} euronext{Euronext is closed} other{The market is closed}}. Your order will go at the opening, on {day} at {time}.",
+  "order_offline_next": "No up-to-date price: your order will go at the next opening, on {day} at {time}.",
   "order_trip_next": "Your order will go on the trip's next trading day.",
   "order_reason": "Why? (optional, saved to your journal)",
   "order_done_buy": "Bought: {quantity} \u00d7 {name} at {price}.",

@@ -29,8 +29,9 @@ final class OrderView {
   /// A trip order: it goes when the trip moves on.
   final bool trip;
 
-  /// A live market order sent while its market was closed: the session open
-  /// it fills at. Null for one filled at the quote.
+  /// A live market order that waited: sent while its market was closed, or
+  /// offline (BRIEF §14.1); the session open it fills at. Null for one
+  /// filled at the quote.
   final DateTime? opensAt;
 
   /// [opensAt] has passed: the outcome shows once the session has closed.
@@ -64,9 +65,13 @@ class OrderTracker extends _$OrderTracker {
         fromYear: created.year,
         toYear: created.year + 1,
       );
-      if (!calendar.isOpen(asset.exchange, created)) {
-        opensAt = calendar.nextOpen(asset.exchange, created);
-      }
+      // Filled at the quote: open when sent, filled that same day.
+      final fill = detail.fill?.date;
+      final atQuote =
+          calendar.isOpen(asset.exchange, created) &&
+          fill != null &&
+          _day(fill) == _day(created);
+      if (!atQuote) opensAt = calendar.nextOpen(asset.exchange, created);
     }
     return OrderView(
       detail: detail,
@@ -89,4 +94,9 @@ class OrderTracker extends _$OrderTracker {
       ..invalidate(walletsListProvider)
       ..invalidateSelf();
   }
+}
+
+DateTime _day(DateTime t) {
+  final u = t.toUtc();
+  return DateTime.utc(u.year, u.month, u.day);
 }

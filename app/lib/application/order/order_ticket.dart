@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../core/cache_status.dart';
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
 import '../../domain/learning/profile_rules.dart';
@@ -45,6 +46,7 @@ final class TicketContext {
     required this.threshold,
     required this.asOf,
     this.marketOpen = false,
+    this.offline = false,
     this.nextOpen,
   });
 
@@ -74,6 +76,11 @@ final class TicketContext {
 
   /// Live wallet only: the asset's market is open now, or opens [nextOpen].
   final bool marketOpen;
+
+  /// Live wallet only: no connection, or the backend did not answer, so
+  /// [price] may be old. A market order then waits for [nextOpen] like one
+  /// sent while the market is closed (BRIEF §14.1, decided 2026-10-12).
+  final bool offline;
   final DateTime? nextOpen;
 }
 
@@ -218,6 +225,7 @@ class OrderTicket extends _$OrderTicket {
     final held = state.positions[assetId]?.quantity ?? const Quantity.zero();
     final live = state.kind == WalletKind.live;
     var open = false;
+    var offline = false;
     DateTime? nextOpen;
     if (live) {
       final year = now.toUtc().year;
@@ -227,7 +235,10 @@ class OrderTicket extends _$OrderTicket {
         toYear: year + 1,
       );
       open = calendar.isOpen(overview.asset.exchange, now);
-      if (!open) nextOpen = calendar.nextOpen(overview.asset.exchange, now);
+      offline = await market.status().first is! Fresh;
+      if (!open || offline) {
+        nextOpen = calendar.nextOpen(overview.asset.exchange, now);
+      }
     }
     final context = TicketContext(
       asset: overview.asset,
@@ -246,6 +257,7 @@ class OrderTicket extends _$OrderTicket {
           : momentThresholds(profile).concentration,
       asOf: overview.asOf,
       marketOpen: open,
+      offline: offline,
       nextOpen: nextOpen,
     );
     return _derive(context, TicketForm(side: side));
@@ -333,7 +345,8 @@ class OrderTicket extends _$OrderTicket {
   }
 
   /// Places the order once valid (BRIEF §4.6). Live, a market order with
-  /// its market open fills at the quote now; any other order waits. A trip
+  /// its market open and a current quote fills at the quote now; any other
+  /// order waits. A trip
   /// order waits for the trip to move on, its reason in the journal.
   Future<OrderOutcome?> submit() async {
     final current = state.value;
@@ -357,7 +370,7 @@ class OrderTicket extends _$OrderTicket {
           reason: submitted.form.reason.trim(),
         );
         outcome = OrderSent(order.id, trip: true);
-      } else if (c.marketOpen && order.type == OrderType.market) {
+      } else if (c.marketOpen && !c.offline && order.type == OrderType.market) {
         final match = fillAtQuote(
           order,
           c.price,

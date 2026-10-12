@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:decimal/decimal.dart';
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/learning/content.dart';
@@ -33,7 +35,11 @@ void main() {
   late WalletRepository wallets;
 
   /// [at]: Thursday 2026-10-08 12:00 UTC is 08:00 in New York, closed.
-  Future<void> open({DateTime? at, bool withGateTerm = true}) async {
+  Future<void> open({
+    DateTime? at,
+    bool withGateTerm = true,
+    Stream<bool>? online,
+  }) async {
     db = AppDatabase(NativeDatabase.memory());
     wall = WallClock(at ?? DateTime.utc(2026, 10, 8, 12));
     backend = FakeBackend()
@@ -57,6 +63,7 @@ void main() {
             db,
             BackendApi('http://t', adapter: backend),
             wallClock: wall,
+            online: online,
           ),
         ),
         fxServiceProvider.overrideWithValue(
@@ -225,6 +232,39 @@ void main() {
     final wallet = await wallets.load('live');
     expect(wallet.pendingOrders, isEmpty);
     expect(wallet.positions['apple']!.quantity, Quantity.whole(2));
+  });
+
+  test('offline, market open: the order waits for the next opening', () async {
+    // BRIEF §14.1 (decided 2026-10-12): no fill at a price that may be old.
+    final online = StreamController<bool>();
+    addTearDown(online.close);
+    await open(at: DateTime.utc(2026, 10, 7, 15), online: online.stream);
+    backend.quotes['apple'] = {
+      'assetId': 'apple',
+      'price': '101.5',
+      'currency': 'USD',
+      'asOf': '2026-10-07T14:55:00Z',
+      'marketOpen': true,
+    };
+    await ticket(Side.buy);
+    backend.offline = true;
+    online.add(false);
+    await pumpEventQueue();
+    c.invalidate(orderTicketProvider('apple', 'live', Side.buy));
+
+    final s = await ticket(Side.buy);
+    expect(
+      (s.context.marketOpen, s.context.offline, s.context.nextOpen),
+      (true, true, DateTime.utc(2026, 10, 8, 13, 30)),
+    );
+    actions(Side.buy)
+      ..setMode(SizeMode.quantity)
+      ..setQuantity('2');
+    final outcome = await actions(Side.buy).submit();
+    expect((outcome! as OrderSent).opensAt, DateTime.utc(2026, 10, 8, 13, 30));
+    final wallet = await wallets.load('live');
+    expect(wallet.pendingOrders, hasLength(1));
+    expect(wallet.positions['apple'], isNull);
   });
 
   test(

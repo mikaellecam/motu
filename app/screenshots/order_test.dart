@@ -49,10 +49,34 @@ final _context = TicketContext(
 );
 
 class _Ticket extends OrderTicket {
+  _Ticket(this.context);
+  final TicketContext context;
+
   @override
   Future<TicketState> build(String assetId, String walletId, Side side) async =>
-      ticketState(_context, TicketForm(side: side), orderId: 'o');
+      ticketState(context, TicketForm(side: side), orderId: 'o');
 }
+
+// Thursday 17:00 in Paris, the Nasdaq open but no connection: the order
+// waits for Friday's open (BRIEF §14.1).
+final _offline = TicketContext(
+  asset: _context.asset,
+  walletId: 'live',
+  isTrip: false,
+  finished: false,
+  rules: _context.rules,
+  price: _context.price,
+  fxRate: _context.fxRate,
+  availableCash: _context.availableCash,
+  availableQuantity: _context.availableQuantity,
+  positionValue: _context.positionValue,
+  walletTotal: _context.walletTotal,
+  threshold: _context.threshold,
+  asOf: DateTime.utc(2026, 10, 8, 15),
+  marketOpen: true,
+  offline: true,
+  nextOpen: DateTime.utc(2026, 10, 9, 13, 30),
+);
 
 class _Host extends StatelessWidget {
   const _Host();
@@ -73,7 +97,9 @@ class _Host extends StatelessWidget {
 }
 
 void main() {
-  final overrides = [orderTicketProvider.overrideWith2((_) => _Ticket())];
+  final overrides = [
+    orderTicketProvider.overrideWith2((_) => _Ticket(_context)),
+  ];
 
   Future<void> open(WidgetTester tester, String amount) async {
     await tester.tap(find.byType(TextButton));
@@ -96,6 +122,14 @@ void main() {
     size: const Size(390, 900),
     overrides: overrides,
     act: (tester) => open(tester, '25000'),
+  );
+
+  screenshot(
+    'm9-4-order-offline',
+    const _Host(),
+    size: const Size(390, 900),
+    overrides: [orderTicketProvider.overrideWith2((_) => _Ticket(_offline))],
+    act: (tester) => open(tester, '500'),
   );
 
   // The 500 € sent on Wednesday evening: waiting for Thursday's open, then

@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../core/cache_status.dart';
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
 import '../../domain/learning/profile_rules.dart';
@@ -165,6 +166,11 @@ class TripRunner extends _$TripRunner {
         : world.isEmpty
         ? from
         : world.last.date;
+    // Offline, the cache may stop short of the data: past it, the trip would
+    // end early. It moves only within the cache (BRIEF §6.4).
+    if (lastDate.isBefore(target) && await market.status().first is! Fresh) {
+      throw DataUnavailableFailure(target);
+    }
     final livret = await market.livret(asOf: target);
     final before = await wallets.tripState(walletId, livretRates: livret.rates);
     final usdEur = await fx.lookup(

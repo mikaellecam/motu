@@ -359,6 +359,16 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
               formats.time(c.nextOpen!.toLocal()),
             ),
             style: muted,
+          )
+        else if (c.offline &&
+            form.type == OrderType.market &&
+            c.nextOpen != null)
+          Text(
+            l10n.order_offline_next(
+              formats.date(c.nextOpen!.toLocal()),
+              formats.time(c.nextOpen!.toLocal()),
+            ),
+            style: muted,
           ),
         if (c.isTrip) ...[
           const SizedBox(height: AppSpace.x3),

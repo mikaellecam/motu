@@ -41,7 +41,11 @@ final apple = Asset(
   listingDate: DateTime.utc(1980, 12, 12),
 );
 
-TicketContext context({bool trip = false, String held = '0'}) => TicketContext(
+TicketContext context({
+  bool trip = false,
+  String held = '0',
+  bool offline = false,
+}) => TicketContext(
   asset: apple,
   walletId: trip ? 'trip' : 'live',
   isTrip: trip,
@@ -59,6 +63,9 @@ TicketContext context({bool trip = false, String held = '0'}) => TicketContext(
   walletTotal: d('50000') + d(held) * d('87.1794'),
   threshold: d('0.40'),
   asOf: DateTime.utc(2026, 10, 8, 12),
+  // Offline, open now: the next session opens at 15 h 30, Paris time.
+  marketOpen: offline,
+  offline: offline,
   // Opens at 15 h 30, Paris time.
   nextOpen: trip ? null : DateTime.utc(2026, 10, 8, 13, 30),
 );
@@ -111,6 +118,7 @@ Future<void> show(
   bool trip = false,
   String held = '0',
   String? gate,
+  bool offline = false,
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -118,7 +126,7 @@ Future<void> show(
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   ticket = FakeTicket(
-    context(trip: trip, held: held),
+    context(trip: trip, held: held, offline: offline),
     gate: gate,
   );
   result = null;
@@ -207,6 +215,20 @@ void main() {
     expect(ticket.placed.single.size, isA<AmountSize>());
     expect(result!.message, contains('Ordre envoyé'));
     expect(result!.orderId, 'o');
+  });
+
+  testWidgets('offline, market open: it goes at the next opening', (
+    tester,
+  ) async {
+    await show(tester, offline: true);
+    expect(find.textContaining('est fermé'), findsNothing);
+    expect(
+      find.textContaining(
+        'Pas de cours à jour$nnbsp: ton ordre partira à la prochaine ouverture',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('h${nbsp}30'), findsOneWidget);
   });
 
   testWidgets('every error in words; the coach flags a heavy line', (
