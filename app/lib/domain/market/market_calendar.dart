@@ -104,7 +104,7 @@ class MarketCalendar {
     while (true) {
       if (isTradingDay(exchange, day)) {
         final open = _at(exchange, day, exchange.opens);
-        if (open.isAfter(instant)) return open.toUtc();
+        if (open.isAfter(instant)) return open;
       }
       day = day.add(const Duration(days: 1));
     }
@@ -112,20 +112,25 @@ class MarketCalendar {
 
   /// When the regular session of [day] opens, as a UTC instant.
   DateTime openAt(Exchange exchange, DateTime day) =>
-      _at(exchange, _day(day), exchange.opens).toUtc();
+      _at(exchange, _day(day), exchange.opens);
 
   /// When the regular session of [day] closes, as a UTC instant.
   DateTime closeAt(Exchange exchange, DateTime day) =>
-      _at(exchange, _day(day), exchange.closes).toUtc();
+      _at(exchange, _day(day), exchange.closes);
 
-  /// [time] on the local calendar day of [date], in the exchange's zone.
-  static tz.TZDateTime _at(Exchange exchange, DateTime date, (int, int) time) =>
-      tz.TZDateTime(
-        _location(exchange),
-        date.year,
-        date.month,
-        date.day,
-        time.$1,
-        time.$2,
+  /// [time] on the local calendar day of [date], in the exchange's zone, as
+  /// a plain UTC instant: a `TZDateTime`'s `toLocal()` would read the
+  /// timezone package's zone, UTC, not the device's.
+  static DateTime _at(Exchange exchange, DateTime date, (int, int) time) =>
+      DateTime.fromMillisecondsSinceEpoch(
+        tz.TZDateTime(
+          _location(exchange),
+          date.year,
+          date.month,
+          date.day,
+          time.$1,
+          time.$2,
+        ).millisecondsSinceEpoch,
+        isUtc: true,
       );
 }

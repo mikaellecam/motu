@@ -207,6 +207,20 @@ void main() {
     );
   });
 
+  test('every instant reads in the device time zone', () {
+    // As the screens show them: toLocal() is the device's time, not UTC.
+    for (final instant in [
+      calendar.openAt(Exchange.nasdaq, day(2026, 10, 7)),
+      calendar.closeAt(Exchange.nasdaq, day(2026, 10, 7)),
+      calendar.nextOpen(Exchange.nasdaq, day(2026, 10, 7)),
+    ]) {
+      expect(
+        instant.toLocal(),
+        DateTime.fromMillisecondsSinceEpoch(instant.millisecondsSinceEpoch),
+      );
+    }
+  });
+
   group('next open', () {
     test('before the open: today at the open', () {
       expect(
