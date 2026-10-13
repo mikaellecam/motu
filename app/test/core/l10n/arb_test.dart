@@ -57,6 +57,7 @@ void main() {
       'island_node_semantics',
       'island_trading',
       'livret_title',
+      'map_island_progress',
       'node_type_mission',
       'order_coach_term',
       'order_quick_max',

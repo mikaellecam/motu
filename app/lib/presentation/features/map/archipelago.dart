@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -9,228 +7,415 @@ import 'living_island.dart';
 
 enum IslandId { actionsEtf, trading, realEstate, crypto, basics }
 
-/// Where an island sits on the world grid and how big it is (tiles).
+/// One island as the art direction draws it (BRIEF §4.2): its tiles on a grid
+/// of its own, where that grid lies on the map, and how big its blocks are.
+/// Map coordinates are the art direction's: a phone screen 390 px wide.
 final class IslandLayout {
-  const IslandLayout(this.id, this.x, this.y, this.size, {this.locked = true});
+  const IslandLayout(
+    this.id, {
+    required this.origin,
+    required this.tile,
+    required this.unit,
+    required this.tiles,
+    required this.halo,
+    required this.label,
+    this.clouds = const [],
+    this.locked = true,
+  });
 
   final IslandId id;
-  final double x;
-  final double y;
-  final int size;
+
+  /// Where the corner of tile (0, 0) lies on the map.
+  final Offset origin;
+
+  /// A tile's width, and one unit of height (a block's), in map px.
+  final double tile;
+  final double unit;
+
+  /// Rows of tiles, back to front, one character each: `.` for the sea; `S`
+  /// sand, `g` and `G` grass; `a`, `b` and `c` stone, light to dark.
+  final List<String> tiles;
+
+  /// The shallow water round it.
+  final Rect halo;
+
+  /// The top centre of its label.
+  final Offset label;
+
+  /// Its clouds: where each one's left puff floats, and its scale.
+  final List<(Offset, double)> clouds;
 
   /// Visible, not playable yet (« Bientôt », BRIEF §4.2).
   final bool locked;
+
+  IsoProjection get projection =>
+      IsoProjection(tile: tile, unit: unit, origin: origin);
+
+  /// The top centre of its label, on the map widget.
+  Offset get labelAnchor => label - mapBounds.topLeft;
 }
 
-/// The five islands: Actions & ETF in the centre, the others around it.
+/// The five islands, back to front, where the art direction places them:
+/// Actions & ETF in the centre, the locked ones round it.
 const archipelago = [
-  IslandLayout(IslandId.trading, -6, -6, 3),
-  IslandLayout(IslandId.realEstate, 7, -3, 3),
-  IslandLayout(IslandId.actionsEtf, 0, 0, 4, locked: false),
-  IslandLayout(IslandId.crypto, -3, 7, 3),
-  IslandLayout(IslandId.basics, 7, 7, 3),
+  IslandLayout(
+    IslandId.trading,
+    origin: Offset(90, 208),
+    tile: 30,
+    unit: 14,
+    tiles: ['aaaa', 'abca', 'acba', '.aa.'],
+    halo: Rect.fromLTRB(35, 218, 160, 282.4),
+    label: Offset(90, 292),
+    clouds: [(Offset(38, 230), 1.0), (Offset(98, 260), 0.8)],
+  ),
+  IslandLayout(
+    IslandId.realEstate,
+    origin: Offset(305, 222),
+    tile: 30,
+    unit: 14,
+    tiles: ['aaaa', 'abca', 'acba', 'aaaa'],
+    halo: Rect.fromLTRB(235, 232, 375, 304),
+    label: Offset(305, 306),
+    clouds: [(Offset(253, 244), 1.0), (Offset(313, 274), 0.8)],
+  ),
+  IslandLayout(
+    IslandId.actionsEtf,
+    origin: Offset(214, 358.5),
+    tile: 34,
+    unit: 18,
+    tiles: [
+      '.SSS...',
+      '.SgGS..',
+      'SgGgGS.',
+      'SGgGgGS',
+      'SgGgGgS',
+      'SGgGgS.',
+      'SgSSSS.',
+      '.S.....',
+    ],
+    halo: Rect.fromLTRB(85, 381, 292, 495),
+    label: Offset(197, 506),
+    locked: false,
+  ),
+  IslandLayout(
+    IslandId.crypto,
+    origin: Offset(82, 526),
+    tile: 30,
+    unit: 14,
+    tiles: ['.aa.', 'abca', 'acba', '.aa.'],
+    halo: Rect.fromLTRB(27, 542.5, 137, 599.5),
+    label: Offset(82, 604),
+    clouds: [(Offset(30, 548), 1.0), (Offset(90, 578), 0.8)],
+  ),
+  IslandLayout(
+    IslandId.basics,
+    origin: Offset(312, 530),
+    tile: 30,
+    unit: 14,
+    tiles: ['aaa.', 'abca', 'acba', '.aa.'],
+    halo: Rect.fromLTRB(257, 539, 367, 603.4),
+    label: Offset(312, 608),
+    clouds: [(Offset(260, 552), 1.0), (Offset(320, 582), 0.8)],
+  ),
 ];
 
-/// Ground thickness, in height units.
-const _ground = 0.6;
+/// The part of the art direction's screen the map shows: every island, its
+/// tallest prop and its label.
+const mapBounds = Rect.fromLTRB(0, 166, 390, 660);
+final mapSize = mapBounds.size;
 
-/// Lays the archipelago out on a canvas: the projection, the canvas size, and
-/// where each island's label goes.
-final class ArchipelagoGeometry {
-  factory ArchipelagoGeometry({double tile = 64, double margin = 48}) {
-    final raw = IsoProjection(tile: tile, unit: tile / 2);
-    var minX = double.infinity, minY = double.infinity;
-    var maxX = -double.infinity, maxY = -double.infinity;
-    for (final island in archipelago) {
-      final s = island.size.toDouble();
-      for (final corner in [
-        raw.project(island.x, island.y, 3),
-        raw.project(island.x + s, island.y),
-        raw.project(island.x, island.y + s),
-        raw.project(island.x + s, island.y + s, -_ground),
-      ]) {
-        minX = math.min(minX, corner.dx);
-        minY = math.min(minY, corner.dy);
-        maxX = math.max(maxX, corner.dx);
-        maxY = math.max(maxY, corner.dy);
-      }
-    }
-    // Room below the lowest island for its label.
-    final labelRoom = tile * 1.5;
-    return ArchipelagoGeometry._(
-      raw.shifted(Offset(margin - minX, margin - minY)),
-      Size(maxX - minX + 2 * margin, maxY - minY + 2 * margin + labelRoom),
-    );
-  }
+/// Where the art direction ripples the sea.
+const _waves = [
+  Offset(92.1, 87.1), Offset(154.5, 130.8), Offset(25.9, 338.9), //
+  Offset(358, 675.6), Offset(298.4, 187.3), Offset(209.3, 233.5),
+  Offset(67.3, 89.6), Offset(83.6, 782.8), Offset(323.3, 680.8),
+  Offset(312.2, 163.3), Offset(120.8, 529.2), Offset(285.4, 721.3),
+  Offset(343.2, 73.2), Offset(236.3, 566.9), Offset(197.3, 150.1),
+  Offset(184.7, 75.4), Offset(364.5, 730.5), Offset(213.6, 253.4),
+  Offset(354.5, 483.1), Offset(344.1, 715.7), Offset(198.3, 349.4),
+  Offset(233.6, 363.8), Offset(62.9, 257.5), Offset(316.9, 36.5),
+  Offset(18.1, 528.6), Offset(109.4, 451.2), Offset(183.8, 289.4),
+  Offset(388.9, 165.1), Offset(161, 171.1), Offset(246.7, 233.2),
+  Offset(138.8, 630.4), Offset(125.1, 471.4), Offset(352.7, 85.2),
+  Offset(24, 193.2), Offset(298.4, 519.4), Offset(92.6, 279.4),
+  Offset(69.2, 387.4), Offset(16.7, 588.5), Offset(349.4, 805.8),
+  Offset(286.6, 810.1), Offset(7.1, 243.9), Offset(376.7, 654.3),
+  Offset(160.1, 796.2), Offset(242, 690.3), Offset(114.4, 161.6),
+  Offset(173.2, 115.2),
+];
 
-  ArchipelagoGeometry._(this.projection, this.size);
-
-  final IsoProjection projection;
-  final Size size;
-
-  /// The point under an island's front corner, where its label hangs.
-  Offset labelAnchor(IslandLayout island) => projection.project(
-    island.x + island.size,
-    island.y + island.size,
-    -_ground,
-  );
-
-  /// The centre of an island's ground, on the canvas.
-  Offset centre(IslandLayout island) => projection.project(
-    island.x + island.size / 2,
-    island.y + island.size / 2,
-  );
-}
-
-/// Draws the archipelago in chunky toy blocks (BRIEF §10.1): white tops,
-/// light sides, ink outlines. Locked islands are greyed and under clouds.
-/// [buildings] stand on Actions & ETF, the largest first (M7-2).
+/// Draws the archipelago as the art direction does (BRIEF §4.2, §10.2): toy
+/// blocks on the sea; Actions & ETF in sand and grass, with trees and the
+/// live wallet's buildings ([buildings], the largest first, M7-2); the
+/// locked islands in grey stone under clouds.
 class ArchipelagoPainter extends CustomPainter {
-  ArchipelagoPainter(this.geometry, {this.buildings = const []});
+  ArchipelagoPainter({this.buildings = const []});
 
-  final ArchipelagoGeometry geometry;
   final List<DrawnBuilding> buildings;
-
-  /// Where the buildings stand: a skyline across the island, the largest in
-  /// the middle, then outwards left and right. All at the same depth, so
-  /// none hides another.
-  static const _buildingSpots = [
-    (2.0, 2.0),
-    (1.4, 2.6),
-    (2.6, 1.4),
-    (0.8, 3.2),
-    (3.2, 0.8),
-  ];
-
-  /// The spots back to front, so that nearer buildings hide farther ones.
-  static final _paintingOrder =
-      [for (var i = 0; i < _buildingSpots.length; i++) i]..sort((a, b) {
-        final (ax, ay) = _buildingSpots[a];
-        final (bx, by) = _buildingSpots[b];
-        return (ax + ay).compareTo(bx + by);
-      });
-
-  static const _footprint = 0.8;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final p = geometry.projection;
-    final islands = [...archipelago]
-      ..sort((a, b) => (a.x + a.y).compareTo(b.x + b.y));
-    for (final island in islands) {
-      final shade = _Shade(locked: island.locked);
-      final s = island.size.toDouble();
-      // Ground block, then its tiles.
-      shade.draw(
-        canvas,
-        boxFacets(p, island.x, island.y, s, s, _ground, z: -_ground),
+    canvas
+      ..save()
+      ..clipRect(Offset.zero & size)
+      ..translate(-mapBounds.left, -mapBounds.top);
+    final wave = Paint()
+      ..color = MapPalette.wave
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    for (final o in _waves) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(o.dx, o.dy)
+          ..relativeQuadraticBezierTo(5, -5, 10, 0)
+          ..relativeQuadraticBezierTo(5, 5, 10, 0),
+        wave,
       );
-      for (var i = 0; i < island.size; i++) {
-        for (var j = 0; j < island.size; j++) {
-          shade.draw(
-            canvas,
-            tileFacets(p, island.x + i, island.y + j),
-            outline: 1,
-          );
-        }
+    }
+    for (final island in archipelago) {
+      canvas.drawOval(
+        island.halo,
+        Paint()..color = island.locked ? MapPalette.halo : MapPalette.haloOpen,
+      );
+      final pen = island.locked
+          ? _Pen(canvas, MapPalette.lockedInk, 1.1)
+          : _Pen(canvas, AppColors.ink, 1.3);
+      _ground(pen, island);
+      final p = island.projection;
+      switch (island.id) {
+        case IslandId.actionsEtf:
+          _livingIsland(pen, p);
+        case IslandId.trading:
+          _trading(pen, p);
+        case IslandId.realEstate:
+          _realEstate(pen, p);
+        case IslandId.crypto:
+          _crypto(pen, p);
+        case IslandId.basics:
+          _basics(pen, p);
       }
-      _props(canvas, p, island, shade);
-      if (island.locked) _clouds(canvas, geometry.centre(island));
+      for (final (at, scale) in island.clouds) {
+        _cloud(canvas, at, scale);
+      }
+    }
+    canvas.restore();
+  }
+
+  /// Each tile a block one unit deep, its sides showing where no tile stands
+  /// in front. Sides carry the outline; tops only a thin seam.
+  static void _ground(_Pen pen, IslandLayout island) {
+    final p = island.projection;
+    final rows = island.tiles;
+    bool land(int i, int j) =>
+        j < rows.length && i < rows[j].length && rows[j][i] != '.';
+    final sides = island.locked ? MapPalette.stoneSides : MapPalette.dirt;
+    final seam = Paint()
+      ..color = island.locked ? MapPalette.stoneSeam : MapPalette.seam
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.4;
+    final cells = [
+      for (var j = 0; j < rows.length; j++)
+        for (var i = 0; i < rows[j].length; i++)
+          if (land(i, j)) (i, j),
+    ]..sort((a, b) => (a.$1 + a.$2).compareTo(b.$1 + b.$2));
+    for (final (i, j) in cells) {
+      final [left, right, top] = boxFacets(
+        p,
+        i.toDouble(),
+        j.toDouble(),
+        1,
+        1,
+        1,
+        z: -1,
+      );
+      if (!land(i, j + 1)) pen.fill(left.path, sides.left);
+      if (!land(i + 1, j)) pen.fill(right.path, sides.right);
+      pen.canvas
+        ..drawPath(top.path, Paint()..color = _groundColour(rows[j][i]))
+        ..drawPath(top.path, seam);
     }
   }
 
-  void _props(
+  static Color _groundColour(String tile) => switch (tile) {
+    'S' => MapPalette.sand,
+    'g' => MapPalette.grass,
+    'G' => MapPalette.grassDark,
+    'a' => MapPalette.stone,
+    'b' => MapPalette.stoneMid,
+    _ => MapPalette.stoneDark,
+  };
+
+  /// Where buildings stand on Actions & ETF, left to right, rising to the
+  /// right as in the art direction: the largest position takes the last
+  /// spot, and the flag.
+  static const _spots = [
+    (1.0, 4.85),
+    (1.9, 4.25),
+    (2.8, 3.65),
+    (3.7, 3.05),
+    (4.6, 2.45),
+  ];
+  static const _trees = [
+    (0.6, 3.1),
+    (2.4, 5.8),
+    (3.4, 5.5),
+    (4.6, 5.3),
+    (5.3, 4.4),
+  ];
+  static const _footprint = 0.72;
+
+  /// Windows on Actions & ETF: the first row's height, the step between
+  /// rows and a window's height, in units.
+  static const _windowRows = (start: 0.28, step: 0.5, size: 0.25);
+
+  void _livingIsland(_Pen pen, IsoProjection p) {
+    // Trees and buildings, back to front.
+    final things = <(double, VoidCallback)>[
+      for (final (x, y) in _trees)
+        (x + y, () => _tree(pen, p, x, y, MapPalette.trunk, MapPalette.leaves)),
+      for (var i = 0; i < buildings.length && i < _spots.length; i++)
+        (
+          _spots[_spots.length - 1 - i].$1 + _spots[_spots.length - 1 - i].$2,
+          () => _building(pen, p, _spots.length - 1 - i, buildings[i]),
+        ),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    for (final (_, draw) in things) {
+      draw();
+    }
+  }
+
+  void _building(_Pen pen, IsoProjection p, int spot, DrawnBuilding b) {
+    if (b.height <= 0) return;
+    final (cx, cy) = _spots[spot];
+    final (x, y) = (cx - _footprint / 2, cy - _footprint / 2);
+    final (shades, lit) = MapPalette.buildings[spot];
+    final standing = b.height * b.built.clamp(0, 1);
+    if (standing > 0) {
+      pen.block(boxFacets(p, x, y, _footprint, _footprint, standing), shades);
+      _windows(
+        pen.canvas,
+        p,
+        x,
+        y,
+        _footprint,
+        standing,
+        rows: _windowRows,
+        window: MapPalette.window,
+        lit: lit,
+        seed: spot,
+      );
+      if (spot == _spots.length - 1) {
+        _flag(pen, p.project(cx, cy, standing), p.unit);
+      }
+    }
+    if (b.scaffold > 0) {
+      if (standing <= 0) {
+        // Nothing built yet: the foundation slab.
+        pen.block(boxFacets(p, x, y, _footprint, _footprint, 0.06), shades);
+      }
+      _scaffold(pen, p, x, y, b.height, b.scaffold);
+    }
+  }
+
+  /// Two columns of windows on each visible side, a row every [rows] step up
+  /// to just under the roof; one window in three lit.
+  static void _windows(
     Canvas canvas,
     IsoProjection p,
-    IslandLayout island,
-    _Shade shade,
-  ) {
-    final (x, y) = (island.x, island.y);
-    switch (island.id) {
-      case IslandId.actionsEtf:
-        for (final i in _paintingOrder) {
-          if (i >= buildings.length) continue;
-          final b = buildings[i];
-          if (b.height <= 0) continue;
-          final (bx, by) = _buildingSpots[i];
-          final (left, top) = (
-            x + bx - _footprint / 2,
-            y + by - _footprint / 2,
+    double x,
+    double y,
+    double w,
+    double height, {
+    required ({double start, double step, double size}) rows,
+    required Color window,
+    required Color lit,
+    required int seed,
+  }) {
+    var row = 0;
+    for (
+      var z = rows.start;
+      z + rows.size <= height - 0.4;
+      z += rows.step, row++
+    ) {
+      for (final (col, (a, b)) in const [(0.14, 0.36), (0.64, 0.86)].indexed) {
+        final paint = Paint()
+          ..color = (seed + row + col) % 3 == 0 ? lit : window;
+        final top = z + rows.size;
+        // The right side (x + w), then the left (y + w).
+        canvas
+          ..drawPath(
+            _quad([
+              p.project(x + w, y + a * w, z),
+              p.project(x + w, y + b * w, z),
+              p.project(x + w, y + b * w, top),
+              p.project(x + w, y + a * w, top),
+            ]),
+            paint,
+          )
+          ..drawPath(
+            _quad([
+              p.project(x + a * w, y + w, z),
+              p.project(x + b * w, y + w, z),
+              p.project(x + b * w, y + w, top),
+              p.project(x + a * w, y + w, top),
+            ]),
+            paint,
           );
-          final standing = b.height * b.built.clamp(0, 1);
-          if (standing > 0) {
-            shade.draw(
-              canvas,
-              boxFacets(p, left, top, _footprint, _footprint, standing),
-            );
-          }
-          if (b.scaffold > 0) {
-            if (standing <= 0) {
-              // Nothing built yet: the foundation slab.
-              shade.draw(
-                canvas,
-                boxFacets(p, left, top, _footprint, _footprint, 0.06),
-              );
-            }
-            _scaffold(canvas, p, left, top, b.height, b.scaffold, shade);
-          }
-        }
-      case IslandId.trading:
-        for (final (i, (low, high)) in [
-          (0.3, 1.6),
-          (0.8, 2.4),
-          (0.5, 2.0),
-        ].indexed) {
-          final c = candle(p, x + 0.8 + i * 0.7, y + 1.5, low: low, high: high);
-          shade.draw(canvas, c.body);
-          for (final (a, b) in c.wick) {
-            canvas.drawLine(a, b, shade.outlinePaint(2));
-          }
-        }
-      case IslandId.realEstate:
-        for (final (hx, hy) in [(0.4, 0.4), (1.6, 1.4)]) {
-          shade.draw(canvas, boxFacets(p, x + hx, y + hy, 1, 1, 0.9));
-          shade.draw(canvas, roofFacets(p, x + hx, y + hy, 1, 1, 0.8, z: 0.9));
-        }
-      case IslandId.crypto:
-        shade.draw(canvas, crystalFacets(p, x + 1, y + 1));
-        shade.draw(canvas, crystalFacets(p, x + 2, y + 2, h: 1.0, r: 0.25));
-      case IslandId.basics:
-        for (var level = 0; level < 3; level++) {
-          shade.draw(
-            canvas,
-            boxFacets(
-              p,
-              x + 0.9 + level * 0.1,
-              y + 0.9,
-              1.2,
-              1.2,
-              0.3,
-              z: level * 0.3,
-            ),
-          );
-        }
+      }
     }
+  }
+
+  static Path _quad(List<Offset> corners) => Path()..addPolygon(corners, true);
+
+  /// A pennant on a pole one unit high, above [roof].
+  static void _flag(_Pen pen, Offset roof, double unit) {
+    final top = roof - Offset(0, unit);
+    pen.line(roof, top, 1.5);
+    pen.fill(
+      _quad([top, top + const Offset(12, 4), top + const Offset(0, 8)]),
+      MapPalette.flag,
+    );
+  }
+
+  /// A tree standing on (x, y): a trunk 6 px high, a cubic crown on it.
+  static void _tree(
+    _Pen pen,
+    IsoProjection p,
+    double x,
+    double y,
+    Shades trunk,
+    Shades leaves,
+  ) {
+    const t = 0.12, c = 0.46;
+    final trunkHeight = 6 / p.unit;
+    pen
+      ..block(boxFacets(p, x - t / 2, y - t / 2, t, t, trunkHeight), trunk)
+      ..block(
+        boxFacets(p, x - c / 2, y - c / 2, c, c, 12 / p.unit, z: trunkHeight),
+        leaves,
+      );
   }
 
   /// A construction frame round a building's footprint, up to [height]
   /// (BRIEF §10.5: a pending buy is a building under construction): a pole
   /// at each corner, and on each visible side a rail every half unit, braced
   /// across.
-  void _scaffold(
-    Canvas canvas,
+  static void _scaffold(
+    _Pen pen,
     IsoProjection p,
     double x,
     double y,
     double height,
     double opacity,
-    _Shade shade,
   ) {
     const gap = 0.08;
     final (x0, y0) = (x - gap, y - gap);
     final (x1, y1) = (x + _footprint + gap, y + _footprint + gap);
-    final paint = shade.outlinePaint(1.5)
-      ..color = shade.ink.withValues(alpha: opacity);
+    final paint = Paint()
+      ..color = pen.ink.withValues(alpha: opacity)
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
     void line(
       double ax,
       double ay,
@@ -238,7 +423,11 @@ class ArchipelagoPainter extends CustomPainter {
       double bx,
       double by,
       double bz,
-    ) => canvas.drawLine(p.project(ax, ay, az), p.project(bx, by, bz), paint);
+    ) => pen.canvas.drawLine(
+      p.project(ax, ay, az),
+      p.project(bx, by, bz),
+      paint,
+    );
     // The back pole first: the others stand in front of it.
     for (final (cx, cy) in [(x0, y0), (x1, y0), (x0, y1), (x1, y1)]) {
       line(cx, cy, 0, cx, cy, height);
@@ -256,66 +445,186 @@ class ArchipelagoPainter extends CustomPainter {
     }
   }
 
-  void _clouds(Canvas canvas, Offset centre) {
-    final fill = Paint()..color = AppColors.surface.withValues(alpha: 0.9);
-    final outline = Paint()
-      ..color = AppColors.line
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    for (final (dx, dy, w) in [
-      (-34.0, -28.0, 64.0),
-      (6.0, -40.0, 84.0),
-      (40.0, -22.0, 56.0),
+  /// Trading: five candlesticks, two of them darker.
+  static void _trading(_Pen pen, IsoProjection p) {
+    for (final (x, y, low, high, top, dark) in const [
+      (0.8, 2.7, 0.71, 2.0, 2.57, false),
+      (1.4, 2.2, 1.14, 3.29, 3.86, true),
+      (2.0, 1.7, 0.57, 2.0, 2.57, false),
+      (2.6, 1.2, 1.0, 3.71, 4.29, false),
+      (3.1, 0.7, 1.85, 3.43, 4.0, true),
     ]) {
-      final rect = Rect.fromCenter(
-        center: centre + Offset(dx, dy),
-        width: w,
-        height: w * 0.45,
+      final c = candle(p, x, y, bodyLow: low, bodyHigh: high, high: top);
+      pen
+        ..line(c.lowerWick.$1, c.lowerWick.$2, 2)
+        ..block(c.body, dark ? MapPalette.blockDark : MapPalette.block)
+        ..line(c.upperWick.$1, c.upperWick.$2, 2);
+    }
+  }
+
+  /// Windows on a stone tower.
+  static const _towerRows = (start: 0.35, step: 0.57, size: 0.29);
+
+  /// Real estate: houses and two towers between two trees.
+  static void _realEstate(_Pen pen, IsoProjection p) {
+    _tree(pen, p, 0.7, 1.4, MapPalette.stoneTrunk, MapPalette.stoneLeaves);
+    _tower(pen, p, 2.2, 0.7, 2.29);
+    _house(pen, p, 1.8, 1.9, w: 0.6, wall: 0.64, roof: 0.64);
+    _house(pen, p, 1.0, 2.7, w: 0.6, wall: 0.64, roof: 0.64);
+    _tower(pen, p, 2.9, 1.3, 3.57);
+    _house(pen, p, 2.4, 2.9, w: 0.6, wall: 0.64, roof: 0.64);
+    _tree(pen, p, 3.4, 2.4, MapPalette.stoneTrunk, MapPalette.stoneLeaves);
+  }
+
+  static void _tower(
+    _Pen pen,
+    IsoProjection p,
+    double cx,
+    double cy,
+    double height,
+  ) {
+    const w = 0.6;
+    final (x, y) = (cx - w / 2, cy - w / 2);
+    pen.block(boxFacets(p, x, y, w, w, height), MapPalette.block);
+    _windows(
+      pen.canvas,
+      p,
+      x,
+      y,
+      w,
+      height,
+      rows: _towerRows,
+      window: MapPalette.stoneWindow,
+      lit: MapPalette.wallDark.top,
+      seed: 1,
+    );
+  }
+
+  static void _house(
+    _Pen pen,
+    IsoProjection p,
+    double cx,
+    double cy, {
+    required double w,
+    required double wall,
+    required double roof,
+  }) {
+    final (x, y) = (cx - w / 2, cy - w / 2);
+    pen
+      ..block(boxFacets(p, x, y, w, w, wall), MapPalette.wall)
+      ..block(gableFacets(p, x, y, w, w, roof, z: wall), MapPalette.roof);
+  }
+
+  /// Crypto: a crystal on its tip between two small blocks.
+  static void _crypto(_Pen pen, IsoProjection p) {
+    _cube(pen, p, 1.2, 2.6, 0.4, 0.36);
+    for (final (face, path) in crystalPaths(
+      p,
+      1.57,
+      1.37,
+      r: 0.42,
+      mid: 1.2,
+      h: 2.86,
+    ).indexed) {
+      pen.fill(path, MapPalette.crystal[face]);
+    }
+    _cube(pen, p, 2.9, 2.3, 0.32, 0.29);
+  }
+
+  static void _cube(
+    _Pen pen,
+    IsoProjection p,
+    double cx,
+    double cy,
+    double w,
+    double h,
+  ) => pen.block(
+    boxFacets(p, cx - w / 2, cy - w / 2, w, w, h),
+    MapPalette.blockDark,
+  );
+
+  /// Les bases: a house and a lighthouse of five courses.
+  static void _basics(_Pen pen, IsoProjection p) {
+    _house(pen, p, 1.1, 2.6, w: 0.55, wall: 0.57, roof: 0.5);
+    const cx = 2.3, cy = 1.7;
+    Rect footprint(double w) =>
+        Rect.fromCenter(center: const Offset(cx, cy), width: w, height: w);
+    void course(double w, double z, double h, Shades shades) {
+      final f = footprint(w);
+      pen.block(boxFacets(p, f.left, f.top, w, w, h, z: z), shades);
+    }
+
+    const step = 9 / 14;
+    for (var i = 0; i < 5; i++) {
+      course(
+        0.5,
+        i * step,
+        step,
+        i.isEven ? MapPalette.wall : MapPalette.wallDark,
       );
-      canvas.drawOval(rect, fill);
-      canvas.drawOval(rect, outline);
+    }
+    course(0.72, 5 * step, 0.21, MapPalette.wall);
+    course(0.38, 5 * step + 0.21, 0.57, MapPalette.wall);
+    final cap = footprint(0.38);
+    pen.block(
+      roofFacets(p, cap.left, cap.top, 0.38, 0.38, 0.65, z: 5 * step + 0.78),
+      MapPalette.wallDark,
+    );
+  }
+
+  /// Six white puffs, as the art direction draws a cloud.
+  static void _cloud(Canvas canvas, Offset at, double scale) {
+    final paint = Paint()..color = MapPalette.cloud;
+    for (final (dx, dy, r) in const [
+      (0.0, 0.0, 14.0),
+      (16.0, -6.0, 18.0),
+      (34.0, 0.0, 14.0),
+      (16.0, 6.0, 14.0),
+      (-10.0, 6.0, 9.0),
+      (46.0, 6.0, 9.0),
+    ]) {
+      canvas.drawCircle(at + Offset(dx, dy) * scale, r * scale, paint);
     }
   }
 
   @override
   bool shouldRepaint(ArchipelagoPainter old) =>
-      old.geometry != geometry || !listEquals(old.buildings, buildings);
+      !listEquals(old.buildings, buildings);
 }
 
-/// Neutral tokens only: the art carries no meaning a colour could suggest.
-class _Shade {
-  _Shade({required bool locked})
-    : _top = locked ? AppColors.page : AppColors.surface,
-      _left = locked ? AppColors.line : AppColors.page,
-      _right = AppColors.line,
-      _ink = locked ? AppColors.muted : AppColors.ink;
+/// Fills shapes and outlines them, as the art direction draws its blocks.
+final class _Pen {
+  _Pen(this.canvas, this.ink, double width)
+    : _outline = Paint()
+        ..color = ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..strokeJoin = StrokeJoin.round;
 
-  final Color _top;
-  final Color _left;
-  final Color _right;
-  final Color _ink;
+  final Canvas canvas;
+  final Color ink;
+  final Paint _outline;
 
-  Color get ink => _ink;
+  void fill(Path path, Color color) => canvas
+    ..drawPath(path, Paint()..color = color)
+    ..drawPath(path, _outline);
 
-  Paint outlinePaint(double width) => Paint()
-    ..color = _ink
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = width
-    ..strokeJoin = StrokeJoin.round
-    ..strokeCap = StrokeCap.round;
-
-  void draw(Canvas canvas, List<Facet> facets, {double outline = 2.5}) {
+  void block(List<Facet> facets, Shades shades) {
     for (final (:face, :path) in facets) {
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = switch (face) {
-            Face.top => _top,
-            Face.left => _left,
-            Face.right => _right,
-          },
-      );
-      canvas.drawPath(path, outlinePaint(outline));
+      fill(path, switch (face) {
+        Face.top => shades.top,
+        Face.left => shades.left,
+        Face.right => shades.right,
+      });
     }
   }
+
+  void line(Offset a, Offset b, double width) => canvas.drawLine(
+    a,
+    b,
+    Paint()
+      ..color = ink
+      ..strokeWidth = width
+      ..strokeCap = StrokeCap.round,
+  );
 }

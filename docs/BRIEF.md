@@ -117,6 +117,12 @@ Rules:
 
 - Isometric archipelago drawn in code (`CustomPainter`), 5 islands: Actions & ETF (centre, playable),
   Trading, Immobilier, Crypto, Les bases (locked: clouds/greyed, label "Bientôt").
+  Built (M9-11): in the style of the approved art direction, the « map » artboard of the canvas « Investment
+  Companion — Art direction » (https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5), its islands where it places
+  them: block islands on the sea, Actions & ETF in sand and grass with trees, the locked ones in grey stone
+  with their props (candlesticks, houses and towers, a crystal, a lighthouse) under clouds. The map opens on all
+  five above the next-step card, the smallest zoom it allows. Labels: Actions & ETF in a chunky pill with its
+  lessons done (« 2/12 »); a locked island's name with a lock (screen readers: « {île}, bientôt »).
 - Header: title "Ton archipel", islands opened count, level chip.
 - Next-step card at the bottom: always exactly one recommended action. Selection is a pure function
   `nextStep(state)`, first match wins: an unread companion moment; the safety-cushion sheet (Q4 "Pas
@@ -129,8 +135,9 @@ Rules:
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back
-  (sells change nothing until they fill); the 5 largest stand in a row across the island, the largest in the
-  middle, each as tall as its size against the largest's (0,4 to 1,6 height units). The part a pending buy
+  (sells change nothing until they fill); the 5 largest stand in a row across the island, rising to the
+  right, the largest last with a flag (M9-11), each as tall as its size against the largest's (1 to 4 height
+  units, one unit a block's height). The part a pending buy
   adds is scaffolding round the building, a bare foundation for an asset not held yet.
 
 ### 4.3 Islands, nodes and content packs
@@ -883,7 +890,9 @@ Rule: chunky = the game is talking to you; flat = your money.
 | `sea` | #86D9EC | World screens background only |
 
 No decorative color. A screen state (e.g. being in a trip) is signalled by content (date, icon, label), not
-by tinting the screen. Selected tabs, segments and chips use the neutral `line` container; app bars stay
+by tinting the screen. One exception (decided 2026-10-13): the painted archipelago (§4.2) uses the art
+direction's own colours (sand, grass, dirt, coloured buildings, grey stone), tokens of their own
+(`MapPalette`), on the map only; they draw a place and carry no meaning. Selected tabs, segments and chips use the neutral `line` container; app bars stay
 `surface` when content scrolls under them.
 
 ### 10.3 Typography

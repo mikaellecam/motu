@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/trip/trip_wizard.dart';
+import '../../application/learning/content.dart';
+import '../../application/learning/island_path.dart';
 import '../../application/learning/ui_level.dart';
 import '../../application/wallet/living_island.dart';
 import '../../core/l10n/app_localizations.dart';
@@ -120,6 +122,7 @@ class MapTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     // Offline or still loading, the island stands as it last did, or bare.
     final buildings = ref.watch(livingIslandProvider).value ?? const [];
+    final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
     final level = ref.watch(currentUiLevelProvider).value;
     final open = archipelago.where((i) => !i.locked).length;
     return Scaffold(
@@ -130,6 +133,9 @@ class MapTab extends ConsumerWidget {
           Positioned.fill(
             child: ArchipelagoMap(
               buildings: buildings,
+              progress: path == null || path.nodes.isEmpty
+                  ? null
+                  : (done: path.done, total: path.nodes.length),
               onOpen: (_) => context.push('/island/actions-etf'),
             ),
           ),

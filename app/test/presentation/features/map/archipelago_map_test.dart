@@ -9,12 +9,18 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers.dart';
 
 void main() {
-  Future<List<IslandId>> pumpMap(WidgetTester tester) async {
+  Future<List<IslandId>> pumpMap(
+    WidgetTester tester, {
+    ({int done, int total})? progress,
+  }) async {
     final opened = <IslandId>[];
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    await pumpApp(tester, ArchipelagoMap(onOpen: opened.add));
+    await pumpApp(
+      tester,
+      ArchipelagoMap(onOpen: opened.add, progress: progress),
+    );
     return opened;
   }
 
@@ -31,7 +37,26 @@ void main() {
     ]) {
       expect(find.text(name), findsOneWidget, reason: name);
     }
-    expect(find.text('Bientôt'), findsNWidgets(4));
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(4));
+  });
+
+  testWidgets('it opens on all five islands, above the next-step card', (
+    tester,
+  ) async {
+    await pumpMap(tester);
+    // The card covers the bottom 200 px of the 844 px screen.
+    const free = Rect.fromLTRB(0, 0, 390, 844 - 200);
+    for (final name in [
+      'Actions & ETF',
+      'Trading',
+      'Immobilier',
+      'Crypto',
+      'Les bases',
+    ]) {
+      final label = tester.getRect(find.text(name));
+      expect(free.contains(label.topLeft), isTrue, reason: name);
+      expect(free.contains(label.bottomRight), isTrue, reason: name);
+    }
   });
 
   testWidgets('Actions & ETF opens; locked islands do nothing', (tester) async {
@@ -60,6 +85,17 @@ void main() {
     );
   });
 
+  testWidgets('Actions & ETF shows its lessons done, to the eye and the ear', (
+    tester,
+  ) async {
+    await pumpMap(tester, progress: (done: 2, total: 12));
+    expect(find.text('2/12'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Actions & ETF, 2 sur 12 terminées'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('labels are comfortable tap targets', (tester) async {
     await pumpMap(tester);
     // Measured on screen, at the opening zoom: the smallest the map allows.
@@ -80,7 +116,8 @@ void main() {
     final viewer = tester.widget<InteractiveViewer>(
       find.byType(InteractiveViewer),
     );
-    expect(viewer.minScale, 0.75);
+    // The opening view, all five islands, is the smallest.
+    expect(viewer.minScale, 1);
     expect(viewer.maxScale, 2.5);
     expect(viewer.panEnabled, isTrue);
     expect(viewer.scaleEnabled, isTrue);

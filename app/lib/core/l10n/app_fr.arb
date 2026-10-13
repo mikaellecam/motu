@@ -113,7 +113,23 @@
   "island_realEstate": "Immobilier",
   "island_crypto": "Crypto",
   "island_basics": "Les bases",
-  "map_soon": "Bient\u00f4t",
+  "map_island_progress": "{done}/{total}",
+  "@map_island_progress": {
+    "description": "Badge on the Actions & ETF label of the map: lessons done, of all of them.",
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "map_island_open": "{island}, {done} sur {total} termin\u00e9es",
+  "@map_island_open": {
+    "description": "Screen-reader label of the playable island, with its lessons done.",
+    "placeholders": {
+      "island": {"type": "String"},
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "map_island_locked": "{island}, bient\u00f4t",
   "@map_island_locked": {
     "description": "Screen-reader label of a locked island.",

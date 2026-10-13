@@ -38,9 +38,10 @@ final class DrawnBuilding {
   String toString() => 'DrawnBuilding($height, $built, $scaffold)';
 }
 
-/// The smallest and the tallest building, in height units.
-const minBuildingHeight = 0.4;
-const maxBuildingHeight = 1.6;
+/// The smallest and the tallest building, in height units: one block to
+/// four, as in the art direction's skyline.
+const minBuildingHeight = 1.0;
+const maxBuildingHeight = 4.0;
 
 /// [buildings] as they stand: the largest at full height, every one at least
 /// [minBuildingHeight], scaffolding round those a buy is still raising.

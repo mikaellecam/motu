@@ -114,55 +114,97 @@ List<Facet> roofFacets(
   ];
 }
 
-/// A candlestick: a thin body from [low] to [high] (heights) with its wick,
-/// centred on (x, y).
-({List<Facet> body, List<(Offset, Offset)> wick}) candle(
+/// A gable roof over the footprint (x, y, w, d), its base at [z], its ridge
+/// [h] above, running along x: the back slope, the front slope, then the
+/// gable end facing +x.
+List<Facet> gableFacets(
   IsoProjection p,
   double x,
-  double y, {
-  required double low,
-  required double high,
-  double width = 0.3,
+  double y,
+  double w,
+  double d,
+  double h, {
+  required double z,
 }) {
-  final top = high - (high - low) * 0.2;
-  final bottom = low + (high - low) * 0.2;
-  return (
-    body: boxFacets(
-      p,
-      x - width / 2,
-      y - width / 2,
-      width,
-      width,
-      top - bottom,
-      z: bottom,
+  final ridgeBack = p.project(x, y + d / 2, z + h);
+  final ridgeFront = p.project(x + w, y + d / 2, z + h);
+  return [
+    (
+      face: Face.top,
+      path: _polygon([
+        p.project(x, y, z),
+        p.project(x + w, y, z),
+        ridgeFront,
+        ridgeBack,
+      ]),
     ),
-    wick: [
-      (p.project(x, y, bottom), p.project(x, y, low)),
-      (p.project(x, y, top), p.project(x, y, high)),
-    ],
-  );
+    (
+      face: Face.left,
+      path: _polygon([
+        p.project(x, y + d, z),
+        p.project(x + w, y + d, z),
+        ridgeFront,
+        ridgeBack,
+      ]),
+    ),
+    (
+      face: Face.right,
+      path: _polygon([
+        p.project(x + w, y, z),
+        p.project(x + w, y + d, z),
+        ridgeFront,
+      ]),
+    ),
+  ];
 }
 
-/// A crystal (two pyramids base to base) centred on (x, y), from [z] up to
-/// [z] + [h]: its four faces towards the viewer.
-List<Facet> crystalFacets(
+/// A candlestick standing on (x, y): a wick from the ground up to its body,
+/// the body from [bodyLow] to [bodyHigh], a wick on to [high].
+({(Offset, Offset) lowerWick, List<Facet> body, (Offset, Offset) upperWick})
+candle(
   IsoProjection p,
   double x,
   double y, {
-  double r = 0.35,
-  double h = 1.4,
-  double z = 0,
+  required double bodyLow,
+  required double bodyHigh,
+  required double high,
+  double width = 0.34,
+}) => (
+  lowerWick: (p.project(x, y), p.project(x, y, bodyLow)),
+  body: boxFacets(
+    p,
+    x - width / 2,
+    y - width / 2,
+    width,
+    width,
+    bodyHigh - bodyLow,
+    z: bodyLow,
+  ),
+  upperWick: (p.project(x, y, bodyHigh), p.project(x, y, high)),
+);
+
+/// A crystal standing on its tip at (x, y): two pyramids base to base, their
+/// ring of radius [r] on the axes at [mid], the top tip at [h]. Its six faces
+/// towards the viewer: the lower three right to left, then the upper three.
+List<Path> crystalPaths(
+  IsoProjection p,
+  double x,
+  double y, {
+  required double r,
+  required double mid,
+  required double h,
 }) {
-  final mid = z + h / 2;
-  final top = p.project(x, y, z + h);
-  final bottom = p.project(x, y, z);
-  final front = p.project(x + r, y + r, mid);
-  final left = p.project(x - r, y + r, mid);
-  final right = p.project(x + r, y - r, mid);
+  final bottom = p.project(x, y);
+  final top = p.project(x, y, h);
+  final back = p.project(x, y - r, mid);
+  final right = p.project(x + r, y, mid);
+  final front = p.project(x, y + r, mid);
+  final left = p.project(x - r, y, mid);
   return [
-    (face: Face.left, path: _polygon([bottom, left, front])),
-    (face: Face.right, path: _polygon([bottom, front, right])),
-    (face: Face.left, path: _polygon([top, left, front])),
-    (face: Face.top, path: _polygon([top, front, right])),
+    for (final tip in [bottom, top]) ...[
+      _polygon([tip, back, right]),
+      _polygon([tip, right, front]),
+      _polygon([tip, front, left]),
+    ],
   ];
 }

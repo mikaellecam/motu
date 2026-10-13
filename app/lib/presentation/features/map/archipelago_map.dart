@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +17,7 @@ class ArchipelagoMap extends StatefulWidget {
     super.key,
     required this.onOpen,
     this.buildings = const [],
+    this.progress,
   });
 
   /// Called with the playable island the user taps.
@@ -24,15 +27,17 @@ class ArchipelagoMap extends StatefulWidget {
   /// M7-2). A change animates in stages (BRIEF §10.5).
   final List<IslandBuilding> buildings;
 
+  /// Lessons done on Actions & ETF, of all of them: its label shows them.
+  final ({int done, int total})? progress;
+
   @override
   State<ArchipelagoMap> createState() => _ArchipelagoMapState();
 }
 
 class _ArchipelagoMapState extends State<ArchipelagoMap>
     with SingleTickerProviderStateMixin {
-  final _geometry = ArchipelagoGeometry();
   final _transform = TransformationController();
-  bool _centred = false;
+  bool _opened = false;
 
   /// One staged run from [_from] to [_to] (BRIEF §10.5).
   late final _growth = AnimationController(
@@ -65,19 +70,28 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
     super.dispose();
   }
 
-  /// Opens slightly zoomed out on the playable island, so its neighbours
-  /// show at the edges and invite panning.
-  static const initialScale = 0.75;
+  /// The next-step card over the bottom of the map: the islands stay above.
+  static const _cardRoom = 200.0;
 
-  void _centre(Size viewport) {
-    if (_centred) return;
-    _centred = true;
-    final home = archipelago.firstWhere((i) => !i.locked);
-    final target = _geometry.centre(home) * initialScale;
-    _transform.value = Matrix4.diagonal3Values(initialScale, initialScale, 1)
+  /// The zoom that shows all five islands above the card, as the art
+  /// direction does, and the smallest the map allows.
+  static double fitScale(Size viewport) => math.max(
+    0.5,
+    math.min(
+      viewport.width / mapSize.width,
+      (viewport.height - _cardRoom) / mapSize.height,
+    ),
+  );
+
+  /// Opens on the whole archipelago, centred across, at the top.
+  void _open(Size viewport, double scale) {
+    if (_opened) return;
+    _opened = true;
+    final above = viewport.height - _cardRoom - mapSize.height * scale;
+    _transform.value = Matrix4.diagonal3Values(scale, scale, 1)
       ..setTranslationRaw(
-        viewport.width / 2 - target.dx,
-        viewport.height / 2 - target.dy,
+        (viewport.width - mapSize.width * scale) / 2,
+        math.max(AppSpace.x2, above / 2),
         0,
       );
   }
@@ -86,30 +100,37 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        _centre(constraints.biggest);
+        final viewport = constraints.biggest;
+        final scale = fitScale(viewport);
+        _open(viewport, scale);
         return InteractiveViewer(
           transformationController: _transform,
           constrained: false,
-          // Never smaller than the opening view: labels stay ≥ 44 px.
-          minScale: initialScale,
-          maxScale: 2.5,
-          boundaryMargin: const EdgeInsets.all(160),
+          minScale: scale,
+          maxScale: math.max(2.5, scale * 2),
+          // Room to pan the islands anywhere on screen, not off it.
+          boundaryMargin: EdgeInsets.symmetric(
+            horizontal: viewport.width / scale / 2,
+            vertical: viewport.height / scale,
+          ),
           child: SizedBox.fromSize(
-            size: _geometry.size,
+            size: mapSize,
             child: Stack(
               children: [
                 Positioned.fill(
                   child: AnimatedBuilder(
                     animation: _growth,
                     builder: (context, _) => CustomPaint(
-                      painter: ArchipelagoPainter(_geometry, buildings: _frame),
+                      painter: ArchipelagoPainter(buildings: _frame),
                     ),
                   ),
                 ),
                 for (final island in archipelago)
                   _IslandLabel(
                     island: island,
-                    anchor: _geometry.labelAnchor(island),
+                    // ≥ 44 px on screen even at the smallest zoom.
+                    target: AppSpace.minTarget / scale,
+                    progress: island.locked ? null : widget.progress,
                     onTap: island.locked
                         ? null
                         : () => widget.onOpen(island.id),
@@ -123,33 +144,47 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
   }
 }
 
+/// An island's name on the sea, as the art direction draws it: Actions & ETF
+/// in a chunky pill, the locked islands in a thin one with a lock.
 class _IslandLabel extends StatelessWidget {
   const _IslandLabel({
     required this.island,
-    required this.anchor,
+    required this.target,
+    required this.progress,
     required this.onTap,
   });
 
   final IslandLayout island;
-  final Offset anchor;
+  final ({int done, int total})? progress;
+
+  /// The tap target's height, in map px.
+  final double target;
   final VoidCallback? onTap;
 
-  static const _width = 160.0;
+  static const _width = 280.0;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final name = islandName(l10n, island.id);
-    final style = AppText.label.copyWith(
-      color: island.locked ? AppColors.muted : AppColors.ink,
-    );
+    final anchor = island.labelAnchor;
+    // The pill's top on the anchor; the target round its middle.
+    final middle = anchor.dy + (island.locked ? 15 : 22);
     return Positioned(
       left: anchor.dx - _width / 2,
-      top: anchor.dy + AppSpace.x2,
+      top: middle - target / 2,
       width: _width,
       child: Semantics(
         button: onTap != null,
-        label: island.locked ? l10n.map_island_locked(name) : name,
+        label: switch (progress) {
+          _ when island.locked => l10n.map_island_locked(name),
+          (:final done, :final total) => l10n.map_island_open(
+            name,
+            done,
+            total,
+          ),
+          null => name,
+        },
         // Excluding the child's semantics drops its tap action too.
         onTap: onTap,
         excludeSemantics: true,
@@ -157,48 +192,109 @@ class _IslandLabel extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
           child: ConstrainedBox(
-            // ≥ 44 px on screen even at the smallest zoom.
-            constraints: BoxConstraints(
-              minHeight: AppSpace.minTarget / _ArchipelagoMapState.initialScale,
-            ),
+            constraints: BoxConstraints(minHeight: target),
             child: Center(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(AppShape.chunkyButtonRadius),
-                  ),
-                  border: Border.all(
-                    color: island.locked ? AppColors.line : AppColors.ink,
-                    width: AppShape.chunkyBorder,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpace.x3,
-                    vertical: AppSpace.x2,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(name, style: style, textAlign: TextAlign.center),
-                      if (island.locked)
-                        Text(
-                          l10n.map_soon,
-                          style: AppText.caption.copyWith(
-                            color: AppColors.muted,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              child: island.locked
+                  ? _LockedPill(name)
+                  : _OpenPill(name, progress: progress),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+class _OpenPill extends StatelessWidget {
+  const _OpenPill(this.name, {required this.progress});
+  final String name;
+  final ({int done, int total})? progress;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minHeight: AppSpace.minTarget),
+    padding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
+    decoration: const ShapeDecoration(
+      color: AppColors.surface,
+      shape: StadiumBorder(
+        side: BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
+      ),
+      shadows: [
+        BoxShadow(
+          color: AppColors.ink,
+          offset: Offset(0, AppShape.chunkyButtonShadow),
+        ),
+      ],
+    ),
+    child: Center(
+      widthFactor: 1,
+      heightFactor: 1,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              name,
+              style: AppText.titleSmall.copyWith(color: AppColors.ink),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          if (progress case (:final done, :final total)) ...[
+            const SizedBox(width: AppSpace.x2),
+            DecoratedBox(
+              decoration: const ShapeDecoration(
+                color: AppColors.progress,
+                shape: StadiumBorder(),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpace.x2,
+                  vertical: 2,
+                ),
+                child: Text(
+                  AppLocalizations.of(context).map_island_progress(done, total),
+                  style: AppText.label.copyWith(
+                    color: AppColors.ink,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+class _LockedPill extends StatelessWidget {
+  const _LockedPill(this.name);
+  final String name;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpace.x3,
+      vertical: AppSpace.x1,
+    ),
+    decoration: const ShapeDecoration(
+      color: AppColors.surface,
+      shape: StadiumBorder(side: BorderSide(color: AppColors.muted, width: 2)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.lock_outline, size: 14, color: AppColors.muted),
+        const SizedBox(width: AppSpace.x1),
+        Flexible(
+          child: Text(
+            name,
+            style: AppText.label.copyWith(color: AppColors.muted),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 String islandName(AppLocalizations l10n, IslandId id) => switch (id) {

@@ -51,22 +51,35 @@ void main() {
     }
   });
 
-  test('a candle: body between the wicks, wicks to low and high', () {
-    final c = candle(p, 0, 0, low: 0, high: 2);
-    expect(c.body.map((f) => f.face), [Face.left, Face.right, Face.top]);
-    expect(c.wick.first.$2, p.project(0, 0, 0));
-    expect(c.wick.last.$2, p.project(0, 0, 2));
-    // The body stops short of both ends.
-    expect(bounds(c.body.last.path).top, greaterThan(p.project(0, 0, 2).dy));
-  });
-
-  test('a crystal shows four faces between its tips', () {
-    final facets = crystalFacets(p, 0, 0, h: 2);
-    expect(facets, hasLength(4));
+  test('a gable roof: back slope, front slope, gable end, ridge along x', () {
+    final facets = gableFacets(p, 0, 0, 1, 1, 1, z: 1);
+    expect(facets.map((f) => f.face), [Face.top, Face.left, Face.right]);
     final all = facets
         .map((f) => bounds(f.path))
         .reduce((a, b) => a.expandToInclude(b));
+    // The ridge's back end is the highest point; the eaves the lowest.
+    expect(all.top, p.project(0, 0.5, 2).dy);
+    expect(all.bottom, p.project(1, 1, 1).dy);
+  });
+
+  test('a candle: wicks from the ground to its body and above it', () {
+    final c = candle(p, 0, 0, bodyLow: 1, bodyHigh: 2, high: 3);
+    expect(c.body.map((f) => f.face), [Face.left, Face.right, Face.top]);
+    expect(c.lowerWick, (p.project(0, 0), p.project(0, 0, 1)));
+    expect(c.upperWick, (p.project(0, 0, 2), p.project(0, 0, 3)));
+    expect(
+      bounds(c.body.last.path).center,
+      offsetMoreOrLessEquals(p.project(0, 0, 2), epsilon: 0.001),
+    );
+  });
+
+  test('a crystal: six faces, its ring on the axes, between its tips', () {
+    final faces = crystalPaths(p, 0, 0, r: 0.5, mid: 1, h: 2);
+    expect(faces, hasLength(6));
+    final all = faces.map(bounds).reduce((a, b) => a.expandToInclude(b));
     expect(all.top, p.project(0, 0, 2).dy);
     expect(all.bottom, p.project(0, 0).dy);
+    expect(all.left, p.project(0, 0.5, 1).dx);
+    expect(all.right, p.project(0.5, 0, 1).dx);
   });
 }
