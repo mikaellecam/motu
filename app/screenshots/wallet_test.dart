@@ -224,6 +224,19 @@ void main() {
     size: const Size(390, 1560),
     overrides: overrides,
   );
+  // Relaunched offline (BRIEF §6.4): the last prices, dated, under the banner.
+  screenshot(
+    'm9-5-wallet-offline',
+    const WalletScreen(walletId: 'live'),
+    size: const Size(390, 760),
+    overrides: [
+      livret,
+      ...overrides.skip(2),
+      cacheStatusProvider.overrideWith(
+        (ref) => Stream.value(Offline(DateTime.utc(2026, 10, 7, 20, 5))),
+      ),
+    ],
+  );
   screenshot(
     'm4-2-wallet-benchmark',
     const WalletScreen(walletId: 'live'),

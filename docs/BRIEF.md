@@ -951,7 +951,9 @@ French only for the names and symbols both share.
 ## 13. Delivery
 
 Milestones and issue breakdown: `docs/ROADMAP.md`. Each architecture choice gets an ADR in
-`docs/decisions/` (context, options, decision, consequences) — the school report is built from them.
+`docs/decisions/` (context, options, decision, consequences) — the school report is built from them, with the
+material in `docs/report/` (architecture and data model diagrams, the cache strategy, the test list, the
+screens; M9-5).
 
 ---
 
