@@ -590,7 +590,8 @@ Built (M9-1), decided 2026-10-12:
 - Level: « Niveau n sur 3 », and « Tout afficher dès maintenant » (`profiles.showAll`), which sets level 3.
 - « Refaire le questionnaire » opens it with the previous answers; progress and settings are kept.
 - Data: when prices last came from the network, the histories and closes cached and the database's size on the
-  device; « Actualiser maintenant » makes every price due again; « Vider le cache » deletes prices, quotes and
+  device; « Actualiser maintenant » makes every price due again (the cached ones stand until then, offline
+  included, and the last fetch time stays; M9-10); « Vider le cache » deletes prices, quotes and
   rates (wallets, lessons, the catalogue and calendars stay).
 - Starting capital: 1 000 · 10 000 · 50 000 · 100 000 €, applied at the next reset (`profiles.liveStartingCents`,
   schema v3).

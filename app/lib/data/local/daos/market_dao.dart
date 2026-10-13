@@ -53,13 +53,6 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
     return (pages.data.values.first as int) * (size.data.values.first as int);
   }
 
-  /// « Actualiser maintenant »: every history and quote is due again.
-  Future<void> markStale() => transaction(() async {
-    await delete(quotes).go();
-    await update(historySync)
-        .write(HistorySyncCompanion(fetchedAt: Value(DateTime.utc(2000))));
-  });
-
   /// « Vider le cache »: the prices, quotes and rates go; wallets, lessons,
   /// the catalogue and calendars stay.
   Future<void> clearPrices() => transaction(() async {

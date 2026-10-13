@@ -476,11 +476,49 @@ void main() {
       expect(info.lastFetch, wall.now());
     });
 
-    test('« Actualiser maintenant »: the next read fetches again', () async {
+    // Closed until Thursday's open: without « Actualiser maintenant », the
+    // quote would last until then.
+    void appleQuote() => backend.quotes['apple'] = {
+      'assetId': 'apple',
+      'price': '231.4',
+      'currency': 'USD',
+      'asOf': '2026-10-07T20:00:00Z',
+      'marketOpen': false,
+    };
+
+    test('« Actualiser maintenant »: the next reads fetch histories and quotes '
+        'again', () async {
+      appleQuote();
       await closes();
+      await repo.latest('apple', asOf: wall.now());
+      wall.advance(const Duration(minutes: 1));
       await repo.refreshNow();
       await closes();
+      await repo.latest('apple', asOf: wall.now());
       expect(backend.to('/v1/assets/apple/history'), hasLength(2));
+      expect(backend.to('/v1/quotes'), hasLength(2));
+    });
+
+    test('« Actualiser maintenant » keeps when prices last came', () async {
+      appleQuote();
+      await closes();
+      await repo.latest('apple', asOf: wall.now());
+      final before = (await repo.cacheInfo()).lastFetch;
+      wall.advance(const Duration(minutes: 5));
+      await repo.refreshNow();
+      expect((await repo.cacheInfo()).lastFetch, before);
+    });
+
+    test('« Actualiser maintenant », then offline: the cached quote stands '
+        'in', () async {
+      appleQuote();
+      await repo.latest('apple', asOf: wall.now());
+      wall.advance(const Duration(minutes: 1));
+      await repo.refreshNow();
+      backend.offline = true;
+      final quote = await repo.latest('apple', asOf: wall.now());
+      expect(quote!.price.value, dec('231.4'));
+      expect(backend.to('/v1/quotes'), hasLength(2), reason: 'it was due');
     });
 
     test('« Vider le cache »: the prices go, then come back', () async {

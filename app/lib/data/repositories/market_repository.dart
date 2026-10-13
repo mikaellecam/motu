@@ -99,6 +99,15 @@ class MarketRepository {
   DateTime? _assetsCheckedAt;
   DateTime? _livretCheckedAt;
 
+  /// « Actualiser maintenant »: what was fetched before it is due again,
+  /// whatever its age, while the cached prices and the time they came stay
+  /// (M9-10). Kept in memory: a relaunch forgets it, and the usual lives
+  /// apply.
+  DateTime? _dueBefore;
+
+  bool _due(DateTime fetchedAt) =>
+      _dueBefore != null && fetchedAt.isBefore(_dueBefore!);
+
   /// The Livret A rate and ceiling histories known on [asOf]'s day, checked
   /// once a day (BRIEF §6.2, §4.11).
   Future<({List<LivretRate> rates, List<LivretCeiling> ceilings})> livret({
@@ -259,11 +268,12 @@ class MarketRepository {
   });
 
   /// « Actualiser maintenant »: everything is fetched again on its next read.
-  Future<void> refreshNow() => guardStorage(() async {
-    await _dao.markStale();
+  /// Until then, and offline, the cached prices stand.
+  Future<void> refreshNow() async {
+    _dueBefore = _wall.now();
     _assetsCheckedAt = null;
     _livretCheckedAt = null;
-  });
+  }
 
   /// « Vider le cache »: prices go; they come back from the network as
   /// screens need them.
@@ -348,7 +358,8 @@ class MarketRepository {
     final sync = await _dao.sync(assetId);
     if (sync != null &&
         (!sync.lastDate.isBefore(upTo) ||
-            _wall.now().difference(sync.fetchedAt) < historyRecheck)) {
+            !_due(sync.fetchedAt) &&
+                _wall.now().difference(sync.fetchedAt) < historyRecheck)) {
       return;
     }
     try {
@@ -406,6 +417,7 @@ class MarketRepository {
   /// holidays (offline, never fetched) count as stale.
   Future<bool> _isFresh(QuoteRow row, Exchange exchange) async {
     final fetched = row.fetchedAt;
+    if (_due(fetched)) return false;
     final MarketCalendar markets;
     try {
       markets = await calendar(

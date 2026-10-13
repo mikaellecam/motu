@@ -63,7 +63,7 @@ The daily checks of the catalogue and the Livret rates are timed in memory: a re
 | The backend re-adjusts an asset | Its cached history is dropped and fetched whole. |
 | A new lesson version is published | Downloaded within a day, kept if it reads. |
 | An app update ships a newer bundled pack | The bundle replaces an older cached pack. |
-| « Actualiser maintenant » (Settings) | Every price becomes due: the next read of each asks again. |
+| « Actualiser maintenant » (Settings) | Every price becomes due: the next read of each asks again. Until then, and offline, the cached prices stand, and Settings keeps the time they came. |
 | « Vider le cache » (Settings) | Prices, quotes and rates are deleted; wallets, lessons, the catalogue and calendars stay. |
 
 ## Offline: a degraded mode, said on screen
@@ -97,9 +97,8 @@ phone in airplane mode; it was run on 2026-10-12 (record in PR #63) and found th
   time-to-live rules and incremental ranges already avoid refetching what it holds.
 - Values the app stores (each wallet's daily value) keep the prices they were computed with; after a
   re-adjustment they are not recomputed.
-- « Actualiser maintenant » marks the cache due by overwriting fetch times and dropping quotes: Settings then
-  shows the wrong last-update date, and offline the dropped quotes fall back to the last close. Filed as
-  M9-10.
+- « Actualiser maintenant » is remembered in memory only: after a relaunch the usual time-to-live rules
+  apply again.
 - Offline, a trip step that needs a calendar year never fetched stops with a network error rather than
   « Pas de données disponibles »: the trip stays where it was either way.
 - There is no automatic eviction: the cache is bounded by the catalogue (29 assets since 2000, about
