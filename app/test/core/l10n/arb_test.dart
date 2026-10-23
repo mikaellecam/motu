@@ -54,6 +54,7 @@ void main() {
       'exchange_otc',
       'glossary_row_semantics',
       'island_crypto',
+      'island_node_caption',
       'island_node_semantics',
       'island_trading',
       'livret_title',

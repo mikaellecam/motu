@@ -52,8 +52,8 @@ abstract final class AppColors {
 typedef Shades = ({Color top, Color left, Color right});
 
 /// The painted archipelago's own colours, from the art direction (BRIEF
-/// §10.2, decided 2026-10-13): the map only, never a screen or a widget.
-/// They draw a place and carry no meaning.
+/// §10.2, decided 2026-10-13): the map and the island path's islets only,
+/// never a screen or a widget. They draw a place and carry no meaning.
 abstract final class MapPalette {
   static const wave = Color(0x8CFFFFFF);
 
@@ -116,6 +116,16 @@ abstract final class MapPalette {
     ),
   ];
   static const window = Color(0xFFFFF4C2);
+
+  /// The island path: the planks of a bridge built, the plank route still
+  /// ahead on the water, the ring round the current lesson.
+  static const plank = (
+    top: Color(0xFFD79A5E),
+    left: Color(0xFFB57B45),
+    right: Color(0xFFB57B45),
+  );
+  static const route = Color(0x80FFFFFF);
+  static const currentRing = Color(0xD9FFFFFF);
   static const flag = Color(0xFFFF7D5C);
   static const leaves = (
     top: Color(0xFF5FC26A),

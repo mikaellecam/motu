@@ -181,6 +181,15 @@ next-step card points to), open or locked, with « {done} sur {total} terminées
 nodes skipped at onboarding stay open; a pending mission does not lock what follows (the lessons after it
 open, the mission completes whenever the wallet satisfies it); « Tout afficher dès maintenant » changes the
 UI level only, never the node order.
+Layout (decided 2026-10-23, « stepping islets », artboard `Path-E` of the art direction canvas
+https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5): on the sea, the island as the map paints it (its living
+buildings included), then a chunky header card (title, « {done} sur {total} terminées », progress bar). Each
+node stands on an identical 2×2 block islet on the island art's iso grid, in a strict zig-zag one constant
+step apart; a round chunky bubble on it shows the node type's icon, filled by its state (done `progress`,
+current `primary` and larger with a white ring, open `surface`, locked grey stone), its title and « type ·
+state » beside it. A plank bridge is built from each node done to the next; a dotted plank route on the
+water leads on from the others. Under the current node's islet, a card with its type, its title and
+« Commencer ». Locked islets are grey stone, as on the map.
 
 Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/contentcheck`:
 
@@ -893,7 +902,7 @@ Rule: chunky = the game is talking to you; flat = your money.
 No decorative color. A screen state (e.g. being in a trip) is signalled by content (date, icon, label), not
 by tinting the screen. One exception (decided 2026-10-13): the painted archipelago (§4.2) uses the art
 direction's own colours (sand, grass, dirt, coloured buildings, grey stone), tokens of their own
-(`MapPalette`), on the map only; they draw a place and carry no meaning. Selected tabs, segments and chips use the neutral `line` container; app bars use
+(`MapPalette`), on the map and the island path's islets (§4.3) only; they draw a place and carry no meaning. Selected tabs, segments and chips use the neutral `line` container; app bars use
 `page`, so a bar and the screen under it read as one background (decided 2026-10-23), and stay `page` when
 content scrolls under them.
 

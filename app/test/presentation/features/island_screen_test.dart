@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/core/theme/tokens.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/repositories/profile_repository.dart';
@@ -68,6 +69,7 @@ Future<void> show(WidgetTester tester) async {
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(packJson())),
         profileRepositoryProvider.overrideWithValue(profiles),
+        livingIslandProvider.overrideWith((ref) async => const []),
       ],
       child: MainApp(
         router: GoRouter(
@@ -93,10 +95,12 @@ void main() {
     await show(tester);
     expect(find.text('Actions & ETF'), findsOneWidget);
     expect(find.text('0 sur 3 terminées'), findsOneWidget);
+    // The current lesson in its card, the others beside their islets.
     expect(find.text('Apple ou ETF Monde ?'), findsOneWidget);
     expect(find.text('Prédiction'), findsOneWidget);
-    expect(find.text('Jouet'), findsOneWidget);
-    expect(find.text('À toi'), findsOneWidget);
+    expect(find.text('Commencer'), findsOneWidget);
+    expect(find.text('Jouet · verrouillée'), findsOneWidget);
+    expect(find.text('Mission · verrouillée'), findsOneWidget);
     expect(
       find.bySemanticsLabel(
         '1. Apple ou ETF Monde ?, Prédiction, à toi de jouer',
@@ -107,22 +111,33 @@ void main() {
       find.bySemanticsLabel('2. Le jouet des frais, Jouet, verrouillée'),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
     final progress = tester.widget<LinearProgressIndicator>(
       find.byType(LinearProgressIndicator),
     );
     expect((progress.value, progress.color), (0.0, AppColors.progress));
   });
 
-  testWidgets('a locked node stays shut; an open one opens its player', (
-    tester,
-  ) async {
-    await show(tester);
-    await tester.tap(find.text('Le jouet des frais'));
-    await tester.pumpAndSettle();
-    expect(find.text('node ae.fees'), findsNothing);
+  testWidgets(
+    'a locked node stays shut; the current one starts from its card',
+    (tester) async {
+      await show(tester);
+      await tester.tap(find.text('Le jouet des frais'));
+      await tester.pumpAndSettle();
+      expect(find.text('node ae.fees'), findsNothing);
 
-    await tester.tap(find.text('Apple ou ETF Monde ?'));
+      await tester.tap(find.text('Commencer'));
+      await tester.pumpAndSettle();
+      expect(find.text('node ae.apple'), findsOneWidget);
+    },
+  );
+
+  testWidgets('a lesson opens from its islet too', (tester) async {
+    await show(tester);
+    await tester.tap(
+      find.bySemanticsLabel(
+        '1. Apple ou ETF Monde ?, Prédiction, à toi de jouer',
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('node ae.apple'), findsOneWidget);
   });
@@ -134,12 +149,13 @@ void main() {
     profiles.complete({'ae.apple'});
     await tester.pumpAndSettle();
     expect(find.text('1 sur 3 terminées'), findsOneWidget);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.text('Prédiction · terminée'), findsOneWidget);
     expect(
       find.bySemanticsLabel('2. Le jouet des frais, Jouet, à toi de jouer'),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(find.text('Mission · verrouillée'), findsOneWidget);
+    expect(find.text('Jouet'), findsOneWidget);
   });
 
   testWidgets('accessible, with text at 130 %', (tester) async {

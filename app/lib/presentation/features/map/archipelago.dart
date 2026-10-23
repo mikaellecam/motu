@@ -149,39 +149,38 @@ const _waves = [
 /// live wallet's buildings ([buildings], the largest first, M7-2); the
 /// locked islands in grey stone under clouds.
 class ArchipelagoPainter extends CustomPainter {
-  ArchipelagoPainter({this.buildings = const []});
+  ArchipelagoPainter({this.buildings = const [], this.only});
 
   final List<DrawnBuilding> buildings;
 
+  /// Paints this island alone, its halo resting on the bottom centre, with
+  /// no waves: the island path's header (BRIEF §4.3).
+  final IslandLayout? only;
+
   @override
   void paint(Canvas canvas, Size size) {
+    final only = this.only;
+    final corner = only == null
+        ? mapBounds.topLeft
+        : only.halo.bottomCenter - size.bottomCenter(Offset.zero);
     canvas
       ..save()
       ..clipRect(Offset.zero & size)
-      ..translate(-mapBounds.left, -mapBounds.top);
-    final wave = Paint()
-      ..color = MapPalette.wave
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    for (final o in _waves) {
-      canvas.drawPath(
-        Path()
-          ..moveTo(o.dx, o.dy)
-          ..relativeQuadraticBezierTo(5, -5, 10, 0)
-          ..relativeQuadraticBezierTo(5, 5, 10, 0),
-        wave,
-      );
+      ..translate(-corner.dx, -corner.dy);
+    if (only == null) {
+      for (final o in _waves) {
+        canvas.drawPath(ripple(o), wavePaint);
+      }
     }
-    for (final island in archipelago) {
+    for (final island in only == null ? archipelago : [only]) {
       canvas.drawOval(
         island.halo,
         Paint()..color = island.locked ? MapPalette.halo : MapPalette.haloOpen,
       );
       final pen = island.locked
-          ? _Pen(canvas, MapPalette.lockedInk, 1.1)
-          : _Pen(canvas, AppColors.ink, 1.3);
-      _ground(pen, island);
+          ? BlockPen(canvas, MapPalette.lockedInk, 1.1)
+          : BlockPen(canvas, AppColors.ink, 1.3);
+      ground(pen, island.projection, island.tiles, locked: island.locked);
       final p = island.projection;
       switch (island.id) {
         case IslandId.actionsEtf:
@@ -202,16 +201,32 @@ class ArchipelagoPainter extends CustomPainter {
     canvas.restore();
   }
 
-  /// Each tile a block one unit deep, its sides showing where no tile stands
-  /// in front. Sides carry the outline; tops only a thin seam.
-  static void _ground(_Pen pen, IslandLayout island) {
-    final p = island.projection;
-    final rows = island.tiles;
+  /// The art direction's ripple on the sea, starting at [at].
+  static Path ripple(Offset at) => Path()
+    ..moveTo(at.dx, at.dy)
+    ..relativeQuadraticBezierTo(5, -5, 10, 0)
+    ..relativeQuadraticBezierTo(5, 5, 10, 0);
+
+  static final wavePaint = Paint()
+    ..color = MapPalette.wave
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2
+    ..strokeCap = StrokeCap.round;
+
+  /// [rows] of tiles (as [IslandLayout.tiles]), each a block one unit deep,
+  /// its sides showing where no tile stands in front. Sides carry the
+  /// outline; tops only a thin seam.
+  static void ground(
+    BlockPen pen,
+    IsoProjection p,
+    List<String> rows, {
+    required bool locked,
+  }) {
     bool land(int i, int j) =>
         j < rows.length && i < rows[j].length && rows[j][i] != '.';
-    final sides = island.locked ? MapPalette.stoneSides : MapPalette.dirt;
+    final sides = locked ? MapPalette.stoneSides : MapPalette.dirt;
     final seam = Paint()
-      ..color = island.locked ? MapPalette.stoneSeam : MapPalette.seam
+      ..color = locked ? MapPalette.stoneSeam : MapPalette.seam
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.4;
     final cells = [
@@ -269,7 +284,7 @@ class ArchipelagoPainter extends CustomPainter {
   /// rows and a window's height, in units.
   static const _windowRows = (start: 0.28, step: 0.5, size: 0.25);
 
-  void _livingIsland(_Pen pen, IsoProjection p) {
+  void _livingIsland(BlockPen pen, IsoProjection p) {
     // Trees and buildings, back to front.
     final things = <(double, VoidCallback)>[
       for (final (x, y) in _trees)
@@ -285,7 +300,7 @@ class ArchipelagoPainter extends CustomPainter {
     }
   }
 
-  void _building(_Pen pen, IsoProjection p, int spot, DrawnBuilding b) {
+  void _building(BlockPen pen, IsoProjection p, int spot, DrawnBuilding b) {
     if (b.height <= 0) return;
     final (cx, cy) = _spots[spot];
     final (x, y) = (cx - _footprint / 2, cy - _footprint / 2);
@@ -369,7 +384,7 @@ class ArchipelagoPainter extends CustomPainter {
   static Path _quad(List<Offset> corners) => Path()..addPolygon(corners, true);
 
   /// A pennant on a pole one unit high, above [roof].
-  static void _flag(_Pen pen, Offset roof, double unit) {
+  static void _flag(BlockPen pen, Offset roof, double unit) {
     final top = roof - Offset(0, unit);
     pen.line(roof, top, 1.5);
     pen.fill(
@@ -380,7 +395,7 @@ class ArchipelagoPainter extends CustomPainter {
 
   /// A tree standing on (x, y): a trunk 6 px high, a cubic crown on it.
   static void _tree(
-    _Pen pen,
+    BlockPen pen,
     IsoProjection p,
     double x,
     double y,
@@ -402,7 +417,7 @@ class ArchipelagoPainter extends CustomPainter {
   /// at each corner, and on each visible side a rail every half unit, braced
   /// across.
   static void _scaffold(
-    _Pen pen,
+    BlockPen pen,
     IsoProjection p,
     double x,
     double y,
@@ -446,7 +461,7 @@ class ArchipelagoPainter extends CustomPainter {
   }
 
   /// Trading: five candlesticks, two of them darker.
-  static void _trading(_Pen pen, IsoProjection p) {
+  static void _trading(BlockPen pen, IsoProjection p) {
     for (final (x, y, low, high, top, dark) in const [
       (0.8, 2.7, 0.71, 2.0, 2.57, false),
       (1.4, 2.2, 1.14, 3.29, 3.86, true),
@@ -466,7 +481,7 @@ class ArchipelagoPainter extends CustomPainter {
   static const _towerRows = (start: 0.35, step: 0.57, size: 0.29);
 
   /// Real estate: houses and two towers between two trees.
-  static void _realEstate(_Pen pen, IsoProjection p) {
+  static void _realEstate(BlockPen pen, IsoProjection p) {
     _tree(pen, p, 0.7, 1.4, MapPalette.stoneTrunk, MapPalette.stoneLeaves);
     _tower(pen, p, 2.2, 0.7, 2.29);
     _house(pen, p, 1.8, 1.9, w: 0.6, wall: 0.64, roof: 0.64);
@@ -477,7 +492,7 @@ class ArchipelagoPainter extends CustomPainter {
   }
 
   static void _tower(
-    _Pen pen,
+    BlockPen pen,
     IsoProjection p,
     double cx,
     double cy,
@@ -501,7 +516,7 @@ class ArchipelagoPainter extends CustomPainter {
   }
 
   static void _house(
-    _Pen pen,
+    BlockPen pen,
     IsoProjection p,
     double cx,
     double cy, {
@@ -516,7 +531,7 @@ class ArchipelagoPainter extends CustomPainter {
   }
 
   /// Crypto: a crystal on its tip between two small blocks.
-  static void _crypto(_Pen pen, IsoProjection p) {
+  static void _crypto(BlockPen pen, IsoProjection p) {
     _cube(pen, p, 1.2, 2.6, 0.4, 0.36);
     for (final (face, path) in crystalPaths(
       p,
@@ -532,7 +547,7 @@ class ArchipelagoPainter extends CustomPainter {
   }
 
   static void _cube(
-    _Pen pen,
+    BlockPen pen,
     IsoProjection p,
     double cx,
     double cy,
@@ -544,7 +559,7 @@ class ArchipelagoPainter extends CustomPainter {
   );
 
   /// Les bases: a house and a lighthouse of five courses.
-  static void _basics(_Pen pen, IsoProjection p) {
+  static void _basics(BlockPen pen, IsoProjection p) {
     _house(pen, p, 1.1, 2.6, w: 0.55, wall: 0.57, roof: 0.5);
     const cx = 2.3, cy = 1.7;
     Rect footprint(double w) =>
@@ -589,12 +604,12 @@ class ArchipelagoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ArchipelagoPainter old) =>
-      !listEquals(old.buildings, buildings);
+      old.only != only || !listEquals(old.buildings, buildings);
 }
 
 /// Fills shapes and outlines them, as the art direction draws its blocks.
-final class _Pen {
-  _Pen(this.canvas, this.ink, double width)
+final class BlockPen {
+  BlockPen(this.canvas, this.ink, double width)
     : _outline = Paint()
         ..color = ink
         ..style = PaintingStyle.stroke

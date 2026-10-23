@@ -997,7 +997,19 @@
       }
     }
   },
-  "island_your_turn": "\u00c0 toi",
+  "island_start": "Commencer",
+  "island_node_caption": "{type} \u00b7 {state}",
+  "@island_node_caption": {
+    "description": "Beside a lesson's islet: its type, then where it stands (island_state_*).",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
   "island_node_semantics": "{number}. {title}, {type}, {state}",
   "@island_node_semantics": {
     "placeholders": {
