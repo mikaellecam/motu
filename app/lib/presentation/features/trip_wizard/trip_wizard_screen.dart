@@ -422,24 +422,22 @@ class _ChoiceCard extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     selected: selected,
-    child: GestureDetector(
+    child: ChunkyCard(
       onTap: onTap,
-      child: ChunkyCard(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: children,
-              ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
             ),
-            if (selected)
-              const Padding(
-                padding: EdgeInsets.only(left: AppSpace.x2),
-                child: Icon(Icons.check_circle, color: AppColors.ink),
-              ),
-          ],
-        ),
+          ),
+          if (selected)
+            const Padding(
+              padding: EdgeInsets.only(left: AppSpace.x2),
+              child: Icon(Icons.check_circle, color: AppColors.ink),
+            ),
+        ],
       ),
     ),
   );

@@ -893,8 +893,9 @@ Rule: chunky = the game is talking to you; flat = your money.
 No decorative color. A screen state (e.g. being in a trip) is signalled by content (date, icon, label), not
 by tinting the screen. One exception (decided 2026-10-13): the painted archipelago (§4.2) uses the art
 direction's own colours (sand, grass, dirt, coloured buildings, grey stone), tokens of their own
-(`MapPalette`), on the map only; they draw a place and carry no meaning. Selected tabs, segments and chips use the neutral `line` container; app bars stay
-`surface` when content scrolls under them.
+(`MapPalette`), on the map only; they draw a place and carry no meaning. Selected tabs, segments and chips use the neutral `line` container; app bars use
+`page`, so a bar and the screen under it read as one background (decided 2026-10-23), and stay `page` when
+content scrolls under them.
 
 ### 10.3 Typography
 

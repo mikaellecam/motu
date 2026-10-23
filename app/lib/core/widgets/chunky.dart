@@ -11,31 +11,106 @@ class ChunkyCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(AppSpace.x4),
+    this.onTap,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
 
+  /// Makes the card a button that presses down onto its shadow.
+  final VoidCallback? onTap;
+
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => onTap == null
+      ? _block(0)
+      : ChunkyPress(
+          depth: AppShape.chunkyCardShadow,
+          onTap: onTap,
+          builder: _block,
+        );
+
+  Widget _block(double sink) => Transform.translate(
+    offset: Offset(0, sink),
+    child: Container(
       padding: padding,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.all(
+        borderRadius: const BorderRadius.all(
           Radius.circular(AppShape.chunkyCardRadius),
         ),
-        border: Border.fromBorderSide(
+        border: const Border.fromBorderSide(
           BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
         ),
         boxShadow: [
           BoxShadow(
             color: AppColors.ink,
-            offset: Offset(0, AppShape.chunkyCardShadow),
+            offset: Offset(0, AppShape.chunkyCardShadow - sink),
           ),
         ],
       ),
       child: child,
+    ),
+  );
+}
+
+/// Pushes a toy block down onto its shadow while it is pressed. The press
+/// always plays in full: in a scroll view a tap shorter than 100 ms reports
+/// its down and up in the same frame.
+class ChunkyPress extends StatefulWidget {
+  const ChunkyPress({
+    super.key,
+    required this.depth,
+    required this.onTap,
+    required this.builder,
+  });
+
+  /// The block's shadow height: how far it sinks.
+  final double depth;
+
+  /// Null disables the press.
+  final VoidCallback? onTap;
+
+  /// The block sunk by `sink`, from 0 at rest to [depth] pressed.
+  final Widget Function(double sink) builder;
+
+  @override
+  State<ChunkyPress> createState() => _ChunkyPressState();
+}
+
+class _ChunkyPressState extends State<ChunkyPress>
+    with SingleTickerProviderStateMixin {
+  late final _press = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 80),
+  );
+
+  @override
+  void dispose() {
+    _press.dispose();
+    super.dispose();
+  }
+
+  Future<void> _release() async {
+    await _press.forward();
+    if (mounted) _press.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onTap != null;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      // All null when disabled, so screen readers see no tap action.
+      onTapDown: enabled ? (_) => _press.forward() : null,
+      onTapUp: enabled ? (_) => _release() : null,
+      onTapCancel: enabled ? _press.reverse : null,
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _press,
+        builder: (context, _) => widget.builder(
+          Curves.easeOut.transform(_press.value) * widget.depth,
+        ),
+      ),
     );
   }
 }
@@ -49,7 +124,7 @@ enum ChunkyButtonKind {
 }
 
 /// Toy-block button: pressing pushes it down onto its shadow.
-class ChunkyButton extends StatefulWidget {
+class ChunkyButton extends StatelessWidget {
   const ChunkyButton({
     super.key,
     required this.label,
@@ -64,70 +139,59 @@ class ChunkyButton extends StatefulWidget {
   final ChunkyButtonKind kind;
 
   @override
-  State<ChunkyButton> createState() => _ChunkyButtonState();
-}
-
-class _ChunkyButtonState extends State<ChunkyButton> {
-  bool _pressed = false;
-
-  void _setPressed(bool value) => setState(() => _pressed = value);
-
-  @override
   Widget build(BuildContext context) {
-    final enabled = widget.onPressed != null;
-    final (fill, text) = switch (widget.kind) {
+    final enabled = onPressed != null;
+    final (fill, text) = switch (kind) {
       _ when !enabled => (AppColors.line, AppColors.muted),
       ChunkyButtonKind.primary => (AppColors.primary, AppColors.surface),
       ChunkyButtonKind.progress => (AppColors.progress, AppColors.ink),
     };
-    final sink = _pressed || !enabled ? AppShape.chunkyButtonShadow : 0.0;
 
     return Semantics(
       button: true,
       enabled: enabled,
-      child: GestureDetector(
-        // All null when disabled, so screen readers see no tap action.
-        onTapDown: enabled ? (_) => _setPressed(true) : null,
-        onTapUp: enabled ? (_) => _setPressed(false) : null,
-        onTapCancel: enabled ? () => _setPressed(false) : null,
-        onTap: widget.onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 80),
-          curve: Curves.easeOut,
-          constraints: const BoxConstraints(minHeight: 52),
-          margin: EdgeInsets.only(
-            top: sink,
-            bottom: AppShape.chunkyButtonShadow - sink,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpace.x6),
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(AppShape.chunkyButtonRadius),
+      child: ChunkyPress(
+        depth: AppShape.chunkyButtonShadow,
+        onTap: onPressed,
+        builder: (pressed) {
+          // A disabled button lies flat.
+          final sink = enabled ? pressed : AppShape.chunkyButtonShadow;
+          return Container(
+            constraints: const BoxConstraints(minHeight: 52),
+            margin: EdgeInsets.only(
+              top: sink,
+              bottom: AppShape.chunkyButtonShadow - sink,
             ),
-            border: Border.all(
-              color: AppColors.ink,
-              width: AppShape.chunkyBorder,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.ink,
-                offset: Offset(0, AppShape.chunkyButtonShadow - sink),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.x6),
+            decoration: BoxDecoration(
+              color: fill,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(AppShape.chunkyButtonRadius),
               ),
-            ],
-          ),
-          // Shrink-wraps the label, or fills the width when stretched.
-          child: Center(
-            widthFactor: 1,
-            heightFactor: 1,
-            child: Text(
-              widget.label,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge
-                  ?.copyWith(color: text),
+              border: Border.all(
+                color: AppColors.ink,
+                width: AppShape.chunkyBorder,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.ink,
+                  offset: Offset(0, AppShape.chunkyButtonShadow - sink),
+                ),
+              ],
             ),
-          ),
-        ),
+            // Shrink-wraps the label, or fills the width when stretched.
+            child: Center(
+              widthFactor: 1,
+              heightFactor: 1,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(color: text),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -159,64 +223,59 @@ class ChunkyChoice extends StatelessWidget {
         button: true,
         selected: selected,
         inMutuallyExclusiveGroup: true,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        child: ChunkyCard(
           onTap: onTap,
-          child: ChunkyCard(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpace.x4,
-              vertical: AppSpace.x3,
-            ),
-            child: Row(
-              children: [
-                ExcludeSemantics(
-                  child: Icon(
-                    selected
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_unchecked,
-                    color: AppColors.ink,
-                  ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpace.x4,
+            vertical: AppSpace.x3,
+          ),
+          child: Row(
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  selected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: AppColors.ink,
                 ),
-                const SizedBox(width: AppSpace.x3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(label, style: AppText.bodyStrong),
-                      for (final (icon, line) in [
-                        (Icons.add, upside),
-                        (Icons.remove, downside),
-                      ])
-                        if (line != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: AppSpace.x1),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ExcludeSemantics(
-                                  child: Icon(
-                                    icon,
-                                    size: AppSpace.x4,
-                                    color: AppColors.muted,
-                                  ),
+              ),
+              const SizedBox(width: AppSpace.x3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: AppText.bodyStrong),
+                    for (final (icon, line) in [
+                      (Icons.add, upside),
+                      (Icons.remove, downside),
+                    ])
+                      if (line != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: AppSpace.x1),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ExcludeSemantics(
+                                child: Icon(
+                                  icon,
+                                  size: AppSpace.x4,
+                                  color: AppColors.muted,
                                 ),
-                                const SizedBox(width: AppSpace.x2),
-                                Expanded(
-                                  child: Text(
-                                    line,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium,
-                                  ),
+                              ),
+                              const SizedBox(width: AppSpace.x2),
+                              Expanded(
+                                child: Text(
+                                  line,
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                    ],
-                  ),
+                        ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -94,8 +94,8 @@ ThemeData appTheme() {
     // No tint when content scrolls under the bar (§10.2: no decorative
     // color).
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.surface,
-      surfaceTintColor: AppColors.surface,
+      backgroundColor: AppColors.page,
+      surfaceTintColor: AppColors.page,
       scrolledUnderElevation: 0,
     ),
     // The selected tab is a place, not progress: neutral tokens only.

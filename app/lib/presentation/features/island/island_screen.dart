@@ -144,48 +144,44 @@ class _NodeTile extends StatelessWidget {
       enabled: !locked,
       label: l10n.island_node_semantics(number, title, type, stateName),
       excludeSemantics: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: ChunkyCard(
         onTap: onOpen,
-        child: ChunkyCard(
-          padding: const EdgeInsets.all(AppSpace.x3),
-          child: Row(
-            children: [
-              Container(
-                width: AppSpace.minTarget,
-                height: AppSpace.minTarget,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: fill,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: ink, width: AppShape.chunkyBorder),
-                ),
-                child: badge,
+        padding: const EdgeInsets.all(AppSpace.x3),
+        child: Row(
+          children: [
+            Container(
+              width: AppSpace.minTarget,
+              height: AppSpace.minTarget,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: fill,
+                shape: BoxShape.circle,
+                border: Border.all(color: ink, width: AppShape.chunkyBorder),
               ),
-              const SizedBox(width: AppSpace.x3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppText.bodyStrong.copyWith(color: ink)),
-                    Text(
-                      type,
-                      style: AppText.caption.copyWith(color: AppColors.muted),
-                    ),
-                  ],
-                ),
+              child: badge,
+            ),
+            const SizedBox(width: AppSpace.x3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppText.bodyStrong.copyWith(color: ink)),
+                  Text(
+                    type,
+                    style: AppText.caption.copyWith(color: AppColors.muted),
+                  ),
+                ],
               ),
-              if (state == NodeState.current) ...[
-                const SizedBox(width: AppSpace.x2),
-                Text(
-                  l10n.island_your_turn,
-                  style: AppText.label.copyWith(color: AppColors.primary),
-                ),
-              ],
-              if (!locked)
-                const Icon(Icons.chevron_right, color: AppColors.ink),
+            ),
+            if (state == NodeState.current) ...[
+              const SizedBox(width: AppSpace.x2),
+              Text(
+                l10n.island_your_turn,
+                style: AppText.label.copyWith(color: AppColors.primary),
+              ),
             ],
-          ),
+            if (!locked) const Icon(Icons.chevron_right, color: AppColors.ink),
+          ],
         ),
       ),
     );

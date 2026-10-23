@@ -1,3 +1,4 @@
+import 'package:finance_companion/core/theme/tokens.dart';
 import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,6 +34,40 @@ void main() {
       ),
     );
   });
+
+  // tester.tap reports down and up in the same frame, like a quick tap in a
+  // scroll view: the press must still play in full.
+  for (final (name, block, depth) in [
+    (
+      'ChunkyButton',
+      ChunkyButton(label: 'Réessayer', onPressed: () {}),
+      AppShape.chunkyButtonShadow,
+    ),
+    (
+      'ChunkyChoice',
+      ChunkyChoice(label: 'Long terme', selected: false, onTap: () {}),
+      AppShape.chunkyCardShadow,
+    ),
+  ]) {
+    testWidgets('a quick tap sinks a $name onto its shadow', (tester) async {
+      await pumpApp(tester, Center(child: block));
+      final face = find
+          .descendant(
+            of: find.byWidget(block),
+            matching: find.byType(DecoratedBox),
+          )
+          .first;
+      final rest = tester.getRect(face).top;
+
+      await tester.tap(find.byWidget(block));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 80));
+      expect(tester.getRect(face).top, rest + depth);
+
+      await tester.pumpAndSettle();
+      expect(tester.getRect(face).top, rest);
+    });
+  }
 
   testWidgets('a disabled ChunkyButton ignores taps', (tester) async {
     await pumpApp(

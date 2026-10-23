@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../domain/wallet/island_buildings.dart';
 import 'archipelago.dart';
 import 'living_island.dart';
@@ -188,15 +189,15 @@ class _IslandLabel extends StatelessWidget {
         // Excluding the child's semantics drops its tap action too.
         onTap: onTap,
         excludeSemantics: true,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        child: ChunkyPress(
+          depth: AppShape.chunkyButtonShadow,
           onTap: onTap,
-          child: ConstrainedBox(
+          builder: (sink) => ConstrainedBox(
             constraints: BoxConstraints(minHeight: target),
             child: Center(
               child: island.locked
                   ? _LockedPill(name)
-                  : _OpenPill(name, progress: progress),
+                  : _OpenPill(name, progress: progress, sink: sink),
             ),
           ),
         ),
@@ -206,62 +207,69 @@ class _IslandLabel extends StatelessWidget {
 }
 
 class _OpenPill extends StatelessWidget {
-  const _OpenPill(this.name, {required this.progress});
+  const _OpenPill(this.name, {required this.progress, required this.sink});
   final String name;
   final ({int done, int total})? progress;
 
+  /// How far the pill is pressed down onto its shadow.
+  final double sink;
+
   @override
-  Widget build(BuildContext context) => Container(
-    constraints: const BoxConstraints(minHeight: AppSpace.minTarget),
-    padding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
-    decoration: const ShapeDecoration(
-      color: AppColors.surface,
-      shape: StadiumBorder(
-        side: BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
-      ),
-      shadows: [
-        BoxShadow(
-          color: AppColors.ink,
-          offset: Offset(0, AppShape.chunkyButtonShadow),
+  Widget build(BuildContext context) => Transform.translate(
+    offset: Offset(0, sink),
+    child: Container(
+      constraints: const BoxConstraints(minHeight: AppSpace.minTarget),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
+      decoration: ShapeDecoration(
+        color: AppColors.surface,
+        shape: const StadiumBorder(
+          side: BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
         ),
-      ],
-    ),
-    child: Center(
-      widthFactor: 1,
-      heightFactor: 1,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              name,
-              style: AppText.titleSmall.copyWith(color: AppColors.ink),
-              textAlign: TextAlign.center,
-            ),
+        shadows: [
+          BoxShadow(
+            color: AppColors.ink,
+            offset: Offset(0, AppShape.chunkyButtonShadow - sink),
           ),
-          if (progress case (:final done, :final total)) ...[
-            const SizedBox(width: AppSpace.x2),
-            DecoratedBox(
-              decoration: const ShapeDecoration(
-                color: AppColors.progress,
-                shape: StadiumBorder(),
+        ],
+      ),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                name,
+                style: AppText.titleSmall.copyWith(color: AppColors.ink),
+                textAlign: TextAlign.center,
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpace.x2,
-                  vertical: 2,
+            ),
+            if (progress case (:final done, :final total)) ...[
+              const SizedBox(width: AppSpace.x2),
+              DecoratedBox(
+                decoration: const ShapeDecoration(
+                  color: AppColors.progress,
+                  shape: StadiumBorder(),
                 ),
-                child: Text(
-                  AppLocalizations.of(context).map_island_progress(done, total),
-                  style: AppText.label.copyWith(
-                    color: AppColors.ink,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpace.x2,
+                    vertical: 2,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)
+                        .map_island_progress(done, total),
+                    style: AppText.label.copyWith(
+                      color: AppColors.ink,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     ),
   );
