@@ -1,10 +1,14 @@
 import 'package:decimal/decimal.dart';
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/dca/dca_simulator.dart';
+import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/core/theme/tokens.dart';
 import 'package:finance_companion/data/local/database.dart';
+import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/wallet/dca.dart';
@@ -12,6 +16,7 @@ import 'package:finance_companion/domain/wallet/dca_simulator.dart';
 import 'package:finance_companion/domain/wallet/trip_start.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/dca/dca_screen.dart';
+import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,6 +107,13 @@ DcaFormView viewOf(DcaForm form, {List<ValidationFailure> errors = const []}) =>
       params: errors.isEmpty ? params : null,
     );
 
+const dcaTerm = GlossaryTerm(
+  id: 'dca',
+  title: Localized('Investissement programmé (DCA)', 'Dollar-cost averaging'),
+  short: Localized('x', 'x'),
+  body: Localized('x', 'x'),
+);
+
 late AppDatabase db;
 
 Future<void> show(
@@ -124,6 +136,25 @@ Future<void> show(
               viewOf(ref.watch(dcaFormControllerProvider), errors: errors),
         ),
         dcaRunProvider.overrideWith((ref, p) async => result),
+        // The companion's glossary link: no pack to download.
+        contentPackProvider(actionsEtfIsland).overrideWith(
+          (ref) async => const ContentPack(
+            id: 'actions-etf',
+            version: 1,
+            title: Localized('Actions & ETF', 'Stocks & ETFs'),
+            nodes: [],
+            datasets: {},
+            glossary: {'dca': dcaTerm},
+          ),
+        ),
+        termSheetProvider.overrideWith(
+          (ref, id) async => const TermSheetView(
+            term: dcaTerm,
+            related: [],
+            firstOpen: true,
+            terms: {},
+          ),
+        ),
       ],
       child: MainApp.screen(const DcaScreen()),
     ),
@@ -131,12 +162,18 @@ Future<void> show(
   await tester.pumpAndSettle();
 }
 
+/// Drift closes its watch queries on a timer once the tree is gone.
+Future<void> unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  await tester.pump(const Duration(milliseconds: 10));
+}
+
 void main() {
   testWidgets('« Simuler »: the result, the comparisons and the insight', (
     tester,
   ) async {
     await show(tester);
-    expect(find.text('Simulateur DCA'), findsOneWidget);
+    expect(find.text("Et si j'avais investi…"), findsOneWidget);
     // The world ETF by default.
     expect(find.text('ETF Monde'), findsOneWidget);
     expect(find.widgetWithText(ChoiceChip, '10 ans'), findsOneWidget);
@@ -149,19 +186,39 @@ void main() {
 
     await tester.tap(find.text('Simuler'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('3 achats'), findsOneWidget);
-    expect(find.text('Versé'), findsOneWidget);
-    expect(find.text('+30,00$nbsp€'), findsOneWidget);
-    expect(find.text('+10,00$nnbsp%'), findsWidgets);
+    // The hero: what went in, what it would be worth, the signed gain.
+    expect(find.text('Résultat, 3 achats'), findsOneWidget);
+    expect(find.text('Apple, du 8 octobre 2025 au 8 décembre 2025'), findsOne);
+    expect(find.text('Tu aurais versé'), findsOneWidget);
+    expect(find.text('Ça vaudrait'), findsOneWidget);
+    expect(find.text('300$nbsp€'), findsOneWidget);
+    expect(find.text('330$nbsp€'), findsNWidgets(2));
+    final gain = find.text('+30$nbsp€ (+10,00$nnbsp%)');
+    expect(gain, findsOneWidget);
+    expect(tester.widget<Text>(gain).style?.color, AppColors.gain);
+    // The chart: its legend, and dated.
+    expect(find.text('Valeur de ton placement'), findsOneWidget);
+    expect(find.text('Argent versé'), findsOneWidget);
+    expect(find.text('10 nov.'), findsOneWidget);
+    // The comparisons.
+    expect(find.text('Avec la même somme'), findsOneWidget);
+    expect(find.text('+10,00$nnbsp%'), findsOneWidget);
     expect(find.text('Tout placé le premier jour'), findsOneWidget);
     expect(find.text('Sur un Livret A'), findsOneWidget);
+    // The companion, with the glossary's DCA.
+    expect(find.text('Ton compagnon'), findsOneWidget);
     expect(
       find.text(
-        'Tes achats de 2025 se sont faits à prix cassés$nnbsp: '
-        '16,00$nnbsp% sous le dernier cours.',
+        'Tes achats de 2025 se sont faits à prix cassés$nnbsp: en moyenne '
+        '16,00$nnbsp% sous le dernier cours. Avec la même somme à chaque '
+        'fois, tu as acheté plus de parts quand le prix était bas.',
       ),
       findsOneWidget,
     );
+    await tester.tap(find.text('Investissement programmé (DCA)'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TermSheet), findsOneWidget);
+    await unmount(tester);
   });
 
   testWidgets('a wrong amount says why, and nothing runs', (tester) async {
@@ -177,7 +234,7 @@ void main() {
     );
     await tester.tap(find.text('Simuler'));
     await tester.pumpAndSettle();
-    expect(find.text('Versé'), findsNothing);
+    expect(find.text('Tu aurais versé'), findsNothing);
   });
 
   testWidgets('saved, listed, and run again from the list', (tester) async {
@@ -197,16 +254,29 @@ void main() {
     ScaffoldMessenger.of(tester.element(find.byType(DcaScreen)))
         .removeCurrentSnackBar();
     await tester.pumpAndSettle();
+    // The list sits under the result.
+    await tester.ensureVisible(find.text('Relancer'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Relancer'));
     await tester.pumpAndSettle();
     // Back in the form, with its date.
+    await tester.scrollUntilVisible(
+      find.text('08/10/2025'),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('08/10/2025'), findsOneWidget);
     expect(find.textContaining('3 achats'), findsOneWidget);
   });
 
-  testWidgets('accessible, with text at 130 %', (tester) async {
+  testWidgets('accessible, with text at 130 %, form and result', (
+    tester,
+  ) async {
     textAt(tester, 1.3);
     await show(tester);
+    await tester.tap(find.text('Simuler'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tu aurais versé'), findsOneWidget);
     await expectAccessible(tester);
   });
 }

@@ -21,6 +21,7 @@ import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
 import '../../widgets/chart_axis.dart';
+import '../../widgets/chart_legend.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/asset_avatar.dart';
 import '../companion/companion_card.dart';
@@ -293,13 +294,13 @@ class _ChartCardState extends ConsumerState<_ChartCard> {
             Wrap(
               spacing: AppSpace.x4,
               children: [
-                _Legend(
+                ChartLegend(
                   l10n.wallet_chart_money_in,
                   color: AppColors.muted,
                   dashed: true,
                 ),
                 if (benchmarkName != null)
-                  _Legend(benchmarkName, color: AppColors.ink),
+                  ChartLegend(benchmarkName, color: AppColors.ink),
               ],
             ),
             const SizedBox(height: AppSpace.x2),
@@ -423,41 +424,6 @@ class _Chart extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Legend extends StatelessWidget {
-  const _Legend(this.label, {required this.color, this.dashed = false});
-  final String label;
-  final Color color;
-  final bool dashed;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < (dashed ? 3 : 1); i++)
-            Container(
-              width: dashed ? 5 : 16,
-              height: 2,
-              margin: const EdgeInsets.only(right: 2),
-              color: color,
-            ),
-        ],
-      ),
-      const SizedBox(width: AppSpace.x1),
-      // Large text wraps instead of overflowing.
-      Flexible(
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: AppColors.muted),
-        ),
-      ),
-    ],
-  );
 }
 
 class _AllocationCard extends StatelessWidget {

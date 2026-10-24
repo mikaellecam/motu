@@ -1913,10 +1913,11 @@
       }
     }
   },
-  "dca_title": "Simulateur DCA",
-  "dca_intro": "Et si tu avais investi la m\u00eame somme \u00e0 intervalles r\u00e9guliers\u202f? Cours r\u00e9els, frais du bac \u00e0 sable.",
+  "dca_title": "Et si j'avais investi\u2026",
+  "dca_intro": "Rejoue le pass\u00e9 avec les vrais cours et les frais du bac \u00e0 sable.",
   "dca_asset": "Actif",
-  "dca_amount": "Montant par achat",
+  "dca_amount": "Montant",
+  "dca_frequency": "Fr\u00e9quence",
   "dca_monthly": "Chaque mois",
   "dca_weekly": "Chaque semaine",
   "dca_since": "Depuis",
@@ -1965,24 +1966,31 @@
     }
   },
   "dca_simulate": "Simuler",
-  "dca_period": "Du {from} au {to} \u00b7 {count, plural, one{{count} achat} other{{count} achats}}",
-  "@dca_period": {
+  "dca_result": "R\u00e9sultat, {count, plural, one{{count} achat} other{{count} achats}}",
+  "@dca_result": {
     "placeholders": {
-      "from": {
-        "type": "String"
-      },
-      "to": {
-        "type": "String"
-      },
       "count": {
         "type": "int"
       }
     }
   },
-  "dca_invested": "Vers\u00e9",
-  "dca_final": "Valeur finale",
-  "dca_gain": "Gain",
-  "dca_value": "Valeur",
+  "dca_period": "{asset}, du {from} au {to}",
+  "@dca_period": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "dca_invested": "Tu aurais vers\u00e9",
+  "dca_final": "\u00c7a vaudrait",
+  "dca_value": "Valeur de ton placement",
   "dca_chart_semantics": "Valeur de tes achats, de {from} \u00e0 {to}, pour {invested} vers\u00e9s.",
   "@dca_chart_semantics": {
     "placeholders": {
@@ -2023,7 +2031,7 @@
       }
     }
   },
-  "dca_insight_cheap_year": "Tes achats de {year} se sont faits \u00e0 prix cass\u00e9s\u202f: {discount} sous le dernier cours.",
+  "dca_insight_cheap_year": "Tes achats de {year} se sont faits \u00e0 prix cass\u00e9s\u202f: en moyenne {discount} sous le dernier cours. Avec la m\u00eame somme \u00e0 chaque fois, tu as achet\u00e9 plus de parts quand le prix \u00e9tait bas.",
   "@dca_insight_cheap_year": {
     "placeholders": {
       "year": {

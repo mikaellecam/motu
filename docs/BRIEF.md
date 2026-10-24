@@ -613,6 +613,16 @@ Built (M8-2), decided 2026-10-11:
 - Saved: inputs and what they gave (`dca_simulations`), newest first; « Relancer » puts them back in the form
   and runs them again on the latest data, where the asset can be changed. Reached from the Portefeuille tab.
 
+Layout (decided 2026-10-24, artboard DCA-A): titled « Et si j'avais investi… ». The form is one flat card of
+outlined boxes: the asset, then the amount and the frequency side by side, then « Depuis » (the presets and the
+exact date). The result leads with a chunky card « Résultat, n achats »: the asset and its dates, « Tu aurais
+versé » and « Ça vaudrait » in large round euros (one under the other when they do not fit), and the gain signed
+in its colour. Then the chart in a flat card, its legend on top: the value with a light fill and a dot at its
+end, the money put in dashed, the x-axis dated (`dateAxis`, §10.1). Then « Avec la même somme » as a titled
+flat card, each name on one line with its round value and signed change stacked beside it; then the insight in
+a chunky « Ton compagnon » card with the glossary's DCA as a chip; then « Enregistrer » as a chunky button.
+« Tes simulations » is a titled flat card. The lump sum and the Livret A stay, though the artboard has none.
+
 ### 4.11 Livret A
 
 Facts encoded in the backend (`backend/internal/catalogue/livret.go`, never hardcoded in the app), from the

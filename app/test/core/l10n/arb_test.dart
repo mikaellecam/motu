@@ -47,7 +47,6 @@ void main() {
       'app_title',
       'asset_eur_equivalent',
       'asset_volatility_figure',
-      'dca_gain',
       'exchange_euronext',
       'exchange_nasdaq',
       'exchange_nyse',

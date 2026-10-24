@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/dca/dca_simulator.dart';
+import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/domain/livret/livret_interest.dart';
@@ -36,10 +37,11 @@ final world = Asset(
   listingDate: day(2008, 3, 28),
 );
 
+final pack = decodePack(
+  File('assets/packs/actions-etf.json').readAsStringSync(),
+);
+
 DcaResult result() {
-  final pack = decodePack(
-    File('assets/packs/actions-etf.json').readAsStringSync(),
-  );
   final bars = [
     for (final (date, close) in pack.datasets['ds.acwi-eur-2016-m']!.points)
       PriceBar(
@@ -130,19 +132,31 @@ void main() {
       ),
     ),
     dcaRunProvider.overrideWith((ref, p) async => r),
+    // The companion's link to the glossary's DCA.
+    contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
   ];
 
   screenshot('m8-2-dca-form', const DcaScreen(), overrides: overrides);
 
+  // What a phone shows once « Simuler » is tapped: the result's figures
+  // above the fold.
   screenshot(
-    'm8-2-dca-result',
+    'm9-26-dca-result-fold',
     const DcaScreen(),
-    size: const Size(390, 1500),
     overrides: overrides,
     act: (tester) async {
       await tester.tap(find.text('Simuler'));
       await tester.pumpAndSettle();
-      await tester.drag(find.byType(ListView), const Offset(0, -560));
+    },
+  );
+
+  screenshot(
+    'm8-2-dca-result',
+    const DcaScreen(),
+    size: const Size(390, 1560),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.text('Simuler'));
       await tester.pumpAndSettle();
     },
   );
