@@ -137,6 +137,15 @@ void main() {
       await initializeDateFormatting('en');
     });
 
+    test('a chart axis date, in its unit', () {
+      final d = DateTime.utc(2026, 10, 12);
+      expect(fr.axisDate(d, AxisUnit.day), '12 oct.');
+      expect(en.axisDate(d, AxisUnit.day), 'Oct 12');
+      expect(fr.axisDate(d, AxisUnit.month), 'oct.');
+      expect(en.axisDate(d, AxisUnit.month), 'Oct');
+      expect(fr.axisDate(d, AxisUnit.year), '2026');
+    });
+
     test('long date', () {
       expect(fr.date(DateTime(2026, 10, 7)), '7 octobre 2026');
       expect(en.date(DateTime(2026, 10, 7)), 'October 7, 2026');

@@ -11,6 +11,7 @@ import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
+import '../../widgets/section_title.dart';
 
 /// Settings (BRIEF §4.14): language, level, the questionnaire, the data
 /// cache, the simulation, the live wallet's reset, and what the app is.
@@ -69,7 +70,7 @@ class _Settings extends ConsumerWidget {
         AppSpace.screenPadding,
       ),
       children: [
-        _Section(l10n.settings_language),
+        SectionTitle(top: AppSpace.x6, l10n.settings_language),
         _Group([
           _Choice<String>(
             label: l10n.settings_language_choice,
@@ -83,7 +84,7 @@ class _Settings extends ConsumerWidget {
           ),
         ]),
 
-        _Section(l10n.settings_level),
+        SectionTitle(top: AppSpace.x6, l10n.settings_level),
         _Group([
           Padding(
             padding: _padding,
@@ -108,7 +109,7 @@ class _Settings extends ConsumerWidget {
           ),
         ]),
 
-        _Section(l10n.settings_data),
+        SectionTitle(top: AppSpace.x6, l10n.settings_data),
         _Group([
           Padding(
             padding: _padding,
@@ -167,7 +168,7 @@ class _Settings extends ConsumerWidget {
           ),
         ]),
 
-        _Section(l10n.settings_simulation),
+        SectionTitle(top: AppSpace.x6, l10n.settings_simulation),
         _Group([
           _Choice<Money>(
             label: l10n.settings_capital,
@@ -203,7 +204,7 @@ class _Settings extends ConsumerWidget {
         const SizedBox(height: AppSpace.x2),
         Text(l10n.settings_reset_note(euros(v.startingCash)), style: muted),
 
-        _Section(l10n.settings_about),
+        SectionTitle(top: AppSpace.x6, l10n.settings_about),
         _Group([
           Padding(
             padding: _padding,
@@ -258,18 +259,6 @@ class _Settings extends ConsumerWidget {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(l10n.settings_reset_done)));
   }
-}
-
-/// A section title over its card, in Baloo (art direction « settings »).
-class _Section extends StatelessWidget {
-  const _Section(this.title);
-  final String title;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: AppSpace.x6, bottom: AppSpace.x2),
-    child: Text(title, style: AppText.titleSmall),
-  );
 }
 
 /// A flat card of rows, a line between each (money family, §10.1).

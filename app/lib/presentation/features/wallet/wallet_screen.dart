@@ -20,6 +20,8 @@ import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
+import '../../widgets/chart_axis.dart';
+import '../../widgets/section_title.dart';
 import '../../widgets/asset_avatar.dart';
 import '../companion/companion_card.dart';
 import '../order/order_screen.dart';
@@ -375,7 +377,11 @@ class _Chart extends StatelessWidget {
           minY: low - margin,
           maxY: high + margin,
           gridData: const FlGridData(show: false),
-          titlesData: const FlTitlesData(show: false),
+          titlesData: dateAxis(
+            data.dates,
+            formats,
+            style: AppText.caption.copyWith(color: AppColors.muted),
+          ),
           borderData: FlBorderData(show: false),
           lineTouchData: const LineTouchData(enabled: false),
           lineBarsData: [
@@ -397,7 +403,20 @@ class _Chart extends StatelessWidget {
               spots: spots(data.values),
               color: AppColors.primary,
               barWidth: 2.5,
-              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: AppColors.primary.withValues(alpha: 0.08),
+              ),
+              // Where the wallet stands now.
+              dotData: FlDotData(
+                checkToShowDot: (spot, _) => spot.x == data.values.length - 1,
+                getDotPainter: (_, _, _, _) => FlDotCirclePainter(
+                  radius: 4,
+                  color: AppColors.primary,
+                  strokeColor: AppColors.surface,
+                  strokeWidth: 2,
+                ),
+              ),
             ),
           ],
         ),
@@ -473,60 +492,61 @@ class _AllocationCard extends StatelessWidget {
         },
     ];
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.wallet_allocation_title, style: text.titleMedium),
-            const SizedBox(height: AppSpace.x3),
-            ExcludeSemantics(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpace.x1),
-                child: SizedBox(
-                  height: AppSpace.x3,
-                  child: Row(
-                    children: [
-                      for (final (_, color, weight) in slices)
-                        if ((weight * Decimal.fromInt(1000))
-                                .round()
-                                .toBigInt()
-                                .toInt()
-                            case final flex when flex > 0)
-                          Expanded(
-                            flex: flex,
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 2),
-                              color: color,
+    return TitledSection(
+      title: l10n.wallet_allocation_title,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ExcludeSemantics(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSpace.x1),
+                  child: SizedBox(
+                    height: AppSpace.x3,
+                    child: Row(
+                      children: [
+                        for (final (_, color, weight) in slices)
+                          if ((weight * Decimal.fromInt(1000))
+                                  .round()
+                                  .toBigInt()
+                                  .toInt()
+                              case final flex when flex > 0)
+                            Expanded(
+                              flex: flex,
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 2),
+                                color: color,
+                              ),
                             ),
-                          ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpace.x3),
-            for (final (name, color, weight) in slices)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
-                child: Row(
-                  children: [
-                    Container(
-                      width: AppSpace.x3,
-                      height: AppSpace.x3,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(2),
+              const SizedBox(height: AppSpace.x3),
+              for (final (name, color, weight) in slices)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: AppSpace.x3,
+                        height: AppSpace.x3,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppSpace.x2),
-                    Expanded(child: Text(name, style: text.bodyMedium)),
-                    Text(formats.percent(weight), style: text.bodyMedium),
-                  ],
+                      const SizedBox(width: AppSpace.x2),
+                      Expanded(child: Text(name, style: text.bodyMedium)),
+                      Text(formats.percent(weight), style: text.bodyMedium),
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -541,43 +561,41 @@ class _PendingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
-              child: Text(l10n.wallet_pending_title, style: text.titleMedium),
-            ),
-            const SizedBox(height: AppSpace.x2),
-            for (final (:order, :asset, reserved: _) in o.pendingOrders)
-              InkWell(
-                onTap: () => context.push('/wallet/${o.id}/order/${order.id}'),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 56),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpace.x3,
-                      vertical: AppSpace.x2,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(child: OrderHeading(order, asset)),
-                        const ExcludeSemantics(
-                          child: Icon(
-                            Icons.chevron_right,
-                            color: AppColors.muted,
+    return TitledSection(
+      title: l10n.wallet_pending_title,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final (:order, :asset, reserved: _) in o.pendingOrders)
+                InkWell(
+                  onTap: () =>
+                      context.push('/wallet/${o.id}/order/${order.id}'),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 56),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpace.x3,
+                        vertical: AppSpace.x2,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(child: OrderHeading(order, asset)),
+                          const ExcludeSemantics(
+                            child: Icon(
+                              Icons.chevron_right,
+                              color: AppColors.muted,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -592,27 +610,25 @@ class _PositionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
-              child: Text(l10n.wallet_positions_title, style: text.titleMedium),
-            ),
-            const SizedBox(height: AppSpace.x2),
-            if (o.positions.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
-                child: Text(
-                  l10n.wallet_positions_empty,
-                  style: text.bodyMedium?.copyWith(color: AppColors.muted),
+    return TitledSection(
+      title: l10n.wallet_positions_title,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (o.positions.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
+                  child: Text(
+                    l10n.wallet_positions_empty,
+                    style: text.bodyMedium?.copyWith(color: AppColors.muted),
+                  ),
                 ),
-              ),
-            for (final p in o.positions) _PositionRow(p, walletId: o.id),
-          ],
+              for (final p in o.positions) _PositionRow(p, walletId: o.id),
+            ],
+          ),
         ),
       ),
     );

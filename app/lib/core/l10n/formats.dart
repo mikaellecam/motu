@@ -37,6 +37,13 @@ class Formats {
   String price(Price price) =>
       _withCurrency(price.value, price.currency, false);
 
+  /// A date on a chart's axis, in [unit]: `12 oct.`, `oct.`, `2026`.
+  String axisDate(DateTime d, AxisUnit unit) => switch (unit) {
+    AxisUnit.day => DateFormat.MMMd(_locale),
+    AxisUnit.month => DateFormat.MMM(_locale),
+    AxisUnit.year => DateFormat.y(_locale),
+  }.format(d);
+
   /// A share count with its own decimals, up to six: `12`, `1,5`,
   /// `1 250,123456`.
   String quantity(Quantity quantity) {
@@ -124,3 +131,6 @@ class Formats {
     return '$sign$body';
   }
 }
+
+/// What a chart's axis counts in, from the span it covers.
+enum AxisUnit { day, month, year }

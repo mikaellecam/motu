@@ -391,6 +391,7 @@
     }
   },
   "asset_fx_none": "Aucun\u202f: cot\u00e9 en euros",
+  "asset_essentials_title": "L'essentiel",
   "asset_why_title": "Pourquoi \u00e7a bouge\u202f?",
   "asset_why_total": "{total} en euros sur {period}",
   "@asset_why_total": {

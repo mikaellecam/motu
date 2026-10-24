@@ -15,6 +15,8 @@ import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/market/market_calendar.dart';
 import '../../../domain/wallet/position.dart';
+import '../../widgets/chart_axis.dart';
+import '../../widgets/section_title.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
 import '../companion/companion_card.dart';
@@ -319,7 +321,11 @@ class _PriceChart extends StatelessWidget {
           minY: low - margin,
           maxY: high + margin,
           gridData: const FlGridData(show: false),
-          titlesData: const FlTitlesData(show: false),
+          titlesData: dateAxis(
+            chart.dates,
+            formats,
+            style: AppText.caption.copyWith(color: AppColors.muted),
+          ),
           borderData: FlBorderData(show: false),
           lineTouchData: const LineTouchData(enabled: false),
           lineBarsData: [
@@ -341,13 +347,27 @@ class _PriceChart extends StatelessWidget {
               ],
               color: AppColors.primary,
               barWidth: 2,
+              belowBarData: BarAreaData(
+                show: true,
+                color: AppColors.primary.withValues(alpha: 0.08),
+              ),
+              // The worst drop's peak and trough, and where the line ends.
               dotData: FlDotData(
-                checkToShowDot: (spot, _) => drop.contains(spot.x.toInt()),
-                getDotPainter: (_, _, _, _) => FlDotCirclePainter(
-                  radius: 4,
-                  color: AppColors.alert,
-                  strokeWidth: 0,
-                ),
+                checkToShowDot: (spot, _) =>
+                    drop.contains(spot.x.toInt()) ||
+                    spot.x == closes.length - 1,
+                getDotPainter: (spot, _, _, _) => spot.x == closes.length - 1
+                    ? FlDotCirclePainter(
+                        radius: 4,
+                        color: AppColors.primary,
+                        strokeColor: AppColors.surface,
+                        strokeWidth: 2,
+                      )
+                    : FlDotCirclePainter(
+                        radius: 4,
+                        color: AppColors.alert,
+                        strokeWidth: 0,
+                      ),
               ),
             ),
             // Buys: dots at the price paid, no line.
@@ -426,72 +446,75 @@ class _WhyCard extends StatelessWidget {
     ];
     final scale = parts.fold(Decimal.zero, (sum, p) => sum + p.$2.abs());
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.asset_why_title, style: text.titleMedium),
-            Text(
-              l10n.asset_why_total(
-                formats.percent(m.total, signed: true),
-                _periodName(l10n, period),
+    return TitledSection(
+      title: l10n.asset_why_title,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.asset_why_total(
+                  formats.percent(m.total, signed: true),
+                  _periodName(l10n, period),
+                ),
+                style: text.bodyMedium?.copyWith(
+                  color: signColor(m.total, ratio: true),
+                ),
               ),
-              style: text.bodyMedium?.copyWith(
-                color: signColor(m.total, ratio: true),
-              ),
-            ),
-            if (scale > Decimal.zero) ...[
-              const SizedBox(height: AppSpace.x3),
-              ExcludeSemantics(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpace.x1),
-                  child: SizedBox(
-                    height: AppSpace.x3,
-                    child: Row(
-                      children: [
-                        for (final (_, value, color) in parts)
-                          if (_flex(value, scale) case final flex when flex > 0)
-                            Expanded(
-                              flex: flex,
-                              child: Container(
-                                margin: const EdgeInsets.only(right: 2),
-                                color: color,
+              if (scale > Decimal.zero) ...[
+                const SizedBox(height: AppSpace.x3),
+                ExcludeSemantics(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpace.x1),
+                    child: SizedBox(
+                      height: AppSpace.x3,
+                      child: Row(
+                        children: [
+                          for (final (_, value, color) in parts)
+                            if (_flex(value, scale) case final flex
+                                when flex > 0)
+                              Expanded(
+                                flex: flex,
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 2),
+                                  color: color,
+                                ),
                               ),
-                            ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-            const SizedBox(height: AppSpace.x2),
-            for (final (label, value, color) in parts)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
-                child: Row(
-                  children: [
-                    Container(
-                      width: AppSpace.x3,
-                      height: AppSpace.x3,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(2),
+              ],
+              const SizedBox(height: AppSpace.x2),
+              for (final (label, value, color) in parts)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: AppSpace.x3,
+                        height: AppSpace.x3,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppSpace.x2),
-                    Expanded(child: Text(label, style: text.bodyMedium)),
-                    Text(
-                      formats.percent(value, signed: true),
-                      style: text.bodyMedium?.copyWith(
-                        color: signColor(value, ratio: true),
+                      const SizedBox(width: AppSpace.x2),
+                      Expanded(child: Text(label, style: text.bodyMedium)),
+                      Text(
+                        formats.percent(value, signed: true),
+                        style: text.bodyMedium?.copyWith(
+                          color: signColor(value, ratio: true),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -587,22 +610,25 @@ class _Essentials extends StatelessWidget {
     );
 
     // Two by two, each row as tall as its tallest tile.
-    return Column(
-      children: [
-        for (var i = 0; i < tiles.length; i += 2) ...[
-          if (i > 0) const SizedBox(height: AppSpace.x3),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: tile(tiles[i])),
-                const SizedBox(width: AppSpace.x3),
-                Expanded(child: tile(tiles[i + 1])),
-              ],
+    return TitledSection(
+      title: l10n.asset_essentials_title,
+      child: Column(
+        children: [
+          for (var i = 0; i < tiles.length; i += 2) ...[
+            if (i > 0) const SizedBox(height: AppSpace.x3),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: tile(tiles[i])),
+                  const SizedBox(width: AppSpace.x3),
+                  Expanded(child: tile(tiles[i + 1])),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -666,27 +692,28 @@ class _PositionCard extends StatelessWidget {
       ),
     );
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.asset_position_title, style: text.titleMedium),
-            const SizedBox(height: AppSpace.x2),
-            row(l10n.asset_position_quantity, quantity),
-            row(
-              l10n.asset_position_value,
-              formats.amount(p.value, Currency.eur),
-            ),
-            row(l10n.asset_position_pnl, pnl, color: signColor(p.pnl)),
-            row(
-              l10n.asset_position_fx,
-              formats.amount(p.currencyEffect, Currency.eur, signed: true),
-              color: signColor(p.currencyEffect),
-              indent: true,
-            ),
-          ],
+    return TitledSection(
+      title: l10n.asset_position_title,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              row(l10n.asset_position_quantity, quantity),
+              row(
+                l10n.asset_position_value,
+                formats.amount(p.value, Currency.eur),
+              ),
+              row(l10n.asset_position_pnl, pnl, color: signColor(p.pnl)),
+              row(
+                l10n.asset_position_fx,
+                formats.amount(p.currencyEffect, Currency.eur, signed: true),
+                color: signColor(p.currencyEffect),
+                indent: true,
+              ),
+            ],
+          ),
         ),
       ),
     );

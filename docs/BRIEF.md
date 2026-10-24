@@ -926,6 +926,12 @@ data, no key).
   border, no offset shadow, radius 14–18. Numbers in Figtree with tabular figures.
 
 Rule: chunky = the game is talking to you; flat = your money.
+Shared by the money screens (decided 2026-10-24, M9-22, from the artboards `Portfolio-A` and `Asset-A`):
+section titles in Baloo above their flat cards (`SectionTitle`), not inside them; an asset's avatar shows two
+letters from its name (`assetInitials`: the initials of two words, « ETF » left out, or a word's first two
+letters: Apple « AP », Airbus « AI »); a chart dates its x-axis with a few labels in the unit its span calls
+for (days, months, years; a label repeating its neighbour is left out: `dateAxis`), fills lightly under its
+main line and marks where it ends with a dot.
 
 ### 10.2 Color tokens and their meaning
 

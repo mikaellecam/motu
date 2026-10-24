@@ -128,6 +128,7 @@
   "asset_volatility_figure": "{band} \u00b7 {figure}",
   "asset_fx_usd": "US dollar \u00b7 {change} over 1 year",
   "asset_fx_none": "None: quoted in euros",
+  "asset_essentials_title": "The essentials",
   "asset_why_title": "Why does it move?",
   "asset_why_total": "{total} in euros over {period}",
   "asset_why_market": "The world market",
