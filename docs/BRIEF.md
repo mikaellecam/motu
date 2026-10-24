@@ -418,6 +418,21 @@ when fractions are off), the sells being market orders filled at the next sessio
 contribution, « Continuer ». The trip stays stopped (time controls off) until the user answers. The
 automatic stops can be changed any time from the trip header or the stop screen. « Avancer jusqu'à… »
 accepts +3 / +6 months, +1 year or a typed day, strictly after the trip's day and up to yesterday.
+Stop screen layout (decided 2026-10-24, artboard `TripStop-A` of the art direction canvas): no app bar; the
+trip's header on top (clock tile, « Voyage « {nom} » » with an `alert` « Arrêt automatique » chip, the
+simulated day in Baloo, « Quitter le voyage » back to the wallets). The event in one chunky card: « Arrêt
+automatique » in `alertText`, what happened as a Baloo headline (a portfolio drop as its loss against the money
+put in: « Ton portefeuille a perdu −16,77 % par rapport à l'argent versé. »; another reason of the same day in
+body text under it). For a drop, its chart over dated days (`dateAxis`), lightly filled, ending on an `alert`
+dot, against the dashed line it crossed, labelled « Ton seuil : −15 % » (the fixed threshold, even if that
+stop was turned off since); then the market meanwhile, « Sur la même période, l'ETF Monde a fait −17,12 %. »
+(the world ETF's return over the chart's days in its currency, left out when it was not listed by the first
+day) and « Il te reste 1 834,50 € de liquidités. ». The answers' titles in Baloo. « Pourquoi ? (facultatif) »
+labels its field from above (an example inside it for a drop), with « Ta décision est notée dans ton journal
+de voyage. On la relira ensemble à la fin. » under it. For a drop, « Avant de choisir : c'est quoi, une pire
+baisse ? » opens that term's sheet. Not taken from the artboard: its answers (the choices decided 2026-10-11
+stay), its comparison in words (« presque autant que tes actions »: the figure instead) and the time span in
+the headline (« en trois semaines »).
 
 **End of trip** (any time, or when the clock reaches the last available trading day): summary with the
 user's time-weighted return (§7.6) compared with counterfactuals computed from the same start date and the

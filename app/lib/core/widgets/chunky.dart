@@ -213,9 +213,14 @@ class ChunkyChoice extends StatelessWidget {
     this.upside,
     this.downside,
     this.mark,
+    this.labelStyle,
   });
 
   final String label;
+
+  /// Body strong by default; a Baloo title where the choice is the screen's
+  /// moment (an automatic stop's answers).
+  final TextStyle? labelStyle;
   final bool selected;
   final VoidCallback onTap;
   final String? upside;
@@ -253,7 +258,7 @@ class ChunkyChoice extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label, style: AppText.bodyStrong),
+                    Text(label, style: labelStyle ?? AppText.bodyStrong),
                     for (final (icon, line) in [
                       (Icons.add, upside),
                       (Icons.remove, downside),

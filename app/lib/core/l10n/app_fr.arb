@@ -718,18 +718,23 @@
   "trip_exit": "Quitter le voyage",
   "trip_moving": "Le temps avance\u2026",
   "stop_title": "Arr\u00eat automatique",
-  "stop_drawdown": "Ton portefeuille vaut {value}, sous la ligne de {threshold}\u202f: 15\u202f% sous l'argent vers\u00e9.",
-  "@stop_drawdown": {
+  "stop_trip_name": "Voyage \u00ab\u00a0{name}\u00a0\u00bb",
+  "@stop_trip_name": {
     "placeholders": {
-      "value": {
-        "type": "String"
-      },
-      "threshold": {
+      "name": {
         "type": "String"
       }
     }
   },
-  "stop_position": "{name} a perdu {loss} par rapport \u00e0 son prix d'achat.",
+  "stop_drawdown": "Ton portefeuille est \u00e0 {loss} de l'argent vers\u00e9.",
+  "@stop_drawdown": {
+    "placeholders": {
+      "loss": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_position": "{name} est \u00e0 {loss} de son prix d'achat.",
   "@stop_position": {
     "placeholders": {
       "name": {
@@ -756,7 +761,30 @@
       }
     }
   },
-  "stop_line": "Ligne d'arr\u00eat",
+  "stop_threshold": "Ton seuil\u202f: {limit}",
+  "@stop_threshold": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_market": "Sur la m\u00eame p\u00e9riode, l'ETF Monde a fait {change}.",
+  "@stop_market": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "stop_cash": "Il te reste {cash} de liquidit\u00e9s.",
+  "@stop_cash": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
   "stop_question": "Que fais-tu\u202f?",
   "stop_hold": "Garder",
   "stop_hold_up": "Si les cours remontent, tu en profites.",
@@ -770,6 +798,10 @@
   "stop_sells_next": "Les ventes passent au prochain jour de cotation.",
   "stop_continue": "Continuer",
   "stop_why": "Pourquoi\u202f? (facultatif)",
+  "stop_why_example": "Ex.\u202f: j'ai peur que \u00e7a continue",
+  "stop_journal_hint": "Ta d\u00e9cision est not\u00e9e dans ton journal de voyage. On la relira ensemble \u00e0 la fin.",
+  "stop_before_choosing": "Avant de choisir\u202f:",
+  "stop_term_link": "c\u2019est quoi, une pire baisse\u202f?",
   "stop_confirm": "Valider",
   "stop_edit_stops": "Modifier les arr\u00eats automatiques",
   "stops_save": "Enregistrer",

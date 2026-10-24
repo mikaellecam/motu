@@ -3,11 +3,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
+import '../../domain/analytics/returns.dart';
 import '../../domain/market/asset.dart';
 import '../../domain/wallet/position.dart';
 import '../../domain/wallet/stop_decision.dart';
 import '../../domain/wallet/trip_engine.dart';
+import '../../domain/wallet/trip_setup.dart'
+    show defaultDrawdownStop, defaultPositionStop;
 import '../providers.dart';
+import '../wallet/wallet_overview.dart' show worldAssetId;
 import '../wallet/wallet_providers.dart';
 import '../wallet/wallets_list.dart';
 
@@ -17,23 +21,43 @@ part 'trip_stop.g.dart';
 /// line (money put in × (1 − drawdown)) for a portfolio drop; the position's
 /// value as now held and its line (cost × (1 − loss)) for a position drop.
 final class StopChart {
-  const StopChart(this.dates, this.values, this.threshold);
+  const StopChart(
+    this.dates,
+    this.values,
+    this.threshold, {
+    required this.limit,
+    this.market,
+  });
   final List<DateTime> dates;
   final List<Decimal> values;
   final List<Decimal> threshold;
+
+  /// How far below its base the line sits: 0.15 for a stop at −15 %.
+  final Decimal limit;
+
+  /// The world ETF's return over [dates], in its currency: what the whole
+  /// market did meanwhile. Null when it was not listed by the first date,
+  /// or when the drop is its own.
+  final Decimal? market;
 }
 
 /// The automatic-stop screen (BRIEF §4.5).
 final class StopView {
   const StopView({
     required this.walletId,
+    required this.name,
     required this.date,
     required this.reasons,
     required this.assetNames,
     required this.chart,
+    required this.cash,
+    this.portfolioLoss,
   });
 
   final String walletId;
+
+  /// The trip's name.
+  final String name;
 
   /// The trip's day.
   final DateTime date;
@@ -43,6 +67,13 @@ final class StopView {
   /// of a filled order (under its order id).
   final Map<String, String> assetNames;
   final StopChart? chart;
+
+  /// The cash left to invest.
+  final Money cash;
+
+  /// For a portfolio drop: its value against the money put in so far,
+  /// negative.
+  final Decimal? portfolioLoss;
 
   bool get dropStop => isDropStop(reasons);
 }
@@ -76,20 +107,40 @@ Future<StopView> tripStop(Ref ref, String walletId) async {
     }
   }
 
+  // The world ETF from [from] to the stop, when it was listed by then.
+  Future<Decimal?> marketFrom(DateTime from) async {
+    final world = assets[worldAssetId];
+    if (world == null || world.listingDate.isAfter(from)) return null;
+    final bars = await market.history(
+      worldAssetId,
+      from: from,
+      to: date,
+      asOf: date,
+    );
+    if (bars.isEmpty) return null;
+    return simpleReturn(bars.first.close, bars.last.close);
+  }
+
   StopChart? chart;
-  final drawdown = wallet.params.stops.drawdown ?? Decimal.zero;
+  Decimal? portfolioLoss;
+  // The line the stop crossed, even if the user has since turned it off.
+  final drawdown = wallet.params.stops.drawdown ?? defaultDrawdownStop;
   final positionDrop = reasons.whereType<PositionLossStop>().firstOrNull;
-  if (reasons.any((r) => r is DrawdownStop)) {
+  if (reasons.whereType<DrawdownStop>().firstOrNull case final drop?) {
     var putIn = Decimal.zero;
     final threshold = <Decimal>[];
     for (final v in wallet.values) {
       putIn += v.flow.amount;
       threshold.add(putIn * (Decimal.one - drawdown));
     }
+    portfolioLoss = simpleReturn(putIn, drop.value.amount);
+    final dates = [for (final v in wallet.values) v.date];
     chart = StopChart(
-      [for (final v in wallet.values) v.date],
+      dates,
       [for (final v in wallet.values) v.value.amount],
       threshold,
+      limit: drawdown,
+      market: dates.isEmpty ? null : await marketFrom(dates.first),
     );
   } else if (positionDrop != null) {
     final position = wallet.positions[positionDrop.assetId];
@@ -111,9 +162,8 @@ Future<StopView> tripStop(Ref ref, String walletId) async {
         start: firstBuy,
         asOf: date,
       );
-      final line =
-          position.costBasis *
-          (Decimal.one - (wallet.params.stops.positionLoss ?? Decimal.zero));
+      final limit = wallet.params.stops.positionLoss ?? defaultPositionStop;
+      final line = position.costBasis * (Decimal.one - limit);
       chart = StopChart(
         [for (final b in bars) b.date],
         [
@@ -121,15 +171,20 @@ Future<StopView> tripStop(Ref ref, String walletId) async {
             b.close * position.quantity.toDecimal() * rate(b.date),
         ],
         [for (final _ in bars) line],
+        limit: limit,
+        market: asset.id == worldAssetId ? null : await marketFrom(firstBuy),
       );
     }
   }
   return StopView(
     walletId: walletId,
+    name: wallet.name,
     date: date,
     reasons: reasons,
     assetNames: names,
     chart: chart,
+    cash: wallet.cash,
+    portfolioLoss: portfolioLoss,
   );
 }
 

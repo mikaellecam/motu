@@ -29,10 +29,12 @@ void main() {
   late AppDatabase db;
   late ProviderContainer container;
   late WalletRepository wallets;
+  late FakeBackend backend;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     final wall = WallClock(DateTime.utc(2026, 10, 8, 12));
+    backend = FakeBackend();
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(db),
@@ -40,7 +42,7 @@ void main() {
         marketRepositoryProvider.overrideWithValue(
           MarketRepository(
             db,
-            BackendApi('http://t', adapter: FakeBackend()),
+            BackendApi('http://t', adapter: backend),
             wallClock: wall,
           ),
         ),
@@ -130,11 +132,52 @@ void main() {
     ]);
     final view = await container.read(tripStopProvider('trip').future);
     expect(view.date, day(7));
+    expect(view.name, 'Octobre');
     expect(view.dropStop, isTrue);
+    // 8 400 € against the 10 000 € put in.
+    expect(view.portfolioLoss, dec('-0.16'));
+    // 10 000 € − 10 × 100 $ × 0,85251.
+    expect(view.cash, eur('9147.49'));
     expect(view.chart!.dates, [day(5), day(6), day(7)]);
     expect(view.chart!.values.last, dec('8400'));
     expect(view.chart!.threshold, [dec('8500'), dec('8500'), dec('8500')]);
+    expect(view.chart!.limit, dec('0.15'));
+    expect(view.chart!.market, isNull, reason: 'no world ETF in the catalogue');
     expect(stopEventId(view.date), 'stop-2026-10-07');
+  });
+
+  test('the world ETF over the same days, in its currency', () async {
+    backend.assets.add({...backend.assets.first, 'id': 'world'});
+    backend.closes['world'] = {
+      '2026-10-05': '50',
+      '2026-10-06': '45',
+      '2026-10-07': '48',
+    };
+    await stopWith(const [
+      DrawdownStop(
+        value: Money(840000, Currency.eur),
+        threshold: Money(850000, Currency.eur),
+      ),
+    ]);
+    final view = await container.read(tripStopProvider('trip').future);
+    expect(view.chart!.market, dec('-0.04'));
+  });
+
+  test('a world ETF listed after the chart starts says nothing', () async {
+    backend.assets.add({
+      ...backend.assets.first,
+      'id': 'world',
+      'listingDate': '2026-10-06',
+    });
+    backend.closes['world'] = {'2026-10-06': '45', '2026-10-07': '48'};
+    await stopWith(const [
+      DrawdownStop(
+        value: Money(840000, Currency.eur),
+        threshold: Money(850000, Currency.eur),
+      ),
+    ]);
+    final view = await container.read(tripStopProvider('trip').future);
+    expect(view.chart!.market, isNull);
   });
 
   test('a position drop: that position against cost × 0,8', () async {
@@ -146,6 +189,8 @@ void main() {
     // 10 × 101 $ × 0,85 on 10-06.
     expect(chart.values[1], dec('858.5'));
     expect(chart.threshold.first, dec('852.51') * dec('0.8'));
+    expect(chart.limit, dec('0.20'));
+    expect(view.portfolioLoss, isNull);
   });
 
   test('an order fill names the asset; no chart, no dilemma', () async {

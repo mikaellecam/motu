@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/trip/trip_stop.dart';
 import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/domain/analytics/returns.dart';
 import 'package:finance_companion/domain/wallet/stop_decision.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
@@ -39,6 +40,7 @@ void main() {
   ];
   final view = StopView(
     walletId: 'lehman',
+    name: 'Crise financière',
     date: days.last,
     reasons: [
       DrawdownStop(
@@ -47,14 +49,20 @@ void main() {
       ),
     ],
     assetNames: const {},
-    chart: StopChart(days, values, [
-      for (final _ in days) Decimal.fromInt(8500),
-    ]),
+    chart: StopChart(
+      days,
+      values,
+      [for (final _ in days) Decimal.fromInt(8500)],
+      limit: Decimal.parse('0.15'),
+      market: Decimal.parse('-0.1712'),
+    ),
+    cash: Money.book(Decimal.parse('1834.50'), Currency.eur),
+    portfolioLoss: simpleReturn(Decimal.fromInt(10000), values.last),
   );
   screenshot(
     'm5-4-stop',
     const StopScreen(walletId: 'lehman'),
-    size: const Size(390, 1350),
+    size: const Size(390, 1460),
     overrides: [
       tripStopProvider.overrideWith((ref, id) async => view),
       stopActionsProvider.overrideWith2((_) => _Idle()),
