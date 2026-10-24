@@ -6,6 +6,7 @@ import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/repositories/glossary_repository.dart';
+import 'package:finance_companion/domain/analytics/drawdown.dart';
 import 'package:finance_companion/domain/learning/glossary.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
@@ -57,6 +58,8 @@ void main() {
         closes: apple,
         world: _asset('world', 'iShares MSCI ACWI ETF', AssetType.etf),
         worldFigure: liveFigure(args.$1, world),
+        worldCloses: args.$1 == LiveExample.volatility ? world : const [],
+        drawdown: args.$1 == LiveExample.drawdown ? maxDrawdown(apple) : null,
       ),
     ),
   ];
@@ -85,6 +88,28 @@ void main() {
             .first,
       );
       await tester.tap(find.text('Volatilité'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  // The worst drop's example: its peak and trough marked (M9-28).
+  screenshot(
+    'm9-28-term-sheet-drawdown',
+    const GlossaryScreen(),
+    size: const Size(390, 900),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.scrollUntilVisible(
+        find.text('Pire baisse'),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.tap(find.text('Pire baisse'));
       await tester.pumpAndSettle();
     },
   );

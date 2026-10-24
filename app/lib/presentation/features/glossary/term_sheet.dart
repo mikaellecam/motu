@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:decimal/decimal.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +15,8 @@ import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../core/failure.dart';
 import '../../../domain/learning/checkpoint.dart';
+import '../../../domain/analytics/drawdown.dart';
+import '../../../domain/analytics/volatility.dart';
 import '../../../domain/learning/glossary.dart';
 import '../../widgets/sign_color.dart';
 import '../../widgets/term_text.dart';
@@ -255,27 +260,35 @@ class _LiveExampleCard extends ConsumerWidget {
               ),
             if (value.closes.length > 1) ...[
               const SizedBox(height: AppSpace.x3),
-              RevealChart(
-                height: 96,
-                animate: false,
-                lines: [
-                  ChartLine([
-                    for (final (d, c) in value.closes)
-                      (d.millisecondsSinceEpoch.toDouble(), c.toDouble()),
-                  ], AppColors.primary),
-                ],
-                semanticsLabel: l10n.node_chart_semantics(
-                  l10n.node_chart_line(
-                    value.asset.name,
-                    formats.price(
-                      Price(value.closes.first.$2, value.asset.currency),
+              switch (kind) {
+                // How far each day moved, the asset beside the world ETF on
+                // one scale (M9-28): the jittery one shows at a glance.
+                LiveExample.volatility => _DailyMoves([
+                  (value.asset.name, dailyChanges(value.closes), lineColors[0]),
+                  // Named as the line above names it.
+                  if (value.world != null)
+                    (
+                      l10n.wallet_benchmark_world,
+                      dailyChanges(value.worldCloses),
+                      lineColors[1],
                     ),
-                    formats.price(
-                      Price(value.closes.last.$2, value.asset.currency),
+                ]),
+                _ => Semantics(
+                  label: l10n.node_chart_semantics(
+                    l10n.node_chart_line(
+                      value.asset.name,
+                      formats.price(
+                        Price(value.closes.first.$2, value.asset.currency),
+                      ),
+                      formats.price(
+                        Price(value.closes.last.$2, value.asset.currency),
+                      ),
                     ),
                   ),
+                  excludeSemantics: true,
+                  child: _PriceLine(value.closes, value.drawdown),
                 ),
-              ),
+              },
             ],
           ],
         ),
@@ -287,6 +300,132 @@ class _LiveExampleCard extends ConsumerWidget {
       },
     );
   }
+}
+
+/// An example's year of closes, small; the worst drop's peak and trough
+/// marked when there is one (M9-28), as the asset page marks them.
+class _PriceLine extends StatelessWidget {
+  const _PriceLine(this.closes, this.drawdown);
+  final List<(DateTime, Decimal)> closes;
+  final Drawdown? drawdown;
+
+  @override
+  Widget build(BuildContext context) {
+    final marks = {
+      for (final date in [drawdown?.peakDate, drawdown?.troughDate])
+        if (date != null) closes.indexWhere((c) => c.$1 == date),
+    }..remove(-1);
+    return SizedBox(
+      height: 96,
+      child: LineChart(
+        LineChartData(
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          lineTouchData: const LineTouchData(enabled: false),
+          lineBarsData: [
+            LineChartBarData(
+              // Doubles from here on: pixels, not money.
+              spots: [
+                for (final (i, (_, close)) in closes.indexed)
+                  FlSpot(i.toDouble(), close.toDouble()),
+              ],
+              color: AppColors.primary,
+              barWidth: 2,
+              dotData: FlDotData(
+                checkToShowDot: (spot, _) => marks.contains(spot.x.toInt()),
+                getDotPainter: (_, _, _, _) => FlDotCirclePainter(
+                  radius: 4,
+                  color: AppColors.alert,
+                  strokeWidth: 0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The volatility example (M9-28): each day's change as a thin bar from a
+/// middle line, one row per asset, all on the widest move's scale. The
+/// figures above say it in words: hidden from screen readers.
+class _DailyMoves extends StatelessWidget {
+  const _DailyMoves(this.rows);
+  final List<(String, List<(DateTime, Decimal)>, Color)> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    // Doubles from here on: pixels, not money. One scale for both rows: an
+    // ordinary day's move (the 95th percentile), the rare bigger ones
+    // reaching the row's edge, so one crash day does not flatten the rest.
+    final sizes = [
+      for (final (_, changes, _) in rows)
+        for (final (_, change) in changes) change.abs().toDouble(),
+    ]..sort();
+    final widest = sizes.isEmpty
+        ? 0.0
+        : sizes[((sizes.length - 1) * 0.95).round()];
+    return ExcludeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (i, (name, changes, color)) in rows.indexed) ...[
+            if (i > 0) const SizedBox(height: AppSpace.x2),
+            Text(name, style: AppText.caption.copyWith(color: AppColors.muted)),
+            SizedBox(
+              height: 40,
+              child: CustomPaint(
+                painter: _MovesPainter(
+                  [for (final (_, change) in changes) change.toDouble()],
+                  widest,
+                  color,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MovesPainter extends CustomPainter {
+  _MovesPainter(this.moves, this.widest, this.color);
+  final List<double> moves;
+  final double widest;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final middle = size.height / 2;
+    canvas.drawLine(
+      Offset(0, middle),
+      Offset(size.width, middle),
+      Paint()
+        ..color = AppColors.line
+        ..strokeWidth = 1,
+    );
+    if (moves.isEmpty || widest == 0) return;
+    final step = size.width / moves.length;
+    final bar = Paint()
+      ..color = color
+      ..strokeWidth = math.max(1, step * 0.6);
+    for (final (i, move) in moves.indexed) {
+      final x = (i + 0.5) * step;
+      final reach = (move / widest).clamp(-1.0, 1.0);
+      canvas.drawLine(
+        Offset(x, middle),
+        Offset(x, middle - reach * middle),
+        bar,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_MovesPainter old) =>
+      old.widest != widest || old.color != color || old.moves != moves;
 }
 
 /// « Nouvelle » or « Nouvelle notion »: a small pill in the new notions'

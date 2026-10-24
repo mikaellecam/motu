@@ -183,7 +183,21 @@ void main() {
         liveExampleProvider(LiveExample.drawdown, 'apple').future,
       );
       expect(drop.figure, d('-0.25'));
+      // Where it started and where it bottomed out, for the chart's marks.
+      expect(drop.drawdown?.peakDate, isNotNull);
+      expect(drop.drawdown?.troughDate, isNotNull);
     });
+
+    test(
+      'volatility: the world ETF\'s closes too, for its daily moves',
+      () async {
+        final v = await c.read(
+          liveExampleProvider(LiveExample.volatility, 'apple').future,
+        );
+        expect(v.worldCloses, hasLength(2)); // The fixture's two world closes.
+        expect(v.world?.id, 'world');
+      },
+    );
 
     test('opened elsewhere: the world ETF alone', () async {
       final v = await c.read(

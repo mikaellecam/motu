@@ -92,6 +92,31 @@ void main() {
     });
   });
 
+  group('dailyChanges', () {
+    test('each day against the one before, dated by the later day', () {
+      expect(
+        dailyChanges([
+          (day(0), d('100')),
+          (day(1), d('110')),
+          (day(2), d('99')),
+        ]),
+        [(day(1), d('0.1')), (day(2), d('-0.1'))],
+      );
+    });
+
+    test('fewer than two closes: no change to draw', () {
+      expect(dailyChanges(const []), isEmpty);
+      expect(dailyChanges([(day(0), d('100'))]), isEmpty);
+    });
+
+    test('a day after a close of zero or less is left out', () {
+      expect(
+        dailyChanges([(day(0), d('0')), (day(1), d('5')), (day(2), d('6'))]),
+        [(day(2), d('0.2'))],
+      );
+    });
+  });
+
   group('annualisedVolatility', () {
     test('null under 20 returns (21 closes)', () {
       expect(annualisedVolatility(const []), isNull);

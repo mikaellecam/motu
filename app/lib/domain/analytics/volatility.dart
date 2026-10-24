@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:decimal/decimal.dart';
 
 import '../../core/money/money.dart';
+import 'returns.dart';
 
 /// Below this many daily returns the estimate means little: no volatility
 /// ("pas assez de données").
@@ -35,3 +36,13 @@ Decimal? annualisedVolatility(List<Decimal> closes) {
   final annualised = math.sqrt(variance) * math.sqrt(tradingDaysPerYear);
   return Decimal.parse(annualised.toStringAsFixed(ratioScale));
 }
+
+/// Each day's change, `close / previous close − 1`, dated by the later day:
+/// how much the price moved from one session to the next (M9-28, the
+/// volatility example's bars). Fewer than two closes: none. A day after a
+/// close of zero or less has no change and is left out.
+List<(DateTime, Decimal)> dailyChanges(List<(DateTime, Decimal)> closes) => [
+  for (var i = 1; i < closes.length; i++)
+    if (closes[i - 1].$2 > Decimal.zero)
+      (closes[i].$1, simpleReturn(closes[i - 1].$2, closes[i].$2)!),
+];

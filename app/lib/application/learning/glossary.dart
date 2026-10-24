@@ -6,6 +6,7 @@ import '../../core/money/money.dart';
 import '../../data/repositories/glossary_repository.dart';
 import '../../domain/learning/checkpoint.dart';
 import '../../domain/learning/content.dart';
+import '../../domain/analytics/drawdown.dart';
 import '../../domain/learning/glossary.dart';
 import '../../domain/market/asset.dart';
 import '../explorer/explorer.dart' show searchKey;
@@ -158,6 +159,8 @@ final class LiveExampleView {
     required this.closes,
     this.world,
     this.worldFigure,
+    this.worldCloses = const [],
+    this.drawdown,
   });
 
   final LiveExample kind;
@@ -172,6 +175,13 @@ final class LiveExampleView {
   /// (same currency, nothing to compare).
   final Asset? world;
   final Decimal? worldFigure;
+
+  /// The world ETF's closes, for the volatility example's daily moves side
+  /// by side (M9-28); empty otherwise.
+  final List<(DateTime, Decimal)> worldCloses;
+
+  /// The worst drop's peak and trough, for the drawdown example's marks.
+  final Drawdown? drawdown;
 }
 
 @riverpod
@@ -216,13 +226,18 @@ Future<LiveExampleView> liveExample(
   }
   final compare =
       kind != LiveExample.currency && world != null && world.id != asset.id;
+  final worldCloses = compare
+      ? await closesOf(world)
+      : const <(DateTime, Decimal)>[];
   return LiveExampleView(
     kind: kind,
     asset: asset,
     figure: liveFigure(kind, closes, rates: rates),
     closes: closes,
     world: compare ? world : null,
-    worldFigure: compare ? liveFigure(kind, await closesOf(world)) : null,
+    worldFigure: compare ? liveFigure(kind, worldCloses) : null,
+    worldCloses: kind == LiveExample.volatility ? worldCloses : const [],
+    drawdown: kind == LiveExample.drawdown ? maxDrawdown(closes) : null,
   );
 }
 

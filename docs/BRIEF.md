@@ -321,6 +321,10 @@ Rules:
   chunky ✕; the one-line definition (`short`) first, the 2–3 paragraphs (`body`) behind « En savoir plus »,
   so the live example and « Tester en 30 secondes » stay within a short scroll; the live example in a chunky
   card, « Sur données réelles » over a Baloo headline; related terms as pills.
+- Live examples show their notion (decided 2026-10-24 by the user, M9-28): volatility draws each day's change
+  (`dailyChanges`) as thin bars, the asset above the ETF Monde on one scale (an ordinary day's move, the rarer
+  bigger ones reaching the row's edge); the worst drop marks its peak and trough on the year's line. Performance
+  and currency keep their line.
 - V1 terms (≈ 26): action, etf, indice, diversification, volatilite, pire-baisse, rendement, performance,
   plus-value, frais, risque-de-change, taux-de-change, inflation, interets-composes, dca, livret-a,
   matelas-de-securite, liquidites, ordre-au-marche, ordre-limite, ordre-stop, cours-de-cloture, allocation,
@@ -622,6 +626,8 @@ end, the money put in dashed, the x-axis dated (`dateAxis`, §10.1). Then « Ave
 flat card, each name on one line with its round value and signed change stacked beside it; then the insight in
 a chunky « Ton compagnon » card with the glossary's DCA as a chip; then « Enregistrer » as a chunky button.
 « Tes simulations » is a titled flat card. The lump sum and the Livret A stay, though the artboard has none.
+No « Autre actif » button (decided 2026-10-24 by the user): the asset field opens the form, one swipe above
+the result.
 
 ### 4.11 Livret A
 
