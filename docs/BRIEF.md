@@ -683,8 +683,8 @@ Uses:
   ceiling, checks each amount with `validateLivretTransfer`, and books it on the wallet's day (today, or the
   trip's day); the allocation and the chart's « Livret A » comparison follow.
 - Benchmark line on the wallet chart; counterfactual in trip summary; comparison in DCA; island node 1.
-  These comparisons respect the ceiling valid at each date: money above it stays as uninvested cash at 0 %,
-  and the result says it was capped.
+  These comparisons respect the ceiling valid at each date: money above it stays as uninvested cash at 0 %
+  until a ceiling rise makes room for it (decided 2026-10-24), and the result says when some is still out.
 - Teaching stance: the Livret is the right place for a safety cushion (3–6 months of expenses), not for
   long-term money. Never mock it.
 

@@ -327,6 +327,39 @@ void main() {
       expect(run.finalValue, d('20000'));
     });
 
+    test('cash kept out goes in when the ceiling rises', () {
+      // 4 700 € stay out under 15 300 €. 3 825 € go in on 1 October 2012
+      // (19 125 €), the last 875 € on 1 January 2013 (22 950 €).
+      List<Flow> flows() => [Flow(day(2012, 6, 1), eur('20000'))];
+      final partial = livretFlows(
+        flows(),
+        rates: rates,
+        ceilings: ceilings,
+        dates: [day(2012, 6, 1), day(2012, 12, 1)],
+      );
+      expect(partial.uninvested, eur('875'));
+
+      final dates = [day(2012, 6, 1), day(2013, 1, 1)];
+      final run = livretFlows(
+        flows(),
+        rates: rates,
+        ceilings: ceilings,
+        dates: dates,
+      );
+      final flat = livretFlows(
+        flows(),
+        rates: rates,
+        ceilings: [ceilings.first],
+        dates: dates,
+      );
+      expect(run.uninvested, eur('0'));
+      expect(run.capped, isFalse);
+      expect(run.invested, eur('20000'));
+      // The 3 825 € earn from 16 October: five fortnights at 3 %, 23,906 €,
+      // credited in cents on 31 December.
+      expect(run.finalValue - flat.finalValue, d('23.91'));
+    });
+
     test('the ceiling of each date applies', () {
       final run = livretFlows(
         [Flow(day(2014, 6, 2), eur('20000'))],

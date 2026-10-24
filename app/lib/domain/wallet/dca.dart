@@ -247,9 +247,8 @@ final class LivretRun {
 
 /// The same [flows] put on a Livret A (BRIEF §4.11), valued on each of
 /// [dates]. A deposit stops at the ceiling valid on its date; the rest stays
-/// as cash (decided 2026-10-07).
-// ponytail: cash kept out stays out, even when a later ceiling rise would
-// make room (twice, in 2012–2013).
+/// as cash (decided 2026-10-07) until a ceiling rise makes room for it
+/// (decided 2026-10-24).
 LivretRun livretFlows(
   List<Flow> flows, {
   required List<LivretRate> rates,
@@ -271,22 +270,30 @@ LivretRun livretFlows(
   var invested = const Money.zero(Currency.eur);
   var cash = const Money.zero(Currency.eur);
   final series = <ValuePoint>[];
+  // A ceiling rise is a flow of nothing: the cash kept out goes in with it.
+  final events = [
+    ...flows,
+    for (final c in ceilings)
+      if (c.validFrom.isAfter(first))
+        Flow(c.validFrom, const Money.zero(Currency.eur)),
+  ]..sort((a, b) => a.date.compareTo(b.date));
   var next = 0;
 
   for (final date in dates) {
-    while (next < flows.length && !flows[next].date.isAfter(date)) {
-      final flow = flows[next++];
+    while (next < events.length && !events[next].date.isAfter(date)) {
+      final flow = events[next++];
       account = account.advanceTo(flow.date, rates);
       final ceiling = ceilingAt(flow.date, ceilings);
       final room = account.balance < ceiling
           ? ceiling - account.balance
           : const Money.zero(Currency.eur);
-      final deposit = flow.amount < room ? flow.amount : room;
+      final available = cash + flow.amount;
+      final deposit = available < room ? available : room;
       if (deposit.isPositive) {
         account = account.apply(LivretMovement(flow.date, deposit));
       }
       invested += flow.amount;
-      cash += flow.amount - deposit;
+      cash = available - deposit;
     }
     account = account.advanceTo(date, rates);
     series.add(
