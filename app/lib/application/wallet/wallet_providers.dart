@@ -99,6 +99,17 @@ Future<DateTime?> nextContribution(Ref ref, String walletId) async {
   );
 }
 
+/// Trip [walletId]'s next contribution when no active DCA plan invests it: it
+/// stays as cash (« Avancer jusqu'à… », BRIEF §4.5).
+@riverpod
+Future<DateTime?> idleContribution(Ref ref, String walletId) async {
+  final wallets = ref.watch(walletRepositoryProvider);
+  final next = await ref.watch(nextContributionProvider(walletId).future);
+  if (next == null) return null;
+  final wallet = await wallets.load(walletId);
+  return wallet.plans.any((p) => p.active) ? null : next;
+}
+
 /// The live wallet prices from quotes; a trip, or an asset without a quote,
 /// from the last close on or before [asOf].
 Future<ObservedPrice> priceOf(

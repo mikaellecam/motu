@@ -16,6 +16,7 @@ import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:finance_companion/domain/wallet/dca.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_backend.dart';
@@ -198,6 +199,33 @@ void main() {
           reason: id,
         );
       }
+    },
+  );
+
+  test(
+    'an idle contribution: the next one, unless a DCA plan invests it',
+    () async {
+      await trip('idle', day(10, 5));
+      // Sunday 1 November: Monday 2.
+      expect(
+        await container.read(idleContributionProvider('idle').future),
+        day(11, 2),
+      );
+      await wallets.savePlan(
+        'idle',
+        DcaPlan(
+          id: 'p1',
+          assetId: 'world',
+          amount: Money.book(d('200'), Currency.eur),
+          frequency: DcaFrequency.monthly,
+          start: day(10, 5),
+        ),
+      );
+      container.invalidate(idleContributionProvider('idle'));
+      expect(
+        await container.read(idleContributionProvider('idle').future),
+        isNull,
+      );
     },
   );
 

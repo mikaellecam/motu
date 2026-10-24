@@ -161,6 +161,9 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
         nextContributionProvider.overrideWith(
           (ref, id) async => DateTime.utc(2008, 11, 3),
         ),
+        idleContributionProvider.overrideWith(
+          (ref, id) async => DateTime.utc(2008, 11, 3),
+        ),
         walletChartProvider.overrideWith(
           (ref, args) async => chartFor(o.series, args.$2),
         ),
@@ -228,9 +231,24 @@ void main() {
     final runner = await show(tester, trip());
     await tester.tap(find.text('Avancer jusqu\'à…'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('+3 mois'));
+    await tester.tap(find.text('1 mois'));
+    await tester.pumpAndSettle();
+    expect(find.text('Avancer jusqu\'au 1er novembre 2008'), findsOneWidget);
+    expect(
+      find.textContaining('restera en liquidités', findRichText: true),
+      findsNothing,
+      reason: 'the 3 November contribution comes after',
+    );
+    await tester.tap(find.text('3 mois'));
     await tester.pumpAndSettle();
     expect(find.text('Avancer jusqu\'au 1er janvier 2009'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Le versement du 3 novembre restera en liquidités',
+        findRichText: true,
+      ),
+      findsOneWidget,
+    );
 
     await tester.enterText(find.byType(TextField), '15/09/2008');
     await tester.pumpAndSettle();
@@ -250,6 +268,24 @@ void main() {
     await tester.tap(find.text('Avancer jusqu\'au 9 mars 2009'));
     await tester.pumpAndSettle();
     expect(runner.targets, [DateTime.utc(2009, 3, 9)]);
+    expect(stopActions.saved, isEmpty, reason: 'the stops did not change');
+  });
+
+  testWidgets("« Avancer jusqu'à… » changes the trip's stops first", (
+    tester,
+  ) async {
+    final runner = await show(tester, trip());
+    await tester.tap(find.text('Avancer jusqu\'à…'));
+    await tester.pumpAndSettle();
+    expect(find.text('Arrête-moi si…'), findsOneWidget);
+    expect(find.text('Un versement mensuel arrive'), findsOneWidget);
+    await tester.tap(find.text('Un de mes ordres est exécuté'));
+    await tester.tap(find.text('3 mois'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Avancer jusqu\'au 1er janvier 2009'));
+    await tester.pumpAndSettle();
+    expect(stopActions.saved.single.orderFilled, isTrue);
+    expect(runner.targets, [DateTime.utc(2009, 1, 1)]);
   });
 
   testWidgets('the automatic stops, from the header', (tester) async {

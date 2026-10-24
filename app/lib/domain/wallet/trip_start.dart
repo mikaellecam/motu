@@ -136,3 +136,8 @@ ForwardCheck checkForward(
   if (day.isAfter(latest)) return ForwardTooLate(latest);
   return ForwardOk(day);
 }
+
+/// The contribution of [day] when it arrives by [target]: a fast-forward
+/// reaching it books it on the way (« Avancer jusqu'à… »).
+DateTime? contributionOnTheWay(DateTime? day, {required DateTime target}) =>
+    day != null && !_day(day).isAfter(_day(target)) ? day : null;

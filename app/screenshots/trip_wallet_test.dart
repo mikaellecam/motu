@@ -20,6 +20,7 @@ import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_test/flutter_test.dart';
 
 import 'screenshot.dart';
 
@@ -148,6 +149,11 @@ void main() {
           ? DateTime.utc(2026, 11, 2)
           : DateTime.utc(2008, 11, 3),
     ),
+    // No DCA plan in the fixture: the next contribution stays as cash.
+    idleContributionProvider.overrideWith(
+      (ref, id) async =>
+          o.status == WalletStatus.finished ? null : DateTime.utc(2008, 11, 3),
+    ),
     walletChartProvider.overrideWith(
       (ref, args) async => chartFor(o.series, args.$2),
     ),
@@ -177,5 +183,17 @@ void main() {
     'm9-35-trip-at-today',
     const WalletScreen(walletId: 'lehman'),
     overrides: overrides(_trip(atToday: true)),
+  );
+  // « Avancer jusqu'à… » over three months: the contribution of 3 November
+  // comes on the way.
+  screenshot(
+    'm9-33-forward-sheet',
+    const WalletScreen(walletId: 'lehman'),
+    overrides: overrides(_trip()),
+    act: (tester) async {
+      await tester.tap(find.text("Avancer jusqu'à…").first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('3 mois'));
+    },
   );
 }

@@ -1,9 +1,13 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/providers.dart';
 import '../../../application/trip/trip_runner.dart';
 import '../../../application/trip/trip_stop.dart';
+import '../../../application/learning/content.dart';
+import '../../../application/wallet/wallet_providers.dart';
+import '../../widgets/term_text.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
@@ -122,22 +126,37 @@ class _StopsSheetState extends ConsumerState<_StopsSheet> {
   }
 }
 
-/// « Avancer jusqu'à… » (BRIEF §4.5): a few spans, or a day.
+/// « Avancer jusqu'à… » (BRIEF §4.5, artboard `TripFF-A`): a span or a day,
+/// and the trip's automatic stops, changed before time moves.
 Future<void> showForwardSheet(
   BuildContext context, {
   required String walletId,
   required DateTime from,
+  required StopConditions stops,
+  required Money contribution,
 }) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
   showDragHandle: true,
-  builder: (_) => _ForwardSheet(walletId: walletId, from: from),
+  builder: (_) => _ForwardSheet(
+    walletId: walletId,
+    from: from,
+    stops: stops,
+    contribution: contribution,
+  ),
 );
 
 class _ForwardSheet extends ConsumerStatefulWidget {
-  const _ForwardSheet({required this.walletId, required this.from});
+  const _ForwardSheet({
+    required this.walletId,
+    required this.from,
+    required this.stops,
+    required this.contribution,
+  });
   final String walletId;
   final DateTime from;
+  final StopConditions stops;
+  final Money contribution;
 
   @override
   ConsumerState<_ForwardSheet> createState() => _ForwardSheetState();
@@ -145,23 +164,61 @@ class _ForwardSheet extends ConsumerStatefulWidget {
 
 class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
   final _date = TextEditingController();
+  final _dateFocus = FocusNode();
+  DateTime? _preset;
+  var _custom = false;
+  late final List<bool> _initial;
+  late final List<bool> _stops;
+
+  @override
+  void initState() {
+    super.initState();
+    _initial = [
+      widget.stops.drawdown != null,
+      widget.stops.positionLoss != null,
+      widget.stops.orderFilled,
+      widget.stops.contribution,
+    ];
+    _stops = [..._initial];
+  }
 
   @override
   void dispose() {
     _date.dispose();
+    _dateFocus.dispose();
     super.dispose();
   }
 
   void _pick(DateTime day) => setState(() {
     String two(int n) => n.toString().padLeft(2, '0');
     _date.text = '${two(day.day)}/${two(day.month)}/${day.year}';
+    _preset = day;
+    _custom = false;
   });
+
+  Future<void> _go(DateTime target) async {
+    final navigator = Navigator.of(context);
+    // The trip's own stops, as its settings change them (decided 2026-10-25).
+    if (!listEquals(_stops, _initial)) {
+      await ref
+          .read(stopActionsProvider(widget.walletId).notifier)
+          .updateStops(
+            stopsFrom(
+              portfolio: _stops[0],
+              position: _stops[1],
+              orderFilled: _stops[2],
+              contribution: _stops[3],
+            ),
+          );
+    }
+    ref.read(tripRunnerProvider(widget.walletId).notifier).advanceTo(target);
+    navigator.pop();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formats = Formats(Localizations.localeOf(context).languageCode);
-    final text = Theme.of(context).textTheme;
     final from = widget.from;
     final today = ref.watch(liveClockProvider).now();
     final typed = _date.text.trim();
@@ -187,9 +244,33 @@ class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
       ),
       _ => null,
     };
+    final idle = switch (check) {
+      ForwardOk(:final target) => contributionOnTheWay(
+        ref.watch(idleContributionProvider(widget.walletId)).value,
+        target: target,
+      ),
+      _ => null,
+    };
+    final terms =
+        ref
+            .watch(contentPackProvider(actionsEtfIsland))
+            .value
+            ?.glossary
+            .map((id, t) => MapEntry(id, t.title)) ??
+        const {};
+    final section = AppText.label.copyWith(color: AppColors.ink);
+    final muted = AppText.caption.copyWith(color: AppColors.muted);
+
+    Widget stop(String label, int i) => CheckboxListTile(
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      title: Text(label),
+      value: _stops[i],
+      onChanged: (on) => setState(() => _stops[i] = on ?? false),
+    );
 
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
           AppSpace.screenPadding,
           0,
@@ -197,39 +278,110 @@ class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
           AppSpace.screenPadding + MediaQuery.viewInsetsOf(context).bottom,
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.trip_forward, style: AppText.title),
-            const SizedBox(height: AppSpace.x3),
-            Wrap(
-              spacing: AppSpace.x2,
+            Row(
               children: [
-                for (final (label, day) in [
-                  (l10n.forward_months(3), months(3)),
-                  (l10n.forward_months(6), months(6)),
-                  (l10n.forward_year, months(12)),
-                ])
-                  ActionChip(label: Text(label), onPressed: () => _pick(day)),
+                Expanded(child: Text(l10n.trip_forward, style: AppText.title)),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
               ],
             ),
-            const SizedBox(height: AppSpace.x3),
+            Text(l10n.forward_intro, style: muted),
+            const SizedBox(height: AppSpace.x4),
+            Text(l10n.forward_span, style: section),
+            const SizedBox(height: AppSpace.x2),
+            Wrap(
+              spacing: AppSpace.x2,
+              runSpacing: AppSpace.x2,
+              children: [
+                for (final (label, day) in [
+                  (l10n.forward_months(1), months(1)),
+                  (l10n.forward_months(3), months(3)),
+                  (l10n.forward_year, months(12)),
+                ])
+                  ChoiceChip(
+                    label: Text(label),
+                    selected: !_custom && _preset == day,
+                    showCheckmark: false,
+                    onSelected: (_) => _pick(day),
+                  ),
+                ChoiceChip(
+                  label: Text(l10n.wizard_custom),
+                  selected: _custom,
+                  showCheckmark: false,
+                  onSelected: (_) {
+                    setState(() => _custom = true);
+                    _dateFocus.requestFocus();
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpace.x4),
+            Text(l10n.forward_until, style: section),
+            const SizedBox(height: AppSpace.x2),
             TextField(
               controller: _date,
+              focusNode: _dateFocus,
               keyboardType: TextInputType.datetime,
               decoration: InputDecoration(
-                labelText: l10n.wizard_custom,
                 hintText: l10n.wizard_custom_hint,
                 errorText: error,
+                filled: true,
+                fillColor: AppColors.surface,
+                suffixIcon: const ExcludeSemantics(
+                  child: Icon(Icons.calendar_today_outlined),
+                ),
                 border: const OutlineInputBorder(),
               ),
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => setState(() => _custom = true),
             ),
+            const SizedBox(height: AppSpace.x4),
+            Text(l10n.forward_stops, style: section),
             const SizedBox(height: AppSpace.x2),
-            Text(
-              l10n.forward_may_stop,
-              style: text.bodySmall?.copyWith(color: AppColors.muted),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
+                child: Column(
+                  children: [
+                    stop(l10n.forward_stop_portfolio, 0),
+                    stop(l10n.forward_stop_position, 1),
+                    stop(l10n.forward_stop_order, 2),
+                    if (widget.contribution.isPositive)
+                      stop(l10n.wizard_stop_contribution, 3),
+                  ],
+                ),
+              ),
             ),
+            if (idle != null) ...[
+              const SizedBox(height: AppSpace.x3),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const ExcludeSemantics(
+                    child: Icon(
+                      Icons.calendar_today_outlined,
+                      size: 18,
+                      color: AppColors.muted,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpace.x2),
+                  Expanded(
+                    child: TermText(
+                      l10n.forward_idle_contribution(
+                        formats.dayMonth(idle),
+                        '{{dca|DCA}}',
+                      ),
+                      terms: terms,
+                      style: muted,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: AppSpace.x4),
             ChunkyButton(
               label: switch (check) {
@@ -239,12 +391,7 @@ class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
                 _ => l10n.trip_forward,
               },
               onPressed: switch (check) {
-                ForwardOk(:final target) => () {
-                  ref
-                      .read(tripRunnerProvider(widget.walletId).notifier)
-                      .advanceTo(target);
-                  Navigator.of(context).pop();
-                },
+                ForwardOk(:final target) => () => _go(target),
                 _ => null,
               },
             ),

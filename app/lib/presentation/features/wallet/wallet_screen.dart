@@ -868,7 +868,13 @@ class _TimeControls extends ConsumerWidget {
           ChunkyButton(
             label: l10n.trip_forward,
             onPressed: canMove
-                ? () => showForwardSheet(context, walletId: o.id, from: o.asOf)
+                ? () => showForwardSheet(
+                    context,
+                    walletId: o.id,
+                    from: o.asOf,
+                    stops: o.stops,
+                    contribution: o.monthlyContribution,
+                  )
                 : null,
           ),
         if (moving) ...[

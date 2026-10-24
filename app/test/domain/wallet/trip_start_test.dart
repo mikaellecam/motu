@@ -105,6 +105,14 @@ void main() {
     );
   });
 
+  test('a contribution on the way: arriving by the target', () {
+    final next = day(2008, 11, 3);
+    expect(contributionOnTheWay(next, target: next), next);
+    expect(contributionOnTheWay(next, target: day(2009, 1, 1)), next);
+    expect(contributionOnTheWay(next, target: day(2008, 10, 31)), isNull);
+    expect(contributionOnTheWay(null, target: day(2009, 1, 1)), isNull);
+  });
+
   test('fast-forward: after the trip day, up to yesterday', () {
     final from = day(2008, 10, 3);
     ForwardCheck check(DateTime? d) =>

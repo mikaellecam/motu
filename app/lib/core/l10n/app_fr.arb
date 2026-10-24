@@ -849,7 +849,7 @@
   "trip_forward": "Avancer jusqu'\u00e0\u2026",
   "trip_see_stop": "Voir l'arr\u00eat",
   "trip_stops": "Arr\u00eats automatiques",
-  "forward_months": "+{months} mois",
+  "forward_months": "{months} mois",
   "@forward_months": {
     "placeholders": {
       "months": {
@@ -857,7 +857,7 @@
       }
     }
   },
-  "forward_year": "+1 an",
+  "forward_year": "1 an",
   "forward_not_after": "Choisis une date apr\u00e8s le {date}.",
   "@forward_not_after": {
     "placeholders": {
@@ -874,6 +874,24 @@
       }
     }
   },
+  "forward_intro": "Le temps d\u00e9file jour par jour. Tes ordres et tes versements s'ex\u00e9cutent en chemin.",
+  "forward_span": "Dur\u00e9e",
+  "forward_until": "Jusqu'au",
+  "forward_stops": "Arr\u00eate-moi si\u2026",
+  "forward_stop_portfolio": "Mon portefeuille passe 15\u202f% sous l'argent vers\u00e9",
+  "forward_stop_position": "Une de mes positions perd plus de 20\u202f%",
+  "forward_stop_order": "Un de mes ordres est ex\u00e9cut\u00e9",
+  "forward_idle_contribution": "Le versement du {date} restera en liquidit\u00e9s\u202f: tu n'as pas de plan {dca} actif.",
+  "@forward_idle_contribution": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "dca": {
+        "type": "String"
+      }
+    }
+  },
   "forward_go": "Avancer jusqu'au {date}",
   "@forward_go": {
     "placeholders": {
@@ -882,7 +900,6 @@
       }
     }
   },
-  "forward_may_stop": "Le voyage peut s'arr\u00eater avant, si un arr\u00eat automatique se d\u00e9clenche.",
   "stop_chart_semantics": "Valeur de {start} \u00e0 {end}, ligne d'arr\u00eat \u00e0 {line}.",
   "@stop_chart_semantics": {
     "placeholders": {

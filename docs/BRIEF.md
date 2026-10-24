@@ -450,8 +450,14 @@ The choices (decided 2026-10-11): for a portfolio or position drop, « Garder »
 vendre » (every position for a portfolio drop, the dropped one otherwise; halves round down, to whole shares
 when fractions are off), the sells being market orders filled at the next session; for an order filled or a
 contribution, « Continuer ». The trip stays stopped (time controls off) until the user answers. The
-automatic stops can be changed any time from the trip header or the stop screen. « Avancer jusqu'à… »
-accepts +3 / +6 months, +1 year or a typed day, strictly after the trip's day and up to yesterday.
+automatic stops can be changed any time from the trip header, the stop screen or « Avancer jusqu'à… ».
+« Avancer jusqu'à… » (decided 2026-10-25, artboard `TripFF-A`): a sheet titled with a close button and a
+line saying time runs day by day, orders and contributions going through on the way. « Durée »: 1 mois,
+3 mois, 1 an or « Date précise », then the day « Jusqu'au » (typed, strictly after the trip's day and up to
+yesterday). « Arrête-moi si… »: the trip's own automatic stops as checkboxes, saved to the trip before time
+moves when changed (one set of stops, decided 2026-10-25); the thresholds stay 15 % and 20 %. When the
+next contribution comes on the way and no DCA plan invests it, a line says it will stay as cash, « DCA »
+linking its term. Then the chunky « Avancer jusqu'au {date} ».
 Stop screen layout (decided 2026-10-24, artboard `TripStop-A` of the art direction canvas): no app bar; the
 trip's header on top (clock tile, « Voyage « {nom} » » with an `alert` « Arrêt automatique » chip, the
 simulated day in Baloo, « Quitter le voyage » back to the wallets). The event in one chunky card: « Arrêt
