@@ -89,50 +89,44 @@ Future<void> show(WidgetTester tester) async {
 void main() {
   testWidgets('every section, with where things stand', (tester) async {
     await show(tester);
-    for (final title in [
-      'Langue',
-      'Niveau',
-      'Données',
-      'Simulation',
-      'À propos',
-    ]) {
-      expect(find.text(title), findsOneWidget, reason: title);
+    // Top to bottom, scrolling as a reader would: the cards run past the fold.
+    Future<void> see(Finder finder, [String? reason]) async {
+      await tester.scrollUntilVisible(finder, 200);
+      expect(finder, findsOneWidget, reason: reason);
     }
-    expect(find.text('Niveau 2 sur 3'), findsOneWidget);
-    expect(
+
+    await see(find.text('Langue'));
+    await see(find.text('Niveau'));
+    await see(find.text('Niveau 2 sur 3'));
+    await see(find.text('Données'));
+    await see(find.textContaining('Dernière mise à jour des cours'));
+    await see(
       find.text("3 historiques, 1${nnbsp}250 cours, 1,5 Mo sur l'appareil"),
-      findsOneWidget,
     );
-    expect(
-      find.textContaining('Dernière mise à jour des cours'),
-      findsOneWidget,
-    );
-    expect(
-      tester
-          .widget<ChoiceChip>(
-            find.widgetWithText(ChoiceChip, '50${nnbsp}000,00$nbsp€'),
-          )
-          .selected,
-      isTrue,
-    );
-    expect(
-      tester
-          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '0,15$nnbsp%'))
-          .selected,
-      isTrue,
-    );
-    expect(
-      find.textContaining("l'argent de cette app est fictif"),
-      findsOneWidget,
-    );
+    await see(find.text('Simulation'));
+    // One row per setting, its value shown.
+    await see(find.text('50${nnbsp}000$nbsp€'));
+    await see(find.text('0,15$nnbsp%'));
+    await see(find.text('À propos'));
+    await see(find.textContaining("l'argent de cette app est fictif"));
   });
 
   testWidgets('each setting is sent as chosen', (tester) async {
     await show(tester);
-    await tester.tap(find.text('English'));
+    // A setting's row opens its values; one is picked.
+    Future<void> pick(String setting, String value) async {
+      await tester.scrollUntilVisible(find.text(setting), 200);
+      await tester.tap(find.text(setting));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(value).last);
+      await tester.pumpAndSettle();
+    }
+
+    await pick("Langue de l'application", 'English');
     await tester.tap(find.text('Tout afficher dès maintenant'));
-    await tester.tap(find.widgetWithText(ChoiceChip, '1${nnbsp}000,00$nbsp€'));
-    await tester.tap(find.widgetWithText(ChoiceChip, '1,00$nnbsp%'));
+    await pick('Capital de départ du portefeuille live', '1${nnbsp}000$nbsp€');
+    await pick('Frais de change simulés', '1,00$nnbsp%');
+    await tester.ensureVisible(find.text('Actualiser maintenant'));
     await tester.tap(find.text('Actualiser maintenant'));
     await tester.pumpAndSettle();
     expect(
@@ -150,6 +144,10 @@ void main() {
 
   testWidgets('the reset asks first', (tester) async {
     await show(tester);
+    await tester.scrollUntilVisible(
+      find.text('Réinitialiser le portefeuille live'),
+      200,
+    );
     await tester.tap(find.text('Réinitialiser le portefeuille live'));
     await tester.pumpAndSettle();
     expect(

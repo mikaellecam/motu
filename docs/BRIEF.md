@@ -631,6 +631,11 @@ Built (M9-1), decided 2026-10-12:
   theirs, past fills keep their fees.
 - Reset: confirmed in a dialog naming the capital; the live wallet and everything in it go, and it starts again
   today with the chosen capital and its FX fee.
+- Layout (decided 2026-10-24, artboard `Settings-A` of the art direction canvas, money family §10.1): Baloo
+  section titles over flat cards, a line between rows. A setting with values to pick (language, capital, FX
+  fee) is one row: its name, its value under it in bold, its note; tapped, a dialog lists the values. Data:
+  « Actualiser maintenant » (refresh icon) and « Vider le cache » stacked. Reset: an `alertText`-bordered
+  button with a warning icon, and a line under it saying what it puts back and that island progress stays.
 
 ### 4.15 Levels and progressive UI
 

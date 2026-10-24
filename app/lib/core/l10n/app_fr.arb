@@ -2061,6 +2061,15 @@
   },
   "settings_title": "Param\u00e8tres",
   "settings_language": "Langue",
+  "settings_language_choice": "Langue de l'application",
+  "settings_reset_note": "Remet {capital} fictifs et efface ses positions. Ta progression sur l'\u00eele est gard\u00e9e.",
+  "@settings_reset_note": {
+    "placeholders": {
+      "capital": {
+        "type": "String"
+      }
+    }
+  },
   "settings_language_device": "Celle de l'appareil",
   "settings_language_fr": "Fran\u00e7ais",
   "settings_language_en": "English",

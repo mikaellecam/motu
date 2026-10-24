@@ -7,6 +7,8 @@ import '../../../application/settings/settings.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/l10n/formats.dart';
+import '../../../core/money/money.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 
@@ -53,15 +55,11 @@ class _Settings extends ConsumerWidget {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(message)));
 
-    Widget section(String title) => Padding(
-      padding: const EdgeInsets.only(top: AppSpace.x6, bottom: AppSpace.x2),
-      child: Text(title, style: text.titleMedium),
-    );
-
     final last = v.cache.lastFetch?.toLocal();
     final megabytes =
         (Decimal.fromInt(v.cache.bytes) / Decimal.fromInt(1024 * 1024))
             .toDecimal(scaleOnInfinitePrecision: 2);
+    String euros(Money m) => formats.amount(m.amount, m.currency, decimals: 0);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -71,124 +69,159 @@ class _Settings extends ConsumerWidget {
         AppSpace.screenPadding,
       ),
       children: [
-        section(l10n.settings_language),
-        SegmentedButton<String>(
-          showSelectedIcon: false,
-          segments: [
-            ButtonSegment(
-              value: 'device',
-              label: Text(l10n.settings_language_device),
-            ),
-            ButtonSegment(value: 'fr', label: Text(l10n.settings_language_fr)),
-            ButtonSegment(value: 'en', label: Text(l10n.settings_language_en)),
-          ],
-          selected: {v.settings.language ?? 'device'},
-          onSelectionChanged: (s) =>
-              actions.setLanguage(s.single == 'device' ? null : s.single),
-        ),
-
-        section(l10n.settings_level),
-        Text(l10n.settings_level_value(v.level), style: text.bodyMedium),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(l10n.settings_show_all),
-          subtitle: Text(l10n.settings_show_all_note),
-          value: v.settings.showAll,
-          onChanged: actions.setShowAll,
-        ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(l10n.settings_retake),
-          subtitle: Text(l10n.settings_retake_note),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push('/onboarding'),
-        ),
-
-        section(l10n.settings_data),
-        Text(
-          last == null
-              ? l10n.settings_never_updated
-              : l10n.settings_last_update(
-                  formats.date(last),
-                  formats.time(last),
-                ),
-          style: text.bodyMedium,
-        ),
-        Text(
-          l10n.settings_cache(
-            v.cache.histories,
-            formats.number(Decimal.fromInt(v.cache.closes), decimals: 0),
-            l10n.settings_size_mb(formats.number(megabytes, decimals: 1)),
+        _Section(l10n.settings_language),
+        _Group([
+          _Choice<String>(
+            label: l10n.settings_language_choice,
+            value: v.settings.language ?? 'device',
+            choices: [
+              ('device', l10n.settings_language_device),
+              ('fr', l10n.settings_language_fr),
+              ('en', l10n.settings_language_en),
+            ],
+            onChosen: (s) => actions.setLanguage(s == 'device' ? null : s),
           ),
-          style: muted,
+        ]),
+
+        _Section(l10n.settings_level),
+        _Group([
+          Padding(
+            padding: _padding,
+            child: Text(
+              l10n.settings_level_value(v.level),
+              style: AppText.bodyStrong,
+            ),
+          ),
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
+            title: Text(l10n.settings_show_all),
+            subtitle: Text(l10n.settings_show_all_note),
+            value: v.settings.showAll,
+            onChanged: actions.setShowAll,
+          ),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
+            title: Text(l10n.settings_retake),
+            subtitle: Text(l10n.settings_retake_note),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/onboarding'),
+          ),
+        ]),
+
+        _Section(l10n.settings_data),
+        _Group([
+          Padding(
+            padding: _padding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  last == null
+                      ? l10n.settings_never_updated
+                      : l10n.settings_last_update(
+                          formats.date(last),
+                          formats.time(last),
+                        ),
+                  style: text.bodyMedium,
+                ),
+                Text(
+                  l10n.settings_cache(
+                    v.cache.histories,
+                    formats.number(
+                      Decimal.fromInt(v.cache.closes),
+                      decimals: 0,
+                    ),
+                    l10n.settings_size_mb(
+                      formats.number(megabytes, decimals: 1),
+                    ),
+                  ),
+                  style: muted,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: _padding,
+            // Stacked: « Actualiser maintenant » does not fit half a card.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () async {
+                    await actions.refreshNow();
+                    tell(l10n.settings_refreshed);
+                  },
+                  label: Text(l10n.settings_refresh),
+                ),
+                const SizedBox(height: AppSpace.x2),
+                OutlinedButton(
+                  onPressed: () async {
+                    await actions.clearCache();
+                    tell(l10n.settings_cleared);
+                  },
+                  child: Text(l10n.settings_clear),
+                ),
+              ],
+            ),
+          ),
+        ]),
+
+        _Section(l10n.settings_simulation),
+        _Group([
+          _Choice<Money>(
+            label: l10n.settings_capital,
+            note: l10n.settings_capital_note,
+            value: v.startingCash,
+            choices: [
+              for (final amount in startingCashChoices) (amount, euros(amount)),
+            ],
+            onChosen: actions.setStartingCash,
+          ),
+          _Choice<Decimal>(
+            label: l10n.settings_fx_fee,
+            note: l10n.settings_fx_fee_note,
+            value: v.fxFee,
+            choices: [
+              for (final rate in fxFeeChoices) (rate, formats.percent(rate)),
+            ],
+            onChosen: actions.setFxFee,
+          ),
+        ]),
+        const SizedBox(height: AppSpace.x4),
+        // The one setting that loses something: an alert border, a warning
+        // icon and its own words, never colour alone.
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.alertText,
+            side: const BorderSide(color: AppColors.alertText, width: 1.5),
+          ),
+          icon: const Icon(Icons.warning_amber_rounded),
+          onPressed: () => _reset(context, ref, formats.money(v.startingCash)),
+          label: Text(l10n.settings_reset),
         ),
         const SizedBox(height: AppSpace.x2),
-        Wrap(
-          spacing: AppSpace.x2,
-          runSpacing: AppSpace.x2,
-          children: [
-            OutlinedButton(
-              onPressed: () async {
-                await actions.refreshNow();
-                tell(l10n.settings_refreshed);
-              },
-              child: Text(l10n.settings_refresh),
-            ),
-            OutlinedButton(
-              onPressed: () async {
-                await actions.clearCache();
-                tell(l10n.settings_cleared);
-              },
-              child: Text(l10n.settings_clear),
-            ),
-          ],
-        ),
+        Text(l10n.settings_reset_note(euros(v.startingCash)), style: muted),
 
-        section(l10n.settings_simulation),
-        Text(l10n.settings_capital, style: text.bodyMedium),
-        Wrap(
-          spacing: AppSpace.x2,
-          children: [
-            for (final amount in startingCashChoices)
-              ChoiceChip(
-                label: Text(formats.money(amount)),
-                selected: v.startingCash == amount,
-                onSelected: (_) => actions.setStartingCash(amount),
-              ),
-          ],
-        ),
-        Text(l10n.settings_capital_note, style: muted),
-        const SizedBox(height: AppSpace.x3),
-        Text(l10n.settings_fx_fee, style: text.bodyMedium),
-        Wrap(
-          spacing: AppSpace.x2,
-          children: [
-            for (final rate in fxFeeChoices)
-              ChoiceChip(
-                label: Text(formats.percent(rate)),
-                selected: v.fxFee == rate,
-                onSelected: (_) => actions.setFxFee(rate),
-              ),
-          ],
-        ),
-        Text(l10n.settings_fx_fee_note, style: muted),
-        const SizedBox(height: AppSpace.x4),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(foregroundColor: AppColors.alertText),
-          onPressed: () => _reset(context, ref, formats.money(v.startingCash)),
-          child: Text(l10n.settings_reset),
-        ),
-
-        section(l10n.settings_about),
-        for (final line in [
-          l10n.settings_about_money,
-          l10n.settings_about_advice,
-          l10n.settings_about_sources,
-        ])
+        _Section(l10n.settings_about),
+        _Group([
           Padding(
-            padding: const EdgeInsets.only(bottom: AppSpace.x2),
-            child: Text(line, style: text.bodyMedium),
+            padding: _padding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (i, line) in [
+                  l10n.settings_about_money,
+                  l10n.settings_about_advice,
+                  l10n.settings_about_sources,
+                ].indexed) ...[
+                  if (i > 0) const SizedBox(height: AppSpace.x2),
+                  Text(line, style: text.bodyMedium),
+                ],
+              ],
+            ),
           ),
+        ]),
       ],
     );
   }
@@ -224,5 +257,104 @@ class _Settings extends ConsumerWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(l10n.settings_reset_done)));
+  }
+}
+
+/// A section title over its card, in Baloo (art direction « settings »).
+class _Section extends StatelessWidget {
+  const _Section(this.title);
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: AppSpace.x6, bottom: AppSpace.x2),
+    child: Text(title, style: AppText.titleSmall),
+  );
+}
+
+/// A flat card of rows, a line between each (money family, §10.1).
+class _Group extends StatelessWidget {
+  const _Group(this.rows);
+  final List<Widget> rows;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final (i, row) in rows.indexed) ...[
+          if (i > 0) const Divider(height: 1),
+          row,
+        ],
+      ],
+    ),
+  );
+}
+
+/// Inside a card: a line of text, as wide as a row.
+const _padding = EdgeInsets.symmetric(
+  horizontal: AppSpace.x4,
+  vertical: AppSpace.x3,
+);
+
+/// One setting: its name, the value it has (and what it does) under it;
+/// tapped, the values to pick from. Fits any text size.
+class _Choice<T> extends StatelessWidget {
+  const _Choice({
+    required this.label,
+    required this.value,
+    required this.choices,
+    required this.onChosen,
+    this.note,
+  });
+
+  final String label;
+  final T value;
+  final List<(T, String)> choices;
+  final ValueChanged<T> onChosen;
+  final String? note;
+
+  Future<void> _pick(BuildContext context) async {
+    final picked = await showDialog<T>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(label),
+        children: [
+          RadioGroup<T>(
+            groupValue: value,
+            onChanged: (v) => Navigator.pop(context, v),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (v, text) in choices)
+                  RadioListTile<T>(value: v, title: Text(text)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (picked != null && picked != value) onChosen(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final shown = choices.firstWhere((c) => c.$1 == value).$2;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
+      title: Text(label),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(shown, style: AppText.bodyStrong.copyWith(color: AppColors.ink)),
+          if (note case final note?)
+            Text(note, style: text.bodySmall?.copyWith(color: AppColors.muted)),
+        ],
+      ),
+      trailing: const Icon(Icons.unfold_more),
+      onTap: () => _pick(context),
+    );
   }
 }

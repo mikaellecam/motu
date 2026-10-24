@@ -554,6 +554,8 @@
   "companion_fx_swing_body": "The dollar moved {move} against the euro in a month, and {exposure} of your portfolio is in dollars: its value in euros moved with it.",
   "settings_title": "Settings",
   "settings_language": "Language",
+  "settings_language_choice": "App language",
+  "settings_reset_note": "Puts back {capital} of fictional money and clears its positions. Your progress on the island is kept.",
   "settings_language_device": "Device language",
   "settings_language_fr": "Fran\u00e7ais",
   "settings_language_en": "English",
