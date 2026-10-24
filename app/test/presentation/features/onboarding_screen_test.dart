@@ -50,6 +50,8 @@ void main() {
       'Compte courant',
       '15${nbsp}min',
     ]) {
+      // Under the island, an answer may be below the fold.
+      await tester.scrollUntilVisible(find.text(answer), 100);
       await tester.tap(find.text(answer));
       await tester.pump();
       expect(
@@ -107,6 +109,8 @@ void main() {
       'Compte courant',
       '15${nbsp}min',
     ]) {
+      // Under the island, an answer may be below the fold.
+      await tester.scrollUntilVisible(find.text(answer), 100);
       await tester.tap(find.text(answer));
       await tester.pump();
       await tester.tap(find.text('Suivant'));

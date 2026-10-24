@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,50 +7,60 @@ import '../../../application/learning/content.dart';
 import '../../../application/onboarding/onboarding_controller.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../domain/learning/profile.dart';
 import '../../../domain/learning/profile_rules.dart';
+import '../map/archipelago.dart';
 
-/// Five questions, then where the path starts and why (BRIEF §4.1).
+/// Five questions, then where the path starts and why (BRIEF §4.1), on the
+/// sea under the island, as the art direction's « onboarding question »
+/// draws it.
 class OnboardingScreen extends ConsumerWidget {
   const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
     final state = ref.watch(onboardingControllerProvider);
-    final controller = ref.read(onboardingControllerProvider.notifier);
-    final current = state.value;
-    final asking = current != null && !current.done;
-
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: asking && current.question > 0
-            ? BackButton(onPressed: controller.back)
-            : null,
-        title: asking
-            ? Text(l10n.onboarding_progress(current.question + 1))
-            : null,
-      ),
-      body: SafeArea(
-        child: switch (state) {
-          AsyncData(:final value) when value.done => _Result(value),
-          AsyncData(:final value) => _Question(value),
-          AsyncError(:final error) => ErrorView(
-            failure: error is Failure ? error : const StorageFailure(),
-            onRetry: () => ref.invalidate(onboardingControllerProvider),
-          ),
-          _ => const Padding(
-            padding: EdgeInsets.all(AppSpace.screenPadding),
-            child: AsyncSkeleton(lines: 5),
-          ),
-        },
+      // World screens sit on the sea (BRIEF §10.2).
+      backgroundColor: AppColors.sea,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: SafeArea(
+          child: switch (state) {
+            AsyncData(:final value) when value.done => _Result(value),
+            AsyncData(:final value) => _Question(value),
+            AsyncError(:final error) => ErrorView(
+              failure: error is Failure ? error : const StorageFailure(),
+              onRetry: () => ref.invalidate(onboardingControllerProvider),
+            ),
+            _ => const Padding(
+              padding: EdgeInsets.all(AppSpace.screenPadding),
+              child: AsyncSkeleton(lines: 5),
+            ),
+          },
+        ),
       ),
     );
   }
+}
+
+/// Actions & ETF as the map paints it, bare: where the path will start.
+class _Island extends StatelessWidget {
+  const _Island();
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 170,
+    child: CustomPaint(
+      painter: ArchipelagoPainter(
+        only: archipelago.firstWhere((i) => i.id == IslandId.actionsEtf),
+      ),
+    ),
+  );
 }
 
 class _Question extends ConsumerWidget {
@@ -62,40 +73,131 @@ class _Question extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final controller = ref.read(onboardingControllerProvider.notifier);
     final chosen = state.answers[state.question];
+    final questions = onboardingQuestions.length;
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpace.screenPadding),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          questionTitle(l10n, state.question),
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: AppSpace.x2),
-        Text(
-          l10n.onboarding_reassurance,
-          style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(color: AppColors.muted),
-        ),
-        const SizedBox(height: AppSpace.x6),
-        for (final answer in onboardingQuestions[state.question]) ...[
-          ChunkyChoice(
-            label: answerLabel(l10n, answer),
-            selected: answer == chosen,
-            onTap: () => controller.choose(answer),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.screenPadding,
+            ),
+            children: [
+              const _Island(),
+              ChunkyCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      l10n.onboarding_progress(state.question + 1),
+                      style: AppText.label.copyWith(color: AppColors.muted),
+                    ),
+                    const SizedBox(height: AppSpace.x2),
+                    ExcludeSemantics(
+                      child: _Steps(done: state.question + 1, of: questions),
+                    ),
+                    const SizedBox(height: AppSpace.x3),
+                    Text(
+                      questionTitle(l10n, state.question),
+                      style: AppText.title,
+                    ),
+                    const SizedBox(height: AppSpace.x2),
+                    Text(
+                      l10n.onboarding_reassurance,
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.muted),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpace.x4),
+              for (final answer in onboardingQuestions[state.question]) ...[
+                ChunkyChoice(
+                  label: answerLabel(l10n, answer),
+                  selected: answer == chosen,
+                  onTap: () => controller.choose(answer),
+                ),
+                const SizedBox(height: AppSpace.x3),
+              ],
+            ],
           ),
-          const SizedBox(height: AppSpace.x4),
-        ],
-        if (state.showError)
-          _ValidationMessage(l10n.onboarding_error)
-        else if (state.saveError case final failure?)
-          ErrorView(failure: failure, onRetry: controller.retrySave),
-        const SizedBox(height: AppSpace.x4),
-        ChunkyButton(label: l10n.onboarding_next, onPressed: controller.next),
+        ),
+        // Always in reach, however long the question; a missing answer is
+        // said where « Suivant » was tapped.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.screenPadding,
+            AppSpace.x2,
+            AppSpace.screenPadding,
+            AppSpace.screenPadding,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (state.showError) ...[
+                _ValidationMessage(l10n.onboarding_error),
+                const SizedBox(height: AppSpace.x3),
+              ] else if (state.saveError case final failure?) ...[
+                ErrorView(failure: failure, onRetry: controller.retrySave),
+                const SizedBox(height: AppSpace.x3),
+              ],
+              Row(
+                children: [
+                  if (state.question > 0) ...[
+                    Expanded(
+                      child: ChunkyButton(
+                        label: l10n.onboarding_back,
+                        kind: ChunkyButtonKind.secondary,
+                        onPressed: controller.back,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpace.x3),
+                  ],
+                  Expanded(
+                    child: ChunkyButton(
+                      label: l10n.onboarding_next,
+                      onPressed: controller.next,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 }
 
+/// One segment per question, the ones reached filled.
+class _Steps extends StatelessWidget {
+  const _Steps({required this.done, required this.of});
+
+  final int done;
+  final int of;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (var i = 0; i < of; i++) ...[
+        if (i > 0) const SizedBox(width: AppSpace.x1),
+        Expanded(
+          child: Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color: i < done ? AppColors.progress : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppSpace.x2),
+              border: Border.all(color: AppColors.ink, width: 2),
+            ),
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+/// A missing answer, in an alert box.
 class _ValidationMessage extends StatelessWidget {
   const _ValidationMessage(this.text);
 
@@ -104,20 +206,31 @@ class _ValidationMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     liveRegion: true,
-    child: Row(
-      children: [
-        const ExcludeSemantics(
-          child: Icon(Icons.error_outline, color: AppColors.alertText),
-        ),
-        const SizedBox(width: AppSpace.x2),
-        Expanded(
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: AppColors.alertText),
+    child: Container(
+      padding: const EdgeInsets.all(AppSpace.x3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppShape.flatCardRadius),
+        border: Border.all(color: AppColors.alertText, width: 2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ExcludeSemantics(
+            child: Icon(
+              Icons.warning_amber_rounded,
+              color: AppColors.alertText,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: AppSpace.x2),
+          Expanded(
+            child: Text(
+              text,
+              style: AppText.label.copyWith(color: AppColors.alertText),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -151,12 +264,25 @@ class _Result extends ConsumerWidget {
     );
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpace.screenPadding),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.screenPadding),
       children: [
+        const _Island(),
         ChunkyCard(
-          child: Text(
-            l10n.onboarding_result(start, answer),
-            style: Theme.of(context).textTheme.titleLarge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.onboarding_start_label,
+                style: AppText.label.copyWith(color: AppColors.primary),
+              ),
+              const SizedBox(height: AppSpace.x1),
+              Text(start, style: AppText.title),
+              const SizedBox(height: AppSpace.x2),
+              Text(
+                l10n.onboarding_result(start, answer),
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ],
           ),
         ),
         const SizedBox(height: AppSpace.x6),
@@ -164,6 +290,7 @@ class _Result extends ConsumerWidget {
           label: l10n.onboarding_go,
           onPressed: () => context.go('/'),
         ),
+        const SizedBox(height: AppSpace.screenPadding),
       ],
     );
   }

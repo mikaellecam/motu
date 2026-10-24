@@ -62,6 +62,8 @@
   "onboarding_progress": "Question {n} sur 5",
   "onboarding_reassurance": "Tes r\u00e9ponses choisissent seulement par o\u00f9 commencer. Ce ne sont pas des conseils.",
   "onboarding_next": "Suivant",
+  "onboarding_back": "Retour",
+  "onboarding_start_label": "Ton point de d\u00e9part",
   "onboarding_error": "Choisis une r\u00e9ponse pour continuer. Aucune n'est mauvaise.",
   "onboarding_result": "On commence par \u00ab\u00a0{start}\u00a0\u00bb parce que tu as r\u00e9pondu \u00ab\u00a0{answer}\u00a0\u00bb.",
   "onboarding_go": "C'est parti",

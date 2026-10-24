@@ -20,6 +20,8 @@
   "onboarding_progress": "Question {n} of 5",
   "onboarding_reassurance": "Your answers only choose where to start. They are not advice.",
   "onboarding_next": "Next",
+  "onboarding_back": "Back",
+  "onboarding_start_label": "Where you start",
   "onboarding_error": "Pick an answer to continue. None of them is wrong.",
   "onboarding_result": "We start with \u201c{start}\u201d because you answered \u201c{answer}\u201d.",
   "onboarding_go": "Let's go",

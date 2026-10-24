@@ -97,6 +97,13 @@ Routing: `go_router`. Deep links use the routes above (lesson → trip wizard pr
 
 Five single-choice questions, each required (validation error if none picked: « Choisis une réponse pour
 continuer. Aucune n'est mauvaise. »). Reassurance line: the answers only choose a starting point, not advice.
+Layout (decided 2026-10-24, artboard `Onboarding-A` of the art direction canvas): a world screen on the
+sea under the bare Actions & ETF island. One chunky card holds « Question n sur 5 », a segmented progress
+bar, the question and the reassurance line; the answers are toy blocks under it (they press down, so they
+sit on the sea rather than inside the card). « Retour » (from the second question) and « Suivant » stay at
+the bottom, with the validation error in an alert box just above them. The result: the island, then a card
+« Ton point de départ » naming the starting node over the sentence that explains it. No « Passer »: every
+question is required.
 
 | # | Question (fr) | Options | Drives |
 |---|---|---|---|
