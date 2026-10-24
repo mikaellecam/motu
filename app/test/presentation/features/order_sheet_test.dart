@@ -327,6 +327,12 @@ void main() {
     await tester.enterText(reason, 'Pour voir');
     await tester.pumpAndSettle();
     expect(ticket.state.value!.form.reason, 'Pour voir');
+    // A limit price coming and going above it leaves the reason typed.
+    for (final type in ['À cours limité', 'Au marché']) {
+      await tester.tap(find.text(type));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, 'Pour voir'), findsOneWidget);
+    }
     await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
     await tester.pumpAndSettle();
     expect(

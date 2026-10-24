@@ -196,6 +196,8 @@ class LivretSheet extends ConsumerWidget {
             ),
           const SizedBox(height: AppSpace.x3),
           TextField(
+            // Keeps the amount typed when the hint above it comes or goes.
+            key: const ValueKey('livret-amount'),
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(

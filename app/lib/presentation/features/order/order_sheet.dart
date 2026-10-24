@@ -373,6 +373,9 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
         if (c.isTrip) ...[
           const SizedBox(height: AppSpace.x3),
           TextField(
+            // Keeps the reason typed when the limit price above it comes
+            // or goes.
+            key: const ValueKey('order-reason'),
             decoration: InputDecoration(labelText: l10n.order_reason),
             onChanged: actions.setReason,
           ),

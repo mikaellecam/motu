@@ -121,6 +121,8 @@ void main() {
       ),
       findsOneWidget,
     );
+    // The hint it replaces leaves the amount typed where it was.
+    expect(find.widgetWithText(TextField, '30000'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '1000');
     await tester.pump();
