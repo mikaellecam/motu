@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'application/learning/missions.dart';
 import 'application/providers.dart';
 import 'application/settings/settings.dart';
+import 'application/trip/trip_catch_up.dart';
 import 'application/wallet/live_catch_up.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
@@ -19,9 +20,14 @@ Future<void> main() async {
   await container
       .read(walletRepositoryProvider)
       .ensureLiveWallet(container.read(liveClockProvider).now());
-  // Pending orders fill on the sessions that closed since (M4-6); the app
-  // opens without waiting for the network.
-  container.read(liveCatchUpProvider.notifier).run().ignore();
+  // Pending orders fill on the sessions that closed since (M4-6), then the
+  // trips at today move on to them (M9-35); the app opens without waiting
+  // for the network.
+  container
+      .read(liveCatchUpProvider.notifier)
+      .run()
+      .then((_) => container.read(tripCatchUpProvider.notifier).run())
+      .ignore();
   // Missions complete by themselves while the app runs (BRIEF §4.3).
   container.read(missionTrackerProvider);
   final router = buildRouter(

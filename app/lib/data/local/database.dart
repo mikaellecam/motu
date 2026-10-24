@@ -62,7 +62,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'investment_companion'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -83,6 +83,10 @@ class AppDatabase extends _$AppDatabase {
           "UPDATE calendar_years SET fetched_at = '1970-01-01T00:00:00.000Z'",
         );
       },
+      // v5: a trip that reached today goes on day by day (M9-35). None has
+      // yet: a trip that got there before was finished, and stays so.
+      from4To5: (m, schema) =>
+          m.addColumn(schema.wallets, schema.wallets.reachedToday),
     ),
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );

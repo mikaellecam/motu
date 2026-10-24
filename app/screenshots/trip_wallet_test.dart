@@ -23,7 +23,8 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 
 import 'screenshot.dart';
 
-// A « Réaliste » trip that left on 15 September 2008, three weeks in.
+// A « Réaliste » trip that left on 15 September 2008, three weeks in, and
+// one that left a year ago and reached today (Friday 23 October 2026).
 // Values are illustrative.
 
 class _Idle extends TripRunner {
@@ -46,40 +47,42 @@ Asset _asset(String id, String name, AssetType type) => Asset(
   listingDate: DateTime.utc(2000),
 );
 
-WalletOverview _trip({WalletStatus status = WalletStatus.active}) {
+WalletOverview _trip({
+  WalletStatus status = WalletStatus.active,
+  bool atToday = false,
+}) {
+  final start = atToday ? DateTime.utc(2025, 10, 24) : day(9, 15);
+  final end = atToday ? DateTime.utc(2026, 10, 23) : day(10, 3);
+  final rate = d(atToday ? '0.9184' : '0.7058');
   Fill buy(String id, String qty, String price) => Fill(
     assetId: id,
     side: Side.buy,
-    date: day(9, 15),
+    date: start,
     quantity: Quantity.truncate(d(qty)),
     price: Price(d(price), Currency.usd),
-    fxRate: d('0.7058'),
-    fees: Money.book(
-      d(qty) * d(price) * d('0.7058') * d('0.0015'),
-      Currency.eur,
-    ),
+    fxRate: rate,
+    fees: Money.book(d(qty) * d(price) * rate * d('0.0015'), Currency.eur),
   );
-  final fills = [buy('sp500', '40', '120.18'), buy('coca-cola', '50', '52.21')];
+  final fills = atToday
+      ? [buy('sp500', '8', '677.25'), buy('coca-cola', '50', '68.43')]
+      : [buy('sp500', '40', '120.18'), buy('coca-cola', '50', '52.21')];
   var cash = eur(10000);
   for (final f in fills) {
     cash = cash - f.notional - f.fees;
   }
   final days = [
-    for (
-      var t = day(9, 15);
-      !t.isAfter(day(10, 3));
-      t = t.add(const Duration(days: 1))
-    )
+    for (var t = start; !t.isAfter(end); t = t.add(const Duration(days: 1)))
       if (t.weekday <= 5) t,
   ];
   return buildOverview(
     wallet: WalletState(
       id: 'lehman',
       kind: WalletKind.trip,
-      name: 'Crise financière',
-      startDate: day(9, 15),
-      simDate: day(10, 3),
+      name: atToday ? 'Il y a 1 an' : 'Crise financière',
+      startDate: start,
+      simDate: end,
       status: status,
+      reachedToday: atToday,
       params: WalletParams(
         rules: TradingRules(
           fxFeeRate: d('0.0015'),
@@ -98,26 +101,36 @@ WalletOverview _trip({WalletStatus status = WalletStatus.active}) {
         for (var i = 0; i < days.length; i++)
           DailyValue(
             date: days[i],
-            value: eur(10000 - 38 * i + 60 * sin(i / 1.5)),
+            value: eur(
+              atToday
+                  // Ends on the value its positions give.
+                  ? 10000 +
+                        407.45 * i / (days.length - 1) +
+                        150 * sin(3 * pi * i / (days.length - 1))
+                  : 10000 - 38 * i + 60 * sin(i / 1.5),
+            ),
             flow: eur(i == 0 ? 10000 : 0),
           ),
       ],
       livretMovements: const [],
       plans: const [],
     ),
-    asOf: day(10, 3),
+    asOf: end,
     assets: {
       'sp500': _asset('sp500', 'SPDR S&P 500 ETF Trust', AssetType.etf),
       'coca-cola': _asset('coca-cola', 'Coca-Cola', AssetType.stock),
     },
     prices: {
-      for (final (id, price) in [('sp500', '110.79'), ('coca-cola', '51.85')])
+      for (final (id, price)
+          in atToday
+              ? [('sp500', '712.40'), ('coca-cola', '70.12')]
+              : [('sp500', '110.79'), ('coca-cola', '51.85')])
         id: ObservedPrice(
-          PriceAsOf(Price(d(price), Currency.usd), day(10, 3), stale: false),
-          DateTime.utc(2008, 10, 3, 20),
+          PriceAsOf(Price(d(price), Currency.usd), end, stale: false),
+          end.add(const Duration(hours: 20)),
         ),
     },
-    fxRates: {Currency.usd: d('0.7223')},
+    fxRates: {Currency.usd: d(atToday ? '0.9275' : '0.7223')},
     livret: Decimal.zero,
   );
 }
@@ -126,10 +139,14 @@ void main() {
   List<Override> overrides(WalletOverview o) => [
     cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
     walletOverviewProvider.overrideWith((ref, id) async => o),
-    // Monday 3 November: the 1st is a Saturday.
+    // Monday 3 November 2008: the 1st is a Saturday; 2 November 2026 is a
+    // Monday.
     nextContributionProvider.overrideWith(
-      (ref, id) async =>
-          o.status == WalletStatus.finished ? null : DateTime.utc(2008, 11, 3),
+      (ref, id) async => o.status == WalletStatus.finished
+          ? null
+          : o.reachedToday
+          ? DateTime.utc(2026, 11, 2)
+          : DateTime.utc(2008, 11, 3),
     ),
     walletChartProvider.overrideWith(
       (ref, args) async => chartFor(o.series, args.$2),
@@ -155,4 +172,10 @@ void main() {
       overrides: overrides(_trip(status: status)),
     );
   }
+  // A trip that reached today: its steps are off, it goes on day by day.
+  screenshot(
+    'm9-35-trip-at-today',
+    const WalletScreen(walletId: 'lehman'),
+    overrides: overrides(_trip(atToday: true)),
+  );
 }

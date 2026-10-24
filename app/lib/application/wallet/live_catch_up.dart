@@ -5,7 +5,6 @@ import '../../core/money/money.dart';
 import '../../data/repositories/wallet_repository.dart';
 import '../../domain/learning/profile_rules.dart';
 import '../../domain/market/asset.dart';
-import '../../domain/market/market_calendar.dart';
 import '../../domain/market/price_bar.dart';
 import '../../domain/wallet/trip_engine.dart';
 import '../providers.dart';
@@ -51,7 +50,6 @@ class LiveCatchUp extends _$LiveCatchUp {
     final profile = await ref.read(profileRepositoryProvider).load();
     final wallet = await wallets.load(WalletRepository.liveWalletId);
     final from = wallet.values.last.date;
-    final today = DateTime.utc(now.year, now.month, now.day);
 
     final catalogue = await market.assets(asOf: now);
     final exchanges = {for (final Asset a in catalogue) a.id: a.exchange};
@@ -59,23 +57,10 @@ class LiveCatchUp extends _$LiveCatchUp {
     final calendar = await market.calendar(
       allExchanges,
       fromYear: from.year,
-      toYear: today.year,
+      toYear: now.year,
     );
 
-    // The last trading day whose every session has closed.
-    bool trades(DateTime day, Exchange e) => calendar.isTradingDay(e, day);
-    bool closed(DateTime day) =>
-        allExchanges.any((e) => trades(day, e)) &&
-        allExchanges.every(
-          (e) => !trades(day, e) || !calendar.closeAt(e, day).isAfter(now),
-        );
-    DateTime? target;
-    for (var day = today; day.isAfter(from); day = _previous(day)) {
-      if (closed(day)) {
-        target = day;
-        break;
-      }
-    }
+    final target = calendar.lastClosedDay(allExchanges, after: from, now: now);
     if (target == null) return null;
 
     final ids = {
@@ -140,6 +125,3 @@ class LiveCatchUp extends _$LiveCatchUp {
     return advance;
   }
 }
-
-DateTime _previous(DateTime day) =>
-    DateTime.utc(day.year, day.month, day.day - 1);

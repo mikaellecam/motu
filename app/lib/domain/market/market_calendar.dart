@@ -128,6 +128,30 @@ class MarketCalendar {
     _earlyCloses[exchange]?[_day(day)] ?? exchange.closes,
   );
 
+  /// The last day after [after], up to [now]'s, when one of [exchanges]
+  /// traded and every one of them that did had closed by [now]: the session
+  /// a wallet catches up to (M4-6). Null when no such day came after [after].
+  DateTime? lastClosedDay(
+    Set<Exchange> exchanges, {
+    required DateTime after,
+    required DateTime now,
+  }) {
+    bool closed(DateTime day) =>
+        exchanges.any((e) => isTradingDay(e, day)) &&
+        exchanges.every(
+          (e) => !isTradingDay(e, day) || !closeAt(e, day).isAfter(now),
+        );
+    final utc = now.toUtc();
+    for (
+      var day = DateTime.utc(utc.year, utc.month, utc.day);
+      day.isAfter(after);
+      day = DateTime.utc(day.year, day.month, day.day - 1)
+    ) {
+      if (closed(day)) return day;
+    }
+    return null;
+  }
+
   /// [time] on the local calendar day of [date], in the exchange's zone, as
   /// a plain UTC instant: a `TZDateTime`'s `toLocal()` would read the
   /// timezone package's zone, UTC, not the device's.

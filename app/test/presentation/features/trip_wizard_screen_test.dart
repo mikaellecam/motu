@@ -324,7 +324,9 @@ void main() {
     expect(find.text("Fractions d'action possibles"), findsOneWidget);
     expect(find.text('Aucun'), findsOneWidget);
     expect(
-      find.text("Quand tu veux, au plus tard aujourd'hui"),
+      find.text(
+        "Quand tu veux. Arrivé à aujourd'hui, il suit les vrais jours de bourse",
+      ),
       findsOneWidget,
     );
     expect(find.widgetWithText(TextField, 'Crise financière'), findsOneWidget);

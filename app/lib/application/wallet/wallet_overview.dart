@@ -46,6 +46,7 @@ final class WalletOverview {
     required this.name,
     this.difficulty,
     this.status = WalletStatus.active,
+    this.reachedToday = false,
     this.stops = const StopConditions(),
     this.monthlyContribution = const Money.zero(Currency.eur),
     required this.rules,
@@ -70,6 +71,10 @@ final class WalletOverview {
   /// A trip's difficulty id; null for the live wallet.
   final String? difficulty;
   final WalletStatus status;
+
+  /// A trip that reached today: its time controls are off, it goes on as
+  /// sessions close (BRIEF §4.5).
+  final bool reachedToday;
 
   /// A trip's automatic stops and monthly contribution.
   final StopConditions stops;
@@ -196,6 +201,7 @@ WalletOverview buildOverview({
     name: wallet.name,
     difficulty: wallet.params.difficulty,
     status: wallet.status,
+    reachedToday: wallet.reachedToday,
     stops: wallet.params.stops,
     monthlyContribution: wallet.params.monthlyContribution,
     rules: wallet.params.rules,

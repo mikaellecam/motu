@@ -117,7 +117,7 @@ void main() {
         ),
         events: const [],
         stop: reasons,
-        endOfData: false,
+        atToday: false,
       ),
       before: before,
     );

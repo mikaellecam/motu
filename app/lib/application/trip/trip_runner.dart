@@ -103,106 +103,123 @@ class TripRunner extends _$TripRunner {
   Future<void> _run({TripStep? step, DateTime? target}) async {
     if (state.isLoading) return;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _advance(step: step, to: target));
+    state = await AsyncValue.guard(
+      () => moveTrip(ref, walletId, step: step, to: target),
+    );
     ref
       ..invalidate(walletOverviewProvider(walletId))
       ..invalidate(walletsListProvider);
   }
+}
 
-  Future<TripAdvance> _advance({TripStep? step, DateTime? to}) async {
-    final market = ref.read(marketRepositoryProvider);
-    final wallets = ref.read(walletRepositoryProvider);
-    final fx = ref.read(fxServiceProvider);
-    final profile = await ref.read(profileRepositoryProvider).load();
-    final wallet = await wallets.load(walletId);
-    final from = wallet.simDate;
-    if (from == null) throw const NotFoundFailure();
+/// Moves trip [walletId] by [step] or to [to], one trip day at a time, and
+/// books the result: the time controls, and the catch-up of a trip at today
+/// (BRIEF §4.5).
+Future<TripAdvance> moveTrip(
+  Ref ref,
+  String walletId, {
+  TripStep? step,
+  DateTime? to,
+}) async {
+  final market = ref.read(marketRepositoryProvider);
+  final wallets = ref.read(walletRepositoryProvider);
+  final fx = ref.read(fxServiceProvider);
+  final profile = await ref.read(profileRepositoryProvider).load();
+  final wallet = await wallets.load(walletId);
+  final from = wallet.simDate;
+  if (from == null) throw const NotFoundFailure();
 
-    final catalogue = await market.assets(asOf: from);
-    final exchanges = {for (final Asset a in catalogue) a.id: a.exchange};
-    final allExchanges = exchanges.values.toSet();
-    var calendar = await market.calendar(
-      allExchanges,
-      fromYear: from.year,
-      toYear: from.year + 1,
-    );
-    bool tripDay(DateTime d) =>
-        allExchanges.any((e) => calendar.isTradingDay(e, d));
-    final target = to ?? stepTarget(step!, from, isTripDay: tripDay);
-    calendar = await market.calendar(
-      allExchanges,
-      fromYear: from.year,
-      toYear: target.year + 1,
-    );
+  final catalogue = await market.assets(asOf: from);
+  final exchanges = {for (final Asset a in catalogue) a.id: a.exchange};
+  final allExchanges = exchanges.values.toSet();
+  var calendar = await market.calendar(
+    allExchanges,
+    fromYear: from.year,
+    toYear: from.year + 1,
+  );
+  bool tripDay(DateTime d) =>
+      allExchanges.any((e) => calendar.isTradingDay(e, d));
+  final target = to ?? stepTarget(step!, from, isTripDay: tripDay);
+  calendar = await market.calendar(
+    allExchanges,
+    fromYear: from.year,
+    toYear: target.year + 1,
+  );
 
-    // The assets the trip holds or trades, and the world ETF for the last
-    // day with data.
-    final ids = {
-      worldAssetId,
-      for (final p in wallet.positions.values)
-        if (p.isOpen) p.assetId,
-      for (final o in wallet.pendingOrders) o.assetId,
-      for (final plan in wallet.plans)
-        if (plan.active) plan.assetId,
-    };
-    final window = from.subtract(const Duration(days: 31));
-    final bars = <String, List<PriceBar>>{
-      for (final id in ids)
-        id: await market.history(id, from: window, to: target, asOf: target),
-    };
-    final world = bars[worldAssetId]!;
-    // The last day with data is known as of today, not as of the target: a
-    // trip ends when it reaches it (BRIEF §4.5). Only its date reaches the
-    // engine, never a price after the target.
-    final now = ref.read(liveClockProvider).now();
-    final ahead = await market.history(
-      worldAssetId,
-      from: target,
-      to: now,
-      asOf: now,
-    );
-    final lastDate = ahead.isNotEmpty
-        ? ahead.last.date
-        : world.isEmpty
-        ? from
-        : world.last.date;
-    // Offline, the cache may stop short of the data: past it, the trip would
-    // end early. It moves only within the cache (BRIEF §6.4).
-    if (lastDate.isBefore(target) && await market.status().first is! Fresh) {
-      throw DataUnavailableFailure(target);
-    }
-    final livret = await market.livret(asOf: target);
-    final before = await wallets.tripState(walletId, livretRates: livret.rates);
-    final usdEur = await fx.lookup(
-      Currency.usd,
-      Currency.eur,
-      start: window,
-      asOf: target,
-    );
-
-    final advance =
-        TripEngine(
-          calendar: calendar,
-          exchanges: allExchanges,
-          livretRates: livret.rates,
-          rules: wallet.params.rules,
-          monthlyContribution: wallet.params.monthlyContribution,
-          thresholds: profile == null
-              ? MomentThresholds(concentration: Decimal.parse('0.40'))
-              : momentThresholds(profile),
-        ).advance(
-          before,
-          target: target,
-          stops: wallet.params.stops,
-          market: SnapshotTripMarket(
-            lastDate: lastDate,
-            bars: bars,
-            exchanges: exchanges,
-            calendar: calendar,
-            usdEur: usdEur,
-          ),
-        );
-    await wallets.saveAdvance(walletId, advance, before: before);
-    return advance;
+  // The assets the trip holds or trades, and the world ETF for the last
+  // day with data.
+  final ids = {
+    worldAssetId,
+    for (final p in wallet.positions.values)
+      if (p.isOpen) p.assetId,
+    for (final o in wallet.pendingOrders) o.assetId,
+    for (final plan in wallet.plans)
+      if (plan.active) plan.assetId,
+  };
+  final window = from.subtract(const Duration(days: 31));
+  final bars = <String, List<PriceBar>>{
+    for (final id in ids)
+      id: await market.history(id, from: window, to: target, asOf: target),
+  };
+  final world = bars[worldAssetId]!;
+  // The last day with data is known as of today, not as of the target: a
+  // trip that reaches it is at today (BRIEF §4.5). Only its date reaches
+  // the engine, never a price after the target.
+  final now = ref.read(liveClockProvider).now();
+  final ahead = await market.history(
+    worldAssetId,
+    from: target,
+    to: now,
+    asOf: now,
+  );
+  final lastDate = ahead.isNotEmpty
+      ? ahead.last.date
+      : world.isEmpty
+      ? from
+      : world.last.date;
+  // Offline, the cache may stop short of the data: past it, the trip would
+  // take the cache's end for today. It moves only within the cache (BRIEF
+  // §6.4).
+  if (lastDate.isBefore(target) && await market.status().first is! Fresh) {
+    throw DataUnavailableFailure(target);
   }
+  final livret = await market.livret(asOf: target);
+  final before = await wallets.tripState(walletId, livretRates: livret.rates);
+  final usdEur = await fx.lookup(
+    Currency.usd,
+    Currency.eur,
+    start: window,
+    asOf: target,
+  );
+
+  final advance =
+      TripEngine(
+        calendar: calendar,
+        exchanges: allExchanges,
+        livretRates: livret.rates,
+        rules: wallet.params.rules,
+        monthlyContribution: wallet.params.monthlyContribution,
+        thresholds: profile == null
+            ? MomentThresholds(concentration: Decimal.parse('0.40'))
+            : momentThresholds(profile),
+      ).advance(
+        before,
+        target: target,
+        stops: wallet.params.stops,
+        market: SnapshotTripMarket(
+          lastDate: lastDate,
+          bars: bars,
+          exchanges: exchanges,
+          calendar: calendar,
+          usdEur: usdEur,
+        ),
+        // As live (M4-6): an order takes part from the first session that
+        // opened after it was placed. Only a trip at today stamps its orders
+        // with the real time; any other runs from the day after its own.
+        eligible: (order, day) => calendar
+            .openAt(exchanges[order.assetId]!, day)
+            .isAfter(order.createdAt),
+      );
+  await wallets.saveAdvance(walletId, advance, before: before);
+  return advance;
 }

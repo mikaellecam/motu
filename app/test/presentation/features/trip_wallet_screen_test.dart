@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/trip/trip_catch_up.dart';
 import 'package:finance_companion/application/trip/trip_runner.dart';
 import 'package:finance_companion/application/trip/trip_stop.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
@@ -65,41 +66,44 @@ class FakeStopActions extends StopActions {
 DateTime day(int m, int d) => DateTime.utc(2008, m, d);
 Money eur(String s) => Money.book(Decimal.parse(s), Currency.eur);
 
-WalletOverview trip({WalletStatus status = WalletStatus.active}) =>
-    buildOverview(
-      wallet: WalletState(
-        id: 'trip',
-        kind: WalletKind.trip,
-        name: 'Lehman',
-        startDate: day(9, 15),
-        simDate: day(10, 1),
-        status: status,
-        params: WalletParams(
-          rules: TradingRules(
-            fxFeeRate: Decimal.parse('0.0015'),
-            fixedFee: eur('0'),
-            fractionalShares: true,
-          ),
-          monthlyContribution: eur('200'),
-          stops: const StopConditions(),
-          difficulty: 'realiste',
-        ),
-        cash: eur('10000'),
-        fills: const [],
-        positions: const {},
-        pendingOrders: const [],
-        values: [
-          DailyValue(date: day(9, 15), value: eur('10000'), flow: eur('10000')),
-        ],
-        livretMovements: const [],
-        plans: const [],
+WalletOverview trip({
+  WalletStatus status = WalletStatus.active,
+  bool reachedToday = false,
+}) => buildOverview(
+  wallet: WalletState(
+    id: 'trip',
+    kind: WalletKind.trip,
+    name: 'Lehman',
+    startDate: day(9, 15),
+    simDate: day(10, 1),
+    status: status,
+    params: WalletParams(
+      rules: TradingRules(
+        fxFeeRate: Decimal.parse('0.0015'),
+        fixedFee: eur('0'),
+        fractionalShares: true,
       ),
-      asOf: day(10, 1),
-      assets: const {},
-      prices: const {},
-      fxRates: const {},
-      livret: Decimal.zero,
-    );
+      monthlyContribution: eur('200'),
+      stops: const StopConditions(),
+      difficulty: 'realiste',
+    ),
+    cash: eur('10000'),
+    fills: const [],
+    positions: const {},
+    pendingOrders: const [],
+    values: [
+      DailyValue(date: day(9, 15), value: eur('10000'), flow: eur('10000')),
+    ],
+    livretMovements: const [],
+    plans: const [],
+    reachedToday: reachedToday,
+  ),
+  asOf: day(10, 1),
+  assets: const {},
+  prices: const {},
+  fxRates: const {},
+  livret: Decimal.zero,
+);
 
 /// Records the trips ended by hand.
 class FakeFinish extends TripFinish {
@@ -112,8 +116,20 @@ class FakeFinish extends TripFinish {
   Future<void> finish() async => finished++;
 }
 
+/// Records the trips caught up.
+class FakeTripCatchUp extends TripCatchUp {
+  final runs = <String?>[];
+
+  @override
+  FutureOr<void> build() {}
+
+  @override
+  Future<void> run([String? walletId]) async => runs.add(walletId);
+}
+
 late FakeStopActions stopActions;
 late FakeFinish finish;
+late FakeTripCatchUp tripCatchUp;
 
 class _Fixed implements SimulationClock {
   const _Fixed();
@@ -130,6 +146,7 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
   final runner = FakeRunner();
   stopActions = FakeStopActions();
   finish = FakeFinish();
+  tripCatchUp = FakeTripCatchUp();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -150,6 +167,7 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
         tripRunnerProvider.overrideWith2((_) => runner),
         stopActionsProvider.overrideWith2((_) => stopActions),
         tripFinishProvider.overrideWith2((_) => finish),
+        tripCatchUpProvider.overrideWith(() => tripCatchUp),
         liveClockProvider.overrideWithValue(const _Fixed()),
       ],
       child: MainApp(
@@ -280,17 +298,72 @@ void main() {
     expect(find.text('summary trip'), findsOneWidget);
   });
 
-  testWidgets('the end of the data opens the summary', (tester) async {
+  testWidgets('reaching today leaves the trip open: no summary', (
+    tester,
+  ) async {
     final runner = await show(tester, trip());
     runner.result = TripAdvance(
       state: TripState.start(day(10, 2), eur('10000')),
       events: const [],
       stop: const [],
-      endOfData: true,
+      atToday: true,
     );
     await tester.tap(find.text('+1 jour'));
     await tester.pumpAndSettle();
+    expect(find.text('summary trip'), findsNothing);
+    expect(find.text('Avancer le temps'), findsOneWidget);
+  });
+
+  testWidgets('at today: every step is off, the card says why', (tester) async {
+    final runner = await show(tester, trip(reachedToday: true));
+    expect(
+      find.text(
+        "Ton voyage a rejoint aujourd'hui\u202f: il avance maintenant au "
+        'rythme des vrais jours de bourse.',
+      ),
+      findsOneWidget,
+    );
+    for (final label in [
+      '+1 jour',
+      '+1 semaine',
+      '+1 mois',
+      "Avancer jusqu'à…",
+    ]) {
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+    expect(runner.steps, isEmpty);
+    expect(find.text('+3 mois'), findsNothing, reason: 'no forward sheet');
+    // It still trades, and still ends when the user wants.
+    expect(find.text('Investir'), findsOneWidget);
+    await tester.tap(find.text('Terminer le voyage'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Terminer'));
+    await tester.pumpAndSettle();
+    expect(finish.finished, 1);
     expect(find.text('summary trip'), findsOneWidget);
+  });
+
+  testWidgets('not at today: no such line', (tester) async {
+    await show(tester, trip());
+    expect(find.textContaining('a rejoint aujourd'), findsNothing);
+  });
+
+  testWidgets('at today and stopped: the stop comes first', (tester) async {
+    await show(tester, trip(status: WalletStatus.stopped, reachedToday: true));
+    expect(
+      find.text('Arrêt automatique\u202f: à toi de décider'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('a rejoint aujourd'), findsNothing);
+    expect(find.text("Voir l'arrêt"), findsOneWidget);
+  });
+
+  testWidgets('pulling to refresh catches this trip up', (tester) async {
+    await show(tester, trip(reachedToday: true));
+    await tester.fling(find.byType(ListView), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+    expect(tripCatchUp.runs, ['trip']);
   });
 
   testWidgets('finished: the summary, no more time or trading', (tester) async {
@@ -309,6 +382,12 @@ void main() {
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await show(tester, trip());
+    await expectAccessible(tester);
+  });
+
+  testWidgets('at today, accessible with text at 130 %', (tester) async {
+    textAt(tester, 1.3);
+    await show(tester, trip(reachedToday: true));
     await expectAccessible(tester);
   });
 }

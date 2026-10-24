@@ -198,6 +198,11 @@ class Wallets extends Table {
   /// null otherwise. Added in schema v2.
   TextColumn get stopReasons => text().nullable()();
 
+  /// A trip that reached today (the last closed session the data covers):
+  /// it moves on by itself as sessions close (BRIEF §4.5). Added in schema
+  /// v5.
+  BoolColumn get reachedToday => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

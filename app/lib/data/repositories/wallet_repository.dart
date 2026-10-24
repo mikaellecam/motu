@@ -87,6 +87,7 @@ final class WalletSummary {
     required this.simDate,
     required this.difficulty,
     required this.createdAt,
+    this.reachedToday = false,
   });
 
   final String id;
@@ -97,6 +98,9 @@ final class WalletSummary {
   final DateTime? simDate;
   final String? difficulty;
   final DateTime createdAt;
+
+  /// A trip that reached today: it goes on as sessions close (BRIEF §4.5).
+  final bool reachedToday;
 }
 
 /// A wallet as stored, read into domain objects. Positions are derived from
@@ -118,6 +122,7 @@ final class WalletState {
     required this.livretMovements,
     required this.plans,
     this.stopReasons = const [],
+    this.reachedToday = false,
   });
 
   final String id;
@@ -146,6 +151,9 @@ final class WalletState {
   /// Why the trip stopped by itself, until the user decides; empty
   /// otherwise.
   final List<StopReason> stopReasons;
+
+  /// A trip that reached today: it goes on as sessions close (BRIEF §4.5).
+  final bool reachedToday;
 }
 
 /// An order as its screen shows it (M4-6).
@@ -314,6 +322,7 @@ class WalletRepository {
               simDate: row.simDate,
               difficulty: row.difficulty,
               createdAt: row.createdAt,
+              reachedToday: row.reachedToday,
             ),
         ],
       );
@@ -359,6 +368,7 @@ class WalletRepository {
         final json? => decodeStops(json),
         null => const [],
       },
+      reachedToday: row.reachedToday,
       plans: [
         for (final p in await dao.plansOf(id))
           DcaPlan(
@@ -425,8 +435,9 @@ class WalletRepository {
 
   /// Books what [advance] did since [before], all or nothing: contributions,
   /// DCA orders, fills, cancellations, companion moments, the new daily
-  /// values, then the wallet's day, status, breached stops and companion.
-  /// The live wallet keeps no day, status nor stop of its own.
+  /// values, then the wallet's day, status, whether it reached today,
+  /// breached stops and companion. The live wallet keeps no day, status nor
+  /// stop of its own.
   Future<void> saveAdvance(
     String walletId,
     TripAdvance advance, {
@@ -468,12 +479,15 @@ class WalletRepository {
               ? const Value.absent()
               : advance.stop.isNotEmpty
               ? const Value(WalletStatus.stopped)
-              : advance.endOfData
-              ? const Value(WalletStatus.finished)
               : const Value.absent(),
           stopReasons: !trip || advance.stop.isEmpty
               ? const Value.absent()
               : Value(encodeStops(advance.stop)),
+          // Once at today, a trip goes on day by day: a session that closes
+          // since only puts it behind until its catch-up.
+          reachedToday: trip && advance.atToday
+              ? const Value(true)
+              : const Value.absent(),
           breachedStops: Value(jsonEncode([...advance.state.breached]..sort())),
           companionState: Value(encodeTracker(advance.state.companion)),
         ),

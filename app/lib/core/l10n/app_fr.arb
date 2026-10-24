@@ -710,7 +710,7 @@
   "wizard_recap_fees": "Frais",
   "wizard_recap_shares": "Actions",
   "wizard_recap_end": "Fin",
-  "wizard_end_any": "Quand tu veux, au plus tard aujourd'hui",
+  "wizard_end_any": "Quand tu veux. Arrivé à aujourd'hui, il suit les vrais jours de bourse",
   "wizard_recap_cushion": "Matelas de s\u00e9curit\u00e9",
   "wizard_recap_none": "Aucun",
   "wizard_edit": "Modifier",
@@ -746,6 +746,7 @@
   "trip_exit": "Quitter le voyage",
   "trip_moving": "Le temps avance\u2026",
   "trip_time_title": "Avancer le temps",
+  "trip_at_today": "Ton voyage a rejoint aujourd'hui\u202f: il avance maintenant au rythme des vrais jours de bourse.",
   "trip_next_contribution": "Prochain versement\u202f: {amount} le {date}",
   "@trip_next_contribution": {
     "placeholders": {

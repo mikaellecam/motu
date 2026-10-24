@@ -347,7 +347,7 @@ void main() {
             ),
           ],
           stop: const [ContributionStop(Money(20000, Currency.eur))],
-          endOfData: false,
+          atToday: false,
         ),
         before: before,
       );
@@ -387,7 +387,7 @@ void main() {
           state: before.copyWith(date: day(3, 9)),
           events: const [],
           stop: const [drop],
-          endOfData: false,
+          atToday: false,
         ),
         before: before,
       );
@@ -446,22 +446,60 @@ void main() {
       expect(journal.first.reason, isNull);
     });
 
-    test('the end of the data finishes the trip', () async {
+    test(
+      'reaching today leaves the trip open, and it stays at today',
+      () async {
+        expect((await repo.load('covid')).reachedToday, isFalse);
+        Future<void> save(DateTime date, {required bool atToday}) async {
+          final before = await repo.tripState('covid', livretRates: rates);
+          await repo.saveAdvance(
+            'covid',
+            TripAdvance(
+              state: before.copyWith(date: date),
+              events: const [],
+              stop: const [],
+              atToday: atToday,
+            ),
+            before: before,
+          );
+        }
+
+        // BRIEF §4.5 (decided 2026-10-24): no end at the last day with data.
+        await save(day(2, 19), atToday: true);
+        var wallet = await repo.load('covid');
+        expect(
+          (wallet.status, wallet.simDate, wallet.reachedToday),
+          (WalletStatus.active, day(2, 19), true),
+        );
+        // A session closed since: behind it for a while, still following.
+        await save(day(2, 19), atToday: false);
+        wallet = await repo.load('covid');
+        expect(wallet.reachedToday, isTrue);
+        expect(
+          (await repo.watchWallets().first)
+              .singleWhere((w) => w.id == 'covid')
+              .reachedToday,
+          isTrue,
+        );
+      },
+    );
+
+    test('a stop on the day it reaches today: stopped, at today', () async {
       final before = await repo.tripState('covid', livretRates: rates);
       await repo.saveAdvance(
         'covid',
         TripAdvance(
           state: before.copyWith(date: day(2, 19)),
           events: const [],
-          stop: const [],
-          endOfData: true,
+          stop: const [OrderFilledStop('o1')],
+          atToday: true,
         ),
         before: before,
       );
       final wallet = await repo.load('covid');
       expect(
-        (wallet.status, wallet.simDate),
-        (WalletStatus.finished, day(2, 19)),
+        (wallet.status, wallet.reachedToday),
+        (WalletStatus.stopped, true),
       );
     });
 
@@ -500,7 +538,7 @@ void main() {
           state: before.copyWith(date: day(2, 19)),
           events: const [],
           stop: const [],
-          endOfData: false,
+          atToday: false,
         ),
         before: before,
       );
@@ -649,12 +687,15 @@ void main() {
           ),
           events: const [],
           stop: const [],
-          endOfData: true,
+          atToday: true,
         ),
         before: before,
       );
       final live = await repo.load('live');
-      expect((live.simDate, live.status), (null, WalletStatus.active));
+      expect(
+        (live.simDate, live.status, live.reachedToday),
+        (null, WalletStatus.active, false),
+      );
       expect(live.values.last.date, DateTime.utc(2026, 10, 7));
       expect(
         (await repo.liveState(livretRates: rates)).date,

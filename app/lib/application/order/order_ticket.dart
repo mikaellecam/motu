@@ -50,6 +50,7 @@ final class TicketContext {
     this.marketOpen = false,
     this.offline = false,
     this.nextOpen,
+    this.placedAt,
   });
 
   final Asset asset;
@@ -84,6 +85,10 @@ final class TicketContext {
   /// sent while the market is closed (BRIEF §14.1, decided 2026-10-12).
   final bool offline;
   final DateTime? nextOpen;
+
+  /// A trip at today: when its order is placed, in real time, so the trip's
+  /// catch-up keeps it out of a session already running (M9-35).
+  final DateTime? placedAt;
 }
 
 /// The order as written in the sheet.
@@ -268,6 +273,7 @@ class OrderTicket extends _$OrderTicket {
       marketOpen: open,
       offline: offline,
       nextOpen: nextOpen,
+      placedAt: state.reachedToday ? now : null,
     );
     return _derive(context, TicketForm(side: side));
   }
@@ -543,6 +549,6 @@ Order? _order(TicketContext c, TicketForm form, String orderId) {
     size: size,
     limitPrice: form.type == OrderType.limit ? trigger : null,
     stopPrice: form.type == OrderType.stop ? trigger : null,
-    createdAt: c.asOf,
+    createdAt: c.placedAt ?? c.asOf,
   );
 }

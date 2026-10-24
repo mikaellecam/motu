@@ -363,4 +363,61 @@ void main() {
       );
     });
   });
+
+  group('the last closed session', () {
+    // Euronext and NYSE, Easter 2026 (summer time on both sides): Euronext
+    // closes at 15:30 UTC, NYSE at 20:00 UTC.
+    const both = {Exchange.euronext, Exchange.nyse};
+    DateTime? last(DateTime now, {DateTime? after}) =>
+        calendar.lastClosedDay(both, after: after ?? day(2026, 3, 1), now: now);
+
+    test('once every session of the day closed: that day', () {
+      expect(last(DateTime.utc(2026, 4, 8, 20)), day(2026, 4, 8));
+    });
+
+    test('while one exchange still trades: the day before', () {
+      // Euronext closed at 15:30, NYSE closes at 20:00.
+      expect(last(DateTime.utc(2026, 4, 8, 17)), day(2026, 4, 7));
+    });
+
+    test('a weekend or a holiday of all: the last day that traded', () {
+      expect(last(DateTime.utc(2026, 4, 12, 12)), day(2026, 4, 10));
+      // Good Friday: both closed, Thursday traded.
+      expect(last(DateTime.utc(2026, 4, 3, 21)), day(2026, 4, 2));
+    });
+
+    test('a holiday of one exchange: the day the other traded', () {
+      // Easter Monday: NYSE only.
+      expect(last(DateTime.utc(2026, 4, 6, 21)), day(2026, 4, 6));
+    });
+
+    test('none after the given day: null', () {
+      final now = DateTime.utc(2026, 4, 8, 17);
+      expect(last(now, after: day(2026, 4, 7)), isNull);
+      expect(last(now, after: day(2026, 4, 9)), isNull);
+    });
+
+    test('an early close counts from its own close', () {
+      final early = MarketCalendar(
+        const {},
+        earlyCloses: {
+          Exchange.nyse: {day(2026, 11, 27): (13, 0)},
+        },
+      );
+      // 13:00 in New York on EST is 18:00 UTC.
+      for (final (hour, expected) in [
+        (17, day(2026, 11, 26)),
+        (18, day(2026, 11, 27)),
+      ]) {
+        expect(
+          early.lastClosedDay(
+            const {Exchange.nyse},
+            after: day(2026, 11, 1),
+            now: DateTime.utc(2026, 11, 27, hour),
+          ),
+          expected,
+        );
+      }
+    });
+  });
 }

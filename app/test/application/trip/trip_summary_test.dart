@@ -148,7 +148,7 @@ void main() {
           ),
         ],
         stop: const [],
-        endOfData: false,
+        atToday: false,
       ),
       before: before,
     );

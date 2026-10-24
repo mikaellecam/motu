@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../application/trip/trip_catch_up.dart';
 import '../../../application/trip/trip_runner.dart';
 import '../../../application/trip/trip_stop.dart';
 import '../../../application/trip/trip_summary.dart';
@@ -46,10 +47,13 @@ class WalletScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(walletOverviewProvider(walletId));
     final overview = state.value;
-    // The live wallet first catches up with the sessions that closed.
+    // The live wallet, or a trip at today, first catches up with the
+    // sessions that closed.
     Future<void> refresh() async {
       if (overview?.kind == WalletKind.live) {
         await ref.read(liveCatchUpProvider.notifier).run();
+      } else if (overview?.kind == WalletKind.trip) {
+        await ref.read(tripCatchUpProvider.notifier).run(walletId);
       }
       await ref.refresh(walletOverviewProvider(walletId).future).then((_) {});
     }
@@ -764,9 +768,9 @@ class _NextContribution extends ConsumerWidget {
 
 /// « Avancer le temps » (BRIEF §4.5): +1 jour, +1 semaine, +1 mois and
 /// « Avancer jusqu'à… », with « Terminer le voyage » by the title. Off while
-/// time moves and once the trip stopped by itself, which leads to its stop
-/// instead; a finished trip (by hand, or at the end of the data) leads to
-/// its summary.
+/// time moves, once the trip stopped by itself, which leads to its stop
+/// instead, and at today, when the trip goes on by itself; a finished trip
+/// leads to its summary.
 class _TimeControls extends ConsumerWidget {
   const _TimeControls(this.o);
   final WalletOverview o;
@@ -777,21 +781,21 @@ class _TimeControls extends ConsumerWidget {
     final runner = ref.watch(tripRunnerProvider(o.id));
     final stopRoute = '/wallet/${o.id}/stop/${stopEventId(o.asOf)}';
     final summaryRoute = '/wallet/${o.id}/summary';
-    // A stop opens its screen as soon as the advance lands, the end of the
-    // data the summary.
+    // A stop opens its screen as soon as the advance lands.
     ref.listen(tripRunnerProvider(o.id), (previous, next) {
       final advance = next.value;
       if (previous?.isLoading != true || advance == null) return;
       if (advance.stop.isNotEmpty) {
         context.push('/wallet/${o.id}/stop/${stopEventId(advance.state.date)}');
-      } else if (advance.endOfData) {
-        context.push(summaryRoute);
       }
     });
     final finishing = ref.watch(tripFinishProvider(o.id)).isLoading;
-    final moving = runner.isLoading || finishing;
+    final catchingUp =
+        o.reachedToday && ref.watch(tripCatchUpProvider).isLoading;
+    final moving = runner.isLoading || finishing || catchingUp;
     final stopped = o.status == WalletStatus.stopped;
-    final canMove = !moving && !stopped;
+    // At today, prices ahead are not known yet: no step is left to take.
+    final canMove = !moving && !stopped && !o.reachedToday;
     final note = switch ((stopped, runner.error)) {
       (true, _) => l10n.wallets_status_stopped,
       (_, final Failure f) => failureMessage(context, f),
@@ -823,6 +827,12 @@ class _TimeControls extends ConsumerWidget {
         const SizedBox(height: AppSpace.x2),
         if (note != null) ...[
           AlertMessage(note),
+          const SizedBox(height: AppSpace.x3),
+        ] else if (o.reachedToday) ...[
+          Text(
+            l10n.trip_at_today,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: AppSpace.x3),
         ],
         Row(

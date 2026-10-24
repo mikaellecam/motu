@@ -176,8 +176,9 @@ void main() {
           .advance(TripStep.day);
       final advance = container.read(tripRunnerProvider('trip')).value!;
       expect(advance.state.date, day(2026, 10, 6));
-      expect(advance.endOfData, isFalse);
-      expect((await wallets.load('trip')).status, WalletStatus.active);
+      expect(advance.atToday, isFalse);
+      final trip = await wallets.load('trip');
+      expect((trip.status, trip.reachedToday), (WalletStatus.active, false));
     });
 
     test('a day the world ETF has no bar, data after it: runs on', () async {
@@ -188,23 +189,25 @@ void main() {
           .advanceTo(day(2026, 10, 6));
       final advance = container.read(tripRunnerProvider('trip')).value!;
       expect(advance.state.date, day(2026, 10, 6));
-      expect(advance.endOfData, isFalse);
+      expect(advance.atToday, isFalse);
       expect((await wallets.load('trip')).status, WalletStatus.active);
     });
 
     test(
-      'past the last close: as far as the data goes, then the end',
+      'past the last close: as far as the data goes, then at today',
       () async {
         await container
             .read(tripRunnerProvider('trip').notifier)
             .advance(TripStep.month);
         final advance = container.read(tripRunnerProvider('trip')).value!;
-        expect(advance.endOfData, isTrue);
+        expect(advance.atToday, isTrue);
         expect(advance.state.date, day(2026, 10, 7));
         final trip = await wallets.load('trip');
         expect(trip.simDate, day(2026, 10, 7));
-        // BRIEF §4.5: the trip ends on the last available trading day.
-        expect(trip.status, WalletStatus.finished);
+        // BRIEF §4.5 (decided 2026-10-24): no end at the last day with
+        // data, the trip goes on as sessions close.
+        expect(trip.status, WalletStatus.active);
+        expect(trip.reachedToday, isTrue);
         expect(trip.values, hasLength(3));
       },
     );

@@ -402,7 +402,7 @@ turns the field's border `alertText` and shows in an alert box under it. Step 2 
 difficulty has a 1–3 meter, a tagline and its settings as chips (« Sur mesure »: a tagline only); the
 companion note is a chunky card « Ton compagnon »; the cushion sits in a flat card. Step 3: label / value rows
 with lines between (Départ with the moment's name, Budget, Frais, Actions, Matelas de sécurité, Fin « Quand
-tu veux, au plus tard aujourd'hui »), the automatic stops in a flat card under their title, the reminder by
+tu veux. Arrivé à aujourd'hui, il suit les vrais jours de bourse »), the automatic stops in a flat card under their title, the reminder by
 a clock. Not taken from the artboards: « Suggéré par ta leçon » (not in this spec), the tinted fill of the
 chosen option and the coral meter bars (no token means them, §10.2: the meter is ink).
 
@@ -411,8 +411,8 @@ chosen option and the coral meter bars (no token means them, §10.2: the meter i
   exit button. No colored banner (color rule §10.2).
 - Time controls card at the bottom of the screen (a trip's route has no tab bar): +1 jour (the next trip
   day), +1 semaine, +1 mois (same day next month, or its last day), « Avancer jusqu'à… ». They are off
-  while time moves, once the trip stopped by itself (until the user decides, §4.5 automatic stop), and at
-  the last day with data. Each advance runs `TripEngine.advance` on a snapshot of the cached market and
+  while time moves, once the trip stopped by itself (until the user decides, §4.5 automatic stop), and
+  once the trip is at today (End of trip below). Each advance runs `TripEngine.advance` on a snapshot of the cached market and
   books its result in one transaction (orders, fills, contributions, daily values, companion moments,
   simulated day, status).
 
@@ -468,7 +468,7 @@ baisse ? » opens that term's sheet. Not taken from the artboard: its answers (t
 stay), its comparison in words (« presque autant que tes actions »: the figure instead) and the time span in
 the headline (« en trois semaines »).
 
-**End of trip** (any time, or when the clock reaches the last available trading day): summary with the
+**End of trip** (any time, with « Terminer le voyage »): summary with the
 user's time-weighted return (§7.6) compared with counterfactuals computed from the same start date and the
 same contributions:
 - *Sans rien toucher*: everything (start cash + contributions) into the world ETF on the day it arrives.
@@ -483,8 +483,17 @@ the Livret earns after that day is added. The replay shows, for a sell, how the 
 moved from their sale price to the end of the trip (EUR); for « Garder », the portfolio's time-weighted
 return from that day to the end; for « Continuer », the event and its reason only. The glossary terms met
 are those of the companion moments that fired during the trip (§4.12), in the order they first came up.
-« Terminer le voyage » (confirmed) or the last day of the data sets the trip `finished`: time controls and
-« Investir » give way to « Voir le bilan »; the wallet stays readable.
+« Terminer le voyage » (confirmed) sets the trip `finished`: time controls and « Investir » give way to
+« Voir le bilan »; the wallet stays readable. A trip has no maximum length (decided 2026-10-24, §14.2): one
+whose day is on or after the last closed session the market data covers is *at today*, stays open and
+keeps trading. It can no longer be sped up, since prices ahead are not known: its steps and « Avancer
+jusqu'à… » are off, the time card saying « Ton voyage a rejoint aujourd'hui : il avance maintenant au
+rythme des vrais jours de bourse. », and « Terminer le voyage » stays. It goes on by itself at the pace of
+real days, like the live wallet: at launch and on its pull-to-refresh, it moves to the last closed session,
+an advance like any other (contributions, pending orders, automatic stops; a stop waits for the user's
+decision, shown when the trip is opened). Offline, it waits. As in the live wallet, an order placed in a
+trip at today takes part from the first session that opened after it was placed: it carries the real time,
+not the trip's day. Trips that ended at the last day of the data before this rule stay ended.
 Summary layout (decided 2026-10-24, artboard `TripEnd-A` of the art direction canvas): a world screen on the
 sea under the Actions & ETF island with the city the trip built (its own positions, §4.2) and the greenery
 the lessons grew (M9-19). A chunky card « Fin du voyage « {nom} » » with the dates and the money paid in,
@@ -1120,7 +1129,7 @@ screens; M9-5).
 
 1. ~~Live orders while offline~~: decided 2026-10-12, queued as pending until the next session's open (§6.4).
 2. ~~Trip maximum length~~: decided 2026-10-24, none. A trip that reaches today can no longer be sped up:
-   it goes on at the pace of real days, since prices ahead cannot be known (§4.8).
+   it goes on at the pace of real days, since prices ahead cannot be known (§4.5).
 3. ~~Cash shared across future islands~~: decided 2026-10-24, no: islands teach different things. An idea
    for after V1 (the user's): a life simulation bringing everything together. A scenario, chosen or given,
    sets a salary and fixed expenses; the player decides how much to save, then what to invest it in

@@ -17,7 +17,8 @@ import 'valuation.dart';
 /// The market as a trip sees it: a snapshot the data layer loads from its
 /// cache. The engine never asks for a date after the day it is computing.
 abstract interface class TripMarket {
-  /// The last date with data: a trip cannot advance past it.
+  /// The last closed session the data covers: a trip cannot advance past
+  /// it.
   DateTime get lastDate;
 
   /// [assetId]'s bar on [date]; null when its exchange did not trade.
@@ -213,7 +214,7 @@ final class TripAdvance {
     required this.state,
     required this.events,
     required this.stop,
-    required this.endOfData,
+    required this.atToday,
   });
 
   final TripState state;
@@ -224,9 +225,10 @@ final class TripAdvance {
   /// Why the trip stopped on `state.date`; empty when it did not.
   final List<StopReason> stop;
 
-  /// The trip is on the last date of the data and did not stop there: it
-  /// cannot go further (BRIEF §4.5: the end of the trip).
-  final bool endOfData;
+  /// The trip is at today: its day is on or after the last closed session
+  /// the data covers ([TripMarket.lastDate]), stopped there or not. It can no
+  /// longer be sped up and goes on as sessions close (BRIEF §4.5).
+  final bool atToday;
 }
 
 /// The day the next monthly contribution arrives after [date], a day the
@@ -320,9 +322,10 @@ final class TripEngine {
     };
     final events = <TripEvent>[];
     var current = state;
+    var stop = const <StopReason>[];
     for (
       var day = _nextTripDay(current.date);
-      !day.isAfter(end);
+      stop.isEmpty && !day.isAfter(end);
       day = _nextTripDay(day)
     ) {
       final (next, dayEvents, reasons) = _runDay(
@@ -335,20 +338,13 @@ final class TripEngine {
       );
       current = next;
       events.addAll(dayEvents);
-      if (reasons.isNotEmpty) {
-        return TripAdvance(
-          state: current,
-          events: events,
-          stop: reasons,
-          endOfData: false,
-        );
-      }
+      stop = reasons;
     }
     return TripAdvance(
       state: current,
       events: events,
-      stop: const [],
-      endOfData: !current.date.isBefore(market.lastDate),
+      stop: stop,
+      atToday: !current.date.isBefore(market.lastDate),
     );
   }
 

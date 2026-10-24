@@ -9,6 +9,7 @@ import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
+import 'generated/schema_v5.dart' as v5;
 
 /// Every schema ever shipped (drift_schemas/) must migrate to the current
 /// one. After a schema change: bump `schemaVersion`, add the step, run
@@ -120,6 +121,44 @@ void main() {
         final year = await newDb.select(newDb.calendarYears).getSingle();
         expect((year.year, year.fetchedAt), (2025, '1970-01-01T00:00:00.000Z'));
         expect(await newDb.select(newDb.exchangeEarlyCloses).get(), isEmpty);
+      },
+    );
+  });
+
+  test('v4 → v5: trips keep their status, none has reached today', () async {
+    await verifier.testWithDataIntegrity(
+      oldVersion: 4,
+      newVersion: 5,
+      createOld: v4.DatabaseAtV4.new,
+      createNew: v5.DatabaseAtV5.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) => batch.insertAll(oldDb.wallets, [
+        for (final (id, status) in [
+          ('lehman', 'active'),
+          // Ended at the last day with data, before M9-35: stays ended.
+          ('covid', 'finished'),
+        ])
+          v4.WalletsData(
+            id: id,
+            kind: 'trip',
+            name: id,
+            startDate: '2008-09-15T00:00:00.000Z',
+            simDate: '2026-10-09T00:00:00.000Z',
+            difficulty: 'realiste',
+            params: '{}',
+            status: status,
+            createdAt: '2026-10-11T00:00:00.000Z',
+            breachedStops: '[]',
+            companionState: null,
+            stopReasons: null,
+          ),
+      ]),
+      validateItems: (newDb) async {
+        final rows = await newDb.select(newDb.wallets).get();
+        expect(
+          {for (final r in rows) r.id: (r.status, r.reachedToday)},
+          {'lehman': ('active', 0), 'covid': ('finished', 0)},
+        );
       },
     );
   });

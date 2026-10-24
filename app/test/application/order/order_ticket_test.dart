@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:decimal/decimal.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/order/order_ticket.dart';
@@ -376,6 +377,38 @@ void main() {
       );
     },
   );
+
+  test('a trip at today stamps its order with the real time', () async {
+    // So its catch-up keeps it out of the session already running (M9-35).
+    await open(at: DateTime.utc(2026, 10, 8, 15));
+    await wallets.createWallet(
+      id: 'trip',
+      kind: WalletKind.trip,
+      name: 'Octobre',
+      startDate: DateTime.utc(2026, 10, 7),
+      startingCash: eur('10000'),
+      params: WalletParams(
+        rules: TradingRules(
+          fxFeeRate: Decimal.zero,
+          fixedFee: const Money.zero(Currency.eur),
+          fractionalShares: false,
+        ),
+        monthlyContribution: const Money.zero(Currency.eur),
+        stops: const StopConditions(),
+      ),
+      createdAt: DateTime.utc(2026, 10, 8),
+    );
+    await (db.update(db.wallets)..where((w) => w.id.equals('trip'))).write(
+      const WalletsCompanion(reachedToday: Value(true)),
+    );
+    await ticket(Side.buy, walletId: 'trip');
+    actions(Side.buy, walletId: 'trip').setAmount('500');
+    await actions(Side.buy, walletId: 'trip').submit();
+    expect(
+      (await wallets.load('trip')).pendingOrders.single.createdAt,
+      DateTime.utc(2026, 10, 8, 15),
+    );
+  });
 
   test('a finished trip takes no order', () async {
     await open();

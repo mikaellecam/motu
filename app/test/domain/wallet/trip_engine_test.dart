@@ -197,7 +197,7 @@ void main() {
       day(4, 7),
     ]);
     expect(result.state.date, day(4, 7));
-    expect(result.endOfData, isFalse);
+    expect(result.atToday, isFalse);
     expect(result.stop, isEmpty);
   });
 
@@ -701,7 +701,7 @@ void main() {
       expect(result.events.whereType<OrderCancelled>().single.order.id, 'o2');
     });
 
-    test('stops at the end of the data', () {
+    test('stops at the end of the data: the trip is at today', () {
       final result = advance(
         engine(),
         TripState.start(day(6, 1), eur('100')),
@@ -710,10 +710,10 @@ void main() {
         lastDate: day(6, 3),
       );
       expect(result.state.date, day(6, 3));
-      expect(result.endOfData, isTrue);
+      expect(result.atToday, isTrue);
     });
 
-    test('landing on the last day of the data is its end too', () {
+    test('landing on the last day of the data is at today too', () {
       Map<String, bool> endsAt(DateTime target) => {
         for (final t in [day(6, 2), target])
           '$t': advance(
@@ -722,12 +722,12 @@ void main() {
             t,
             const {},
             lastDate: day(6, 3),
-          ).endOfData,
+          ).atToday,
       };
       expect(endsAt(day(6, 3)).values, [false, true]);
     });
 
-    test('a stop on the last day of the data comes first', () {
+    test('a stop on the last day of the data: stopped, and at today', () {
       // The June contribution lands on the 1st, the last day of the data.
       final result = advance(
         engine(contribution: eur('50')),
@@ -739,7 +739,35 @@ void main() {
       );
       expect(result.state.date, day(6, 1));
       expect(result.stop, isNotEmpty);
-      expect(result.endOfData, isFalse);
+      expect(result.atToday, isTrue);
+    });
+
+    test('a stop before the last day of the data is not at today', () {
+      final result = advance(
+        engine(contribution: eur('50')),
+        TripState.start(day(5, 20), eur('100')),
+        day(6, 30),
+        const {},
+        stops: const StopConditions(contribution: true),
+        lastDate: day(6, 3),
+      );
+      expect(result.state.date, day(6, 1));
+      expect(result.atToday, isFalse);
+    });
+
+    test('already on or past the last day of the data: at today', () {
+      for (final date in [day(6, 3), day(6, 4)]) {
+        final result = advance(
+          engine(),
+          TripState.start(date, eur('100')),
+          day(6, 30),
+          const {},
+          lastDate: day(6, 3),
+        );
+        expect(result.state.date, date);
+        expect(result.events, isEmpty);
+        expect(result.atToday, isTrue);
+      }
     });
 
     test('a target on or before the current day changes nothing', () {
