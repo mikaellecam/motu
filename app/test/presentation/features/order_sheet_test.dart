@@ -7,7 +7,6 @@ import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/core/theme/tokens.dart';
-import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
