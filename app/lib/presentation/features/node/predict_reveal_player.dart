@@ -7,7 +7,6 @@ import '../../../application/providers.dart';
 import '../../../core/cache_status.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/l10n/formats.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
@@ -41,43 +40,61 @@ class PredictRevealPlayer extends ConsumerWidget {
       onRetry: () => ref.invalidate(revealViewProvider(nodeId)),
       data: (view) {
         final reveal = view.reveal;
-        final answer = reveal.choices.firstWhere((c) => c.id == reveal.answer);
+        String label(String id) =>
+            reveal.choices.firstWhere((c) => c.id == id).label.of(language);
+        final type = nodeTypeName(l10n, view.node.type);
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
           children: [
-            Text(view.node.title.of(language), style: AppText.title),
-            const SizedBox(height: AppSpace.x2),
-            Text(reveal.question.of(language), style: text.bodyLarge),
-            const SizedBox(height: AppSpace.x4),
-            for (final choice in reveal.choices) ...[
-              ChunkyChoice(
-                label: choice.label.of(language),
-                selected: play.chosen == choice.id,
-                onTap: () => actions.choose(choice.id),
+            if (!play.submitted) ...[
+              LessonCard(
+                label: type,
+                headline: view.node.title.of(language),
+                children: [
+                  Text(reveal.question.of(language), style: text.bodyLarge),
+                ],
               ),
-              const SizedBox(height: AppSpace.x3),
-            ],
-            if (play.failure case final failure?)
-              Text(
-                failureMessage(context, failure),
-                style: text.bodyMedium?.copyWith(color: AppColors.alertText),
-              ),
-            if (!play.submitted)
+              const SizedBox(height: AppSpace.x4),
+              for (final choice in reveal.choices) ...[
+                ChunkyChoice(
+                  label: choice.label.of(language),
+                  selected: play.chosen == choice.id,
+                  onTap: () => actions.choose(choice.id),
+                ),
+                const SizedBox(height: AppSpace.x3),
+              ],
+              if (play.failure case final failure?)
+                Text(
+                  failureMessage(context, failure),
+                  style: text.bodyMedium?.copyWith(color: AppColors.alertText),
+                ),
               ChunkyButton(
                 label: l10n.node_check,
                 onPressed: play.chosen == null ? null : actions.submit,
-              )
-            else ...[
+              ),
+            ] else ...[
+              // The verdict takes the question's place (art direction).
               Semantics(
                 liveRegion: true,
-                child: Text(
-                  play.chosen == reveal.answer
+                child: LessonCard(
+                  label: type,
+                  headline: play.chosen == reveal.answer
                       ? l10n.node_right
-                      : l10n.node_wrong(answer.label.of(language)),
-                  style: AppText.titleSmall,
+                      : l10n.node_wrong_headline,
+                  children: [
+                    Text(
+                      play.chosen == reveal.answer
+                          ? l10n.node_recap_right(label(play.chosen!))
+                          : l10n.node_recap_wrong(
+                              label(play.chosen!),
+                              label(reveal.answer),
+                            ),
+                      style: text.bodyLarge,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: AppSpace.x3),
+              const SizedBox(height: AppSpace.x4),
               ChunkyCard(
                 child: CurvesBlock(
                   curves: view.curves,
@@ -86,7 +103,12 @@ class PredictRevealPlayer extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpace.x4),
-              TermText(reveal.explanation.of(language), terms: view.terms),
+              LessonCard(
+                label: l10n.node_why,
+                children: [
+                  TermText(reveal.explanation.of(language), terms: view.terms),
+                ],
+              ),
               if (view.hasLiveVariant && online) ...[
                 const SizedBox(height: AppSpace.x4),
                 _LiveSection(nodeId: nodeId, invested: reveal.invested),
@@ -134,28 +156,25 @@ class _LiveSectionState extends ConsumerState<_LiveSection> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (!_open) {
-      return OutlinedButton(
+      return ChunkyButton(
+        label: l10n.node_today,
+        kind: ChunkyButtonKind.secondary,
         onPressed: () => setState(() => _open = true),
-        child: Text(l10n.node_today),
       );
     }
     final formats = Formats(Localizations.localeOf(context).languageCode);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return LessonCard(
+      label: l10n.node_today,
       children: [
-        Text(l10n.node_today, style: AppText.titleSmall),
-        const SizedBox(height: AppSpace.x2),
         playerState(
           ref.watch(liveRevealProvider(widget.nodeId)),
           onRetry: () => ref.invalidate(liveRevealProvider(widget.nodeId)),
-          data: (live) => ChunkyCard(
-            child: CurvesBlock(
-              curves: live.curves,
-              invested: widget.invested,
-              caption: l10n.node_today_caption(
-                formats.date(live.from),
-                formats.date(live.to),
-              ),
+          data: (live) => CurvesBlock(
+            curves: live.curves,
+            invested: widget.invested,
+            caption: l10n.node_today_caption(
+              formats.date(live.from),
+              formats.date(live.to),
             ),
           ),
         ),

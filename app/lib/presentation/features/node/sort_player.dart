@@ -36,27 +36,19 @@ class SortPlayer extends ConsumerWidget {
         if (view == null) return const SizedBox.shrink();
         final sort = view.sort;
         final labels = {for (final i in sort.items) i.id: i.label.of(language)};
-        final title = Text(view.node.title.of(language), style: AppText.title);
+        final type = nodeTypeName(l10n, view.node.type);
 
         if (state.submitted) {
           return ListView(
             padding: const EdgeInsets.all(AppSpace.screenPadding),
             children: [
-              title,
-              const SizedBox(height: AppSpace.x4),
               Semantics(
                 liveRegion: true,
-                child: Text(
-                  l10n.sort_result(state.placed!, state.order.length),
-                  style: AppText.titleSmall,
-                ),
-              ),
-              const SizedBox(height: AppSpace.x4),
-              Text(l10n.sort_truth, style: muted),
-              const SizedBox(height: AppSpace.x2),
-              ChunkyCard(
-                child: Column(
+                child: LessonCard(
+                  label: type,
+                  headline: l10n.sort_result(state.placed!, state.order.length),
                   children: [
+                    Text(l10n.sort_truth, style: muted),
                     for (final (i, id) in view.truth.indexed)
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -87,7 +79,12 @@ class SortPlayer extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpace.x4),
-              TermText(sort.explanation.of(language), terms: view.terms),
+              LessonCard(
+                label: l10n.node_why,
+                children: [
+                  TermText(sort.explanation.of(language), terms: view.terms),
+                ],
+              ),
               const SizedBox(height: AppSpace.x6),
               LessonEnd(node: view.node),
             ],
@@ -101,10 +98,18 @@ class SortPlayer extends ConsumerWidget {
           header: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              title,
-              const SizedBox(height: AppSpace.x2),
-              TermText(sort.prompt.of(language), terms: view.terms),
-              Text(l10n.sort_hint, style: muted),
+              LessonCard(
+                label: type,
+                headline: view.node.title.of(language),
+                children: [
+                  TermText(
+                    sort.prompt.of(language),
+                    terms: view.terms,
+                    style: text.bodyLarge,
+                  ),
+                  Text(l10n.sort_hint, style: muted),
+                ],
+              ),
               const SizedBox(height: AppSpace.x4),
               Text(sort.low.of(language), style: AppText.label),
               const SizedBox(height: AppSpace.x2),

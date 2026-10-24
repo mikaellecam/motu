@@ -76,9 +76,17 @@ class ToyPlayer extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
           children: [
-            Text(s.view.node.title.of(language), style: AppText.title),
-            const SizedBox(height: AppSpace.x2),
-            TermText(toy.intro.of(language), terms: s.view.terms),
+            LessonCard(
+              label: nodeTypeName(l10n, s.view.node.type),
+              headline: s.view.node.title.of(language),
+              children: [
+                TermText(
+                  toy.intro.of(language),
+                  terms: s.view.terms,
+                  style: text.bodyLarge,
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpace.x4),
             ChunkyCard(
               child: Column(
@@ -116,32 +124,44 @@ class ToyPlayer extends ConsumerWidget {
                     liveRegion: true,
                     child: Text(result, style: AppText.bodyStrong),
                   ),
+                  const SizedBox(height: AppSpace.x2),
+                  Text(
+                    s.returnIsPast && past != null && toy.returnFrom != null
+                        ? l10n.toy_return_past(
+                            rate,
+                            toy.returnFrom!.label.of(language),
+                            '${past.from.year}',
+                            '${past.to.year}',
+                          )
+                        : l10n.toy_return_hypothesis(rate),
+                    style: muted,
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpace.x2),
-            Text(
-              s.returnIsPast && past != null && toy.returnFrom != null
-                  ? l10n.toy_return_past(
-                      rate,
-                      toy.returnFrom!.label.of(language),
-                      '${past.from.year}',
-                      '${past.to.year}',
-                    )
-                  : l10n.toy_return_hypothesis(rate),
-              style: muted,
+            const SizedBox(height: AppSpace.x4),
+            ChunkyCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final c in toy.controls)
+                    _ToySlider(
+                      control: c,
+                      label: c.label.of(language),
+                      value: s.value(c.id),
+                      shown: _format(l10n, formats, c.id, s.value(c.id)),
+                      onStep: (index) => actions.setStep(c.id, index),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: AppSpace.x4),
-            for (final c in toy.controls)
-              _ToySlider(
-                control: c,
-                label: c.label.of(language),
-                value: s.value(c.id),
-                shown: _format(l10n, formats, c.id, s.value(c.id)),
-                onStep: (index) => actions.setStep(c.id, index),
-              ),
-            const SizedBox(height: AppSpace.x4),
-            TermText(toy.explanation.of(language), terms: s.view.terms),
+            LessonCard(
+              label: l10n.node_why,
+              children: [
+                TermText(toy.explanation.of(language), terms: s.view.terms),
+              ],
+            ),
             const SizedBox(height: AppSpace.x6),
             if (s.completed)
               LessonEnd(node: s.view.node)

@@ -121,6 +121,9 @@ enum ChunkyButtonKind {
 
   /// Companion, mission and level actions.
   progress,
+
+  /// A second way on, beside or under the primary one.
+  secondary,
 }
 
 /// Toy-block button: pressing pushes it down onto its shadow.
@@ -145,6 +148,7 @@ class ChunkyButton extends StatelessWidget {
       _ when !enabled => (AppColors.line, AppColors.muted),
       ChunkyButtonKind.primary => (AppColors.primary, AppColors.surface),
       ChunkyButtonKind.progress => (AppColors.progress, AppColors.ink),
+      ChunkyButtonKind.secondary => (AppColors.surface, AppColors.ink),
     };
 
     return Semantics(
@@ -208,6 +212,7 @@ class ChunkyChoice extends StatelessWidget {
     required this.onTap,
     this.upside,
     this.downside,
+    this.mark,
   });
 
   final String label;
@@ -215,6 +220,10 @@ class ChunkyChoice extends StatelessWidget {
   final VoidCallback onTap;
   final String? upside;
   final String? downside;
+
+  /// Once checked: ✓ on the right answer, ✗ on a wrong one chosen, with
+  /// what screen readers say.
+  final ({bool right, String label})? mark;
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +284,67 @@ class ChunkyChoice extends StatelessWidget {
                   ],
                 ),
               ),
+              if (mark case final mark?) ...[
+                const SizedBox(width: AppSpace.x2),
+                Icon(
+                  mark.right ? Icons.check_circle : Icons.cancel,
+                  color: AppColors.ink,
+                  semanticLabel: mark.label,
+                ),
+              ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A square toy block with an icon, back or close on a world screen. Its
+/// [label] is what screen readers say.
+class ChunkyIconButton extends StatelessWidget {
+  const ChunkyIconButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  static const size = 48.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: ChunkyPress(
+        depth: AppShape.chunkyButtonShadow,
+        onTap: onPressed,
+        builder: (sink) => Transform.translate(
+          offset: Offset(0, sink),
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppShape.chunkyButtonRadius),
+              border: Border.all(
+                color: AppColors.ink,
+                width: AppShape.chunkyBorder,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.ink,
+                  offset: Offset(0, AppShape.chunkyButtonShadow - sink),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: AppColors.ink),
           ),
         ),
       ),

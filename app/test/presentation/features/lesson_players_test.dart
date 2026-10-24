@@ -165,12 +165,17 @@ void main() {
     expect(find.text('Question 1 sur 2'), findsOneWidget);
     await tap(tester, 'Une seule entreprise');
     await tap(tester, 'Valider');
+    expect(find.text("Raté, et c'est comme ça qu'on apprend"), findsOneWidget);
     expect(
       find.text(
-        "Pas cette fois. Bonne réponse$nnbsp: Des milliers d'entreprises.",
+        'Tu as répondu «${nbsp}Une seule entreprise$nbsp». La bonne '
+        "réponse$nnbsp: «${nbsp}Des milliers d'entreprises$nbsp».",
       ),
       findsOneWidget,
     );
+    // Marked without colour alone: ✓ on the right answer, ✗ on the pick.
+    expect(find.bySemanticsLabel(RegExp(r'bonne réponse$')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'ta réponse$')), findsOneWidget);
     expect(
       find.text("Il suit un indice de milliers d'entreprises."),
       findsOneWidget,

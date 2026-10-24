@@ -89,10 +89,17 @@ void main() {
     await tester.tap(find.text('Valider'));
     await tester.pumpAndSettle();
     expect(profiles.completed, [('ae.apple', 'world')]);
+    // The verdict takes the question's place.
+    expect(find.text("Raté, et c'est comme ça qu'on apprend"), findsOneWidget);
     expect(
-      find.text("Pas cette fois. Bonne réponse$nnbsp: Apple."),
+      find.text(
+        'Tu as répondu «${nbsp}ETF Monde$nbsp». La bonne '
+        'réponse$nnbsp: «${nbsp}Apple$nbsp».',
+      ),
       findsOneWidget,
     );
+    expect(find.text('Lequel a le plus chuté ?'), findsNothing);
+    expect(find.text('Pourquoi$nnbsp?'), findsOneWidget);
 
     // The curves drew in: each line's end, signed.
     expect(find.text('754,66$nbsp\$'), findsOneWidget);

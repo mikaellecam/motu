@@ -115,6 +115,14 @@ ThemeData appTheme() {
         side: BorderSide(color: AppColors.line, width: AppShape.flatBorder),
       ),
     ),
+    // The track still to go in `line`, so it shows on a white card; no
+    // dotted steps.
+    sliderTheme: SliderThemeData(
+      activeTrackColor: AppColors.primary,
+      inactiveTrackColor: AppColors.line,
+      thumbColor: AppColors.primary,
+      tickMarkShape: SliderTickMarkShape.noTickMark,
+    ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: flatButtonSize,

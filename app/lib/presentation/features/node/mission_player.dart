@@ -42,9 +42,17 @@ class MissionPlayer extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
           children: [
-            Text(view.node.title.of(language), style: AppText.title),
-            const SizedBox(height: AppSpace.x2),
-            TermText(view.mission.goal.of(language), terms: view.terms),
+            LessonCard(
+              label: nodeTypeName(l10n, view.node.type),
+              headline: view.node.title.of(language),
+              children: [
+                TermText(
+                  view.mission.goal.of(language),
+                  terms: view.terms,
+                  style: text.bodyLarge,
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpace.x4),
             ChunkyCard(
               child: Semantics(

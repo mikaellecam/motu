@@ -16,6 +16,7 @@ import '../../../domain/learning/node.dart';
 import '../../../domain/learning/path.dart';
 import '../map/archipelago.dart';
 import '../map/living_island.dart';
+import '../node/node_screen.dart';
 import 'islet_path.dart';
 
 /// An island's path (BRIEF §3, §4.3), as the art direction's « stepping
@@ -54,7 +55,7 @@ class IslandScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpace.screenPadding,
-                    _BackButton.room,
+                    _backRoom,
                     AppSpace.screenPadding,
                     AppSpace.screenPadding,
                   ),
@@ -75,7 +76,7 @@ class IslandScreen extends ConsumerWidget {
               Positioned(
                 left: AppSpace.screenPadding,
                 top: inset.top + AppSpace.x3,
-                child: const _BackButton(),
+                child: const _Back(),
               ),
           ],
         ),
@@ -124,7 +125,7 @@ class _Path extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: island == null ? _BackButton.room : 240,
+          height: island == null ? _backRoom : 240,
           child: Stack(
             children: [
               if (island != null)
@@ -139,7 +140,7 @@ class _Path extends ConsumerWidget {
               const Positioned(
                 left: AppSpace.screenPadding,
                 top: AppSpace.x3,
-                child: _BackButton(),
+                child: _Back(),
               ),
             ],
           ),
@@ -172,7 +173,7 @@ class _Path extends ConsumerWidget {
               AppShape.chunkyCardShadow,
             ),
             child: _CurrentCard(
-              type: _typeName(l10n, path.nodes[current].node.type),
+              type: nodeTypeName(l10n, path.nodes[current].node.type),
               title: path.nodes[current].node.title.of(language),
               onStart: open[current],
             ),
@@ -289,7 +290,7 @@ class _Run extends StatelessWidget {
     final node = path.nodes[i];
     final c = run.centre(i, width);
     final title = node.node.title.of(language);
-    final type = _typeName(l10n, node.node.type);
+    final type = nodeTypeName(l10n, node.node.type);
     final stateName = switch (node.state) {
       NodeState.done => l10n.island_state_done,
       NodeState.current => l10n.island_state_current,
@@ -477,59 +478,6 @@ class _CurrentCard extends StatelessWidget {
   }
 }
 
-/// Back to the map, a toy block over the sea.
-class _BackButton extends StatelessWidget {
-  const _BackButton();
-
-  /// The room it takes at the top of the screen.
-  static const room = AppSpace.x3 + 48 + AppSpace.x4;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: MaterialLocalizations.of(context).backButtonTooltip,
-      excludeSemantics: true,
-      child: ChunkyPress(
-        depth: AppShape.chunkyButtonShadow,
-        onTap: () => Navigator.maybePop(context),
-        builder: (sink) => Transform.translate(
-          offset: Offset(0, sink),
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppShape.chunkyButtonRadius),
-              border: Border.all(
-                color: AppColors.ink,
-                width: AppShape.chunkyBorder,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.ink,
-                  offset: Offset(0, AppShape.chunkyButtonShadow - sink),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.chevron_left, color: AppColors.ink),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-String _typeName(AppLocalizations l10n, NodeType type) => switch (type) {
-  NodeType.predictReveal => l10n.node_type_predict_reveal,
-  NodeType.toy => l10n.node_type_toy,
-  NodeType.decision => l10n.node_type_decision,
-  NodeType.sort => l10n.node_type_sort,
-  NodeType.buildPuzzle => l10n.node_type_build_puzzle,
-  NodeType.mission => l10n.node_type_mission,
-  NodeType.checkpoint => l10n.node_type_checkpoint,
-};
-
 IconData _typeIcon(NodeType type) => switch (type) {
   NodeType.predictReveal => Icons.visibility_outlined,
   NodeType.toy => Icons.tune,
@@ -539,3 +487,18 @@ IconData _typeIcon(NodeType type) => switch (type) {
   NodeType.mission => Icons.flag_outlined,
   NodeType.checkpoint => Icons.emoji_events_outlined,
 };
+
+/// The room the back button takes at the top of the screen.
+const _backRoom = AppSpace.x3 + ChunkyIconButton.size + AppSpace.x4;
+
+/// Back to the map, a toy block over the sea.
+class _Back extends StatelessWidget {
+  const _Back();
+
+  @override
+  Widget build(BuildContext context) => ChunkyIconButton(
+    icon: Icons.chevron_left,
+    label: MaterialLocalizations.of(context).backButtonTooltip,
+    onPressed: () => Navigator.maybePop(context),
+  );
+}

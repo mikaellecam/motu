@@ -42,9 +42,17 @@ class DecisionPlayer extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
           children: [
-            Text(view.node.title.of(language), style: AppText.title),
-            const SizedBox(height: AppSpace.x2),
-            TermText(decision.context.of(language), terms: view.terms),
+            LessonCard(
+              label: nodeTypeName(l10n, view.node.type),
+              headline: view.node.title.of(language),
+              children: [
+                TermText(
+                  decision.context.of(language),
+                  terms: view.terms,
+                  style: text.bodyLarge,
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpace.x4),
             ChunkyCard(
               child: Column(
@@ -77,67 +85,79 @@ class DecisionPlayer extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpace.x4),
-            Text(l10n.decision_question, style: AppText.titleSmall),
-            const SizedBox(height: AppSpace.x2),
-            for (final choice in decision.choices) ...[
-              ChunkyChoice(
-                label: choice.label.of(language),
-                upside: choice.upside.of(language),
-                downside: choice.downside.of(language),
-                selected: play.chosen == choice.id,
-                onTap: () => actions.choose(choice.id),
-              ),
-              const SizedBox(height: AppSpace.x3),
-            ],
-            if (play.failure case final failure?)
-              Text(
-                failureMessage(context, failure),
-                style: text.bodyMedium?.copyWith(color: AppColors.alertText),
-              ),
-            if (!play.submitted)
+            if (!play.submitted) ...[
+              Text(l10n.decision_question, style: AppText.titleSmall),
+              const SizedBox(height: AppSpace.x2),
+              for (final choice in decision.choices) ...[
+                ChunkyChoice(
+                  label: choice.label.of(language),
+                  upside: choice.upside.of(language),
+                  downside: choice.downside.of(language),
+                  selected: play.chosen == choice.id,
+                  onTap: () => actions.choose(choice.id),
+                ),
+                const SizedBox(height: AppSpace.x3),
+              ],
+              if (play.failure case final failure?)
+                Text(
+                  failureMessage(context, failure),
+                  style: text.bodyMedium?.copyWith(color: AppColors.alertText),
+                ),
               ChunkyButton(
                 label: l10n.node_check,
                 onPressed: play.chosen == null ? null : actions.submit,
-              )
-            else ...[
-              const SizedBox(height: AppSpace.x2),
-              Text(l10n.decision_after, style: AppText.titleSmall),
-              const SizedBox(height: AppSpace.x2),
-              Text(
-                l10n.decision_outcomes(
-                  formatValue(formats, decision.invested, view.currency),
-                  formats.date(view.after.first.$1),
-                  formats.date(view.after.last.$1),
-                ),
-                style: muted,
               ),
-              for (final choice in decision.choices)
-                ChartLegendRow(
-                  label: choice.id == play.chosen
-                      ? '${choice.label.of(language)} (${l10n.decision_your_choice})'
-                      : choice.label.of(language),
-                  value: formatValue(
-                    formats,
-                    view.outcomes[choice.id]!,
-                    view.currency,
+            ] else ...[
+              // What each choice became takes the choices' place, yours
+              // named.
+              LessonCard(
+                label: l10n.decision_after,
+                children: [
+                  Text(
+                    l10n.decision_outcomes(
+                      formatValue(formats, decision.invested, view.currency),
+                      formats.date(view.after.first.$1),
+                      formats.date(view.after.last.$1),
+                    ),
+                    style: muted,
                   ),
-                  count: (
-                    from: decision.invested,
-                    to: view.outcomes[choice.id]!,
-                    format: (v) => formatValue(formats, v, view.currency),
-                    percent: (r) => formats.percent(r, signed: true),
-                  ),
-                  change: formats.percent(
-                    choice.kept * view.change,
-                    signed: true,
-                  ),
-                  changeColor: signColor(
-                    choice.kept * view.change,
-                    ratio: true,
-                  ),
-                ),
+                  for (final choice in decision.choices)
+                    ChartLegendRow(
+                      label: choice.id == play.chosen
+                          ? '${choice.label.of(language)} (${l10n.decision_your_choice})'
+                          : choice.label.of(language),
+                      value: formatValue(
+                        formats,
+                        view.outcomes[choice.id]!,
+                        view.currency,
+                      ),
+                      count: (
+                        from: decision.invested,
+                        to: view.outcomes[choice.id]!,
+                        format: (v) => formatValue(formats, v, view.currency),
+                        percent: (r) => formats.percent(r, signed: true),
+                      ),
+                      change: formats.percent(
+                        choice.kept * view.change,
+                        signed: true,
+                      ),
+                      changeColor: signColor(
+                        choice.kept * view.change,
+                        ratio: true,
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: AppSpace.x4),
-              TermText(decision.explanation.of(language), terms: view.terms),
+              LessonCard(
+                label: l10n.node_why,
+                children: [
+                  TermText(
+                    decision.explanation.of(language),
+                    terms: view.terms,
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpace.x6),
               LessonEnd(node: view.node),
             ],

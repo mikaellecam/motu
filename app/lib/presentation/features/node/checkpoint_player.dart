@@ -22,7 +22,6 @@ class CheckpointPlayer extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final language = Localizations.localeOf(context).languageCode;
     final text = Theme.of(context).textTheme;
-    final muted = text.bodySmall?.copyWith(color: AppColors.muted);
     final quiz = ref.watch(checkpointPlayProvider(nodeId));
     final actions = ref.read(checkpointPlayProvider(nodeId).notifier);
 
@@ -31,26 +30,29 @@ class CheckpointPlayer extends ConsumerWidget {
       onRetry: () => ref.invalidate(checkpointViewProvider(nodeId)),
       data: (view) {
         final questions = view.checkpoint.questions;
-        final title = Text(view.node.title.of(language), style: AppText.title);
+        final type = nodeTypeName(l10n, view.node.type);
         if (quiz.finished) {
           return ListView(
             padding: const EdgeInsets.all(AppSpace.screenPadding),
             children: [
-              title,
-              const SizedBox(height: AppSpace.x6),
               Semantics(
                 liveRegion: true,
-                child: Text(
-                  l10n.checkpoint_score(quiz.score!, questions.length),
-                  style: AppText.display,
-                  textAlign: TextAlign.center,
+                child: LessonCard(
+                  label: type,
+                  headline: view.node.title.of(language),
+                  children: [
+                    Text(
+                      l10n.checkpoint_score(quiz.score!, questions.length),
+                      style: AppText.display,
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      l10n.checkpoint_done,
+                      style: text.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: AppSpace.x2),
-              Text(
-                l10n.checkpoint_done,
-                style: text.bodyLarge,
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpace.x6),
               LessonEnd(node: view.node),
@@ -59,27 +61,37 @@ class CheckpointPlayer extends ConsumerWidget {
         }
 
         final question = questions[quiz.index];
-        final answer = question.choices.firstWhere(
-          (c) => c.id == question.answer,
-        );
+        String label(String id) =>
+            question.choices.firstWhere((c) => c.id == id).label.of(language);
+        final right = quiz.chosen == question.answer;
         final last = quiz.index + 1 == questions.length;
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
           children: [
-            title,
-            const SizedBox(height: AppSpace.x2),
-            Text(
-              l10n.checkpoint_progress(quiz.index + 1, questions.length),
-              style: muted,
+            LessonCard(
+              label: l10n.checkpoint_progress(quiz.index + 1, questions.length),
+              headline: view.node.title.of(language),
+              children: [
+                TermText(
+                  question.question.of(language),
+                  terms: view.terms,
+                  style: text.bodyLarge,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpace.x2),
-            TermText(question.question.of(language), terms: view.terms),
             const SizedBox(height: AppSpace.x4),
             for (final choice in question.choices) ...[
               ChunkyChoice(
                 label: choice.label.of(language),
                 selected: quiz.chosen == choice.id,
                 onTap: () => actions.choose(choice.id),
+                mark: !quiz.checked
+                    ? null
+                    : choice.id == question.answer
+                    ? (right: true, label: l10n.node_mark_right)
+                    : choice.id == quiz.chosen
+                    ? (right: false, label: l10n.node_mark_wrong)
+                    : null,
               ),
               const SizedBox(height: AppSpace.x3),
             ],
@@ -91,17 +103,23 @@ class CheckpointPlayer extends ConsumerWidget {
             else ...[
               Semantics(
                 liveRegion: true,
-                child: Text(
-                  quiz.chosen == question.answer
-                      ? l10n.node_right
-                      : l10n.node_wrong(answer.label.of(language)),
-                  style: AppText.titleSmall,
+                child: LessonCard(
+                  headline: right ? l10n.node_right : l10n.node_wrong_headline,
+                  children: [
+                    Text(
+                      right
+                          ? l10n.node_recap_right(label(quiz.chosen!))
+                          : l10n.node_recap_wrong(
+                              label(quiz.chosen!),
+                              label(question.answer),
+                            ),
+                      style: text.bodyLarge,
+                    ),
+                    if (question.explanation case final explanation?)
+                      TermText(explanation.of(language), terms: view.terms),
+                  ],
                 ),
               ),
-              if (question.explanation case final explanation?) ...[
-                const SizedBox(height: AppSpace.x2),
-                TermText(explanation.of(language), terms: view.terms),
-              ],
               if (quiz.failure case final failure?)
                 Text(
                   failureMessage(context, failure),

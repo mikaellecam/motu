@@ -859,6 +859,29 @@
       }
     }
   },
+  "node_wrong_headline": "Raté, et c'est comme ça qu'on apprend",
+  "node_recap_right": "Tu as répondu « {chosen} » : c'est bien ça.",
+  "@node_recap_right": {
+    "placeholders": {
+      "chosen": {
+        "type": "String"
+      }
+    }
+  },
+  "node_recap_wrong": "Tu as répondu « {chosen} ». La bonne réponse : « {answer} ».",
+  "@node_recap_wrong": {
+    "placeholders": {
+      "chosen": {
+        "type": "String"
+      },
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "node_why": "Pourquoi ?",
+  "node_mark_right": "bonne réponse",
+  "node_mark_wrong": "ta réponse",
   "node_invested": "Avec {amount} plac\u00e9s au d\u00e9part.",
   "@node_invested": {
     "placeholders": {

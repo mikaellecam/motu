@@ -41,55 +41,75 @@ class PuzzlePlayer extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
           children: [
-            Text(s.view.node.title.of(language), style: AppText.title),
-            const SizedBox(height: AppSpace.x2),
-            TermText(puzzle.prompt.of(language), terms: s.view.terms),
+            LessonCard(
+              label: nodeTypeName(l10n, s.view.node.type),
+              headline: s.view.node.title.of(language),
+              children: [
+                TermText(
+                  puzzle.prompt.of(language),
+                  terms: s.view.terms,
+                  style: text.bodyLarge,
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpace.x4),
-            for (final asset in puzzle.assets) ...[
-              Row(
+            ChunkyCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  for (final asset in puzzle.assets) ...[
+                    Row(
                       children: [
-                        Text(
-                          asset.label.of(language),
-                          style: AppText.bodyStrong,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                asset.label.of(language),
+                                style: AppText.bodyStrong,
+                              ),
+                              Text(
+                                _region(l10n, asset.region),
+                                style: AppText.caption.copyWith(
+                                  color: AppColors.muted,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         Text(
-                          _region(l10n, asset.region),
-                          style: AppText.caption.copyWith(
-                            color: AppColors.muted,
+                          formats.percent(
+                            s.weights[asset.dataset]!,
+                            decimals: 0,
                           ),
+                          style: AppText.figure.copyWith(color: AppColors.ink),
                         ),
                       ],
                     ),
-                  ),
-                  Text(
-                    formats.percent(s.weights[asset.dataset]!, decimals: 0),
-                    style: AppText.figure.copyWith(color: AppColors.ink),
-                  ),
+                    Semantics(
+                      label: l10n.puzzle_weight_semantics(
+                        asset.label.of(language),
+                      ),
+                      child: Slider(
+                        value: s.weights[asset.dataset]!.toDouble(),
+                        divisions: steps,
+                        semanticFormatterCallback: (v) => formats.percent(
+                          Decimal.parse(v.toStringAsFixed(4)),
+                          decimals: 0,
+                        ),
+                        onChanged: s.completed
+                            ? null
+                            : (v) => actions.setSteps(
+                                asset.dataset,
+                                (v * steps).round(),
+                              ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
-              Semantics(
-                label: l10n.puzzle_weight_semantics(asset.label.of(language)),
-                child: Slider(
-                  value: s.weights[asset.dataset]!.toDouble(),
-                  divisions: steps,
-                  semanticFormatterCallback: (v) => formats.percent(
-                    Decimal.parse(v.toStringAsFixed(4)),
-                    decimals: 0,
-                  ),
-                  onChanged: s.completed
-                      ? null
-                      : (v) => actions.setSteps(
-                          asset.dataset,
-                          (v * steps).round(),
-                        ),
-                ),
-              ),
-            ],
-            const SizedBox(height: AppSpace.x2),
+            ),
+            const SizedBox(height: AppSpace.x4),
             ChunkyCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -131,10 +151,17 @@ class PuzzlePlayer extends ConsumerWidget {
             else ...[
               Semantics(
                 liveRegion: true,
-                child: Text(l10n.puzzle_done, style: AppText.titleSmall),
+                child: LessonCard(
+                  label: l10n.node_why,
+                  headline: l10n.puzzle_done,
+                  children: [
+                    TermText(
+                      puzzle.explanation.of(language),
+                      terms: s.view.terms,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppSpace.x2),
-              TermText(puzzle.explanation.of(language), terms: s.view.terms),
               const SizedBox(height: AppSpace.x6),
               LessonEnd(node: s.view.node),
             ],

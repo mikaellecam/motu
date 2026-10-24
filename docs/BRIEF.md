@@ -154,6 +154,14 @@ Node types (each a widget + a pure evaluator):
 | `mission` | Do something in the sandbox (e.g. "own an ETF") | Detected automatically from wallet state |
 | `checkpoint` | 4–6 quiz questions | ≥ 1 attempt finished |
 
+Player (decided 2026-10-24, artboard `Reveal-A` of the art direction canvas): a world screen on the sea, a
+chunky ✕ and the island's lessons as pills on top (each done in `progress`, this one in `primary`). Each node
+opens with a chunky card: its type, its title, its prompt. Once answered, the verdict takes the question's
+place in that card: « Bien vu ! » or « Raté, et c'est comme ça qu'on apprend », then what was answered and the
+right answer; a checkpoint marks the right answer ✓ and a wrong pick ✗ (icons and screen-reader labels, never
+colour alone); a decision shows what each choice became, the user's named. The explanation sits in a chunky
+« Pourquoi ? » card; sliders and other controls in a chunky card.
+
 Every node may end with:
 - **"Et aujourd'hui ?"** — reruns the same widget on current data; hidden when offline or when the node
   has no live variant.
