@@ -108,6 +108,14 @@ void _capture(
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
     }
+    // Images (the stock logos) decode on the real clock, not the test's.
+    await tester.runAsync(() async {
+      for (final e in find.byType(CircleAvatar).evaluate()) {
+        final logo = (e.widget as CircleAvatar).foregroundImage;
+        if (logo != null) await precacheImage(logo, e);
+      }
+    });
+    await tester.pump();
     await expectLater(
       find.byType(MaterialApp),
       matchesGoldenFile('../../docs/screenshots/$name.png'),

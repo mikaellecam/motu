@@ -295,7 +295,7 @@ class _Row extends ConsumerWidget {
           padding: const EdgeInsets.only(left: AppSpace.x4, right: AppSpace.x1),
           child: Row(
             children: [
-              AssetAvatar(asset.name),
+              AssetAvatar(asset),
               const SizedBox(width: AppSpace.x3),
               Expanded(
                 child: Padding(

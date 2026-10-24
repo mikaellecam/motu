@@ -635,7 +635,7 @@ class _PositionRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              AssetAvatar(p.asset.name),
+              AssetAvatar(p.asset),
               const SizedBox(width: AppSpace.x3),
               Expanded(
                 child: Column(

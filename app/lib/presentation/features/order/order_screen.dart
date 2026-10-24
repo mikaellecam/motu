@@ -220,7 +220,7 @@ class OrderHeading extends StatelessWidget {
     };
     return Row(
       children: [
-        AssetAvatar(asset.name),
+        AssetAvatar(asset),
         const SizedBox(width: AppSpace.x3),
         Expanded(
           child: Column(

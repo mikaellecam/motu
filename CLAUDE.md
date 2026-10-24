@@ -23,7 +23,7 @@ It is a graded school project (INSA, mobile development module). The mandatory r
 
 ```
 app/        Flutter app (Dart)
-backend/    Go service + CLI tools (cmd/server, cmd/freeze, cmd/contentcheck)
+backend/    Go service + CLI tools (cmd/server, cmd/freeze, cmd/contentcheck, cmd/logos)
 content/    Lesson packs, glossary, frozen datasets — source of truth for all learning content
 docs/       BRIEF.md, ROADMAP.md, decisions/ (ADRs, one file per decision)
 tracker/    Local issue tracker, gitignored (see Workflow)
@@ -50,6 +50,7 @@ go run ./cmd/contentcheck -bundle ../app/assets/packs -write ../content   # afte
 go run ./cmd/contentcheck -release ../content      # no draft in the latest versions (before a release)
 set -a; . ./.env; set +a; go run ./cmd/freeze -pack ../content/packs/actions-etf/1 -id ds.aapl-2022-w \
   -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31   # a frozen dataset (1 provider credit)
+set -a; . ./.env; set +a; go run ./cmd/logos   # stock logos into ../app/assets/logos (paced, resumes)
 docker build -t finance-companion-backend .        # the image; self-hosting steps in docs/deploy.md
 
 # tracker

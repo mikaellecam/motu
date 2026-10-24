@@ -986,8 +986,8 @@ data, no key).
 
 Rule: chunky = the game is talking to you; flat = your money.
 Shared by the money screens (decided 2026-10-24, M9-22, from the artboards `Portfolio-A` and `Asset-A`):
-section titles in Baloo above their flat cards (`SectionTitle`), not inside them; an asset's avatar shows two
-letters from its name (`assetInitials`: the initials of two words, « ETF » left out, or a word's first two
+section titles in Baloo above their flat cards (`SectionTitle`), not inside them; a stock's avatar shows its
+company's logo (M9-29, §10.2), an ETF's (or a stock's whose logo is missing) two letters from its name (`assetInitials`: the initials of two words, « ETF » left out, or a word's first two
 letters: Apple « AP », Airbus « AI »); a chart dates its x-axis with a few labels in the unit its span calls
 for (days, months, years; a label repeating its neighbour is left out: `dateAxis`), fills lightly under its
 main line and marks where it ends with a dot.
@@ -1010,7 +1010,10 @@ main line and marks where it ends with a dot.
 No decorative color. A screen state (e.g. being in a trip) is signalled by content (date, icon, label), not
 by tinting the screen. One exception (decided 2026-10-13): the painted archipelago (§4.2) uses the art
 direction's own colours (sand, grass, dirt, coloured buildings, grey stone), tokens of their own
-(`MapPalette`), on the map and the island path's islets (§4.3) only; they draw a place and carry no meaning. Selected tabs, segments and chips use the neutral `line` container; app bars use
+(`MapPalette`), on the map and the island path's islets (§4.3) only; they draw a place and carry no meaning. A second
+(decided 2026-10-24, M9-29): a stock's avatar shows its company's logo, in the company's colours, bundled
+with the app (`go run ./cmd/logos`) and credited in « À propos »; it identifies the company and carries no
+other meaning. ETFs keep their two letters (§10.1). Selected tabs, segments and chips use the neutral `line` container; app bars use
 `page`, so a bar and the screen under it read as one background (decided 2026-10-23), and stay `page` when
 content scrolls under them.
 

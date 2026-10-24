@@ -38,6 +38,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/packs/
+    - assets/logos/
   fonts:
     - family: Baloo2
       fonts:

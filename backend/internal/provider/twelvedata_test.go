@@ -146,3 +146,23 @@ func TestFakeServesWholeWindowsAndFails(t *testing.T) {
 }
 
 func storeBar(date string) store.Bar { return store.Bar{Date: day(date), Close: "1"} }
+
+func TestLogoGivesTheImageAddressOfASymbol(t *testing.T) {
+	td, query := serve(t, 200, `{"meta":{"symbol":"EADSY"},"url":"https://api.twelvedata.com/logo/airbus.com"}`)
+	url, err := td.Logo(context.Background(), "EADSY")
+	if err != nil || url != "https://api.twelvedata.com/logo/airbus.com" {
+		t.Fatalf("got %q, %v", url, err)
+	}
+	if query.Get("path") != "/logo" || query.Get("symbol") != "EADSY" {
+		t.Fatalf("asked %v", *query)
+	}
+
+	td, _ = serve(t, 404, `{"code":404,"message":"not found","status":"error"}`)
+	if _, err := td.Logo(context.Background(), "NOPE"); !errors.Is(err, ErrNotAvailable) {
+		t.Fatalf("an unknown symbol is not available: %v", err)
+	}
+	td, _ = serve(t, 200, `{"meta":{"symbol":"X"},"url":""}`)
+	if _, err := td.Logo(context.Background(), "X"); !errors.Is(err, ErrNotAvailable) {
+		t.Fatalf("no address is not available: %v", err)
+	}
+}

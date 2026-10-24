@@ -162,3 +162,26 @@ func (t *TwelveData) Quotes(ctx context.Context, symbols []string) (map[string]Q
 	}
 	return quotes, nil
 }
+
+// Logo is the address of a symbol's company logo (M9-29), a small square
+// image the logos tool bundles with the app. A symbol without one is not
+// available.
+func (t *TwelveData) Logo(ctx context.Context, symbol string) (string, error) {
+	body, err := t.get(ctx, "/logo", url.Values{"symbol": {symbol}})
+	if err != nil {
+		if e, ok := err.(apiError); ok {
+			return "", e.err()
+		}
+		return "", err
+	}
+	var res struct {
+		URL string `json:"url"`
+	}
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", fmt.Errorf("provider: twelvedata logo %s: %w", symbol, err)
+	}
+	if res.URL == "" {
+		return "", fmt.Errorf("%w: no logo for %s", ErrNotAvailable, symbol)
+	}
+	return res.URL, nil
+}

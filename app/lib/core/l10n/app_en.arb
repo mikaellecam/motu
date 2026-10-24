@@ -621,5 +621,5 @@
   "settings_about": "About",
   "settings_about_money": "All the money in this app is fictional: no account, no bank, no broker.",
   "settings_about_advice": "Nothing here is investment advice or a forecast.",
-  "settings_about_sources": "Prices: Twelve Data, delayed. Exchange rates: European Central Bank, via Frankfurter. Livret A: official rates. Lessons use real, frozen prices."
+  "settings_about_sources": "Prices: Twelve Data, delayed. Logos: Twelve Data, each the property of its company. Exchange rates: European Central Bank, via Frankfurter. Livret A: official rates. Lessons use real, frozen prices."
 }
