@@ -567,6 +567,11 @@ voyage » (trip). In a trip, an optional « Pourquoi ? » saves the order to the
   cannot be read keeps its name without figures; the list fails only when no row has any.
 - Offline banner « Hors connexion. Tu vois les cours du {date}, {heure}. » + Réessayer.
 - In a trip, the list is filtered by availability and every value is as of the trip date.
+- Layout (decided 2026-10-24, artboard `Explore-A`): the list reads in two groups, « ETF » then « Actions »,
+  each under its section title (`SectionTitle`) with what it is (« Un panier d'entreprises en un seul achat »,
+  « Une seule entreprise : plus de potentiel, plus de secousses »), its rows in a flat card, sorted by name
+  inside. Search and filters narrow both groups; a group with nothing left is not shown. Filter chips are
+  pills; a long name wraps to a second line.
 
 ### 4.10 DCA simulator
 

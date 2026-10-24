@@ -112,6 +112,49 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('ETFs then stocks, each under its title and what it is', (
+    tester,
+  ) async {
+    await show(tester, catalogue);
+    Finder inList(String text) => find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.text(text),
+    );
+    expect(inList("Un panier d'entreprises en un seul achat"), findsOneWidget);
+    expect(
+      inList(
+        'Une seule entreprise$nnbsp: plus de potentiel, plus de secousses',
+      ),
+      findsOneWidget,
+    );
+    final tops = [
+      for (final text in ['ETF', 'ETF Monde', 'Actions', 'Apple', 'Hermès'])
+        tester.getTopLeft(inList(text)).dy,
+    ];
+    expect(tops, orderedEquals([...tops]..sort()));
+
+    // Filters and search narrow both groups; one left empty is not shown.
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Actions'));
+    await tester.pumpAndSettle();
+    expect(inList('ETF'), findsNothing);
+    expect(inList('Actions'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Tout'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'monde');
+    await tester.pump();
+    expect(inList('ETF'), findsOneWidget);
+    expect(inList('Actions'), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('filter chips are pills', (tester) async {
+    await show(tester, catalogue);
+    for (final chip in tester.widgetList<ChoiceChip>(find.byType(ChoiceChip))) {
+      expect(chip.shape, isA<StadiumBorder>());
+    }
+    await unmount(tester);
+  });
+
   testWidgets('search ignores accents; nothing found says so', (tester) async {
     await show(tester, catalogue);
     await tester.enterText(find.byType(TextField), 'hermes');
@@ -146,7 +189,10 @@ void main() {
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Tout'));
     await tester.pumpAndSettle();
-    final star = find.byTooltip('Ajouter aux favoris').first;
+    final star = find.descendant(
+      of: find.ancestor(of: find.text('Apple'), matching: find.byType(InkWell)),
+      matching: find.byTooltip('Ajouter aux favoris'),
+    );
     final button = find.ancestor(of: star, matching: find.byType(IconButton));
     expect(tester.getSize(button).width, greaterThanOrEqualTo(44));
     expect(tester.getSize(button).height, greaterThanOrEqualTo(44));
@@ -181,7 +227,7 @@ void main() {
       find.text('Actif 59'),
       600,
       scrollable: find.descendant(
-        of: find.byType(ListView),
+        of: find.byType(CustomScrollView),
         matching: find.byType(Scrollable),
       ),
     );

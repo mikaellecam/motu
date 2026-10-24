@@ -7,19 +7,27 @@ import '../../core/theme/tokens.dart';
 /// flat card, so a screen reads by its sections rather than as a column of
 /// identical cards.
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.title, {super.key, this.top = 0});
+  const SectionTitle(this.title, {super.key, this.top = 0, this.line});
 
   final String title;
 
   /// Room above it, for a title that opens a section among others.
   final double top;
 
+  /// A line under the title saying what the section holds.
+  final String? line;
+
   @override
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.only(top: top, bottom: AppSpace.x2),
-    child: Semantics(
-      header: true,
-      child: Text(title, style: AppText.titleSmall),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Semantics(header: true, child: Text(title, style: AppText.titleSmall)),
+        if (line case final line?)
+          Text(line, style: AppText.caption.copyWith(color: AppColors.muted)),
+      ],
     ),
   );
 }

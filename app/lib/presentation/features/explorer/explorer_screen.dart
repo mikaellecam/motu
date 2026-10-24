@@ -9,13 +9,17 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
+import '../../../domain/market/asset.dart';
 import '../../widgets/asset_avatar.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/risk_meter.dart';
+import '../../widgets/section_title.dart';
 import '../../widgets/sign_color.dart';
 
-/// The catalogue: search, filters, favorites (BRIEF §4.9). With [walletId],
-/// as of that wallet's clock: a trip sees only what existed on its day.
+/// The catalogue: search, filters, favorites (BRIEF §4.9), the ETFs then
+/// the stocks in flat cards, each under its title and what it is (artboard
+/// Explore-A). With [walletId], as of that wallet's clock: a trip sees only
+/// what existed on its day.
 class ExplorerScreen extends ConsumerStatefulWidget {
   const ExplorerScreen({super.key, this.walletId});
 
@@ -109,6 +113,7 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
                   Padding(
                     padding: const EdgeInsets.only(right: AppSpace.x2),
                     child: ChoiceChip(
+                      shape: const StadiumBorder(),
                       label: Text(label),
                       selected: _filter == filter,
                       showCheckmark: false,
@@ -184,27 +189,81 @@ class _List extends ConsumerWidget {
         ),
       );
     }
+    final l10n = AppLocalizations.of(context);
+    // The flat card's look, around rows built as they scroll in.
+    final card = ShapeDecoration(
+      color: AppColors.surface,
+      shape: Theme.of(context).cardTheme.shape!,
+    );
+    const corner = Radius.circular(AppShape.flatCardRadius);
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: ListView.builder(
-        padding: const EdgeInsets.only(bottom: AppSpace.screenPadding),
-        itemCount: rows.length,
-        itemBuilder: (context, i) => _Row(
-          rows[i],
-          favorite: favorites.contains(rows[i].asset.id),
-          walletId: walletId,
-        ),
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpace.screenPadding,
+              0,
+              AppSpace.screenPadding,
+              AppSpace.screenPadding,
+            ),
+            sliver: SliverMainAxisGroup(
+              slivers: [
+                for (final (i, (type, group)) in groupRows(rows).indexed) ...[
+                  SliverToBoxAdapter(
+                    child: switch (type) {
+                      AssetType.etf => SectionTitle(
+                        l10n.explorer_filter_etfs,
+                        line: l10n.explorer_etfs_line,
+                        top: i == 0 ? AppSpace.x2 : AppSpace.x4,
+                      ),
+                      AssetType.stock => SectionTitle(
+                        l10n.explorer_filter_stocks,
+                        line: l10n.explorer_stocks_line,
+                        top: i == 0 ? AppSpace.x2 : AppSpace.x4,
+                      ),
+                    },
+                  ),
+                  DecoratedSliver(
+                    decoration: card,
+                    sliver: SliverList.separated(
+                      itemCount: group.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, j) => _Row(
+                        group[j],
+                        favorite: favorites.contains(group[j].asset.id),
+                        walletId: walletId,
+                        corners: BorderRadius.vertical(
+                          top: j == 0 ? corner : Radius.zero,
+                          bottom: j == group.length - 1 ? corner : Radius.zero,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _Row extends ConsumerWidget {
-  const _Row(this.row, {required this.favorite, required this.walletId});
+  const _Row(
+    this.row, {
+    required this.favorite,
+    required this.walletId,
+    required this.corners,
+  });
 
   final ExplorerRow row;
   final bool favorite;
   final String? walletId;
+
+  /// The card's rounded corners this row sits in, so its ink keeps to them.
+  final BorderRadius corners;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -222,18 +281,18 @@ class _Row extends ConsumerWidget {
       final other => other,
     };
 
+    // Its own see-through material: the card is painted under the list, so
+    // ink drawn on the screen's material would be hidden by it.
     return Material(
-      color: AppColors.surface,
+      type: MaterialType.transparency,
       child: InkWell(
+        borderRadius: corners,
         onTap: () => context.push(
           '/asset/${asset.id}${walletId == null ? '' : '?wallet=$walletId'}',
         ),
         child: Container(
           constraints: const BoxConstraints(minHeight: 64),
-          padding: const EdgeInsets.only(left: AppSpace.screenPadding),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.line)),
-          ),
+          padding: const EdgeInsets.only(left: AppSpace.x4, right: AppSpace.x1),
           child: Row(
             children: [
               AssetAvatar(asset.name),
@@ -247,7 +306,7 @@ class _Row extends ConsumerWidget {
                       Text(
                         asset.name,
                         style: text.titleMedium,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),

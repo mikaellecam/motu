@@ -262,6 +262,8 @@
   "explorer_filter_etfs": "ETF",
   "explorer_filter_stocks": "Actions",
   "explorer_filter_favorites": "Favoris",
+  "explorer_etfs_line": "Un panier d'entreprises en un seul achat",
+  "explorer_stocks_line": "Une seule entreprise\u202f: plus de potentiel, plus de secousses",
   "region_world": "Monde",
   "region_us": "\u00c9tats-Unis",
   "region_europe": "Europe",

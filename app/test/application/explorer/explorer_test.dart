@@ -184,6 +184,36 @@ void main() {
       ]);
       expect(ids('nv', ExplorerFilter.favorites, {'world'}), isEmpty);
     });
+
+    /// Each group as « type: ids ».
+    List<String> groups(List<ExplorerRow> rows) => [
+      for (final (type, group) in groupRows(rows))
+        '${type.name}: ${group.map((r) => r.asset.id).join(' ')}',
+    ];
+
+    test('ETFs then stocks, each in the given order', () {
+      expect(groups(rows), [
+        'etf: world',
+        'stock: hermes loreal coca-cola nvidia',
+      ]);
+      // ETFs come first even listed after the stocks.
+      expect(groups(rows.reversed.toList()), [
+        'etf: world',
+        'stock: nvidia coca-cola loreal hermes',
+      ]);
+    });
+
+    test('a group with nothing left is not there', () {
+      final hermes = filterRows(
+        rows,
+        query: 'hermes',
+        filter: ExplorerFilter.all,
+        favorites: const {},
+      );
+      expect(groups(hermes), ['stock: hermes']);
+      expect(groups([rows.first]), ['etf: world']);
+      expect(groupRows(const []), isEmpty);
+    });
   });
 
   group('rows provider', () {

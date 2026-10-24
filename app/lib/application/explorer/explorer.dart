@@ -111,6 +111,13 @@ List<ExplorerRow> filterRows(
   ];
 }
 
+/// [rows] in two groups, ETFs then stocks, each in the order given; a group
+/// with no row is left out (artboard Explore-A).
+List<(AssetType, List<ExplorerRow>)> groupRows(List<ExplorerRow> rows) => [
+  for (final type in const [AssetType.etf, AssetType.stock])
+    (type, rows.where((row) => row.asset.type == type).toList()),
+]..removeWhere((group) => group.$2.isEmpty);
+
 /// Lower case, accents folded, letters and digits only: « L'Oréal » and
 /// "loreal" give the same key.
 String searchKey(String text) {

@@ -92,6 +92,8 @@
   "explorer_filter_etfs": "ETFs",
   "explorer_filter_stocks": "Stocks",
   "explorer_filter_favorites": "Favorites",
+  "explorer_etfs_line": "A basket of companies in a single purchase",
+  "explorer_stocks_line": "A single company: more potential, more swings",
   "region_world": "World",
   "region_us": "United States",
   "region_europe": "Europe",
