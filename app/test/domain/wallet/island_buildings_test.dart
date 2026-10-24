@@ -36,6 +36,25 @@ void main() {
     );
   });
 
+  test('a kept asset takes the last place when it would not rank', () {
+    final held = {
+      'world': d('8000'),
+      'nvidia': d('4000'),
+      'apple': d('2000'),
+      'asml': d('2000'),
+      'coca-cola': d('1000'),
+      'tiny': d('100'),
+    };
+    expect(
+      show(islandBuildings(held: held, keep: 'tiny')),
+      'world 1 1, nvidia 0.5 1, apple 0.25 1, asml 0.25 1, tiny 0.0125 1',
+    );
+    // Already among the five, or not on the island at all: no change.
+    final five = show(islandBuildings(held: held));
+    expect(show(islandBuildings(held: held, keep: 'apple')), five);
+    expect(show(islandBuildings(held: held, keep: 'meta')), five);
+  });
+
   test('a pending buy of a new asset: a construction site, nothing built', () {
     expect(
       show(

@@ -40,9 +40,15 @@ class OrderDoneScreen extends ConsumerWidget {
     final language = Localizations.localeOf(context).languageCode;
     final orderId = done.outcome.orderId;
     final state = ref.watch(orderTrackerProvider(orderId));
-    // The wallet's own city, on the island the lessons greened.
+    // The wallet's own city, on the island the lessons greened, with the
+    // order's building even when it is not among the five largest.
     final buildings = drawnBuildings(
-      ref.watch(walletIslandProvider(walletId)).value ?? const [],
+      ref
+              .watch(
+                walletIslandProvider(walletId, keep: state.value?.asset.id),
+              )
+              .value ??
+          const [],
     );
     final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
 

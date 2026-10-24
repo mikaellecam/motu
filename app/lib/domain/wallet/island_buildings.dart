@@ -33,11 +33,13 @@ final class IslandBuilding {
 
 /// The [slots] largest assets of [held] (market values) and [pending] (what
 /// pending buys add, in the same currency), largest first, ties by id.
-/// Amounts that are not positive build nothing.
+/// Amounts that are not positive build nothing. [keep], when on the island
+/// but not among them, takes the last place (the building an order raises).
 List<IslandBuilding> islandBuildings({
   required Map<String, Decimal> held,
   Map<String, Decimal> pending = const {},
   int slots = 5,
+  String? keep,
 }) {
   final standing = {
     for (final MapEntry(:key, :value) in held.entries)
@@ -56,8 +58,13 @@ List<IslandBuilding> islandBuildings({
       return bySize != 0 ? bySize : a.key.compareTo(b.key);
     });
   final largest = ranked.first.value;
+  var shown = ranked.take(slots).toList();
+  final kept = ranked.where((e) => e.key == keep);
+  if (kept.isNotEmpty && !shown.contains(kept.first)) {
+    shown = [...shown.take(slots - 1), kept.first];
+  }
   return [
-    for (final MapEntry(:key, :value) in ranked.take(slots))
+    for (final MapEntry(:key, :value) in shown)
       IslandBuilding(
         key,
         height: ratio(value, largest),

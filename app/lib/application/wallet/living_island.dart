@@ -12,8 +12,13 @@ part 'living_island.g.dart';
 /// largest positions, raised by the buys still waiting to fill. The overview
 /// it reads is refreshed when an order is placed, filled or cancelled, so
 /// the island follows. A trip's end shows the city the trip built (M9-20).
+/// [keep]: an asset drawn even when it is not among the five (an order's).
 @riverpod
-Future<List<IslandBuilding>> walletIsland(Ref ref, String walletId) async {
+Future<List<IslandBuilding>> walletIsland(
+  Ref ref,
+  String walletId, {
+  String? keep,
+}) async {
   final overview = await ref.watch(walletOverviewProvider(walletId).future);
   final pending = <String, Decimal>{};
   for (final (:order, :asset, :reserved) in overview.pendingOrders) {
@@ -24,6 +29,7 @@ Future<List<IslandBuilding>> walletIsland(Ref ref, String walletId) async {
   return islandBuildings(
     held: {for (final p in overview.positions) p.asset.id: p.value},
     pending: pending,
+    keep: keep,
   );
 }
 

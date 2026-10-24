@@ -572,7 +572,8 @@ construction that completes on fill.
 **After a buy** (decided 2026-10-25, M9-34, artboard `OrderDone-A` of the art direction canvas): every buy,
 in the live wallet and in trips, opens a world screen on the sea instead of the message
 (`/wallet/:walletId/order/:orderId/done`, `orderDone`): the wallet's island (the live wallet's, or the trip's
-own city) with the order's building, under construction while the buy waits, built when it filled at once;
+own city) with the order's building, under construction while the buy waits, built when it filled at once
+(drawn even when the asset is not among the five largest: it takes the last place, M9-43);
 a chunky card with « Ordre programmé » / « Ordre exécuté », « Ton immeuble {actif} est en chantier » /
 « … est construit », one line saying why it waits and when it goes (the sheet's own copy) or at what price it
 filled, the order's steps (as on the order screen, ✓ done in `progress`, the current one in `primary`) and
