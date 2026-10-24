@@ -346,3 +346,15 @@ func TestContentPacks(t *testing.T) {
 		t.Errorf("no content: %d %v", rec.Code, body)
 	}
 }
+
+func TestALastCloseIsDatedAtItsSessionsClose(t *testing.T) {
+	for d, want := range map[string]string{
+		"2026-10-07": "2026-10-07T20:00:00Z", // 16:00 New York, summer time
+		"2026-11-27": "2026-11-27T18:00:00Z", // day after Thanksgiving: 13:00
+	} {
+		day, _ := time.Parse(time.DateOnly, d)
+		if got := closeOf(day).Format(time.RFC3339); got != want {
+			t.Errorf("%s: %s, want %s", d, got, want)
+		}
+	}
+}

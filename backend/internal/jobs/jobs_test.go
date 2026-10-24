@@ -96,6 +96,8 @@ func TestLastClosedSession(t *testing.T) {
 		{"2026-10-10 12:00", "2026-10-09"}, // Saturday → Friday
 		{"2026-10-12 10:00", "2026-10-09"}, // Monday morning → Friday
 		{"2026-03-09 17:00", "2026-03-09"}, // first day of US summer time
+		{"2026-12-24 13:29", "2026-12-23"}, // early close at 13:00, bar not settled
+		{"2026-12-24 13:30", "2026-12-24"},
 	}
 	for _, c := range cases {
 		if got := LastClosedSession(ny(c.now)); !got.Equal(day(c.want)) {

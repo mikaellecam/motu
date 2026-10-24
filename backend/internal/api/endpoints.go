@@ -180,7 +180,7 @@ var newYork = func() *time.Location {
 
 // closeOf is the instant a US session closes on day.
 func closeOf(day time.Time) time.Time {
-	return time.Date(day.Year(), day.Month(), day.Day(), 16, 0, 0, 0, newYork).UTC()
+	return calendar.USClose(day).UTC()
 }
 
 func (s *Server) fx(r *http.Request) (response, error) {

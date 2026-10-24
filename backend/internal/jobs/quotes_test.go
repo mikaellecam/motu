@@ -22,6 +22,9 @@ func TestInSessionAndNextOpen(t *testing.T) {
 		{"2026-10-07 16:00", false, "2026-10-08 09:30"},
 		{"2026-10-09 17:00", false, "2026-10-12 09:30"}, // Friday → Monday
 		{"2026-10-10 12:00", false, "2026-10-12 09:30"}, // Saturday
+		{"2026-12-24 12:59", true, "2026-12-28 09:30"},  // early close, then Christmas
+		{"2026-12-24 13:00", false, "2026-12-28 09:30"}, // closed at 13:00
+		{"2026-11-26 11:00", false, "2026-11-27 09:30"}, // Thanksgiving
 	}
 	for _, c := range cases {
 		now := ny(c.now)

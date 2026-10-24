@@ -95,7 +95,7 @@ Frankfurter (ECB reference rates since 1999-01-04, no key).
   about 60 credits for the catalogue, spread over ~8 minutes. Runs once, resumable (M2-3).
 - **Daily append** after the US close: 29 credits.
 - **Quotes**: one batch every **30 minutes** during the US session (09:30–16:00 New York, 13 batches × 29 =
-  377 credits). Every 15 minutes would cost 754 credits and, with the daily append, leave almost nothing for
+  377 credits; none on a holiday, none after an early close: M9-40). Every 15 minutes would cost 754 credits and, with the daily append, leave almost nothing for
   retries or content freezes. The app's 15-minute quote TTL (§6.2) stays: it reads the backend's cache.
 - Total ≈ 410 credits/day, about half the limit.
 

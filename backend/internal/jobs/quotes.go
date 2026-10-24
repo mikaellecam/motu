@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"finance-companion/backend/internal/calendar"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
 )
@@ -31,23 +32,23 @@ func (c *QuoteCache) Set(assetID string, q provider.Quote) {
 	c.quotes[assetID] = q
 }
 
-// InSession is true during the US regular session (weekdays 09:30–16:00 New
-// York). Holidays are not known here; the provider reports them closed.
+// InSession is true during a US session: 09:30 to 16:00 New York, or to its
+// early close, on a day the NYSE trades.
 func InSession(now time.Time) bool {
 	local := now.In(newYork)
-	if local.Weekday() == time.Saturday || local.Weekday() == time.Sunday {
+	if !calendar.USTradingDay(local) {
 		return false
 	}
 	open := time.Date(local.Year(), local.Month(), local.Day(), 9, 30, 0, 0, newYork)
-	close := time.Date(local.Year(), local.Month(), local.Day(), 16, 0, 0, 0, newYork)
-	return !local.Before(open) && local.Before(close)
+	return !local.Before(open) && local.Before(calendar.USClose(local))
 }
 
-// NextSessionOpen is the next weekday 09:30 New York after now.
+// NextSessionOpen is the next 09:30 New York after now on a day the NYSE
+// trades.
 func NextSessionOpen(now time.Time) time.Time {
 	local := now.In(newYork)
 	open := time.Date(local.Year(), local.Month(), local.Day(), 9, 30, 0, 0, newYork)
-	for !open.After(now) || open.Weekday() == time.Saturday || open.Weekday() == time.Sunday {
+	for !open.After(now) || !calendar.USTradingDay(open) {
 		open = time.Date(open.Year(), open.Month(), open.Day()+1, 9, 30, 0, 0, newYork)
 	}
 	return open

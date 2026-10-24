@@ -163,6 +163,37 @@ func USHolidays(year int) []time.Time {
 	return out
 }
 
+// USTradingDay reports whether the NYSE holds a session on day, a date.
+func USTradingDay(day time.Time) bool {
+	if day.Weekday() == time.Saturday || day.Weekday() == time.Sunday {
+		return false
+	}
+	d := date(day.Year(), day.Month(), day.Day())
+	return !slices.ContainsFunc(USHolidays(day.Year()), d.Equal)
+}
+
+// USClose is when the NYSE session of day, a date, ends: its early close on
+// those days, else 16:00, New York time.
+func USClose(day time.Time) time.Time {
+	close := "16:00"
+	d := date(day.Year(), day.Month(), day.Day())
+	for _, e := range USEarlyCloses(day.Year()) {
+		if e.Date.Equal(d) {
+			close = e.Close
+		}
+	}
+	at, _ := time.Parse("15:04", close)
+	return time.Date(day.Year(), day.Month(), day.Day(), at.Hour(), at.Minute(), 0, 0, newYork)
+}
+
+var newYork = func() *time.Location {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		panic(err)
+	}
+	return loc
+}()
+
 func date(year int, month time.Month, d int) time.Time {
 	return time.Date(year, month, d, 0, 0, 0, 0, time.UTC)
 }

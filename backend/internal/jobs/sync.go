@@ -10,6 +10,7 @@ import (
 
 	_ "time/tzdata" // America/New_York without a system tz database (Docker)
 
+	"finance-companion/backend/internal/calendar"
 	"finance-companion/backend/internal/fx"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
@@ -24,15 +25,15 @@ var newYork = func() *time.Location {
 }()
 
 // closeMargin leaves the provider time to publish the day's final bar.
-const closeMargin = 16*time.Hour + 30*time.Minute
+const closeMargin = 30 * time.Minute
 
-// LastClosedSession is the latest New York weekday whose session (16:00) closed
-// before now, with a margin: a bar of a session still running is never
+// LastClosedSession is the latest New York weekday whose session (16:00, or its
+// early close) closed before now, with a margin: a bar of a session still running is never
 // stored. Holidays need no care: the provider returns no bar for them.
 func LastClosedSession(now time.Time) time.Time {
 	local := now.In(newYork)
 	day := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
-	if local.Sub(time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, newYork)) < closeMargin {
+	if local.Before(calendar.USClose(local).Add(closeMargin)) {
 		day = day.AddDate(0, 0, -1)
 	}
 	for day.Weekday() == time.Saturday || day.Weekday() == time.Sunday {
