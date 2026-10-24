@@ -94,7 +94,7 @@ void main() {
           .read(profileRepositoryProvider)
           .completeNode('ae.fees', at: DateTime.utc(2026, 10, 1));
       final i = await index();
-      expect(i.total, 6);
+      expect((i.discovered, i.total), (1, 6));
       expect(shape(i), [
         'D: diversification=toDiscover',
         'E: ecart=toDiscover, etf=met',
@@ -123,6 +123,21 @@ void main() {
         [for (final (l, _) in (await index()).groups) l],
         ['D', 'E', 'I', 'R', 'V'],
       );
+    });
+
+    test('the discovered count: every term of the pack, whatever the search, '
+        'none the pack no longer holds', () async {
+      final repo = c.read(glossaryRepositoryProvider);
+      expect((await index()).discovered, 0, reason: 'none yet');
+      for (final id in ['etf', 'volatilite', 'retired-term']) {
+        await repo.discover(id, DateTime.utc(2026, 10, 1));
+      }
+      c.read(glossarySearchProvider.notifier)
+        ..setQuery('zzz')
+        ..setFilter(GlossaryFilter.toDiscover);
+      final i = await index();
+      expect(i.isEmpty, isTrue);
+      expect((i.discovered, i.total), (2, 6));
     });
   });
 

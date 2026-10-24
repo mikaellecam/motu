@@ -39,9 +39,11 @@ Future<void> showTermSheet(
   ),
 );
 
-/// A term's sheet: title, « Nouvelle notion » on its first open, the
-/// definition, its live example on real data, « Ce que ça change pour
-/// toi », related terms and « Tester en 30 secondes ».
+/// A term's sheet (artboard GlossarySheet-A): title, « Nouvelle notion »
+/// on its first open and ✕, the one-line definition (the longer one behind
+/// « En savoir plus », so the example and the test stay near), its live
+/// example on real data, « Ce que ça change pour toi », related terms and
+/// « Tester en 30 secondes ».
 class TermSheet extends ConsumerStatefulWidget {
   const TermSheet({
     super.key,
@@ -60,6 +62,7 @@ class TermSheet extends ConsumerStatefulWidget {
 
 class _TermSheetState extends ConsumerState<TermSheet> {
   var _quiz = false;
+  var _more = false;
 
   /// Another term replaces this one: one sheet at a time.
   void _open(String termId) {
@@ -88,27 +91,47 @@ class _TermSheetState extends ConsumerState<TermSheet> {
           AppSpace.x8,
         ),
         children: [
-          Wrap(
-            spacing: AppSpace.x2,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          Row(
             children: [
-              Text(value.term.title.of(language), style: AppText.title),
-              if (value.firstOpen)
-                Chip(
-                  label: Text(l10n.glossary_new_notion),
-                  backgroundColor: AppColors.progress,
-                  visualDensity: VisualDensity.compact,
+              Expanded(
+                child: Wrap(
+                  spacing: AppSpace.x2,
+                  runSpacing: AppSpace.x1,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(value.term.title.of(language), style: AppText.title),
+                    if (value.firstOpen) NotionBadge(l10n.glossary_new_notion),
+                  ],
                 ),
+              ),
+              const SizedBox(width: AppSpace.x2),
+              ChunkyIconButton(
+                icon: Icons.close,
+                label: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ],
           ),
-          const SizedBox(height: AppSpace.x2),
-          Text(value.term.short.of(language), style: AppText.bodyStrong),
-          const SizedBox(height: AppSpace.x2),
-          TermText(
-            value.term.body.of(language),
-            terms: value.terms,
-            onTerm: _open,
-          ),
+          const SizedBox(height: AppSpace.x3),
+          Text(value.term.short.of(language), style: AppText.body),
+          if (_more) ...[
+            const SizedBox(height: AppSpace.x2),
+            TermText(
+              value.term.body.of(language),
+              terms: value.terms,
+              onTerm: _open,
+            ),
+          ] else
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpace.x1),
+                ),
+                onPressed: () => setState(() => _more = true),
+                child: Text(l10n.glossary_more),
+              ),
+            ),
           if (value.term.liveExample case final kind?) ...[
             const SizedBox(height: AppSpace.x4),
             _LiveExampleCard(kind: kind, assetId: widget.assetId),
@@ -129,6 +152,7 @@ class _TermSheetState extends ConsumerState<TermSheet> {
               children: [
                 for (final t in value.related)
                   ActionChip(
+                    shape: const StadiumBorder(),
                     label: Text(t.title.of(language)),
                     onPressed: () => _open(t.id),
                   ),
@@ -189,83 +213,98 @@ class _LiveExampleCard extends ConsumerWidget {
     Color? colorOf(Decimal v) =>
         kind == LiveExample.volatility ? null : signColor(v, ratio: true);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x4),
-        child: switch (ref.watch(liveExampleProvider(kind, assetId))) {
-          AsyncValue(:final value?) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(l10n.glossary_example_title, style: muted),
-              const SizedBox(height: AppSpace.x1),
-              Text(
-                switch ((kind, value.figure)) {
-                  (LiveExample.currency, _)
-                      when value.asset.currency == Currency.eur =>
-                    l10n.glossary_example_in_euros(value.asset.name),
-                  (_, null) => l10n.glossary_example_too_short,
-                  (LiveExample.performance, final v?) =>
-                    l10n.glossary_example_performance(
-                      value.asset.name,
-                      figure(v),
-                    ),
-                  (LiveExample.volatility, final v?) =>
-                    l10n.glossary_example_volatility(
-                      value.asset.name,
-                      figure(v),
-                    ),
-                  (LiveExample.drawdown, final v?) =>
-                    l10n.glossary_example_drawdown(value.asset.name, figure(v)),
-                  (LiveExample.currency, final v?) =>
-                    l10n.glossary_example_currency(
-                      value.asset.currency.code,
-                      figure(v),
-                    ),
-                },
-                style: AppText.bodyStrong.copyWith(
-                  color: value.figure == null ? null : colorOf(value.figure!),
-                ),
+    return ChunkyCard(
+      child: switch (ref.watch(liveExampleProvider(kind, assetId))) {
+        AsyncValue(:final value?) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.glossary_example_title,
+              style: AppText.label.copyWith(color: AppColors.primary),
+            ),
+            const SizedBox(height: AppSpace.x1),
+            Text(
+              switch ((kind, value.figure)) {
+                (LiveExample.currency, _)
+                    when value.asset.currency == Currency.eur =>
+                  l10n.glossary_example_in_euros(value.asset.name),
+                (_, null) => l10n.glossary_example_too_short,
+                (LiveExample.performance, final v?) =>
+                  l10n.glossary_example_performance(
+                    value.asset.name,
+                    figure(v),
+                  ),
+                (LiveExample.volatility, final v?) =>
+                  l10n.glossary_example_volatility(value.asset.name, figure(v)),
+                (LiveExample.drawdown, final v?) =>
+                  l10n.glossary_example_drawdown(value.asset.name, figure(v)),
+                (LiveExample.currency, final v?) =>
+                  l10n.glossary_example_currency(
+                    value.asset.currency.code,
+                    figure(v),
+                  ),
+              },
+              style: AppText.titleSmall.copyWith(
+                color: value.figure == null ? null : colorOf(value.figure!),
               ),
-              if (value.worldFigure case final w?)
-                Text(
-                  l10n.glossary_example_world(figure(w)),
-                  style: text.bodyMedium,
-                ),
-              if (value.closes.length > 1) ...[
-                const SizedBox(height: AppSpace.x3),
-                RevealChart(
-                  height: 96,
-                  animate: false,
-                  lines: [
-                    ChartLine([
-                      for (final (d, c) in value.closes)
-                        (d.millisecondsSinceEpoch.toDouble(), c.toDouble()),
-                    ], AppColors.primary),
-                  ],
-                  semanticsLabel: l10n.node_chart_semantics(
-                    l10n.node_chart_line(
-                      value.asset.name,
-                      formats.price(
-                        Price(value.closes.first.$2, value.asset.currency),
-                      ),
-                      formats.price(
-                        Price(value.closes.last.$2, value.asset.currency),
-                      ),
+            ),
+            if (value.worldFigure case final w?)
+              Text(
+                l10n.glossary_example_world(figure(w)),
+                style: text.bodyMedium,
+              ),
+            if (value.closes.length > 1) ...[
+              const SizedBox(height: AppSpace.x3),
+              RevealChart(
+                height: 96,
+                animate: false,
+                lines: [
+                  ChartLine([
+                    for (final (d, c) in value.closes)
+                      (d.millisecondsSinceEpoch.toDouble(), c.toDouble()),
+                  ], AppColors.primary),
+                ],
+                semanticsLabel: l10n.node_chart_semantics(
+                  l10n.node_chart_line(
+                    value.asset.name,
+                    formats.price(
+                      Price(value.closes.first.$2, value.asset.currency),
+                    ),
+                    formats.price(
+                      Price(value.closes.last.$2, value.asset.currency),
                     ),
                   ),
                 ),
-              ],
+              ),
             ],
-          ),
-          AsyncValue(hasError: true) => Text(
-            l10n.glossary_example_unavailable,
-            style: muted,
-          ),
-          _ => const AsyncSkeleton(lines: 2),
-        },
-      ),
+          ],
+        ),
+        AsyncValue(hasError: true) => Text(
+          l10n.glossary_example_unavailable,
+          style: muted,
+        ),
+        _ => const AsyncSkeleton(lines: 2),
+      },
     );
   }
+}
+
+/// « Nouvelle » or « Nouvelle notion »: a small pill in the new notions'
+/// yellow, an ink edge so it reads as a label, not a button.
+class NotionBadge extends StatelessWidget {
+  const NotionBadge(this.label, {super.key});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: AppSpace.x2, vertical: 2),
+    decoration: BoxDecoration(
+      color: AppColors.progress,
+      borderRadius: BorderRadius.circular(AppSpace.x4),
+      border: Border.all(color: AppColors.ink, width: 2),
+    ),
+    child: Text(label, style: AppText.label),
+  );
 }
 
 /// « Tester en 30 secondes »: the term's questions one at a time, then the

@@ -72,7 +72,8 @@ Future<void> open(WidgetTester tester, String location) async {
           (ref, id) async => throw const NotFoundFailure(),
         ),
         glossaryIndexProvider.overrideWith(
-          (ref, language) async => const GlossaryIndex([], total: 0),
+          (ref, language) async =>
+              const GlossaryIndex([], discovered: 0, total: 0),
         ),
         ...quietMap,
         // Nothing behind the settings.

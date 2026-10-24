@@ -46,11 +46,16 @@ final class GlossaryRow {
 }
 
 /// The index: the terms kept by the search and the filter, by first letter
-/// of their title in [language], accents aside; and how many there are in
-/// all.
+/// of their title in [language], accents aside; and how many of the pack's
+/// terms there are, and were discovered, whatever the search.
 final class GlossaryIndex {
-  const GlossaryIndex(this.groups, {required this.total});
+  const GlossaryIndex(
+    this.groups, {
+    required this.discovered,
+    required this.total,
+  });
   final List<(String, List<GlossaryRow>)> groups;
+  final int discovered;
   final int total;
 
   bool get isEmpty => groups.isEmpty;
@@ -99,7 +104,11 @@ Future<GlossaryIndex> glossaryIndex(Ref ref, String language) async {
     if (groups.isEmpty || groups.last.$1 != letter) groups.add((letter, []));
     groups.last.$2.add(row);
   }
-  return GlossaryIndex(groups, total: pack.glossary.length);
+  return GlossaryIndex(
+    groups,
+    discovered: pack.glossary.keys.where(discovered.contains).length,
+    total: pack.glossary.length,
+  );
 }
 
 /// A term's sheet, as opened: the term, the titles of its related terms,

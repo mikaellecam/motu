@@ -1188,6 +1188,17 @@
   "mission_done": "Mission accomplie",
   "mission_go_explorer": "Ouvrir l'Explorer",
   "mission_go_wallet": "Voir mon portefeuille",
+  "glossary_progress": "{discovered, plural, one{{discovered} notion d\u00e9couverte sur {total}} other{{discovered} notions d\u00e9couvertes sur {total}}}",
+  "@glossary_progress": {
+    "placeholders": {
+      "discovered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "glossary_search": "Rechercher une notion",
   "glossary_filter_all": "Toutes",
   "glossary_filter_discovered": "D\u00e9couvertes",
@@ -1210,6 +1221,7 @@
   "glossary_no_match": "Aucune notion ne correspond.",
   "glossary_none_yet": "Les notions arrivent avec les le\u00e7ons.",
   "glossary_new_notion": "Nouvelle notion",
+  "glossary_more": "En savoir plus",
   "glossary_for_you": "Ce que \u00e7a change pour toi",
   "glossary_related": "Voir aussi",
   "glossary_quiz_start": "Tester en 30 secondes",

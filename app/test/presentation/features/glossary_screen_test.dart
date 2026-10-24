@@ -11,6 +11,7 @@ import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/glossary/glossary_screen.dart';
+import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/widgets/term_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,15 +86,42 @@ void main() {
     tester,
   ) async {
     await show(tester, const GlossaryScreen());
+    expect(find.text('1 notion découverte sur 6'), findsOneWidget);
+    expect(
+      tester
+          .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator))
+          .value,
+      1 / 6,
+    );
     for (final letter in ['D', 'E', 'I', 'R', 'V']) {
       expect(find.text(letter), findsOneWidget, reason: letter);
     }
-    expect(find.text('Écart'), findsOneWidget);
+    // One flat card per letter, a line between its rows: « Écart » and
+    // « ETF » share E's.
+    expect(find.byType(Card), findsNWidgets(5));
+    final e = find.ancestor(
+      of: find.text('Écart'),
+      matching: find.byType(Card),
+    );
+    expect(find.descendant(of: e, matching: find.text('ETF')), findsOneWidget);
+    expect(
+      find.descendant(of: e, matching: find.byType(Divider)),
+      findsOneWidget,
+    );
     expect(find.bySemanticsLabel('Indice, découverte'), findsOneWidget);
     expect(find.bySemanticsLabel('ETF, nouvelle, à ouvrir'), findsOneWidget);
     expect(find.bySemanticsLabel('Écart, à découvrir'), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
-    expect(find.widgetWithText(Chip, 'Nouvelle'), findsOneWidget);
+    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.widgetWithText(NotionBadge, 'Nouvelle'), findsOneWidget);
+    // Said in words, not by the absence of a mark: diversification, écart,
+    // risque de change, volatilité.
+    expect(
+      find.descendant(
+        of: find.byType(Card),
+        matching: find.text('À découvrir'),
+      ),
+      findsNWidgets(4),
+    );
 
     await tester.enterText(find.byType(TextField), 'ecart');
     await tester.pumpAndSettle();
@@ -118,8 +146,17 @@ void main() {
     await tester.tap(find.text('ETF'));
     await tester.pumpAndSettle();
     expect(glossary.opened, ['etf']);
-    expect(find.widgetWithText(Chip, 'Nouvelle notion'), findsOneWidget);
+    expect(find.widgetWithText(NotionBadge, 'Nouvelle notion'), findsOneWidget);
     expect(inSheet(find.text('ETF, en une ligne.')), findsOneWidget);
+    // The longer definition waits behind « En savoir plus ».
+    final body = inSheet(
+      find.textContaining('ETF, expliqué.', findRichText: true),
+    );
+    expect(body, findsNothing);
+    await tester.tap(find.text('En savoir plus'));
+    await tester.pumpAndSettle();
+    expect(body, findsOneWidget);
+    expect(find.text('En savoir plus'), findsNothing);
     expect(find.text('Ce que ça change pour toi'), findsOneWidget);
     expect(find.text('Ce que ETF change pour toi.'), findsOneWidget);
     expect(find.widgetWithText(ActionChip, 'Diversification'), findsOneWidget);
@@ -131,10 +168,15 @@ void main() {
     expect(inSheet(find.text('Indice, en une ligne.')), findsOneWidget);
     expect(inSheet(find.text('ETF, en une ligne.')), findsNothing);
     expect(
-      find.widgetWithText(Chip, 'Nouvelle notion'),
+      find.widgetWithText(NotionBadge, 'Nouvelle notion'),
       findsNothing,
       reason: 'already discovered',
     );
+
+    // ✕ closes it.
+    await tester.tap(find.bySemanticsLabel('Fermer'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
   });
 
   testWidgets('a live example on real data', (tester) async {
@@ -189,6 +231,10 @@ void main() {
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await show(tester, const GlossaryScreen());
+    await expectAccessible(tester);
+
+    await tester.tap(find.text('ETF'));
+    await tester.pumpAndSettle();
     await expectAccessible(tester);
   });
 }

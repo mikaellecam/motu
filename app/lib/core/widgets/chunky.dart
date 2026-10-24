@@ -319,6 +319,9 @@ class ChunkyIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      // Its own node: beside a title, it would merge into one « title,
+      // close » button.
+      container: true,
       button: true,
       label: label,
       excludeSemantics: true,

@@ -312,6 +312,15 @@ Rules:
   chip on first open, definition, live example on real data (scoped to the current asset when opened from
   an asset page), "Ce que ça change pour toi", related chips, "Tester en 30 secondes".
 - First open marks the term discovered (persisted).
+- Layout (decided 2026-10-24, artboards Glossary-A, GlossarySheet-A): the index scrolls as one page and
+  opens with « n notions découvertes sur m » (the pack's terms, whatever the search) over a bar in
+  `progress`, then an outlined search box and the filters. Letters in small Baloo `primary`; each letter's
+  terms in a flat card, a line between rows; on the right ✓ (an ink check in a `line` disc: the artboard's
+  green is `gain`, kept for gain figures), « Nouvelle » (a small `progress` pill with an ink edge, a label
+  rather than a button) or « À découvrir » in words. The sheet: the title, the « Nouvelle notion » pill and a
+  chunky ✕; the one-line definition (`short`) first, the 2–3 paragraphs (`body`) behind « En savoir plus »,
+  so the live example and « Tester en 30 secondes » stay within a short scroll; the live example in a chunky
+  card, « Sur données réelles » over a Baloo headline; related terms as pills.
 - V1 terms (≈ 26): action, etf, indice, diversification, volatilite, pire-baisse, rendement, performance,
   plus-value, frais, risque-de-change, taux-de-change, inflation, interets-composes, dca, livret-a,
   matelas-de-securite, liquidites, ordre-au-marche, ordre-limite, ordre-stop, cours-de-cloture, allocation,
