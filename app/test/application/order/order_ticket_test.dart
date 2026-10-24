@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/order/order_ticket.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/live_catch_up.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/local/database.dart';
@@ -233,6 +234,36 @@ void main() {
     expect(wallet.pendingOrders, isEmpty);
     expect(wallet.positions['apple']!.quantity, Quantity.whole(2));
   });
+
+  test(
+    'a fill at the quote comes after the closed sessions are valued',
+    () async {
+      // Wednesday 15:00 UTC: Tuesday's session closed while the app was away
+      // (M9-38). Tuesday is valued without the shares bought on Wednesday.
+      await open(at: DateTime.utc(2026, 10, 7, 15));
+      backend.quotes['apple'] = {
+        'assetId': 'apple',
+        'price': '101.5',
+        'currency': 'USD',
+        'asOf': '2026-10-07T14:55:00Z',
+        'marketOpen': true,
+      };
+      await ticket(Side.buy);
+      actions(Side.buy)
+        ..setMode(SizeMode.quantity)
+        ..setQuantity('2');
+      expect(await actions(Side.buy).submit(), isA<OrderExecuted>());
+      // A refresh later finds nothing left to value.
+      await c.read(liveCatchUpProvider.notifier).run();
+
+      final values = (await wallets.load('live')).values;
+      expect(
+        [for (final v in values) v.date],
+        [DateTime.utc(2026, 10, 5), DateTime.utc(2026, 10, 6)],
+      );
+      expect(values[1].value, values[0].value);
+    },
+  );
 
   test('offline, market open: the order waits for the next opening', () async {
     // BRIEF §14.1 (decided 2026-10-12): no fill at a price that may be old.

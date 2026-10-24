@@ -119,7 +119,10 @@ class FakeCatchUp extends LiveCatchUp {
   FutureOr<TripAdvance?> build() => null;
 
   @override
-  Future<void> run() async => runs++;
+  Future<bool> run() async {
+    runs++;
+    return true;
+  }
 }
 
 late FakeCatchUp catchUp;

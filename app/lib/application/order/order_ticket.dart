@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/cache_status.dart';
 import '../../core/failure.dart';
 import '../../core/money/money.dart';
+import '../../data/repositories/wallet_repository.dart';
 import '../../domain/learning/profile_rules.dart';
 import '../../domain/market/asset.dart';
 import '../../domain/wallet/order.dart';
@@ -16,6 +17,7 @@ import '../asset/asset_page.dart';
 import '../learning/content.dart';
 import '../providers.dart';
 import '../trip/trip_wizard.dart' show parseAmount;
+import '../wallet/live_catch_up.dart';
 import '../wallet/wallet_providers.dart';
 import '../wallet/wallets_list.dart';
 
@@ -197,6 +199,13 @@ final class OrderSent extends OrderOutcome {
 class OrderTicket extends _$OrderTicket {
   @override
   Future<TicketState> build(String assetId, String walletId, Side side) async {
+    // Live, the wallet is caught up first: a fill at the quote must not land
+    // in a closed session still to value (M9-38). Not caught up, the order
+    // waits for the next opening, as offline.
+    final caughtUp =
+        walletId != WalletRepository.liveWalletId ||
+        // A microtask: the catch-up's state may not change during this build.
+        await Future.microtask(ref.read(liveCatchUpProvider.notifier).run);
     final wallets = ref.watch(walletRepositoryProvider);
     final market = ref.watch(marketRepositoryProvider);
     final profiles = ref.watch(profileRepositoryProvider);
@@ -235,7 +244,7 @@ class OrderTicket extends _$OrderTicket {
         toYear: year + 1,
       );
       open = calendar.isOpen(overview.asset.exchange, now);
-      offline = await market.status().first is! Fresh;
+      offline = !caughtUp || await market.status().first is! Fresh;
       if (!open || offline) {
         nextOpen = calendar.nextOpen(overview.asset.exchange, now);
       }

@@ -554,7 +554,9 @@ construction that completes on fill.
 catch-up runs the trip engine over the live wallet up to the last day whose sessions have all closed. A pending
 order takes part from the first session that opened after it was placed (a limit set mid-session never fills on
 that session's earlier prices), and each closed session gets its end-of-day value. Offline, nothing is booked
-and the wallet works on what it has. The order screen (`/wallet/:walletId/order/:orderId`) shows the steps:
+and the wallet works on what it has. The order sheet runs the catch-up before it opens, so a fill at the quote
+never lands before a closed session is valued; when the catch-up fails, an order waits for the next opening,
+as offline (M9-38). The order screen (`/wallet/:walletId/order/:orderId`) shows the steps:
 « Envoyé » → « Ouverture du marché » (live market order sent while closed) / « Prochain jour de cotation du
 voyage » (trip market order) / « En attente du cours » (limit, stop) → « Exécuté » with its fill and fees, or
 « Annulé » with its reason. « Annuler l'ordre » (confirmed) cancels a pending order and frees what it held

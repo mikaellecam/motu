@@ -26,13 +26,21 @@ class LiveCatchUp extends _$LiveCatchUp {
   @override
   FutureOr<TripAdvance?> build() => null;
 
-  Future<void> run() async {
-    if (state.isLoading) return;
+  /// True once the wallet is caught up, false when the catch-up failed. A
+  /// call while one runs waits for that one.
+  Future<bool> run() => _running ??= _run().whenComplete(() => _running = null);
+
+  Future<bool>? _running;
+
+  Future<bool> _run() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(_catchUp);
-    ref
-      ..invalidate(walletOverviewProvider(WalletRepository.liveWalletId))
-      ..invalidate(walletsListProvider);
+    if (state.value != null) {
+      ref
+        ..invalidate(walletOverviewProvider(WalletRepository.liveWalletId))
+        ..invalidate(walletsListProvider);
+    }
+    return !state.hasError;
   }
 
   Future<TripAdvance?> _catchUp() async {
@@ -85,9 +93,8 @@ class LiveCatchUp extends _$LiveCatchUp {
     };
     final world = bars[worldAssetId]!;
     final livret = await market.livret(asOf: now);
-    // ponytail: past sessions are valued with the holdings of now. A fill at
-    // the quote booked before a missed session was caught up (offline at
-    // launch) shifts those days; replay fills by date if it ever shows.
+    // Past sessions are valued with the holdings of now: no fill at the
+    // quote is booked before they are (the order ticket waits for this).
     final before = await wallets.liveState(livretRates: livret.rates);
     final usdEur = await fx.lookup(
       Currency.usd,
