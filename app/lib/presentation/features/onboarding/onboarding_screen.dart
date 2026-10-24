@@ -58,6 +58,8 @@ class _Island extends StatelessWidget {
     child: CustomPaint(
       painter: ArchipelagoPainter(
         only: archipelago.firstWhere((i) => i.id == IslandId.actionsEtf),
+        // No lesson done yet: a sand bank for them to green (M9-19).
+        grown: 0,
       ),
     ),
   );

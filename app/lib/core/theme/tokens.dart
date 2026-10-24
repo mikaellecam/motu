@@ -127,6 +127,14 @@ abstract final class MapPalette {
   static const route = Color(0x80FFFFFF);
   static const currentRing = Color(0xD9FFFFFF);
   static const flag = Color(0xFFFF7D5C);
+
+  /// The cap of the landmark every lesson done raises (M9-19): the levels'
+  /// gold (`progress`).
+  static const crown = (
+    top: Color(0xFFFFF1C9),
+    left: Color(0xFFE9A92A),
+    right: AppColors.progress,
+  );
   static const leaves = (
     top: Color(0xFF5FC26A),
     left: Color(0xFF33893F),

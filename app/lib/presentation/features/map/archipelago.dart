@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../core/theme/tokens.dart';
+import 'island_growth.dart';
 import 'iso.dart';
 import 'living_island.dart';
 
@@ -149,9 +150,13 @@ const _waves = [
 /// live wallet's buildings ([buildings], the largest first, M7-2); the
 /// locked islands in grey stone under clouds.
 class ArchipelagoPainter extends CustomPainter {
-  ArchipelagoPainter({this.buildings = const [], this.only});
+  ArchipelagoPainter({this.buildings = const [], this.only, this.grown = 1});
 
   final List<DrawnBuilding> buildings;
+
+  /// How far the lessons have greened Actions & ETF, 0 (sand, no tree) to 1
+  /// (as the art direction draws it): its grass and trees (`grownTiles`).
+  final double grown;
 
   /// Paints this island alone, its halo resting on the bottom centre, with
   /// no waves: the island path's header (BRIEF §4.3).
@@ -180,7 +185,14 @@ class ArchipelagoPainter extends CustomPainter {
       final pen = island.locked
           ? BlockPen(canvas, MapPalette.lockedInk, 1.1)
           : BlockPen(canvas, AppColors.ink, 1.3);
-      ground(pen, island.projection, island.tiles, locked: island.locked);
+      ground(
+        pen,
+        island.projection,
+        island.id == IslandId.actionsEtf
+            ? grownTiles(island.tiles, grown)
+            : island.tiles,
+        locked: island.locked,
+      );
       final p = island.projection;
       switch (island.id) {
         case IslandId.actionsEtf:
@@ -271,14 +283,59 @@ class ArchipelagoPainter extends CustomPainter {
     (3.7, 3.05),
     (4.6, 2.45),
   ];
+
+  /// Its trees, in the order the lessons sprout them: the island's middle
+  /// first, as the grass.
   static const _trees = [
-    (0.6, 3.1),
-    (2.4, 5.8),
     (3.4, 5.5),
+    (2.4, 5.8),
     (4.6, 5.3),
     (5.3, 4.4),
+    (0.6, 3.1),
   ];
   static const _footprint = 0.72;
+
+  /// Where Actions & ETF's landmark stands once every lesson is done (M9-19):
+  /// its right end, clear of the buildings and the trees.
+  static const _landmarkSpot = (6.5, 3.5);
+
+  /// A stone column on its plinth, capped in the levels' gold.
+  static void _landmark(BlockPen pen, IsoProjection p) {
+    final (x, y) = _landmarkSpot;
+    Rect around(double size) =>
+        Rect.fromCenter(center: Offset(x, y), width: size, height: size);
+    final base = around(0.7);
+    final shaft = around(0.38);
+    pen
+      ..block(
+        boxFacets(p, base.left, base.top, base.width, base.height, 0.3),
+        MapPalette.wall,
+      )
+      ..block(
+        boxFacets(
+          p,
+          shaft.left,
+          shaft.top,
+          shaft.width,
+          shaft.height,
+          2,
+          z: 0.3,
+        ),
+        MapPalette.wall,
+      )
+      ..block(
+        roofFacets(
+          p,
+          shaft.left,
+          shaft.top,
+          shaft.width,
+          shaft.height,
+          0.75,
+          z: 2.3,
+        ),
+        MapPalette.crown,
+      );
+  }
 
   /// Windows on Actions & ETF: the first row's height, the step between
   /// rows and a window's height, in units.
@@ -287,8 +344,10 @@ class ArchipelagoPainter extends CustomPainter {
   void _livingIsland(BlockPen pen, IsoProjection p) {
     // Trees and buildings, back to front.
     final things = <(double, VoidCallback)>[
-      for (final (x, y) in _trees)
+      for (final (x, y) in _trees.take(grownTrees(_trees.length, grown)))
         (x + y, () => _tree(pen, p, x, y, MapPalette.trunk, MapPalette.leaves)),
+      if (landmarkStands(grown))
+        (_landmarkSpot.$1 + _landmarkSpot.$2, () => _landmark(pen, p)),
       for (var i = 0; i < buildings.length && i < _spots.length; i++)
         (
           _spots[_spots.length - 1 - i].$1 + _spots[_spots.length - 1 - i].$2,
@@ -604,7 +663,9 @@ class ArchipelagoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ArchipelagoPainter old) =>
-      old.only != only || !listEquals(old.buildings, buildings);
+      old.only != only ||
+      old.grown != grown ||
+      !listEquals(old.buildings, buildings);
 }
 
 /// Fills shapes and outlines them, as the art direction draws its blocks.

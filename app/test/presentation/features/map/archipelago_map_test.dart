@@ -210,6 +210,74 @@ void main() {
     });
   });
 
+  group('the lessons green the island (M9-19)', () {
+    /// The map, its lessons done in [lessons]; how green the painter is.
+    Future<double Function()> pumpLessons(
+      WidgetTester tester,
+      ValueNotifier<({int done, int total})?> lessons, {
+      bool reducedMotion = false,
+    }) async {
+      await pumpApp(
+        tester,
+        MediaQuery(
+          data: MediaQueryData(disableAnimations: reducedMotion),
+          child: ValueListenableBuilder(
+            valueListenable: lessons,
+            builder: (_, progress, _) =>
+                ArchipelagoMap(onOpen: (_) {}, progress: progress),
+          ),
+        ),
+      );
+      return () => tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .map((p) => p.painter)
+          .whereType<ArchipelagoPainter>()
+          .single
+          .grown;
+    }
+
+    testWidgets('a lesson done greens it a step further, easing in', (
+      tester,
+    ) async {
+      final lessons = ValueNotifier<({int done, int total})?>((
+        done: 2,
+        total: 12,
+      ));
+      final grown = await pumpLessons(tester, lessons);
+      expect(grown(), 2 / 12);
+
+      lessons.value = (done: 3, total: 12);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      expect(grown(), inExclusiveRange(2 / 12, 3 / 12));
+      await tester.pumpAndSettle();
+      expect(grown(), closeTo(3 / 12, 1e-9));
+    });
+
+    testWidgets('lessons known at last: no greening back from the full art', (
+      tester,
+    ) async {
+      final lessons = ValueNotifier<({int done, int total})?>(null);
+      final grown = await pumpLessons(tester, lessons);
+      expect(grown(), 1);
+
+      lessons.value = (done: 2, total: 12);
+      await tester.pump();
+      expect(grown(), 2 / 12);
+    });
+
+    testWidgets('with animations off, it greens at once', (tester) async {
+      final lessons = ValueNotifier<({int done, int total})?>((
+        done: 2,
+        total: 12,
+      ));
+      final grown = await pumpLessons(tester, lessons, reducedMotion: true);
+      lessons.value = (done: 3, total: 12);
+      await tester.pump();
+      expect(grown(), 3 / 12);
+    });
+  });
+
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await pumpMap(tester);

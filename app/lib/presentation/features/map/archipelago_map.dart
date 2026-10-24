@@ -36,7 +36,7 @@ class ArchipelagoMap extends StatefulWidget {
 }
 
 class _ArchipelagoMapState extends State<ArchipelagoMap>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _transform = TransformationController();
   bool _opened = false;
 
@@ -51,13 +51,45 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
 
   List<DrawnBuilding> get _frame => islandFrame(_from, _to, _growth.value);
 
+  /// How far the lessons have greened Actions & ETF (M9-19): as the art
+  /// direction draws it until its lessons are known.
+  static double _greened(({int done, int total})? progress) =>
+      switch (progress) {
+        (:final done, :final total) when total > 0 => done / total,
+        _ => 1,
+      };
+
+  /// The grass and trees easing to the lessons done.
+  late final _green = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+    value: _greened(widget.progress),
+  );
+
   @override
   void didUpdateWidget(ArchipelagoMap old) {
     super.didUpdateWidget(old);
+    final still = MediaQuery.disableAnimationsOf(context);
+    final greened = _greened(widget.progress);
+    if (greened != _greened(old.progress)) {
+      // Lessons known at last: the island stands as it is, no greening
+      // back from the full art.
+      if (still || old.progress == null) {
+        _green.value = greened;
+      } else {
+        // Its whole duration, however small the step: animateTo alone
+        // shortens it to the distance (a lesson, a twelfth).
+        _green.animateTo(
+          greened,
+          duration: _green.duration,
+          curve: Curves.easeInOut,
+        );
+      }
+    }
     if (listEquals(old.buildings, widget.buildings)) return;
     _from = _frame;
     _to = drawnBuildings(widget.buildings);
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (still) {
       _growth.value = 1;
     } else {
       _growth.forward(from: 0);
@@ -67,6 +99,7 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
   @override
   void dispose() {
     _growth.dispose();
+    _green.dispose();
     _transform.dispose();
     super.dispose();
   }
@@ -120,9 +153,12 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
               children: [
                 Positioned.fill(
                   child: AnimatedBuilder(
-                    animation: _growth,
+                    animation: Listenable.merge([_growth, _green]),
                     builder: (context, _) => CustomPaint(
-                      painter: ArchipelagoPainter(buildings: _frame),
+                      painter: ArchipelagoPainter(
+                        buildings: _frame,
+                        grown: _green.value,
+                      ),
                     ),
                   ),
                 ),

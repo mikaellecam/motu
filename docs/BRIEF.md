@@ -139,6 +139,13 @@ Rules:
   user's progress as it happens; "today" is the user's local day; an open trip is one not finished, the newest
   first. Header: « {n} île(s) ouverte(s) sur 5 » under the title, and « Niveau {n} » (§4.15) in the level
   colour. Unread companion moments lead the card (M8-3, §4.12).
+- Lessons grow the Actions & ETF island too (decided 2026-10-24, M9-19): from a sand bank (none done) to the
+  art direction's island (all done). Nature comes first: a tree with the first lesson, all five by half the
+  lessons (`grownTrees`); the grass turns green from the island's middle out, a share per lesson
+  (`grownTiles`); every lesson done raises its landmark, a stone column capped in the levels' gold, at its
+  right end (`landmarkStands`). Its shape never changes, so the wallet's buildings always stand on land. On
+  the map the change eases in over 1,4 s (at once with animations off, and at once when the lessons first
+  load); the island path's header shows it too, and onboarding the sand bank the user starts from.
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back

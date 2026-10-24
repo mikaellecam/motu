@@ -134,6 +134,10 @@ class _Path extends ConsumerWidget {
                     painter: ArchipelagoPainter(
                       buildings: buildings,
                       only: island,
+                      // Greened by the lessons below it (M9-19).
+                      grown: path.nodes.isEmpty
+                          ? 1
+                          : path.done / path.nodes.length,
                     ),
                   ),
                 ),
