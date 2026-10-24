@@ -1,5 +1,12 @@
+import 'dart:io';
+
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
+import 'package:finance_companion/data/content/pack_codec.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/wallet/trip_summary.dart';
@@ -9,7 +16,8 @@ import 'package:flutter/material.dart';
 import 'screenshot.dart';
 
 // The « Covid » trip, 18 February to 31 December 2020: 10 000 € then 200 € a
-// month. Values are illustrative.
+// month. Values are illustrative. Its city on the island, greened by 9 of the
+// 12 lessons (M9-19, M9-20).
 
 void main() {
   Decimal d(String s) => Decimal.parse(s);
@@ -67,7 +75,36 @@ void main() {
   screenshot(
     'm5-5-trip-summary',
     const TripSummaryScreen(walletId: 'covid'),
-    size: const Size(390, 1090),
-    overrides: [tripSummaryProvider.overrideWith((ref, id) async => summary)],
+    size: const Size(390, 1420),
+    overrides: [
+      tripSummaryProvider.overrideWith((ref, id) async => summary),
+      walletIslandProvider.overrideWith(
+        (ref, id) async => islandBuildings(
+          held: {'world': d('9400'), 'apple': d('2100'), 'lvmh': d('1350')},
+          pending: const {},
+        ),
+      ),
+      contentPackProvider(actionsEtfIsland).overrideWith(
+        (ref) async => decodePack(
+          File('assets/packs/actions-etf.json').readAsStringSync(),
+        ),
+      ),
+      completedNodesProvider.overrideWith(
+        (ref) => Stream.value({
+          for (final id in [
+            'ae.livret-vs-etf',
+            'ae.fees-toy',
+            'ae.mission-first-etf',
+            'ae.apple-vs-world-2022',
+            'ae.march-2020',
+            'ae.risk-ladder',
+            'ae.compound-toy',
+            'ae.mission-three-regions',
+            'ae.dollar-trap',
+          ])
+            id,
+        }),
+      ),
+    ],
   );
 }

@@ -413,6 +413,14 @@ return from that day to the end; for « Continuer », the event and its reason o
 are those of the companion moments that fired during the trip (§4.12), in the order they first came up.
 « Terminer le voyage » (confirmed) or the last day of the data sets the trip `finished`: time controls and
 « Investir » give way to « Voir le bilan »; the wallet stays readable.
+Summary layout (decided 2026-10-24, artboard `TripEnd-A` of the art direction canvas): a world screen on the
+sea under the Actions & ETF island with the city the trip built (its own positions, §4.2) and the greenery
+the lessons grew (M9-19). A chunky card « Fin du voyage « {nom} » » with the dates and the money paid in,
+then each outcome with its signed time-weighted return and value over a bar from zero (gain right, loss
+left, every bar on the widest return's scale). The journal and the terms met in a second chunky card. Then,
+decided by the user: « Rejouer avec une autre difficulté » (the trip wizard at its difficulty step, from the
+same start date) and « Retour à mes portefeuilles ». A wizard link names its step; the wizard goes there as
+far as the steps before it are complete.
 
 **No lookahead (enforced in data layer):** a trip can only see bars, quotes, FX rates, assets and Livret
 rates dated ≤ its clock. Assets with `listingDate > clock.now()` are hidden in Explorer and unavailable

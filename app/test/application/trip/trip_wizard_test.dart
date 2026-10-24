@@ -141,6 +141,22 @@ void main() {
     expect(draft().start, day(2008, 9, 15));
   });
 
+  test('a link to a later step goes there once its date checks out', () async {
+    // « Rejouer avec une autre difficulté » (M9-20): the same start, the
+    // difficulty to choose.
+    await wizard().prefill(TripWizardArgs(step: 2, date: day(2020, 2, 18)));
+    expect(draft().preset, TripPreset.covid);
+    expect(draft().step, 2);
+
+    // A date that does not check out keeps the dates step.
+    await wizard().prefill(TripWizardArgs(step: 2, date: day(1800, 1, 1)));
+    expect(draft().step, 1);
+
+    // No step asked: the dates step, as the lessons' links do.
+    await wizard().prefill(TripWizardArgs(date: day(2020, 2, 18)));
+    expect(draft().step, 1);
+  });
+
   test('a date before the data floor links the lesson about it', () async {
     expect(
       (await container.read(lessonBeforeProvider(day(1929, 10, 24)).future))!

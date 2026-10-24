@@ -319,7 +319,8 @@ class TripWizard extends _$TripWizard {
   TripDraft build() => const TripDraft();
 
   /// Starts from a deep link: its date selects the matching moment, or fills
-  /// the typed date; its difficulty is preselected.
+  /// the typed date; its difficulty is preselected; then on to its step, as
+  /// far as the steps before it are complete.
   Future<void> prefill(TripWizardArgs args) async {
     state = TripDraft(
       fromNode: args.fromNode,
@@ -337,6 +338,9 @@ class TripWizard extends _$TripWizard {
       await type(
         '${_two(date.day)}/${_two(date.month)}/${date.year.toString().padLeft(4, '0')}',
       );
+    }
+    for (var step = 1; step < args.step; step++) {
+      next();
     }
   }
 

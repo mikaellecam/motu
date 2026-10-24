@@ -764,6 +764,16 @@
   },
   "trip_see_summary": "Voir le bilan",
   "summary_title": "Bilan du voyage",
+  "summary_end_label": "Fin du voyage \u00ab\u00a0{name}\u00a0\u00bb",
+  "@summary_end_label": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "summary_replay": "Rejouer avec une autre difficult\u00e9",
+  "summary_back_wallets": "Retour \u00e0 mes portefeuilles",
   "summary_period": "Du {start} au {end}",
   "@summary_period": {
     "placeholders": {

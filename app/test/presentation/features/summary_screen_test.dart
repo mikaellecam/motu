@@ -1,5 +1,8 @@
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/core/theme/tokens.dart';
 import 'package:finance_companion/domain/learning/content.dart';
@@ -9,6 +12,7 @@ import 'package:finance_companion/presentation/features/trip/summary_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../helpers.dart';
 
@@ -61,8 +65,29 @@ Future<void> show(WidgetTester tester, TripSummary s) async {
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [tripSummaryProvider.overrideWith((ref, id) async => s)],
-      child: MainApp.screen(const TripSummaryScreen(walletId: 'trip')),
+      overrides: [
+        tripSummaryProvider.overrideWith((ref, id) async => s),
+        // The island over it: no city, no lessons.
+        walletIslandProvider.overrideWith((ref, id) async => const []),
+        islandPathProvider(actionsEtfIsland)
+            .overrideWith((ref) async => const IslandPathView(_l, [])),
+      ],
+      child: MainApp(
+        router: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => const TripSummaryScreen(walletId: 'trip'),
+            ),
+            // Where the buttons lead, as the address they were sent to.
+            GoRoute(
+              path: '/wallets/new',
+              builder: (_, state) => Text('wizard ${state.uri.query}'),
+            ),
+            GoRoute(path: '/wallets', builder: (_, _) => const Text('wallets')),
+          ],
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -74,7 +99,7 @@ Color? colorOf(WidgetTester tester, String text) =>
 void main() {
   testWidgets('the trip against the same money elsewhere', (tester) async {
     await show(tester, summary());
-    expect(find.text('Bilan du voyage'), findsOneWidget);
+    expect(find.text('Fin du voyage «${nbsp}Covid$nbsp»'), findsOneWidget);
     expect(find.text('Du 18 février 2020 au 31 décembre 2020'), findsOneWidget);
     expect(
       find.text('Argent versé$nnbsp: 12${nnbsp}000,00$nbsp€'),
@@ -186,5 +211,31 @@ void main() {
     textAt(tester, 1.3);
     await show(tester, summary());
     await expectAccessible(tester);
+  });
+
+  testWidgets('play again: the wizard at its difficulty step, same start', (
+    tester,
+  ) async {
+    await show(tester, summary());
+    final again = find.text('Rejouer avec une autre difficulté');
+    // Built below the fold: brought on screen before the tap.
+    await tester.scrollUntilVisible(again, 200);
+    await tester.ensureVisible(again);
+    await tester.pumpAndSettle();
+    await tester.tap(again);
+    await tester.pumpAndSettle();
+    expect(find.text('wizard step=2&date=2020-02-18'), findsOneWidget);
+  });
+
+  testWidgets('or back to the wallets', (tester) async {
+    await show(tester, summary());
+    final back = find.text('Retour à mes portefeuilles');
+    // Built below the fold: brought on screen before the tap.
+    await tester.scrollUntilVisible(back, 200);
+    await tester.ensureVisible(back);
+    await tester.pumpAndSettle();
+    await tester.tap(back);
+    await tester.pumpAndSettle();
+    expect(find.text('wallets'), findsOneWidget);
   });
 }
