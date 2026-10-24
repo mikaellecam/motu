@@ -154,6 +154,12 @@ void main() {
       expect(en.date(DateTime(2008, 10, 1)), 'October 1, 2008');
     });
 
+    test('a month', () {
+      expect(fr.month(DateTime(2000, 3, 10)), 'mars 2000');
+      expect(fr.month(DateTime(2003, 8, 1)), 'août 2003');
+      expect(en.month(DateTime(2000, 3, 10)), 'March 2000');
+    });
+
     test('time', () {
       expect(fr.time(DateTime(2026, 10, 7, 15, 30)), '15${nbsp}h${nbsp}30');
       expect(fr.time(DateTime(2026, 10, 7, 9, 5)), '9${nbsp}h${nbsp}05');

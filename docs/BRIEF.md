@@ -338,6 +338,20 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
 **Live wallet:** 50 000 € starting cash, no monthly contribution, FX fee 0.15 %, fractional shares, clock =
 `LiveClock`.
 
+**Wallets list** (the Portefeuille tab; layout decided 2026-10-24, artboard `Wallets-A` of the art direction
+canvas, money family §10.1): « Mes portefeuilles », and under it « Un portefeuille d'aujourd'hui, et autant de
+voyages dans le temps que tu veux. » Each wallet is a flat row: an icon tile (a wallet for the live one, a
+calendar for a trip), its name and a chip, a status line, and on the right its value over its change in %
+(signed; the amount when nothing was put in). The live wallet is « Aujourd'hui », chip « En direct », « Cours
+réels du jour ». A trip's chip is its difficulty; its status line reads « En cours, tu es le {date} » until it
+ends (a stopped trip adds « Arrêt automatique : à toi de décider » in `alertText`), then « Terminé, de {mois} à
+{mois} » (« Terminé, en {mois} » within one month). « Voyages dans le temps » shows the trip count. A completed
+lesson's bridge is a chunky card « Suggéré par ta leçon »: the lesson's title, « Tu as vu la réponse dans la
+leçon. Rejoue maintenant ce moment avec ton propre portefeuille. » and « Préparer ce voyage » (`progress`).
+Then « Nouveau voyage dans le temps », a chunky primary with a +, and the DCA simulator as a flat row (not on
+the artboard). Not taken from the artboard: the tiles' tints and the green « En direct » chip (no token means
+them, §10.2: tiles `line`, chips ink on white); the title stays in the app bar, as on the other tabs.
+
 **Trip wizard** (3 steps, chunky "world" style):
 
 1. *When* — historic presets, quick presets, or a custom date.

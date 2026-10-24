@@ -133,9 +133,14 @@ class ChunkyButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.kind = ChunkyButtonKind.primary,
+    this.icon,
   });
 
   final String label;
+
+  /// Drawn before the label, in its colour (« + » on « Nouveau voyage dans
+  /// le temps »).
+  final IconData? icon;
 
   /// Null disables the button.
   final VoidCallback? onPressed;
@@ -150,6 +155,11 @@ class ChunkyButton extends StatelessWidget {
       ChunkyButtonKind.progress => (AppColors.progress, AppColors.ink),
       ChunkyButtonKind.secondary => (AppColors.surface, AppColors.ink),
     };
+    final title = Text(
+      label,
+      textAlign: TextAlign.center,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(color: text),
+    );
 
     return Semantics(
       button: true,
@@ -187,12 +197,16 @@ class ChunkyButton extends StatelessWidget {
             child: Center(
               widthFactor: 1,
               heightFactor: 1,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(color: text),
-              ),
+              child: icon == null
+                  ? title
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, color: text),
+                        const SizedBox(width: AppSpace.x2),
+                        Flexible(child: title),
+                      ],
+                    ),
             ),
           );
         },

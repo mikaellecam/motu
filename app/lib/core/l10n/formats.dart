@@ -87,6 +87,9 @@ class Formats {
     return _fr && d.day == 1 ? text.replaceFirst('1', '1er') : text;
   }
 
+  /// `mars 2000`, `March 2000`.
+  String month(DateTime d) => DateFormat.yMMMM(_locale).format(d);
+
   /// `15 h 30`, `3:30 PM`.
   String time(DateTime d) => _fr
       ? '${d.hour}${_nbsp}h$_nbsp${d.minute.toString().padLeft(2, '0')}'

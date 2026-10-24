@@ -14,8 +14,9 @@ import 'package:flutter/material.dart';
 
 import 'screenshot.dart';
 
-// The live wallet, two trips (one stopped automatically) and Mars 2020 to
-// replay once its lesson is done. Values are illustrative.
+// The live wallet, three trips (one running, one stopped automatically, one
+// over) and Mars 2020 to replay once its lesson is done (artboard Wallets-A).
+// Values are illustrative.
 
 Money eur(String s) => Money.book(Decimal.parse(s), Currency.eur);
 
@@ -24,13 +25,14 @@ WalletSummary trip(
   String name,
   String difficulty,
   DateTime simDate,
-  WalletStatus status,
-) => WalletSummary(
+  WalletStatus status, {
+  DateTime? start,
+}) => WalletSummary(
   id: id,
   kind: WalletKind.trip,
   name: name,
   status: status,
-  startDate: simDate,
+  startDate: start ?? simDate,
   simDate: simDate,
   difficulty: difficulty,
   createdAt: DateTime.utc(2026, 10, 9),
@@ -76,14 +78,15 @@ WalletOverview valued(String start, String value) => buildOverview(
 
 void main() {
   final values = {
-    'live': valued('50000', '51598.14'),
+    'live': valued('50000', '51534.60'),
+    'covid': valued('10000', '9712.40'),
     'lehman': valued('10000', '9412.30'),
-    'covid': valued('50000', '43870.55'),
+    'bubble': valued('2000', '1236.00'),
   };
   screenshot(
     'm4-7-wallets',
     const WalletsScreen(),
-    size: const Size(390, 1000),
+    size: const Size(390, 980),
     overrides: [
       walletsListProvider.overrideWith(
         (ref) async => WalletsList(
@@ -100,9 +103,9 @@ void main() {
           trips: [
             trip(
               'covid',
-              'Covid',
-              'decouverte',
-              DateTime.utc(2020, 3, 23),
+              'Covid 2020',
+              'realiste',
+              DateTime.utc(2020, 2, 24),
               WalletStatus.active,
             ),
             trip(
@@ -111,6 +114,14 @@ void main() {
               'realiste',
               DateTime.utc(2008, 10, 1),
               WalletStatus.stopped,
+            ),
+            trip(
+              'bubble',
+              'Bulle internet',
+              'serre',
+              DateTime.utc(2003, 3, 11),
+              WalletStatus.finished,
+              start: DateTime.utc(2000, 3, 10),
             ),
           ],
           suggestions: [

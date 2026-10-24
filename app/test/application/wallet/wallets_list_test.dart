@@ -21,7 +21,97 @@ final bundled = decodePack(
   File('assets/packs/actions-etf.json').readAsStringSync(),
 );
 
+WalletSummary tripOn(
+  WalletStatus status, {
+  DateTime? simDate,
+  DateTime? start,
+}) => WalletSummary(
+  id: 't',
+  kind: WalletKind.trip,
+  name: 'Covid',
+  status: status,
+  startDate: start ?? DateTime.utc(2020, 2, 18),
+  simDate: simDate,
+  difficulty: 'realiste',
+  createdAt: DateTime.utc(2026, 10, 1),
+);
+
 void main() {
+  group('a trip row\'s status line', () {
+    final day = DateTime.utc(2020, 2, 24);
+
+    test('running: the day it is on', () {
+      expect(
+        tripLine(tripOn(WalletStatus.active, simDate: day)),
+        isA<TripOngoing>()
+            .having((l) => l.day, 'day', day)
+            .having((l) => l.stopped, 'stopped', false),
+      );
+    });
+
+    test('stopped by itself: still on its day, waiting for the user', () {
+      expect(
+        tripLine(tripOn(WalletStatus.stopped, simDate: day)),
+        isA<TripOngoing>()
+            .having((l) => l.day, 'day', day)
+            .having((l) => l.stopped, 'stopped', true),
+      );
+    });
+
+    test('over: from its first day to the day it ended', () {
+      final line = tripLine(
+        tripOn(
+          WalletStatus.finished,
+          start: DateTime.utc(2000, 3, 10),
+          simDate: DateTime.utc(2003, 3, 11),
+        ),
+      );
+      expect(
+        line,
+        isA<TripOver>()
+            .having((l) => l.from, 'from', DateTime.utc(2000, 3, 10))
+            .having((l) => l.to, 'to', DateTime.utc(2003, 3, 11))
+            .having((l) => l.oneMonth, 'oneMonth', false),
+      );
+    });
+
+    test('over in the month it started: one month', () {
+      for (final end in [
+        DateTime.utc(2020, 2, 18),
+        DateTime.utc(2020, 2, 28),
+      ]) {
+        expect(
+          tripLine(tripOn(WalletStatus.finished, simDate: end)),
+          isA<TripOver>().having((l) => l.oneMonth, 'oneMonth', true),
+        );
+      }
+      // Same month, another year.
+      expect(
+        tripLine(
+          tripOn(WalletStatus.finished, simDate: DateTime.utc(2021, 2, 18)),
+        ),
+        isA<TripOver>().having((l) => l.oneMonth, 'oneMonth', false),
+      );
+    });
+
+    test('no simulated day yet: its first day', () {
+      expect(
+        tripLine(tripOn(WalletStatus.active)),
+        isA<TripOngoing>().having(
+          (l) => l.day,
+          'day',
+          DateTime.utc(2020, 2, 18),
+        ),
+      );
+      expect(
+        tripLine(tripOn(WalletStatus.finished)),
+        isA<TripOver>()
+            .having((l) => l.to, 'to', DateTime.utc(2020, 2, 18))
+            .having((l) => l.oneMonth, 'oneMonth', true),
+      );
+    });
+  });
+
   test('suggestions: the bridges of completed lessons, in path order', () {
     expect(bridgeSuggestions(bundled, completed: const {}), isEmpty);
     expect(

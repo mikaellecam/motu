@@ -27,12 +27,13 @@ WalletSummary summary(
   WalletKind kind, {
   WalletStatus status = WalletStatus.active,
   String? difficulty,
+  DateTime? start,
 }) => WalletSummary(
   id: id,
   kind: kind,
   name: id == 'live' ? 'live' : 'Crise 2008',
   status: status,
-  startDate: DateTime.utc(2008, 9, 15),
+  startDate: start ?? DateTime.utc(2008, 9, 15),
   simDate: kind == WalletKind.trip ? DateTime.utc(2008, 10, 1) : null,
   difficulty: difficulty,
   createdAt: DateTime.utc(2026, 10, 1),
@@ -138,34 +139,33 @@ void main() {
         suggestions: const [],
       ),
     );
-    expect(find.text('Mon portefeuille'), findsOneWidget);
-    expect(find.text("Aux cours d'aujourd'hui"), findsOneWidget);
+    expect(find.text('Mes portefeuilles'), findsOneWidget);
+    expect(find.text("Aujourd'hui"), findsOneWidget);
+    expect(find.text('En direct'), findsOneWidget);
+    expect(find.text('Cours réels du jour'), findsOneWidget);
     expect(find.text('51${nnbsp}598,14$nbsp€'), findsOneWidget);
-    expect(
-      find.text('+1${nnbsp}598,14$nbsp€ (+3,20$nnbsp%) depuis le début'),
-      findsOneWidget,
-    );
+    expect(find.text('+3,20$nnbsp%'), findsOneWidget);
 
     expect(find.text('Voyages dans le temps'), findsOneWidget);
-    expect(find.text('Crise 2008 · Réaliste'), findsOneWidget);
-    expect(find.text('Le 1er octobre 2008'), findsOneWidget);
-    expect(
-      find.text('−200,00$nbsp€ (−2,00$nnbsp%) depuis le début'),
-      findsOneWidget,
-    );
+    expect(find.text('1'), findsOneWidget, reason: 'the trip count');
+    expect(find.text('Crise 2008'), findsOneWidget);
+    expect(find.text('Réaliste'), findsOneWidget);
+    expect(find.text('En cours, tu es le 1er octobre 2008'), findsOneWidget);
+    expect(find.text('9${nnbsp}800,00$nbsp€'), findsOneWidget);
+    expect(find.text('−2,00$nnbsp%'), findsOneWidget);
     expect(
       find.text('Arrêt automatique$nnbsp: à toi de décider'),
       findsOneWidget,
     );
-    expect(find.text('Nouveau voyage'), findsOneWidget);
-    expect(find.text('À rejouer toi-même'), findsNothing);
+    expect(find.text('Nouveau voyage dans le temps'), findsOneWidget);
+    expect(find.text('Suggéré par ta leçon'), findsNothing);
 
-    await tester.tap(find.text('Crise 2008 · Réaliste'));
+    await tester.tap(find.text('Crise 2008'));
     await tester.pumpAndSettle();
     expect(find.text('wallet t1'), findsOneWidget);
   });
 
-  testWidgets('no trips yet; a finished trip says so', (tester) async {
+  testWidgets('no trips yet: no count, the way to start one', (tester) async {
     await show(
       tester,
       WalletsList(
@@ -180,6 +180,42 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.text('0'), findsNothing);
+    await tester.tap(find.text('Nouveau voyage dans le temps'));
+    await tester.pumpAndSettle();
+    expect(find.text('wizard /wallets/new'), findsOneWidget);
+  });
+
+  testWidgets('a finished trip says the months it covered', (tester) async {
+    await show(
+      tester,
+      WalletsList(
+        live: summary('live', WalletKind.live),
+        trips: [
+          summary('t2', WalletKind.trip, status: WalletStatus.finished),
+          summary(
+            't3',
+            WalletKind.trip,
+            status: WalletStatus.finished,
+            start: DateTime.utc(2008, 4, 1),
+          ),
+          summary(
+            't4',
+            WalletKind.trip,
+            status: WalletStatus.finished,
+            start: DateTime.utc(2008, 10, 1),
+          ),
+        ],
+        suggestions: const [],
+      ),
+    );
+    expect(
+      find.text('Terminé, de septembre 2008 à octobre 2008'),
+      findsOneWidget,
+    );
+    expect(find.text("Terminé, d'avril 2008 à octobre 2008"), findsOneWidget);
+    expect(find.text('Terminé, en octobre 2008'), findsOneWidget);
+    expect(find.textContaining('En cours'), findsNothing);
   });
 
   testWidgets('a completed lesson opens the wizard on its day', (tester) async {
@@ -187,18 +223,19 @@ void main() {
       tester,
       WalletsList(
         live: summary('live', WalletKind.live),
-        trips: [summary('t2', WalletKind.trip, status: WalletStatus.finished)],
+        trips: const [],
         suggestions: [march],
       ),
     );
-    expect(find.text('Terminé'), findsOneWidget);
-    expect(find.text('À rejouer toi-même'), findsOneWidget);
+    expect(find.text('Suggéré par ta leçon'), findsOneWidget);
     expect(
-      find.text('Mars 2020$nnbsp: vendre ou tenir$nnbsp?'),
+      find.text(
+        'Mars 2020$nnbsp: vendre ou tenir$nnbsp? Tu as vu la réponse dans la '
+        'leçon. Rejoue maintenant ce moment avec ton propre portefeuille.',
+      ),
       findsOneWidget,
     );
-    expect(find.text('Voyage au 18 février 2020'), findsOneWidget);
-    await tester.tap(find.text('Rejoue-le toi-même'));
+    await tester.tap(find.text('Préparer ce voyage'));
     await tester.pumpAndSettle();
     expect(
       find.text(

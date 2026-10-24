@@ -31,6 +31,38 @@ final class WalletsList {
   final List<BridgeSuggestion> suggestions;
 }
 
+/// What a trip's row says under its name (artboard Wallets-A).
+sealed class TripLine {
+  const TripLine();
+}
+
+/// Not over: the day the trip is on. [stopped] while an automatic stop waits
+/// for the user's decision.
+final class TripOngoing extends TripLine {
+  const TripOngoing(this.day, {required this.stopped});
+  final DateTime day;
+  final bool stopped;
+}
+
+/// Over: from its first day to the day it ended.
+final class TripOver extends TripLine {
+  const TripOver(this.from, this.to);
+  final DateTime from;
+  final DateTime to;
+
+  /// Ended in the month it started: one month to name.
+  bool get oneMonth => from.year == to.year && from.month == to.month;
+}
+
+TripLine tripLine(WalletSummary trip) {
+  final day = trip.simDate ?? trip.startDate;
+  return switch (trip.status) {
+    WalletStatus.active => TripOngoing(day, stopped: false),
+    WalletStatus.stopped => TripOngoing(day, stopped: true),
+    WalletStatus.finished => TripOver(trip.startDate, day),
+  };
+}
+
 /// The bridges of the [completed] nodes of [pack], in path order.
 List<BridgeSuggestion> bridgeSuggestions(
   ContentPack pack, {
