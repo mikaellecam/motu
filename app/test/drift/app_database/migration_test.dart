@@ -8,6 +8,7 @@ import 'generated/schema.dart';
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
+import 'generated/schema_v4.dart' as v4;
 
 /// Every schema ever shipped (drift_schemas/) must migrate to the current
 /// one. After a schema change: bump `schemaVersion`, add the step, run
@@ -89,6 +90,39 @@ void main() {
       );
     },
   );
+
+  test('v3 → v4: cached holidays stay, their years are fetched again for the early closes', () async {
+    await verifier.testWithDataIntegrity(
+      oldVersion: 3,
+      newVersion: 4,
+      createOld: v3.DatabaseAtV3.new,
+      createNew: v4.DatabaseAtV4.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) => batch
+        ..insert(
+          oldDb.exchangeHolidays,
+          const v3.ExchangeHolidaysData(
+            exchange: 'nyse',
+            date: '2025-12-25T00:00:00.000Z',
+          ),
+        )
+        ..insert(
+          oldDb.calendarYears,
+          const v3.CalendarYearsData(
+            exchange: 'nyse',
+            year: 2025,
+            fetchedAt: '2026-01-05T10:00:00.000Z',
+          ),
+        ),
+      validateItems: (newDb) async {
+        final holiday = await newDb.select(newDb.exchangeHolidays).getSingle();
+        expect(holiday.date, '2025-12-25T00:00:00.000Z');
+        final year = await newDb.select(newDb.calendarYears).getSingle();
+        expect((year.year, year.fetchedAt), (2025, '1970-01-01T00:00:00.000Z'));
+        expect(await newDb.select(newDb.exchangeEarlyCloses).get(), isEmpty);
+      },
+    );
+  });
 
   test('the code matches the latest recorded schema', () async {
     // Fails when a table changes without a new schema version and dump.

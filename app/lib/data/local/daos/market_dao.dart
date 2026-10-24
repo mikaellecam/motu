@@ -18,6 +18,7 @@ part 'market_dao.g.dart';
     LivretCeilings,
     HistorySync,
     ExchangeHolidays,
+    ExchangeEarlyCloses,
     CalendarYears,
     ContentPacks,
   ],
@@ -186,17 +187,29 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
     livretCeilings,
   )..orderBy([(c) => OrderingTerm(expression: c.validFrom)])).get();
 
-  /// Stores an exchange's holidays of [year] and marks the year as cached.
+  /// Stores an exchange's holidays and early closes of [year] and marks the
+  /// year as cached.
   Future<void> saveHolidays(
     Exchange exchange,
     int year,
     List<DateTime> dates, {
+    Map<DateTime, (int, int)> earlyCloses = const {},
     required DateTime fetchedAt,
   }) => transaction(() async {
     await batch((b) {
       b.insertAllOnConflictUpdate(exchangeHolidays, [
         for (final date in dates)
           ExchangeHolidaysCompanion.insert(exchange: exchange, date: date),
+      ]);
+      b.insertAllOnConflictUpdate(exchangeEarlyCloses, [
+        for (final MapEntry(key: date, value: (hour, minute))
+            in earlyCloses.entries)
+          ExchangeEarlyClosesCompanion.insert(
+            exchange: exchange,
+            date: date,
+            closeHour: hour,
+            closeMinute: minute,
+          ),
       ]);
       b.insertAllOnConflictUpdate(calendarYears, [
         CalendarYearsCompanion.insert(
@@ -211,6 +224,10 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
   Future<List<ExchangeHolidayRow>> holidays(Exchange exchange) => (select(
     exchangeHolidays,
   )..where((h) => h.exchange.equalsValue(exchange))).get();
+
+  Future<List<ExchangeEarlyCloseRow>> earlyCloses(Exchange exchange) => (select(
+    exchangeEarlyCloses,
+  )..where((e) => e.exchange.equalsValue(exchange))).get();
 
   /// The cached years of [exchange], with when each was fetched.
   Future<Map<int, DateTime>> cachedCalendarYears(Exchange exchange) async => {
@@ -241,6 +258,7 @@ class MarketDao extends DatabaseAccessor<AppDatabase> with _$MarketDaoMixin {
       livretCeilings,
       historySync,
       exchangeHolidays,
+      exchangeEarlyCloses,
       calendarYears,
       contentPacks,
     ]) {

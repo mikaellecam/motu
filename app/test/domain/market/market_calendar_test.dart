@@ -192,6 +192,102 @@ void main() {
     );
   });
 
+  group('early closes', () {
+    // New York is on EST (UTC−5) on the day after Thanksgiving, on EDT
+    // (UTC−4) on 3 July. Thanksgiving 2026 is a holiday.
+    final early = MarketCalendar(
+      {
+        Exchange.nyse: {day(2026, 11, 26)},
+      },
+      earlyCloses: {
+        Exchange.nyse: {
+          day(2025, 7, 3): (13, 0),
+          day(2026, 11, 27): (13, 0),
+          day(2005, 6, 1): (15, 56),
+        },
+      },
+    );
+    const e = Exchange.nyse;
+
+    test('closeAt: 13:00 in New York, DST on each side', () {
+      expect(
+        early.closeAt(e, day(2026, 11, 27)),
+        DateTime.utc(2026, 11, 27, 18),
+      );
+      expect(early.closeAt(e, day(2025, 7, 3)), DateTime.utc(2025, 7, 3, 17));
+      expect(
+        early.closeAt(e, day(2005, 6, 1)),
+        DateTime.utc(2005, 6, 1, 19, 56),
+      );
+      // The open does not move.
+      expect(
+        early.openAt(e, day(2026, 11, 27)),
+        DateTime.utc(2026, 11, 27, 14, 30),
+      );
+    });
+
+    test('a market order at 12:00 finds the market open: it fills now', () {
+      expect(early.isOpen(e, DateTime.utc(2026, 11, 27, 17)), isTrue);
+      expect(early.isOpen(e, DateTime.utc(2026, 11, 27, 17, 59)), isTrue);
+    });
+
+    test('from 13:00 the market is closed: an order waits for Monday', () {
+      expect(early.isOpen(e, DateTime.utc(2026, 11, 27, 18)), isFalse);
+      expect(early.isOpen(e, DateTime.utc(2026, 11, 27, 20)), isFalse);
+      expect(
+        early.nextOpen(e, DateTime.utc(2026, 11, 27, 18, 30)),
+        DateTime.utc(2026, 11, 30, 14, 30),
+      );
+      expect(
+        early.nextOpen(e, DateTime.utc(2025, 7, 3, 17)),
+        DateTime.utc(2025, 7, 4, 13, 30),
+        reason: 'no holiday injected for 4 July 2025',
+      );
+    });
+
+    test('per exchange and per day: the others close at 16:00', () {
+      expect(
+        early.closeAt(Exchange.nasdaq, day(2026, 11, 27)),
+        DateTime.utc(2026, 11, 27, 21),
+      );
+      expect(
+        early.isOpen(Exchange.nasdaq, DateTime.utc(2026, 11, 27, 20)),
+        isTrue,
+      );
+      expect(
+        early.closeAt(e, day(2026, 11, 20)),
+        DateTime.utc(2026, 11, 20, 21),
+      );
+      expect(early.isOpen(e, DateTime.utc(2026, 11, 20, 20)), isTrue);
+    });
+
+    test('a year with no injected early close closes at 16:00', () {
+      // The day after Thanksgiving 2027.
+      expect(
+        early.closeAt(e, day(2027, 11, 26)),
+        DateTime.utc(2027, 11, 26, 21),
+      );
+      expect(early.isOpen(e, DateTime.utc(2027, 11, 26, 20, 59)), isTrue);
+      expect(
+        calendar.closeAt(e, day(2026, 11, 27)),
+        DateTime.utc(2026, 11, 27, 21),
+      );
+    });
+
+    test('the time of day of an injected date is ignored', () {
+      final c = MarketCalendar(
+        const {},
+        earlyCloses: {
+          e: {DateTime.utc(2026, 12, 24, 15): (13, 0)},
+        },
+      );
+      expect(
+        c.closeAt(e, DateTime.utc(2026, 12, 24, 9)),
+        DateTime.utc(2026, 12, 24, 18),
+      );
+    });
+  });
+
   test('openAt: the session open as an instant, DST on each side', () {
     expect(
       calendar.openAt(Exchange.nasdaq, day(2026, 10, 7)),

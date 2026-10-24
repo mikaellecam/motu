@@ -339,6 +339,15 @@ void main() {
     );
     expect(markets.isTradingDay(Exchange.nyse, day(11, 26)), isFalse);
     expect(markets.isTradingDay(Exchange.nyse, day(11, 27)), isTrue);
+    // The day after Thanksgiving closes at 13:00 in New York, 18:00 UTC.
+    expect(
+      markets.closeAt(Exchange.nyse, day(11, 27)),
+      DateTime.utc(2026, 11, 27, 18),
+    );
+    expect(
+      markets.closeAt(Exchange.nyse, day(11, 20)),
+      DateTime.utc(2026, 11, 20, 21),
+    );
     expect(backend.to('/v1/calendar'), hasLength(2));
 
     await load(2025, 2026);
@@ -353,6 +362,51 @@ void main() {
 
     final old = await load(1999, 1999);
     expect(old.isTradingDay(Exchange.nyse, DateTime.utc(1999, 12, 24)), isTrue);
+  });
+
+  test(
+    'calendar: a year cached before it ended is checked again, once',
+    () async {
+      Future<MarketCalendar> load() =>
+          repo.calendar({Exchange.nyse}, fromYear: 2026, toYear: 2026);
+
+      await load();
+      // In January, 2026 has ended: one more fetch, then it is final.
+      wall.t = DateTime.utc(2027, 1, 4, 12);
+      await load();
+      wall.advance(const Duration(days: 3));
+      await load();
+      expect(backend.to('/v1/calendar'), hasLength(2));
+    },
+  );
+
+  test('calendar: a year cached at the epoch (schema v4) is fetched for its '
+      'early closes; offline its holidays stand', () async {
+    await db.marketDao.saveHolidays(Exchange.nyse, 2026, [
+      day(11, 26),
+    ], fetchedAt: DateTime.utc(1970));
+    backend.offline = true;
+    final offline = await repo.calendar(
+      {Exchange.nyse},
+      fromYear: 2026,
+      toYear: 2026,
+    );
+    expect(offline.isTradingDay(Exchange.nyse, day(11, 26)), isFalse);
+    expect(
+      offline.closeAt(Exchange.nyse, day(11, 27)),
+      DateTime.utc(2026, 11, 27, 21),
+    );
+
+    backend.offline = false;
+    final online = await repo.calendar(
+      {Exchange.nyse},
+      fromYear: 2026,
+      toYear: 2026,
+    );
+    expect(
+      online.closeAt(Exchange.nyse, day(11, 27)),
+      DateTime.utc(2026, 11, 27, 18),
+    );
   });
 
   test('Livret history: cut at asOf, checked daily, cached offline', () async {

@@ -38,6 +38,12 @@ class FakeBackend implements HttpClientAdapter {
     2026: ['2026-07-03', '2026-11-26', '2026-12-25'],
     2027: ['2027-01-01'],
   };
+  final earlyCloses = <int, List<Map<String, String>>>{
+    2026: [
+      {'date': '2026-11-27', 'close': '13:00'},
+      {'date': '2026-12-24', 'close': '13:00'},
+    ],
+  };
 
   static Map<String, Object> _asset(String id, String exchange, String since) =>
       {
@@ -138,7 +144,12 @@ class FakeBackend implements HttpClientAdapter {
             'error': {'code': 'not_found', 'message': 'no calendar'},
           }, 404);
         }
-        body = {'exchange': exchange, 'year': year, 'holidays': days};
+        body = {
+          'exchange': exchange,
+          'year': year,
+          'holidays': days,
+          'earlyCloses': earlyCloses[year] ?? [],
+        };
       default:
         return _json({}, 404);
     }

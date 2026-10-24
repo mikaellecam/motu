@@ -546,6 +546,9 @@ order summary.
 
 Market hours (Paris time, exchange holidays from the backend calendar, §8.3): Euronext 09:00–17:30,
 NYSE/Nasdaq 15:30–22:00 (adjust for US/EU DST mismatch via exchange time zones, never hardcode offsets).
+On an early close (M9-37: usually 13:00 New York on 3 July, the day after Thanksgiving and 24 December,
+served by the same calendar) the session ends then: `closeAt` and `isOpen` use that time, so a live market
+order sent after it waits for the next opening.
 
 Order lifecycle UI: sent → market opens → executed. The map shows a pending buy as a building under
 construction that completes on fill.
@@ -828,7 +831,7 @@ Cache (cleared from Settings, refetched): user tables never reference them.
 | `fx_rates` | base, quote, date, rate — PK (base, quote, date) |
 | `livret_rates` · `livret_ceilings` | validFrom, annualRate · validFrom, amountCents |
 | `history_sync` | assetId, firstDate, lastDate, fetchedAt, adjustedAt (backend refetch after a split) |
-| `exchange_holidays` · `calendar_years` | exchange, date · exchange, year, fetchedAt |
+| `exchange_holidays` · `exchange_early_closes` · `calendar_years` | exchange, date · exchange, date, closeHour, closeMinute (local time) · exchange, year, fetchedAt |
 | `content_packs` | islandId, version, json, etag, checkedAt |
 
 User data (only the user creates it; rows of a wallet cascade when it is deleted):
@@ -857,7 +860,8 @@ Positions are **derived** from fills (average-cost method), never stored as the 
   Afterwards fetch only `from = lastDate + 1`, at most every 15 min. Never refetch closed days unless the
   backend's `adjustedAt` moved (then refetch that asset fully).
 - **Quotes (live wallet):** TTL 15 min during the asset's market hours, until next session open otherwise.
-- **Catalogue:** once a day. **Calendar:** past years once; the current year and later once a day.
+- **Catalogue:** once a day. **Calendar:** a year fetched after it ended is final; any other year is
+  checked once a day.
 - **FX:** daily ECB rates from Frankfurter; a date's rate never changes. First need of a pair: its whole
   history since `dataFloor` in one request; afterwards only the days after the last cached rate, at most
   every 15 min. A day without a fixing takes the previous rate.
@@ -962,7 +966,7 @@ Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via
 | `GET /v1/quotes?ids=a,b,c` | Latest price per asset with `asOf` and market status: the live quote (refreshed every 30 min in session) or else the last close |
 | `GET /v1/fx?base=USD&quote=EUR&from=&to=` | Daily rates (cached Frankfurter; the app also calls Frankfurter directly) |
 | `GET /v1/livret/rates` | Dated Livret A rate history and dated ceiling history |
-| `GET /v1/calendar/{exchange}?year=` | Holidays (weekdays without a session) of `nyse`, `nasdaq` or `otc`, all on the NYSE calendar, from 2000 to next year; every other weekday trades. Early closes are not served |
+| `GET /v1/calendar/{exchange}?year=` | Holidays (weekdays without a session) of `nyse`, `nasdaq` or `otc`, all on the NYSE calendar, from 2000 to next year, and `earlyCloses` (`[{date, close: "13:00"}]`, New York time); every other weekday trades regular hours. Early closes are listed by hand to 2028 from pandas_market_calendars, checked against exchange_calendars (XNYS) and nyse.com; later years follow the rule since 2013 |
 | `GET /v1/content/manifest` · `GET /v1/content/packs/{islandId}/{version}` | Content distribution |
 | `GET /healthz` | Liveness |
 

@@ -298,6 +298,47 @@ void main() {
     expect(wallet.positions['apple'], isNull);
   });
 
+  group('early close, Friday 2026-11-27 (13:00 in New York, 18:00 UTC)', () {
+    test('at 12:00 in New York a market order fills at the quote', () async {
+      await open(at: DateTime.utc(2026, 11, 27, 17));
+      backend.quotes['apple'] = {
+        'assetId': 'apple',
+        'price': '101.5',
+        'currency': 'USD',
+        'asOf': '2026-11-27T16:55:00Z',
+        'marketOpen': true,
+      };
+      final s = await ticket(Side.buy);
+      expect(s.context.marketOpen, isTrue);
+      actions(Side.buy)
+        ..setMode(SizeMode.quantity)
+        ..setQuantity('2');
+      final outcome = await actions(Side.buy).submit();
+      expect((outcome! as OrderExecuted).fill.price.value, d('101.5'));
+      expect((await wallets.load('live')).pendingOrders, isEmpty);
+    });
+
+    test('at 13:30 in New York it waits for Monday\'s opening', () async {
+      await open(at: DateTime.utc(2026, 11, 27, 18, 30));
+      final s = await ticket(Side.buy);
+      expect(
+        (s.context.marketOpen, s.context.nextOpen),
+        (false, DateTime.utc(2026, 11, 30, 14, 30)),
+      );
+      actions(Side.buy)
+        ..setMode(SizeMode.quantity)
+        ..setQuantity('2');
+      final outcome = await actions(Side.buy).submit();
+      expect(
+        (outcome! as OrderSent).opensAt,
+        DateTime.utc(2026, 11, 30, 14, 30),
+      );
+      final wallet = await wallets.load('live');
+      expect(wallet.pendingOrders, hasLength(1));
+      expect(wallet.positions['apple'], isNull);
+    });
+  });
+
   test(
     'a trip order waits for the trip; its reason goes to the journal',
     () async {

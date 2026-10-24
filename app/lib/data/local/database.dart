@@ -37,6 +37,7 @@ part 'database.g.dart';
     LivretCeilings,
     HistorySync,
     ExchangeHolidays,
+    ExchangeEarlyCloses,
     CalendarYears,
     ContentPacks,
     Wallets,
@@ -61,7 +62,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'investment_companion'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -73,6 +74,15 @@ class AppDatabase extends _$AppDatabase {
       // v3: the live wallet's starting cash for its next reset (M9-1).
       from2To3: (m, schema) =>
           m.addColumn(schema.profiles, schema.profiles.liveStartingCents),
+      // v4: the early closes (M9-37). Each cached year is fetched again for
+      // its own, once: dated at the epoch, its fetch is not final yet, and
+      // offline its holidays still stand.
+      from3To4: (m, schema) async {
+        await m.createTable(schema.exchangeEarlyCloses);
+        await m.database.customStatement(
+          "UPDATE calendar_years SET fetched_at = '1970-01-01T00:00:00.000Z'",
+        );
+      },
     ),
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );

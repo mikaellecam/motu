@@ -73,3 +73,85 @@ func TestExchanges(t *testing.T) {
 		t.Error("euronext is served")
 	}
 }
+
+func early(days []EarlyClose) []string {
+	out := make([]string, len(days))
+	for i, e := range days {
+		out[i] = e.Date.Format(time.DateOnly) + " " + e.Close
+	}
+	return out
+}
+
+func TestUSEarlyCloses(t *testing.T) {
+	cases := map[int][]string{
+		// 4 July on a Thursday before 2013 closes early on Friday the 5th,
+		// not on the 3rd.
+		2002: {"2002-07-05 13:00", "2002-11-29 13:00", "2002-12-24 13:00"},
+		// Christmas on a Thursday: the 26th closed early too, ad hoc.
+		2003: {"2003-07-03 13:00", "2003-11-28 13:00", "2003-12-24 13:00", "2003-12-26 13:00"},
+		// 3 July on a Saturday, 24 December on a Friday (a holiday): only the
+		// day after Thanksgiving.
+		2004: {"2004-11-26 13:00"},
+		// A systems problem stopped trading at 15:56.
+		2005: {"2005-06-01 15:56", "2005-11-25 13:00"},
+		// Christmas on a Thursday, no ad hoc close on the 26th.
+		2008: {"2008-07-03 13:00", "2008-11-28 13:00", "2008-12-24 13:00"},
+		// From 2013, 4 July on a Thursday closes early on Wednesday the 3rd.
+		2013: {"2013-07-03 13:00", "2013-11-29 13:00", "2013-12-24 13:00"},
+		// 3 July on a Saturday, 24 December on a Friday.
+		2021: {"2021-11-26 13:00"},
+		// NYSE's published lists.
+		2025: {"2025-07-03 13:00", "2025-11-28 13:00", "2025-12-24 13:00"},
+		2026: {"2026-11-27 13:00", "2026-12-24 13:00"}, // 3 July on a Friday is a holiday
+		2027: {"2027-11-26 13:00"},
+		2028: {"2028-07-03 13:00", "2028-11-24 13:00"}, // 24 December on a Sunday
+		// The rule, as exchange_calendars applies it.
+		2029: {"2029-07-03 13:00", "2029-11-23 13:00", "2029-12-24 13:00"},
+		2032: {"2032-11-26 13:00"},
+	}
+	for year, want := range cases {
+		if got := early(USEarlyCloses(year)); !slices.Equal(got, want) {
+			t.Errorf("%d:\n got %v\nwant %v", year, got, want)
+		}
+	}
+	n := 0
+	for year := FirstYear; year <= listedTo; year++ {
+		n += len(USEarlyCloses(year))
+	}
+	if n != len(earlyCloses) || n != 64 {
+		t.Errorf("%d early closes from %d to %d, %d listed", n, FirstYear, listedTo, len(earlyCloses))
+	}
+}
+
+func TestEarlyCloseRuleMatchesTheListSince2013(t *testing.T) {
+	for year := 2013; year <= listedTo; year++ {
+		if got, want := early(earlyCloseRule(year)), early(USEarlyCloses(year)); !slices.Equal(got, want) {
+			t.Errorf("%d:\n rule %v\n list %v", year, got, want)
+		}
+	}
+}
+
+func TestUSEarlyClosesAreSessions(t *testing.T) {
+	for year := FirstYear; year <= 2040; year++ {
+		holidays := USHolidays(year)
+		for i, e := range USEarlyCloses(year) {
+			at, err := time.Parse("15:04", e.Close)
+			if e.Date.Year() != year || e.Date.Weekday() == time.Saturday || e.Date.Weekday() == time.Sunday ||
+				slices.ContainsFunc(holidays, e.Date.Equal) || err != nil || at.Hour() >= 16 ||
+				(i > 0 && !e.Date.After(USEarlyCloses(year)[i-1].Date)) {
+				t.Errorf("%d: %v", year, e)
+			}
+		}
+	}
+}
+
+func TestEarlyClosesExchanges(t *testing.T) {
+	for _, e := range []string{"nyse", "nasdaq", "otc"} {
+		if got, ok := EarlyCloses(e, 2025); !ok || !slices.Equal(got, USEarlyCloses(2025)) {
+			t.Errorf("%s does not follow the NYSE early closes", e)
+		}
+	}
+	if _, ok := EarlyCloses("euronext", 2025); ok {
+		t.Error("euronext is served")
+	}
+}

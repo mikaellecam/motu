@@ -174,6 +174,27 @@ void main() {
     expect(adapter.last.uri.path, '/v1/calendar/otc');
     expect(adapter.last.uri.queryParameters, {'year': '2026'});
     expect(calendar.holidays, [DateTime.utc(2026, 7, 3)]);
+    expect(calendar.earlyCloses, isEmpty, reason: 'a backend before M9-37');
+  });
+
+  test('calendar early closes come with their local closing time', () async {
+    adapter.respond = (_) => json({
+      'exchange': 'nyse',
+      'year': 2005,
+      'holidays': <String>[],
+      'earlyCloses': [
+        {'date': '2005-06-01', 'close': '15:56'},
+        {'date': '2005-11-25', 'close': '13:00'},
+      ],
+    });
+    final calendar = await api.calendar(Exchange.nyse, 2005);
+    expect(
+      [for (final e in calendar.earlyCloses) (e.date, e.close)],
+      [
+        (DateTime.utc(2005, 6, 1), (15, 56)),
+        (DateTime.utc(2005, 11, 25), (13, 0)),
+      ],
+    );
   });
 
   test('Frankfurter rates come back exact and oldest first', () async {
@@ -302,6 +323,24 @@ void main() {
         ),
         isA<ServerFailure>(),
       );
+    });
+
+    test('a closing time that is not HH:mm is the server', () async {
+      for (final close in ['1pm', '13', '24:00', '13:60', '9:30']) {
+        adapter.respond = (_) => json({
+          'exchange': 'nyse',
+          'year': 2026,
+          'holidays': <String>[],
+          'earlyCloses': [
+            {'date': '2026-11-27', 'close': close},
+          ],
+        });
+        await expectLater(
+          api.calendar(Exchange.nyse, 2026),
+          throwsA(isA<ServerFailure>()),
+          reason: close,
+        );
+      }
     });
 
     test('an unknown currency is the server', () async {

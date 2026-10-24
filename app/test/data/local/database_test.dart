@@ -192,6 +192,23 @@ void main() {
         2026: day(1, 2),
       });
       expect(await dao.cachedCalendarYears(Exchange.nyse), isEmpty);
+      expect(await dao.earlyCloses(Exchange.euronext), isEmpty);
+    });
+
+    test('early closes keep their local closing time', () async {
+      final dao = db.marketDao;
+      await dao.saveHolidays(
+        Exchange.nyse,
+        2026,
+        [day(11, 26)],
+        earlyCloses: {day(11, 27): (13, 0)},
+        fetchedAt: day(1, 2),
+      );
+      final row = (await dao.earlyCloses(Exchange.nyse)).single;
+      expect((row.date, row.closeHour, row.closeMinute), (day(11, 27), 13, 0));
+      expect(await dao.earlyCloses(Exchange.otc), isEmpty);
+      await dao.clearCache();
+      expect(await dao.earlyCloses(Exchange.nyse), isEmpty);
     });
 
     test('quotes, sync state and content packs', () async {

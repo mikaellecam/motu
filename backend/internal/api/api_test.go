@@ -206,6 +206,13 @@ func TestCalendar(t *testing.T) {
 		len(holidays) != 10 || holidays[6] != "2026-07-03" {
 		t.Fatalf("%d %v", rec.Code, body)
 	}
+	early := body["earlyCloses"].([]any)
+	if len(early) != 2 || early[0].(map[string]any)["date"] != "2026-11-27" || early[1].(map[string]any)["close"] != "13:00" {
+		t.Fatalf("early closes: %v", early)
+	}
+	if _, body := get(t, s, "/v1/calendar/nyse?year=2027"); len(body["earlyCloses"].([]any)) != 1 {
+		t.Fatalf("2027: %v", body)
+	}
 	if rec, _ := get(t, s, "/v1/calendar/otc?year=2026", "If-None-Match", rec.Header().Get("ETag")); rec.Code != http.StatusNotModified {
 		t.Fatalf("revalidation: %d", rec.Code)
 	}

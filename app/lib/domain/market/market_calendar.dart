@@ -33,18 +33,28 @@ tz.Location _location(Exchange exchange) => _locations[exchange]!;
 /// Trading days and market hours. Dates are `DateTime.utc(y, m, d)`; any time
 /// of day is ignored. Instants are UTC `DateTime`s.
 ///
-/// Holidays are injected per exchange (from the backend calendar). A year
-/// with no injected data has weekends only. Early closes are not modelled.
-// ponytail: regular sessions only; add early-close days if the backend
-// calendar starts serving them.
+/// Holidays and early closes are injected per exchange (from the backend
+/// calendar). An early close is the local time a session ends on that day,
+/// before the regular close. A year with no injected data has weekends only,
+/// at regular hours.
 class MarketCalendar {
-  MarketCalendar(Map<Exchange, Set<DateTime>> holidays)
-    : _holidays = {
-        for (final MapEntry(:key, :value) in holidays.entries)
-          key: {for (final date in value) _day(date)},
-      };
+  MarketCalendar(
+    Map<Exchange, Set<DateTime>> holidays, {
+    Map<Exchange, Map<DateTime, (int, int)>> earlyCloses = const {},
+  }) : _holidays = {
+         for (final MapEntry(:key, :value) in holidays.entries)
+           key: {for (final date in value) _day(date)},
+       },
+       _earlyCloses = {
+         for (final MapEntry(:key, :value) in earlyCloses.entries)
+           key: {
+             for (final MapEntry(key: date, value: time) in value.entries)
+               _day(date): time,
+           },
+       };
 
   final Map<Exchange, Set<DateTime>> _holidays;
+  final Map<Exchange, Map<DateTime, (int, int)>> _earlyCloses;
 
   static DateTime _day(DateTime date) =>
       DateTime.utc(date.year, date.month, date.day);
@@ -82,18 +92,14 @@ class MarketCalendar {
     return day;
   }
 
-  /// Whether a regular session is running at [instant].
+  /// Whether a session is running at [instant], until its early close on
+  /// those days.
   bool isOpen(Exchange exchange, DateTime instant) {
     final local = tz.TZDateTime.from(instant, _location(exchange));
-    if (!isTradingDay(
-      exchange,
-      DateTime.utc(local.year, local.month, local.day),
-    )) {
-      return false;
-    }
-    final open = _at(exchange, local, exchange.opens);
-    final close = _at(exchange, local, exchange.closes);
-    return !local.isBefore(open) && local.isBefore(close);
+    final day = DateTime.utc(local.year, local.month, local.day);
+    return isTradingDay(exchange, day) &&
+        !instant.isBefore(openAt(exchange, day)) &&
+        instant.isBefore(closeAt(exchange, day));
   }
 
   /// The start of the first session that opens strictly after [instant], as
@@ -110,13 +116,17 @@ class MarketCalendar {
     }
   }
 
-  /// When the regular session of [day] opens, as a UTC instant.
+  /// When the session of [day] opens, as a UTC instant.
   DateTime openAt(Exchange exchange, DateTime day) =>
       _at(exchange, _day(day), exchange.opens);
 
-  /// When the regular session of [day] closes, as a UTC instant.
-  DateTime closeAt(Exchange exchange, DateTime day) =>
-      _at(exchange, _day(day), exchange.closes);
+  /// When the session of [day] closes, as a UTC instant: its early close on
+  /// those days, else the regular close.
+  DateTime closeAt(Exchange exchange, DateTime day) => _at(
+    exchange,
+    _day(day),
+    _earlyCloses[exchange]?[_day(day)] ?? exchange.closes,
+  );
 
   /// [time] on the local calendar day of [date], in the exchange's zone, as
   /// a plain UTC instant: a `TZDateTime`'s `toLocal()` would read the

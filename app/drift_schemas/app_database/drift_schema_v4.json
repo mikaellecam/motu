@@ -1,0 +1,2352 @@
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": true
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "assets",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "symbol",
+            "getter_name": "symbol",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "type",
+            "getter_name": "type",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<AssetType>(AssetType.values)",
+              "dart_type_name": "AssetType"
+            }
+          },
+          {
+            "name": "exchange",
+            "getter_name": "exchange",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Exchange>(Exchange.values)",
+              "dart_type_name": "Exchange"
+            }
+          },
+          {
+            "name": "currency",
+            "getter_name": "currency",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Currency>(Currency.values)",
+              "dart_type_name": "Currency"
+            }
+          },
+          {
+            "name": "region",
+            "getter_name": "region",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "listing_date",
+            "getter_name": "listingDate",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "price_bars",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "open",
+            "getter_name": "open",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "high",
+            "getter_name": "high",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "low",
+            "getter_name": "low",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "close",
+            "getter_name": "close",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "volume",
+            "getter_name": "volume",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "asset_id",
+          "date"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "quotes",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "price",
+            "getter_name": "price",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "currency",
+            "getter_name": "currency",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Currency>(Currency.values)",
+              "dart_type_name": "Currency"
+            }
+          },
+          {
+            "name": "as_of",
+            "getter_name": "asOf",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fetched_at",
+            "getter_name": "fetchedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "market_open",
+            "getter_name": "marketOpen",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"market_open\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"market_open\" IN (0, 1))"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "asset_id"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "fx_rates",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "base",
+            "getter_name": "base",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Currency>(Currency.values)",
+              "dart_type_name": "Currency"
+            }
+          },
+          {
+            "name": "quote",
+            "getter_name": "quote",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Currency>(Currency.values)",
+              "dart_type_name": "Currency"
+            }
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "rate",
+            "getter_name": "rate",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "base",
+          "quote",
+          "date"
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "livret_rates",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "valid_from",
+            "getter_name": "validFrom",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "annual_rate",
+            "getter_name": "annualRate",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "valid_from"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "livret_ceilings",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "valid_from",
+            "getter_name": "validFrom",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "amount_cents",
+            "getter_name": "amountCents",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "valid_from"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "history_sync",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "first_date",
+            "getter_name": "firstDate",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "last_date",
+            "getter_name": "lastDate",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fetched_at",
+            "getter_name": "fetchedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "adjusted_at",
+            "getter_name": "adjustedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "asset_id"
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "exchange_holidays",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "exchange",
+            "getter_name": "exchange",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Exchange>(Exchange.values)",
+              "dart_type_name": "Exchange"
+            }
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "exchange",
+          "date"
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "exchange_early_closes",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "exchange",
+            "getter_name": "exchange",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Exchange>(Exchange.values)",
+              "dart_type_name": "Exchange"
+            }
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "close_hour",
+            "getter_name": "closeHour",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "close_minute",
+            "getter_name": "closeMinute",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "exchange",
+          "date"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "calendar_years",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "exchange",
+            "getter_name": "exchange",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Exchange>(Exchange.values)",
+              "dart_type_name": "Exchange"
+            }
+          },
+          {
+            "name": "year",
+            "getter_name": "year",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fetched_at",
+            "getter_name": "fetchedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "exchange",
+          "year"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "content_packs",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "island_id",
+            "getter_name": "islandId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "version",
+            "getter_name": "version",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "json",
+            "getter_name": "json",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "etag",
+            "getter_name": "etag",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "checked_at",
+            "getter_name": "checkedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "island_id"
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "wallets",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "kind",
+            "getter_name": "kind",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<WalletKind>(WalletKind.values)",
+              "dart_type_name": "WalletKind"
+            }
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "start_date",
+            "getter_name": "startDate",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "sim_date",
+            "getter_name": "simDate",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "difficulty",
+            "getter_name": "difficulty",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "params",
+            "getter_name": "params",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<WalletStatus>(WalletStatus.values)",
+              "dart_type_name": "WalletStatus"
+            }
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "breached_stops",
+            "getter_name": "breachedStops",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'[]\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "companion_state",
+            "getter_name": "companionState",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "stop_reasons",
+            "getter_name": "stopReasons",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "cash_ledger",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "amount_cents",
+            "getter_name": "amountCents",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "kind",
+            "getter_name": "kind",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<LedgerKind>(LedgerKind.values)",
+              "dart_type_name": "LedgerKind"
+            }
+          },
+          {
+            "name": "ref_id",
+            "getter_name": "refId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 13,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "orders",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "side",
+            "getter_name": "side",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Side>(Side.values)",
+              "dart_type_name": "Side"
+            }
+          },
+          {
+            "name": "type",
+            "getter_name": "type",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<OrderType>(OrderType.values)",
+              "dart_type_name": "OrderType"
+            }
+          },
+          {
+            "name": "amount_cents",
+            "getter_name": "amountCents",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "quantity_micros",
+            "getter_name": "quantityMicros",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "limit_price",
+            "getter_name": "limitPrice",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "stop_price",
+            "getter_name": "stopPrice",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "price_currency",
+            "getter_name": "priceCurrency",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Currency>(Currency.values)",
+              "dart_type_name": "Currency"
+            }
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<OrderStatus>(OrderStatus.values)",
+              "dart_type_name": "OrderStatus"
+            }
+          },
+          {
+            "name": "cancel_reason",
+            "getter_name": "cancelReason",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<CancelReason>(CancelReason.values)",
+              "dart_type_name": "CancelReason"
+            }
+          },
+          {
+            "name": "plan_id",
+            "getter_name": "planId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK ((amount_cents IS NULL) != (quantity_micros IS NULL))"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "references": [
+        13,
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "fills",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "order_id",
+            "getter_name": "orderId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE REFERENCES orders (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE REFERENCES orders (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique",
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "orders",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "side",
+            "getter_name": "side",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Side>(Side.values)",
+              "dart_type_name": "Side"
+            }
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "price",
+            "getter_name": "price",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "currency",
+            "getter_name": "currency",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Currency>(Currency.values)",
+              "dart_type_name": "Currency"
+            }
+          },
+          {
+            "name": "quantity_micros",
+            "getter_name": "quantityMicros",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fx_rate",
+            "getter_name": "fxRate",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DecimalConverter()",
+              "dart_type_name": "Decimal"
+            }
+          },
+          {
+            "name": "fees_cents",
+            "getter_name": "feesCents",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 15,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "wallet_values",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "date",
+            "getter_name": "date",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "value_cents",
+            "getter_name": "valueCents",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "flow_cents",
+            "getter_name": "flowCents",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "wallet_id",
+          "date"
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "dca_plans",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "amount_cents",
+            "getter_name": "amountCents",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "frequency",
+            "getter_name": "frequency",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<DcaFrequency>(DcaFrequency.values)",
+              "dart_type_name": "DcaFrequency"
+            }
+          },
+          {
+            "name": "start_date",
+            "getter_name": "startDate",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "active",
+            "getter_name": "active",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"active\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"active\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "dca_simulations",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "params",
+            "getter_name": "params",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "result",
+            "getter_name": "result",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "saved_at",
+            "getter_name": "savedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "journal_entries",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "sim_date",
+            "getter_name": "simDate",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "event_id",
+            "getter_name": "eventId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "decision",
+            "getter_name": "decision",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "reason",
+            "getter_name": "reason",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 19,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "profiles",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "goal",
+            "getter_name": "goal",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Goal>(Goal.values)",
+              "dart_type_name": "Goal"
+            }
+          },
+          {
+            "name": "drop_reaction",
+            "getter_name": "dropReaction",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<DropReaction>(DropReaction.values)",
+              "dart_type_name": "DropReaction"
+            }
+          },
+          {
+            "name": "knowledge",
+            "getter_name": "knowledge",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Knowledge>(Knowledge.values)",
+              "dart_type_name": "Knowledge"
+            }
+          },
+          {
+            "name": "savings",
+            "getter_name": "savings",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<Savings>(Savings.values)",
+              "dart_type_name": "Savings"
+            }
+          },
+          {
+            "name": "weekly_time",
+            "getter_name": "weeklyTime",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<WeeklyTime>(WeeklyTime.values)",
+              "dart_type_name": "WeeklyTime"
+            }
+          },
+          {
+            "name": "show_all",
+            "getter_name": "showAll",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"show_all\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"show_all\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "language",
+            "getter_name": "language",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "live_starting_cents",
+            "getter_name": "liveStartingCents",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (id = 1)"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "node_progress",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "node_id",
+            "getter_name": "nodeId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<NodeStatus>(NodeStatus.values)",
+              "dart_type_name": "NodeStatus"
+            }
+          },
+          {
+            "name": "attempts",
+            "getter_name": "attempts",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "last_answer",
+            "getter_name": "lastAnswer",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "completed_at",
+            "getter_name": "completedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "node_id"
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "glossary_state",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "term_id",
+            "getter_name": "termId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "discovered_at",
+            "getter_name": "discoveredAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "quiz_passed",
+            "getter_name": "quizPassed",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"quiz_passed\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"quiz_passed\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "term_id"
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "favorites",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "asset_id",
+            "getter_name": "assetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "added_at",
+            "getter_name": "addedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "asset_id"
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "references": [
+        11
+      ],
+      "type": "table",
+      "data": {
+        "name": "companion_log",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "wallet_id",
+            "getter_name": "walletId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES wallets (id) ON DELETE CASCADE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES wallets (id) ON DELETE CASCADE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "wallets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "cascade"
+                }
+              }
+            ]
+          },
+          {
+            "name": "rule",
+            "getter_name": "rule",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumNameConverter<CompanionRule>(CompanionRule.values)",
+              "dart_type_name": "CompanionRule"
+            }
+          },
+          {
+            "name": "key",
+            "getter_name": "key",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "fired_at",
+            "getter_name": "firedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "params",
+            "getter_name": "params",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "dismissed_at",
+            "getter_name": "dismissedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "assets",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"assets\" (\"id\" TEXT NOT NULL, \"symbol\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"type\" TEXT NOT NULL, \"exchange\" TEXT NOT NULL, \"currency\" TEXT NOT NULL, \"region\" TEXT NOT NULL, \"listing_date\" TEXT NOT NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "price_bars",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"price_bars\" (\"asset_id\" TEXT NOT NULL, \"date\" TEXT NOT NULL, \"open\" TEXT NOT NULL, \"high\" TEXT NOT NULL, \"low\" TEXT NOT NULL, \"close\" TEXT NOT NULL, \"volume\" INTEGER NOT NULL, PRIMARY KEY (\"asset_id\", \"date\"));"
+        }
+      ]
+    },
+    {
+      "name": "quotes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"quotes\" (\"asset_id\" TEXT NOT NULL, \"price\" TEXT NOT NULL, \"currency\" TEXT NOT NULL, \"as_of\" TEXT NOT NULL, \"fetched_at\" TEXT NOT NULL, \"market_open\" INTEGER NOT NULL CHECK (\"market_open\" IN (0, 1)), PRIMARY KEY (\"asset_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "fx_rates",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"fx_rates\" (\"base\" TEXT NOT NULL, \"quote\" TEXT NOT NULL, \"date\" TEXT NOT NULL, \"rate\" TEXT NOT NULL, PRIMARY KEY (\"base\", \"quote\", \"date\"));"
+        }
+      ]
+    },
+    {
+      "name": "livret_rates",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"livret_rates\" (\"valid_from\" TEXT NOT NULL, \"annual_rate\" TEXT NOT NULL, PRIMARY KEY (\"valid_from\"));"
+        }
+      ]
+    },
+    {
+      "name": "livret_ceilings",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"livret_ceilings\" (\"valid_from\" TEXT NOT NULL, \"amount_cents\" INTEGER NOT NULL, PRIMARY KEY (\"valid_from\"));"
+        }
+      ]
+    },
+    {
+      "name": "history_sync",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"history_sync\" (\"asset_id\" TEXT NOT NULL, \"first_date\" TEXT NOT NULL, \"last_date\" TEXT NOT NULL, \"fetched_at\" TEXT NOT NULL, \"adjusted_at\" TEXT NULL, PRIMARY KEY (\"asset_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "exchange_holidays",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"exchange_holidays\" (\"exchange\" TEXT NOT NULL, \"date\" TEXT NOT NULL, PRIMARY KEY (\"exchange\", \"date\"));"
+        }
+      ]
+    },
+    {
+      "name": "exchange_early_closes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"exchange_early_closes\" (\"exchange\" TEXT NOT NULL, \"date\" TEXT NOT NULL, \"close_hour\" INTEGER NOT NULL, \"close_minute\" INTEGER NOT NULL, PRIMARY KEY (\"exchange\", \"date\"));"
+        }
+      ]
+    },
+    {
+      "name": "calendar_years",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"calendar_years\" (\"exchange\" TEXT NOT NULL, \"year\" INTEGER NOT NULL, \"fetched_at\" TEXT NOT NULL, PRIMARY KEY (\"exchange\", \"year\"));"
+        }
+      ]
+    },
+    {
+      "name": "content_packs",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"content_packs\" (\"island_id\" TEXT NOT NULL, \"version\" INTEGER NOT NULL, \"json\" TEXT NOT NULL, \"etag\" TEXT NULL, \"checked_at\" TEXT NOT NULL, PRIMARY KEY (\"island_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "wallets",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"wallets\" (\"id\" TEXT NOT NULL, \"kind\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"start_date\" TEXT NOT NULL, \"sim_date\" TEXT NULL, \"difficulty\" TEXT NULL, \"params\" TEXT NOT NULL, \"status\" TEXT NOT NULL, \"created_at\" TEXT NOT NULL, \"breached_stops\" TEXT NOT NULL DEFAULT '[]', \"companion_state\" TEXT NULL, \"stop_reasons\" TEXT NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "cash_ledger",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"cash_ledger\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"date\" TEXT NOT NULL, \"amount_cents\" INTEGER NOT NULL, \"kind\" TEXT NOT NULL, \"ref_id\" TEXT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "orders",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"orders\" (\"id\" TEXT NOT NULL, \"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"asset_id\" TEXT NOT NULL, \"side\" TEXT NOT NULL, \"type\" TEXT NOT NULL, \"amount_cents\" INTEGER NULL, \"quantity_micros\" INTEGER NULL, \"limit_price\" TEXT NULL, \"stop_price\" TEXT NULL, \"price_currency\" TEXT NULL, \"status\" TEXT NOT NULL, \"cancel_reason\" TEXT NULL, \"plan_id\" TEXT NULL, \"created_at\" TEXT NOT NULL, PRIMARY KEY (\"id\"), CHECK ((amount_cents IS NULL) != (quantity_micros IS NULL)));"
+        }
+      ]
+    },
+    {
+      "name": "fills",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"fills\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"order_id\" TEXT NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE, \"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"asset_id\" TEXT NOT NULL, \"side\" TEXT NOT NULL, \"date\" TEXT NOT NULL, \"price\" TEXT NOT NULL, \"currency\" TEXT NOT NULL, \"quantity_micros\" INTEGER NOT NULL, \"fx_rate\" TEXT NOT NULL, \"fees_cents\" INTEGER NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "wallet_values",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"wallet_values\" (\"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"date\" TEXT NOT NULL, \"value_cents\" INTEGER NOT NULL, \"flow_cents\" INTEGER NOT NULL, PRIMARY KEY (\"wallet_id\", \"date\"));"
+        }
+      ]
+    },
+    {
+      "name": "dca_plans",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"dca_plans\" (\"id\" TEXT NOT NULL, \"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"asset_id\" TEXT NOT NULL, \"amount_cents\" INTEGER NOT NULL, \"frequency\" TEXT NOT NULL, \"start_date\" TEXT NOT NULL, \"active\" INTEGER NOT NULL DEFAULT 1 CHECK (\"active\" IN (0, 1)), PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "dca_simulations",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"dca_simulations\" (\"id\" TEXT NOT NULL, \"params\" TEXT NOT NULL, \"result\" TEXT NOT NULL, \"saved_at\" TEXT NOT NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "journal_entries",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"journal_entries\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"sim_date\" TEXT NOT NULL, \"event_id\" TEXT NULL, \"decision\" TEXT NOT NULL, \"reason\" TEXT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "profiles",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"profiles\" (\"id\" INTEGER NOT NULL, \"goal\" TEXT NOT NULL, \"drop_reaction\" TEXT NOT NULL, \"knowledge\" TEXT NOT NULL, \"savings\" TEXT NOT NULL, \"weekly_time\" TEXT NOT NULL, \"show_all\" INTEGER NOT NULL DEFAULT 0 CHECK (\"show_all\" IN (0, 1)), \"language\" TEXT NULL, \"live_starting_cents\" INTEGER NULL, PRIMARY KEY (\"id\"), CHECK (id = 1));"
+        }
+      ]
+    },
+    {
+      "name": "node_progress",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"node_progress\" (\"node_id\" TEXT NOT NULL, \"status\" TEXT NOT NULL, \"attempts\" INTEGER NOT NULL DEFAULT 0, \"last_answer\" TEXT NULL, \"completed_at\" TEXT NULL, PRIMARY KEY (\"node_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "glossary_state",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"glossary_state\" (\"term_id\" TEXT NOT NULL, \"discovered_at\" TEXT NOT NULL, \"quiz_passed\" INTEGER NOT NULL DEFAULT 0 CHECK (\"quiz_passed\" IN (0, 1)), PRIMARY KEY (\"term_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "favorites",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"favorites\" (\"asset_id\" TEXT NOT NULL, \"added_at\" TEXT NOT NULL, PRIMARY KEY (\"asset_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "companion_log",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"companion_log\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"wallet_id\" TEXT NOT NULL REFERENCES wallets (id) ON DELETE CASCADE, \"rule\" TEXT NOT NULL, \"key\" TEXT NOT NULL, \"fired_at\" TEXT NOT NULL, \"params\" TEXT NOT NULL, \"dismissed_at\" TEXT NULL);"
+        }
+      ]
+    }
+  ]
+}

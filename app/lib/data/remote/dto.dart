@@ -37,6 +37,22 @@ class InstantConverter implements JsonConverter<DateTime, String> {
   String toJson(DateTime instant) => instant.toUtc().toIso8601String();
 }
 
+/// `13:00`: a local time of day, as (hour, minute).
+class TimeOfDayConverter implements JsonConverter<(int, int), String> {
+  const TimeOfDayConverter();
+
+  @override
+  (int, int) fromJson(String json) {
+    final m = RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$').firstMatch(json);
+    if (m == null) throw FormatException('not a time of day: $json');
+    return (int.parse(m[1]!), int.parse(m[2]!));
+  }
+
+  @override
+  String toJson((int, int) time) =>
+      '${time.$1.toString().padLeft(2, '0')}:${time.$2.toString().padLeft(2, '0')}';
+}
+
 class DecimalConverter implements JsonConverter<Decimal, String> {
   const DecimalConverter();
 
@@ -224,13 +240,15 @@ class LivretDto {
   ];
 }
 
-/// The weekdays without a session in one year; every other weekday trades.
+/// The weekdays without a session in one year, and the sessions that close
+/// early; every other weekday trades regular hours.
 @_decode
 class CalendarDto {
   const CalendarDto({
     required this.exchange,
     required this.year,
     required this.holidays,
+    required this.earlyCloses,
   });
 
   factory CalendarDto.fromJson(Map<String, dynamic> json) =>
@@ -239,6 +257,23 @@ class CalendarDto {
   final Exchange exchange;
   final int year;
   final List<DateTime> holidays;
+
+  /// Absent from a backend older than M9-37.
+  @JsonKey(defaultValue: <EarlyCloseDto>[])
+  final List<EarlyCloseDto> earlyCloses;
+}
+
+/// A session that ends at [close], local time, before the regular close.
+@_decode
+class EarlyCloseDto {
+  const EarlyCloseDto({required this.date, required this.close});
+
+  factory EarlyCloseDto.fromJson(Map<String, dynamic> json) =>
+      _$EarlyCloseDtoFromJson(json);
+
+  final DateTime date;
+  @TimeOfDayConverter()
+  final (int, int) close;
 }
 
 /// One day's rate: units of the quote currency per unit of the base.

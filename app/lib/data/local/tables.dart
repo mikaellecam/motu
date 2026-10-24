@@ -134,7 +134,20 @@ class ExchangeHolidays extends Table {
   Set<Column> get primaryKey => {exchange, date};
 }
 
-/// Years whose holidays are cached, per exchange.
+/// Sessions that end before the regular close, at [closeHour]:[closeMinute]
+/// in the exchange's local time.
+@DataClassName('ExchangeEarlyCloseRow')
+class ExchangeEarlyCloses extends Table {
+  TextColumn get exchange => textEnum<Exchange>()();
+  DateTimeColumn get date => dateTime()();
+  IntColumn get closeHour => integer()();
+  IntColumn get closeMinute => integer()();
+
+  @override
+  Set<Column> get primaryKey => {exchange, date};
+}
+
+/// Years whose holidays and early closes are cached, per exchange.
 @DataClassName('CalendarYearRow')
 class CalendarYears extends Table {
   TextColumn get exchange => textEnum<Exchange>()();

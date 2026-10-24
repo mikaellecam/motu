@@ -220,8 +220,9 @@ func (s *Server) livret(r *http.Request) (response, error) {
 	return response{body: map[string]any{"rates": outRates, "ceilings": outCeilings}}, nil
 }
 
-// calendar serves an exchange's holidays in a year: every other weekday
-// trades. Years run from the data floor's to next year's; later ones would
+// calendar serves an exchange's holidays in a year and its early closes,
+// with their local closing time: every other weekday trades regular hours.
+// Years run from the data floor's to next year's; later ones would
 // miss closures not yet announced.
 func (s *Server) calendar(r *http.Request) (response, error) {
 	exchange := r.PathValue("exchange")
@@ -241,7 +242,12 @@ func (s *Server) calendar(r *http.Request) (response, error) {
 	for _, d := range holidays {
 		out = append(out, date(d))
 	}
-	return response{body: map[string]any{"exchange": exchange, "year": year, "holidays": out}}, nil
+	early, _ := calendar.EarlyCloses(exchange, year)
+	outEarly := make([]map[string]any, 0, len(early))
+	for _, e := range early {
+		outEarly = append(outEarly, map[string]any{"date": date(e.Date), "close": e.Close})
+	}
+	return response{body: map[string]any{"exchange": exchange, "year": year, "holidays": out, "earlyCloses": outEarly}}, nil
 }
 
 // contentManifest is the latest published version of each island (ADR-006).

@@ -251,10 +251,6 @@ class MarketRepository {
     };
   });
 
-  /// The holidays of [exchanges] from [fromYear] to [toYear]. Past years are
-  /// fetched once; the current year and later are checked once a day, since
-  /// an unscheduled closure may be added. A year the backend does not serve
-  /// has weekends only.
   /// The cache, for Settings (BRIEF §4.14).
   Future<({int histories, int closes, DateTime? lastFetch, int bytes})>
   cacheInfo() => guardStorage(() async {
@@ -282,6 +278,10 @@ class MarketRepository {
     _assetsCheckedAt = null;
   });
 
+  /// The holidays and early closes of [exchanges] from [fromYear] to
+  /// [toYear]. A year fetched after it ended is final; any other is checked
+  /// once a day, since an unscheduled closure may be added. A year the
+  /// backend does not serve has weekends only, at regular hours.
   Future<MarketCalendar> calendar(
     Set<Exchange> exchanges, {
     required int fromYear,
@@ -292,13 +292,20 @@ class MarketRepository {
       final cached = await _dao.cachedCalendarYears(exchange);
       for (var year = fromYear; year <= toYear; year++) {
         final fetchedAt = cached[year];
+        // Fetched after it ended, a year is final.
         if (fetchedAt != null &&
-            (year < now.year || now.difference(fetchedAt) < dailyCheck)) {
+            (year < fetchedAt.year || now.difference(fetchedAt) < dailyCheck)) {
           continue;
         }
         try {
           final dto = await _api.calendar(exchange, year);
-          await _dao.saveHolidays(exchange, year, dto.holidays, fetchedAt: now);
+          await _dao.saveHolidays(
+            exchange,
+            year,
+            dto.holidays,
+            earlyCloses: {for (final e in dto.earlyCloses) e.date: e.close},
+            fetchedAt: now,
+          );
         } on NotFoundFailure {
           // Outside the years the backend serves.
         } on Failure {
@@ -306,10 +313,19 @@ class MarketRepository {
         }
       }
     }
-    return MarketCalendar({
-      for (final exchange in exchanges)
-        exchange: {for (final h in await _dao.holidays(exchange)) h.date},
-    });
+    return MarketCalendar(
+      {
+        for (final exchange in exchanges)
+          exchange: {for (final h in await _dao.holidays(exchange)) h.date},
+      },
+      earlyCloses: {
+        for (final exchange in exchanges)
+          exchange: {
+            for (final e in await _dao.earlyCloses(exchange))
+              e.date: (e.closeHour, e.closeMinute),
+          },
+      },
+    );
   });
 
   Future<void> _refreshAssets({bool force = false}) async {
