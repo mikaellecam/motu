@@ -134,6 +134,7 @@ class ChunkyButton extends StatelessWidget {
     required this.onPressed,
     this.kind = ChunkyButtonKind.primary,
     this.icon,
+    this.compact = false,
   });
 
   final String label;
@@ -141,6 +142,10 @@ class ChunkyButton extends StatelessWidget {
   /// Drawn before the label, in its colour (« + » on « Nouveau voyage dans
   /// le temps »).
   final IconData? icon;
+
+  /// Three to a row: a smaller label with a narrow margin (a trip's time
+  /// steps).
+  final bool compact;
 
   /// Null disables the button.
   final VoidCallback? onPressed;
@@ -158,7 +163,11 @@ class ChunkyButton extends StatelessWidget {
     final title = Text(
       label,
       textAlign: TextAlign.center,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(color: text),
+      style:
+          (compact
+                  ? AppText.titleXSmall
+                  : Theme.of(context).textTheme.titleLarge)
+              ?.copyWith(color: text),
     );
 
     return Semantics(
@@ -176,7 +185,9 @@ class ChunkyButton extends StatelessWidget {
               top: sink,
               bottom: AppShape.chunkyButtonShadow - sink,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: AppSpace.x6),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? AppSpace.x1 : AppSpace.x6,
+            ),
             decoration: BoxDecoration(
               color: fill,
               borderRadius: const BorderRadius.all(

@@ -229,6 +229,22 @@ final class TripAdvance {
   final bool endOfData;
 }
 
+/// The day the next monthly contribution arrives after [date], a day the
+/// trip has lived: the first trip day of the following month (BRIEF §4.5,
+/// step 1). Null when [contribution] is not positive: none arrives.
+DateTime? nextContributionDay(
+  DateTime date, {
+  required Money contribution,
+  required bool Function(DateTime day) isTripDay,
+}) {
+  if (!contribution.isPositive) return null;
+  var day = DateTime.utc(date.year, date.month + 1);
+  while (!isTripDay(day)) {
+    day = DateTime.utc(day.year, day.month, day.day + 1);
+  }
+  return day;
+}
+
 /// Moves a trip forward through history (BRIEF §4.5).
 final class TripEngine {
   const TripEngine({
@@ -352,8 +368,12 @@ final class TripEngine {
     final positions = {...s.positions};
 
     // 1. Contribution, on the first trip day of a month.
-    if (monthlyContribution.isPositive &&
-        (day.month != s.date.month || day.year != s.date.year)) {
+    if (day ==
+        nextContributionDay(
+          s.date,
+          contribution: monthlyContribution,
+          isTripDay: isTripDay,
+        )) {
       cash += monthlyContribution;
       invested += monthlyContribution;
       flow += monthlyContribution;

@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,6 +18,7 @@ import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/valuation.dart';
 import '../../../domain/wallet/wallet.dart';
@@ -26,6 +28,7 @@ import '../../widgets/section_title.dart';
 import '../../widgets/asset_avatar.dart';
 import '../companion/companion_card.dart';
 import '../order/order_screen.dart';
+import '../trip/trip_header.dart';
 import '../trip/trip_sheets.dart';
 import 'livret_card.dart';
 import '../../widgets/cache_status_banner.dart';
@@ -51,80 +54,84 @@ class WalletScreen extends ConsumerWidget {
       await ref.refresh(walletOverviewProvider(walletId).future).then((_) {});
     }
 
-    final trip = overview?.kind == WalletKind.trip;
+    final content = switch (overview) {
+      final o? => RefreshIndicator(
+        onRefresh: refresh,
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpace.screenPadding),
+          children: [
+            CacheStatusBanner(onRetry: refresh),
+            const SizedBox(height: AppSpace.x2),
+            _Header(o),
+            if (o.kind == WalletKind.trip) _NextContribution(o),
+            const SizedBox(height: AppSpace.x4),
+            _Tiles(o),
+            const SizedBox(height: AppSpace.x4),
+            // A finished trip no longer trades.
+            if (o.status != WalletStatus.finished) ...[
+              FilledButton(
+                onPressed: () => context.go('/explore?wallet=${o.id}'),
+                child: Text(l10n.wallet_invest),
+              ),
+              const SizedBox(height: AppSpace.x4),
+            ],
+            WalletCompanionCard(walletId: o.id),
+            if (o.pendingOrders.isNotEmpty) ...[
+              _PendingCard(o),
+              const SizedBox(height: AppSpace.x4),
+            ],
+            _ChartCard(walletId),
+            const SizedBox(height: AppSpace.x4),
+            _AllocationCard(o),
+            const SizedBox(height: AppSpace.x4),
+            _PositionsCard(o),
+            const SizedBox(height: AppSpace.x4),
+            LivretCard(
+              walletId: o.id,
+              canMove: o.status != WalletStatus.finished,
+            ),
+          ],
+        ),
+      ),
+      null when state.hasError => Center(
+        child: ErrorView(
+          failure: state.error is Failure
+              ? state.error! as Failure
+              : const ServerFailure(),
+          onRetry: () => ref.invalidate(walletOverviewProvider(walletId)),
+        ),
+      ),
+      null => const Padding(
+        padding: EdgeInsets.all(AppSpace.screenPadding),
+        child: AsyncSkeleton(lines: 6),
+      ),
+    };
+
+    // A trip has its own header in place of the app bar, and its time
+    // controls under the screen (BRIEF §4.5).
+    if (overview case final o? when o.kind == WalletKind.trip) {
+      return Scaffold(
+        bottomNavigationBar: _TimeControls(o),
+        body: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle.dark,
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _TripHeader(o),
+                Expanded(child: content),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
-        leading: trip
-            ? IconButton(
-                tooltip: l10n.trip_exit,
-                icon: const Icon(Icons.close),
-                onPressed: () => context.go('/wallets'),
-              )
-            : null,
-        title: overview == null
-            ? null
-            : Text(
-                overview.kind == WalletKind.live
-                    ? l10n.wallet_live_name
-                    : overview.name,
-              ),
+        title: overview == null ? null : Text(l10n.wallet_live_name),
       ),
-      bottomNavigationBar: trip ? _TimeControls(overview!) : null,
-      body: switch (overview) {
-        final o? => RefreshIndicator(
-          onRefresh: refresh,
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpace.screenPadding),
-            children: [
-              CacheStatusBanner(onRetry: refresh),
-              const SizedBox(height: AppSpace.x2),
-              if (o.kind == WalletKind.trip) ...[
-                _TripHeader(o),
-                const SizedBox(height: AppSpace.x4),
-              ],
-              _Header(o),
-              const SizedBox(height: AppSpace.x4),
-              _Tiles(o),
-              const SizedBox(height: AppSpace.x4),
-              // A finished trip no longer trades.
-              if (o.status != WalletStatus.finished) ...[
-                FilledButton(
-                  onPressed: () => context.go('/explore?wallet=${o.id}'),
-                  child: Text(l10n.wallet_invest),
-                ),
-                const SizedBox(height: AppSpace.x4),
-              ],
-              WalletCompanionCard(walletId: o.id),
-              if (o.pendingOrders.isNotEmpty) ...[
-                _PendingCard(o),
-                const SizedBox(height: AppSpace.x4),
-              ],
-              _ChartCard(walletId),
-              const SizedBox(height: AppSpace.x4),
-              _AllocationCard(o),
-              const SizedBox(height: AppSpace.x4),
-              _PositionsCard(o),
-              const SizedBox(height: AppSpace.x4),
-              LivretCard(
-                walletId: o.id,
-                canMove: o.status != WalletStatus.finished,
-              ),
-            ],
-          ),
-        ),
-        null when state.hasError => Center(
-          child: ErrorView(
-            failure: state.error is Failure
-                ? state.error! as Failure
-                : const ServerFailure(),
-            onRetry: () => ref.invalidate(walletOverviewProvider(walletId)),
-          ),
-        ),
-        null => const Padding(
-          padding: EdgeInsets.all(AppSpace.screenPadding),
-          child: AsyncSkeleton(lines: 6),
-        ),
-      },
+      body: content,
     );
   }
 }
@@ -673,9 +680,8 @@ class _PositionRow extends StatelessWidget {
   }
 }
 
-/// A trip's header (BRIEF §4.5): its clock, name and difficulty, and the
-/// simulated day, on a neutral card: being in a trip shows in the content,
-/// never as a tint.
+/// The trip's header (BRIEF §4.5) with its difficulty, and its automatic
+/// stops until it ends.
 class _TripHeader extends StatelessWidget {
   const _TripHeader(this.o);
   final WalletOverview o;
@@ -683,76 +689,84 @@ class _TripHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    return TripHeader(
+      name: o.name,
+      date: o.asOf,
+      chip: switch (o.difficulty) {
+        'decouverte' => l10n.difficulty_decouverte,
+        'realiste' => l10n.difficulty_realiste,
+        'serre' => l10n.difficulty_serre,
+        'sur-mesure' => l10n.difficulty_sur_mesure,
+        _ => null,
+      },
+      actions: [
+        if (o.status != WalletStatus.finished)
+          IconButton(
+            tooltip: l10n.trip_stops,
+            icon: const Icon(Icons.tune, color: AppColors.ink),
+            onPressed: () => showStopsSheet(
+              context,
+              walletId: o.id,
+              current: o.stops,
+              contribution: o.monthlyContribution,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// « Prochain versement : +200 € le 2 mars », when the trip has one.
+class _NextContribution extends ConsumerWidget {
+  const _NextContribution(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Until it is known, or if the calendar cannot be read: no line.
+    final next = ref.watch(nextContributionProvider(o.id)).value;
+    if (next == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     final formats = _formats(context);
-    final text = Theme.of(context).textTheme;
-    final difficulty = switch (o.difficulty) {
-      'decouverte' => l10n.difficulty_decouverte,
-      'realiste' => l10n.difficulty_realiste,
-      'serre' => l10n.difficulty_serre,
-      'sur-mesure' => l10n.difficulty_sur_mesure,
-      _ => null,
-    };
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x3),
-        child: Row(
-          children: [
-            ExcludeSemantics(
-              child: Container(
-                width: AppSpace.minTarget,
-                height: AppSpace.minTarget,
-                decoration: BoxDecoration(
-                  color: AppColors.line,
-                  borderRadius: BorderRadius.circular(
-                    AppShape.flatButtonRadius,
-                  ),
-                ),
-                child: const Icon(Icons.schedule, color: AppColors.ink),
-              ),
+    final amount = o.monthlyContribution.amount;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpace.x1),
+      child: Row(
+        children: [
+          const ExcludeSemantics(
+            child: Icon(
+              Icons.calendar_today_outlined,
+              size: AppSpace.x4,
+              color: AppColors.muted,
             ),
-            const SizedBox(width: AppSpace.x3),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: AppSpace.x2,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(o.name, style: text.titleMedium),
-                      if (difficulty != null)
-                        Chip(
-                          label: Text(difficulty),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                    ],
-                  ),
-                  Text(formats.date(o.asOf), style: AppText.title),
-                ],
-              ),
-            ),
-            if (o.status != WalletStatus.finished)
-              IconButton(
-                tooltip: l10n.trip_stops,
-                icon: const Icon(Icons.tune),
-                onPressed: () => showStopsSheet(
-                  context,
-                  walletId: o.id,
-                  current: o.stops,
-                  contribution: o.monthlyContribution,
+          ),
+          const SizedBox(width: AppSpace.x2),
+          Expanded(
+            child: Text(
+              l10n.trip_next_contribution(
+                formats.amount(
+                  amount,
+                  o.monthlyContribution.currency,
+                  signed: true,
+                  decimals: amount.isInteger ? 0 : 2,
                 ),
+                formats.dayMonth(next),
               ),
-          ],
-        ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: AppColors.muted),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// +1 jour, +1 semaine, +1 mois, « Avancer jusqu'à… » and « Terminer le
-/// voyage » (BRIEF §4.5). Off while time moves and once the trip stopped by
-/// itself; a finished trip (by hand, or at the end of the data) leads to its
-/// summary instead.
+/// « Avancer le temps » (BRIEF §4.5): +1 jour, +1 semaine, +1 mois and
+/// « Avancer jusqu'à… », with « Terminer le voyage » by the title. Off while
+/// time moves and once the trip stopped by itself, which leads to its stop
+/// instead; a finished trip (by hand, or at the end of the data) leads to
+/// its summary.
 class _TimeControls extends ConsumerWidget {
   const _TimeControls(this.o);
   final WalletOverview o;
@@ -760,7 +774,6 @@ class _TimeControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
     final runner = ref.watch(tripRunnerProvider(o.id));
     final stopRoute = '/wallet/${o.id}/stop/${stopEventId(o.asOf)}';
     final summaryRoute = '/wallet/${o.id}/summary';
@@ -780,22 +793,19 @@ class _TimeControls extends ConsumerWidget {
     final stopped = o.status == WalletStatus.stopped;
     final canMove = !moving && !stopped;
     final note = switch ((stopped, runner.error)) {
-      (true, _) => (l10n.wallets_status_stopped, AppColors.alertText),
-      (_, final Failure f) => (failureMessage(context, f), AppColors.alertText),
+      (true, _) => l10n.wallets_status_stopped,
+      (_, final Failure f) => failureMessage(context, f),
       _ => null,
     };
 
     if (o.status == WalletStatus.finished) {
       return _ControlsCard(
         children: [
-          Text(
-            l10n.trip_finished(_formats(context).date(o.asOf)),
-            style: text.bodyMedium,
-          ),
-          const SizedBox(height: AppSpace.x2),
-          FilledButton(
+          _ControlsTitle(l10n.trip_finished(_formats(context).date(o.asOf))),
+          const SizedBox(height: AppSpace.x3),
+          ChunkyButton(
+            label: l10n.trip_see_summary,
             onPressed: () => context.push(summaryRoute),
-            child: Text(l10n.trip_see_summary),
           ),
         ],
       );
@@ -803,9 +813,17 @@ class _TimeControls extends ConsumerWidget {
 
     return _ControlsCard(
       children: [
-        if (note case (final message, final color)) ...[
-          Text(message, style: text.bodySmall?.copyWith(color: color)),
-          const SizedBox(height: AppSpace.x2),
+        _ControlsTitle(
+          l10n.trip_time_title,
+          action: TextButton(
+            onPressed: moving ? null : () => _finish(context, ref),
+            child: Text(l10n.trip_finish),
+          ),
+        ),
+        const SizedBox(height: AppSpace.x2),
+        if (note != null) ...[
+          AlertMessage(note),
+          const SizedBox(height: AppSpace.x3),
         ],
         Row(
           children: [
@@ -816,55 +834,35 @@ class _TimeControls extends ConsumerWidget {
             ]) ...[
               if (step != TripStep.day) const SizedBox(width: AppSpace.x2),
               Expanded(
-                child: OutlinedButton(
-                  // Three to a row at phone width: no wrapping.
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpace.x2,
-                    ),
-                  ),
+                child: ChunkyButton(
+                  label: label,
+                  kind: ChunkyButtonKind.secondary,
+                  compact: true,
                   onPressed: canMove
                       ? () => ref
                             .read(tripRunnerProvider(o.id).notifier)
                             .advance(step)
                       : null,
-                  child: Text(label),
                 ),
               ),
             ],
           ],
         ),
         const SizedBox(height: AppSpace.x2),
-        Row(
-          children: [
-            Expanded(
-              child: stopped
-                  ? FilledButton(
-                      onPressed: () => context.push(stopRoute),
-                      child: Text(l10n.trip_see_stop),
-                    )
-                  : TextButton(
-                      onPressed: canMove
-                          ? () => showForwardSheet(
-                              context,
-                              walletId: o.id,
-                              from: o.asOf,
-                            )
-                          : null,
-                      child: Text(l10n.trip_forward),
-                    ),
-            ),
-            const SizedBox(width: AppSpace.x2),
-            Expanded(
-              child: TextButton(
-                onPressed: moving ? null : () => _finish(context, ref),
-                child: Text(l10n.trip_finish),
-              ),
-            ),
-          ],
-        ),
+        if (stopped)
+          ChunkyButton(
+            label: l10n.trip_see_stop,
+            onPressed: () => context.push(stopRoute),
+          )
+        else
+          ChunkyButton(
+            label: l10n.trip_forward,
+            onPressed: canMove
+                ? () => showForwardSheet(context, walletId: o.id, from: o.asOf)
+                : null,
+          ),
         if (moving) ...[
-          const SizedBox(height: AppSpace.x2),
+          const SizedBox(height: AppSpace.x3),
           Semantics(
             label: l10n.trip_moving,
             child: const LinearProgressIndicator(),
@@ -909,30 +907,65 @@ class _TimeControls extends ConsumerWidget {
   }
 }
 
-/// The card under a trip that holds its time controls.
+/// The chunky card under a trip that holds its time controls.
 class _ControlsCard extends StatelessWidget {
   const _ControlsCard({required this.children});
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) => SafeArea(
+    top: false,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpace.screenPadding,
+        AppSpace.x3,
         AppSpace.x2,
-        AppSpace.screenPadding,
-        AppSpace.x2,
+        AppSpace.x3,
+        AppSpace.x4,
       ),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpace.x3),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
+      child: ChunkyCard(
+        padding: const EdgeInsets.all(AppSpace.x3),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
         ),
       ),
     ),
+  );
+}
+
+/// The card's title by a clock, and its [action] on the right (under it
+/// when large text leaves no room).
+class _ControlsTitle extends StatelessWidget {
+  const _ControlsTitle(this.title, {this.action});
+  final String title;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    alignment: WrapAlignment.spaceBetween,
+    crossAxisAlignment: WrapCrossAlignment.center,
+    children: [
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ExcludeSemantics(
+            child: Icon(
+              Icons.schedule,
+              size: AppSpace.x5,
+              color: AppColors.ink,
+            ),
+          ),
+          const SizedBox(width: AppSpace.x2),
+          Flexible(
+            child: Semantics(
+              header: true,
+              child: Text(title, style: AppText.titleXSmall),
+            ),
+          ),
+        ],
+      ),
+      ?action,
+    ],
   );
 }

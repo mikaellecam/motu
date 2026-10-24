@@ -160,6 +160,12 @@ void main() {
       expect(en.month(DateTime(2000, 3, 10)), 'March 2000');
     });
 
+    test('day and month', () {
+      expect(fr.dayMonth(DateTime(2020, 3, 2)), '2 mars');
+      expect(fr.dayMonth(DateTime(2008, 11, 1)), '1er novembre');
+      expect(en.dayMonth(DateTime(2020, 3, 2)), 'March 2');
+    });
+
     test('time', () {
       expect(fr.time(DateTime(2026, 10, 7, 15, 30)), '15${nbsp}h${nbsp}30');
       expect(fr.time(DateTime(2026, 10, 7, 9, 5)), '9${nbsp}h${nbsp}05');

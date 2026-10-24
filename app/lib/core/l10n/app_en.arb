@@ -247,6 +247,8 @@
   "trip_step_month": "+1 month",
   "trip_exit": "Leave the trip",
   "trip_moving": "Time is moving forward\u2026",
+  "trip_time_title": "Move time forward",
+  "trip_next_contribution": "Next contribution: {amount} on {date}",
   "stop_title": "Automatic stop",
   "stop_trip_name": "Trip \u201c{name}\u201d",
   "stop_drawdown": "Your portfolio is at {loss} of the money put in.",

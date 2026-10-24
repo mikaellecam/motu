@@ -11,6 +11,7 @@ import '../../domain/market/price_bar.dart';
 import '../../domain/market/quote.dart';
 import '../../domain/wallet/dca.dart';
 import '../../domain/wallet/order.dart';
+import '../../domain/wallet/trip_engine.dart';
 import '../../domain/wallet/wallet.dart';
 import '../providers.dart';
 import 'wallet_overview.dart';
@@ -67,6 +68,34 @@ Future<WalletOverview> walletOverview(Ref ref, String walletId) async {
     prices: prices,
     fxRates: fxRates,
     livret: livret,
+  );
+}
+
+/// The day trip [walletId]'s next monthly contribution arrives (BRIEF §4.5):
+/// null for the live wallet, a trip without one, or a trip that ended.
+@riverpod
+Future<DateTime?> nextContribution(Ref ref, String walletId) async {
+  final market = ref.watch(marketRepositoryProvider);
+  final o = await ref.watch(walletOverviewProvider(walletId).future);
+  // No calendar to read when none can come.
+  if (o.kind != WalletKind.trip ||
+      o.status == WalletStatus.finished ||
+      !o.monthlyContribution.isPositive) {
+    return null;
+  }
+  final day = _day(o.asOf);
+  final exchanges = {
+    for (final a in await market.assets(asOf: o.asOf)) a.exchange,
+  };
+  final calendar = await market.calendar(
+    exchanges,
+    fromYear: day.year,
+    toYear: day.year + 1,
+  );
+  return nextContributionDay(
+    day,
+    contribution: o.monthlyContribution,
+    isTripDay: (d) => exchanges.any((e) => calendar.isTradingDay(e, d)),
   );
 }
 

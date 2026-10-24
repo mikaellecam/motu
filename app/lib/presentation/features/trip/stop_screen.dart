@@ -21,6 +21,7 @@ import '../../../domain/wallet/stop_decision.dart';
 import '../../../domain/wallet/trip_engine.dart';
 import '../../widgets/chart_axis.dart';
 import '../glossary/term_sheet.dart';
+import 'trip_header.dart';
 import 'trip_sheets.dart';
 
 /// The glossary's word for a fall from a high (§4.4).
@@ -80,7 +81,13 @@ class _StopScreenState extends ConsumerState<StopScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _TripHeader(view),
+              TripHeader(
+                name: view?.name,
+                date: view?.date,
+                chip: l10n.stop_title,
+                // An automatic stop: the alert colour (§10.2).
+                chipColor: AppColors.alert,
+              ),
               Expanded(
                 child: switch (view) {
                   null when state.hasError => Center(
@@ -225,95 +232,6 @@ class _StopScreenState extends ConsumerState<StopScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The trip's context, as its header on the wallet (BRIEF §4.5): the clock,
-/// the trip's name, « Arrêt automatique » in place of the difficulty and the
-/// simulated day; then the way out of the trip. Only the way out while the
-/// stop loads.
-class _TripHeader extends StatelessWidget {
-  const _TripHeader(this.view);
-  final StopView? view;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final formats = Formats(Localizations.localeOf(context).languageCode);
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.line)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.screenPadding,
-          vertical: AppSpace.x3,
-        ),
-        child: Row(
-          children: [
-            if (view case final v?) ...[
-              ExcludeSemantics(
-                child: Container(
-                  width: AppSpace.minTarget,
-                  height: AppSpace.minTarget,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(
-                      AppShape.flatButtonRadius,
-                    ),
-                    border: Border.all(color: AppColors.ink, width: 2.5),
-                  ),
-                  child: const Icon(Icons.schedule, color: AppColors.ink),
-                ),
-              ),
-              const SizedBox(width: AppSpace.x3),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: AppSpace.x2,
-                      runSpacing: AppSpace.x1,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          l10n.stop_trip_name(v.name),
-                          style: AppText.label.copyWith(color: AppColors.muted),
-                        ),
-                        // An automatic stop: the alert colour (§10.2).
-                        DecoratedBox(
-                          decoration: const ShapeDecoration(
-                            color: AppColors.alert,
-                            shape: StadiumBorder(
-                              side: BorderSide(color: AppColors.ink, width: 2),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpace.x2,
-                              vertical: 2,
-                            ),
-                            child: Text(l10n.stop_title, style: AppText.label),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(formats.date(v.date), style: AppText.title),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpace.x3),
-            ] else
-              const Spacer(),
-            ChunkyIconButton(
-              icon: Icons.logout,
-              label: l10n.trip_exit,
-              onPressed: () => context.go('/wallets'),
-            ),
-          ],
         ),
       ),
     );

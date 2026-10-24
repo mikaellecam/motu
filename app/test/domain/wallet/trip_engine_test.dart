@@ -328,6 +328,60 @@ void main() {
     expect(result.state.cash, eur('400'));
   });
 
+  group('the next contribution', () {
+    DateTime? next(DateTime from, {Money? amount, TripEngine? on}) =>
+        nextContributionDay(
+          from,
+          contribution: amount ?? eur('200'),
+          isTripDay: (on ?? engine()).isTripDay,
+        );
+
+    test('the first trip day of the next month', () {
+      expect(next(day(3, 10)), day(4, 1));
+      expect(next(day(3, 31)), day(4, 1), reason: 'the last day of a month');
+    });
+
+    test('today is the first trip day of a month: the next month', () {
+      // Today's contribution was credited when the trip reached it.
+      expect(next(day(6, 1)), day(7, 1));
+    });
+
+    test('a month that starts on a weekend: the Monday', () {
+      // Saturday 1 August.
+      expect(next(day(7, 15)), day(8, 3));
+    });
+
+    test('a holiday counts only when no exchange trades', () {
+      // 1 May closes Euronext; New York trades.
+      expect(next(day(4, 20)), day(5, 1));
+      final euronextOnly = engine(exchanges: const {Exchange.euronext});
+      expect(next(day(4, 20), on: euronextOnly), day(5, 4));
+    });
+
+    test('past the calendar data: weekends only', () {
+      expect(next(day(12, 15)), DateTime.utc(2027, 1, 1));
+    });
+
+    test('no contribution: none comes', () {
+      expect(next(day(3, 10), amount: eur('0')), isNull);
+      expect(next(day(3, 10), amount: eur('-50')), isNull);
+    });
+
+    test('the engine credits it on that day', () {
+      final from = TripState.start(day(7, 15), eur('0'));
+      final result = advance(
+        engine(contribution: eur('200')),
+        from,
+        day(8, 5),
+        const {},
+      );
+      expect(
+        result.events.whereType<ContributionCredited>().single.date,
+        next(from.date),
+      );
+    });
+  });
+
   test('the Livret accrues and counts in the value', () {
     final livret = LivretAccount.empty(day(1, 9))
         .apply(LivretMovement(day(1, 9), eur('2400')));

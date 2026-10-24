@@ -90,6 +90,12 @@ class Formats {
   /// `mars 2000`, `March 2000`.
   String month(DateTime d) => DateFormat.yMMMM(_locale).format(d);
 
+  /// `2 mars`, `1er novembre`, `March 2`: a day near the one on screen.
+  String dayMonth(DateTime d) {
+    final text = DateFormat.MMMMd(_locale).format(d);
+    return _fr && d.day == 1 ? text.replaceFirst('1', '1er') : text;
+  }
+
   /// `15 h 30`, `3:30 PM`.
   String time(DateTime d) => _fr
       ? '${d.hour}${_nbsp}h$_nbsp${d.minute.toString().padLeft(2, '0')}'

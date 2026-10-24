@@ -745,6 +745,18 @@
   "trip_step_month": "+1 mois",
   "trip_exit": "Quitter le voyage",
   "trip_moving": "Le temps avance\u2026",
+  "trip_time_title": "Avancer le temps",
+  "trip_next_contribution": "Prochain versement\u202f: {amount} le {date}",
+  "@trip_next_contribution": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "stop_title": "Arr\u00eat automatique",
   "stop_trip_name": "Voyage \u00ab\u00a0{name}\u00a0\u00bb",
   "@stop_trip_name": {

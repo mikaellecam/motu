@@ -140,6 +140,10 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
         walletMomentProvider.overrideWith((ref, args) async => null),
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) async => o),
+        // Monday 3 November: the 1st is a Saturday.
+        nextContributionProvider.overrideWith(
+          (ref, id) async => DateTime.utc(2008, 11, 3),
+        ),
         walletChartProvider.overrideWith(
           (ref, args) async => chartFor(o.series, args.$2),
         ),
@@ -171,10 +175,15 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
 void main() {
   testWidgets('a trip: its header, its day, and time to move', (tester) async {
     final runner = await show(tester, trip());
-    expect(find.text('Lehman'), findsNWidgets(2), reason: 'app bar and header');
-    expect(find.widgetWithText(Chip, 'Réaliste'), findsOneWidget);
+    expect(find.text('Voyage «\u00a0Lehman\u00a0»'), findsOneWidget);
+    expect(find.text('Réaliste'), findsOneWidget);
     expect(find.text('1er octobre 2008'), findsOneWidget);
-    expect(find.byTooltip('Quitter le voyage'), findsOneWidget);
+    expect(find.bySemanticsLabel('Quitter le voyage'), findsOneWidget);
+    expect(
+      find.text('Prochain versement\u202f: +200\u00a0€ le 3 novembre'),
+      findsOneWidget,
+    );
+    expect(find.text('Avancer le temps'), findsOneWidget);
 
     await tester.tap(find.text('+1 semaine'));
     await tester.pump();
@@ -188,6 +197,8 @@ void main() {
   ) async {
     final runner = await show(tester, trip(status: WalletStatus.stopped));
     expect(find.text('Arrêt automatique : à toi de décider'), findsOneWidget);
+    expect(find.text("Voir l'arrêt"), findsOneWidget);
+    expect(find.text("Avancer jusqu'à…"), findsNothing);
     await tester.tap(find.text('+1 mois'));
     await tester.pump();
     expect(runner.steps, isEmpty);

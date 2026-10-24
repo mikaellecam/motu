@@ -19,6 +19,7 @@ import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 
 import 'screenshot.dart';
 
@@ -45,7 +46,7 @@ Asset _asset(String id, String name, AssetType type) => Asset(
   listingDate: DateTime.utc(2000),
 );
 
-WalletOverview _trip() {
+WalletOverview _trip({WalletStatus status = WalletStatus.active}) {
   Fill buy(String id, String qty, String price) => Fill(
     assetId: id,
     side: Side.buy,
@@ -78,7 +79,7 @@ WalletOverview _trip() {
       name: 'Crise financière',
       startDate: day(9, 15),
       simDate: day(10, 3),
-      status: WalletStatus.active,
+      status: status,
       params: WalletParams(
         rules: TradingRules(
           fxFeeRate: d('0.0015'),
@@ -122,18 +123,36 @@ WalletOverview _trip() {
 }
 
 void main() {
-  final o = _trip();
+  List<Override> overrides(WalletOverview o) => [
+    cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
+    walletOverviewProvider.overrideWith((ref, id) async => o),
+    // Monday 3 November: the 1st is a Saturday.
+    nextContributionProvider.overrideWith(
+      (ref, id) async =>
+          o.status == WalletStatus.finished ? null : DateTime.utc(2008, 11, 3),
+    ),
+    walletChartProvider.overrideWith(
+      (ref, args) async => chartFor(o.series, args.$2),
+    ),
+    tripRunnerProvider.overrideWith2((_) => _Idle()),
+  ];
+
   screenshot(
     'm5-3-trip-wallet',
     const WalletScreen(walletId: 'lehman'),
     size: const Size(390, 1500),
-    overrides: [
-      cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
-      walletOverviewProvider.overrideWith((ref, id) async => o),
-      walletChartProvider.overrideWith(
-        (ref, args) async => chartFor(o.series, args.$2),
-      ),
-      tripRunnerProvider.overrideWith2((_) => _Idle()),
-    ],
+    overrides: overrides(_trip()),
   );
+  // What changes in a phone's height when the trip stopped by itself, and
+  // once it ended.
+  for (final (name, status) in [
+    ('m9-32-trip-wallet-stopped', WalletStatus.stopped),
+    ('m9-32-trip-wallet-finished', WalletStatus.finished),
+  ]) {
+    screenshot(
+      name,
+      const WalletScreen(walletId: 'lehman'),
+      overrides: overrides(_trip(status: status)),
+    );
+  }
 }

@@ -31,6 +31,10 @@ abstract final class AppText {
   static final title = _baloo(24);
   static final titleSmall = _baloo(19);
 
+  /// Small toy blocks, three to a row, and the card that holds them (a
+  /// trip's time steps).
+  static final titleXSmall = _baloo(16);
+
   static final body = _figtree(16, 400);
   static final bodyStrong = _figtree(16, 600);
   static final label = _figtree(14, 600);

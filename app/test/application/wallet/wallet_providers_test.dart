@@ -156,6 +156,51 @@ void main() {
     expect(backend.to('/v1/quotes'), isEmpty, reason: 'trips never use quotes');
   });
 
+  Future<void> trip(String id, DateTime start, {String contribution = '200'}) =>
+      wallets.createWallet(
+        id: id,
+        kind: WalletKind.trip,
+        name: id,
+        startDate: start,
+        startingCash: Money.book(d('10000'), Currency.eur),
+        params: WalletParams(
+          rules: TradingRules(
+            fxFeeRate: d('0.0015'),
+            fixedFee: const Money.zero(Currency.eur),
+            fractionalShares: true,
+          ),
+          monthlyContribution: Money.book(d(contribution), Currency.eur),
+          stops: const StopConditions(),
+        ),
+        createdAt: wall.now(),
+      );
+
+  test("a trip's next contribution: next month's first trip day", () async {
+    // 1 January 2027 is a holiday, then a weekend.
+    await trip('december', day(12, 15));
+    expect(
+      await container.read(nextContributionProvider('december').future),
+      DateTime.utc(2027, 1, 4),
+    );
+  });
+
+  test(
+    'no next contribution: none set, the live wallet, a trip ended',
+    () async {
+      await trip('none', day(10, 5), contribution: '0');
+      await trip('ended', day(10, 5));
+      await wallets.finish('ended');
+      final live = await wallets.ensureLiveWallet(DateTime.utc(2026, 10, 5, 9));
+      for (final id in ['none', 'ended', live]) {
+        expect(
+          await container.read(nextContributionProvider(id).future),
+          isNull,
+          reason: id,
+        );
+      }
+    },
+  );
+
   test('benchmarks receive the same money on the same days', () async {
     final id = await wallets.ensureLiveWallet(DateTime.utc(2026, 10, 5, 9));
 

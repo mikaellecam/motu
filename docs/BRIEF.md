@@ -409,11 +409,26 @@ chosen option and the coral meter bars (no token means them, §10.2: the meter i
 **Trip wallet screen:** identical to the live wallet plus:
 - Trip header (neutral background): clock tile, trip name + difficulty chip, simulated date in large type,
   exit button. No colored banner (color rule §10.2).
-- Time controls card above the tab bar: +1 jour (the next trip day), +1 semaine, +1 mois (same day next
-  month, or its last day), « Avancer jusqu'à… ». They are off while time moves, once the trip stopped by
-  itself (until the user decides, §4.5 automatic stop), and at the last day with data. Each advance runs
-  `TripEngine.advance` on a snapshot of the cached market and books its result in one transaction
-  (orders, fills, contributions, daily values, companion moments, simulated day, status).
+- Time controls card at the bottom of the screen (a trip's route has no tab bar): +1 jour (the next trip
+  day), +1 semaine, +1 mois (same day next month, or its last day), « Avancer jusqu'à… ». They are off
+  while time moves, once the trip stopped by itself (until the user decides, §4.5 automatic stop), and at
+  the last day with data. Each advance runs `TripEngine.advance` on a snapshot of the cached market and
+  books its result in one transaction (orders, fills, contributions, daily values, companion moments,
+  simulated day, status).
+
+Layout (decided 2026-10-24, artboard `Trip-A` of the art direction canvas): no app bar; the trip's header
+on top, as on its automatic stop (clock tile, « Voyage « {nom} » » with the difficulty chip, the simulated
+day in Baloo, the automatic stops' button until the trip ends, « Quitter le voyage » back to the wallets).
+Under the change since the start, when the trip has a monthly contribution and has not ended: « Prochain
+versement : +200 € le 3 novembre » (the first trip day of the next month, step 1 below). The time controls
+in one chunky card: « Avancer le temps » by a clock with « Terminer le voyage » beside it, +1 jour / +1
+semaine / +1 mois as small toy blocks, then « Avancer jusqu'à… » the chunky primary; stopped, the alert box
+« Arrêt automatique : à toi de décider » over the steps (off) and « Voir l'arrêt » in its place; ended,
+« Voyage terminé le {date}. » and « Voir le bilan ». The rest is the wallet's (§4.7). Not taken from the
+artboard: the weekday in the date and the flat exit button (the stop screen's header, M9-25), and what the
+trip shares with the live wallet (the label over the value, the « + » in « Investir », « depuis le 18
+février », the chart without its card, periods and comparisons, its « Départ » tag in place of the legend,
+the positions' dividers, no allocation).
 
 **Advancing time** (domain service `TripEngine.advance(wallet, target, stopConditions)`), one trip day at a
 time. A trip day is a day when any exchange of the catalogue trades; an asset whose exchange is closed keeps
