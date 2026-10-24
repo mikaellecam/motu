@@ -124,6 +124,15 @@ void main() {
     act: (tester) => open(tester, '25000'),
   );
 
+  // More than the 50 000 € of cash: the field says why, the button waits.
+  screenshot(
+    'm9-17-order-error',
+    const _Host(),
+    size: const Size(390, 900),
+    overrides: overrides,
+    act: (tester) => open(tester, '60000'),
+  );
+
   screenshot(
     'm9-4-order-offline',
     const _Host(),

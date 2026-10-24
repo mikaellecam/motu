@@ -57,6 +57,7 @@ void main() {
       'island_node_caption',
       'island_node_semantics',
       'island_trading',
+      'order_mode_amount_short',
       'livret_title',
       'map_island_progress',
       'node_type_mission',

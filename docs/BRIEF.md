@@ -418,6 +418,14 @@ in quantity (toggle). A € amount is the value of the shares traded: fees come 
 sell's proceeds. Fractional to 6 decimals unless wallet disallows; whole-share wallets accept € orders and
 floor them to whole shares. Good-till-cancelled.
 
+Sheet (decided 2026-10-24, artboards `Order-A` and `OrderError-A` of the art direction canvas, money family
+§10.1): the title with a ✕; « Type d'ordre »; the amount or quantity as the headline, a large boxed figure
+with what is available under it and a compact € / Parts toggle beside its label; round quick chips
+(« 500 € »); the summary; the coach in a chunky card « Avant de valider ». A validation error turns the box
+`alertText` and shows under it with a warning icon; the button then waits. The flat main button stays at the
+bottom of the sheet whatever scrolls above it, names the amount (« Acheter pour 500,00 € »), over « Argent
+fictif. Aucune transaction réelle. » No lock on limit and stop (soft gate below).
+
 **Soft gate:** limit and stop are visible from day one. The first time a user selects one, the glossary
 sheet for that order type opens; after it is closed the type works normally. No hard locks in the sandbox.
 

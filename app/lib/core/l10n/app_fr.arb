@@ -1297,6 +1297,47 @@
       }
     }
   },
+  "order_type_label": "Type d'ordre",
+  "order_mode_amount_short": "€",
+  "order_mode_quantity_short": "Parts",
+  "order_available_cash": "Disponible : {cash}",
+  "@order_available_cash": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "order_available_shares": "{form, select, one{Disponible : {quantity} part} other{Disponible : {quantity} parts}}",
+  "@order_available_shares": {
+    "description": "form: Formats.countForm of the quantity held.",
+    "placeholders": {
+      "form": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "String"
+      }
+    }
+  },
+  "order_coach_label": "Avant de valider",
+  "order_buy_for": "Acheter pour {amount}",
+  "@order_buy_for": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "order_sell_for": "Vendre pour {amount}",
+  "@order_sell_for": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "order_fictional": "Argent fictif. Aucune transaction réelle.",
   "order_type_market": "Au march\u00e9",
   "order_type_limit": "\u00c0 cours limit\u00e9",
   "order_type_stop": "Stop",

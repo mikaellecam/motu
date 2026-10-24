@@ -25,9 +25,13 @@ class Formats {
       _withCurrency(value.amount, value.currency, signed);
 
   /// A computed, unbooked amount (a valuation, a P&L), rounded half-even to
-  /// cents for display.
-  String amount(Decimal value, Currency currency, {bool signed = false}) =>
-      _withCurrency(value, currency, signed);
+  /// cents for display, or to [decimals] (a round chip: `500 €`).
+  String amount(
+    Decimal value,
+    Currency currency, {
+    bool signed = false,
+    int decimals = 2,
+  }) => _withCurrency(value, currency, signed, decimals);
 
   /// A quote-currency price, rounded half-even to cents: `177,57 $`.
   String price(Price price) =>
@@ -81,12 +85,17 @@ class Formats {
       ? '${d.hour}${_nbsp}h$_nbsp${d.minute.toString().padLeft(2, '0')}'
       : DateFormat.jm(_locale).format(d);
 
-  String _withCurrency(Decimal amount, Currency currency, bool signed) {
+  String _withCurrency(
+    Decimal amount,
+    Currency currency,
+    bool signed, [
+    int decimals = 2,
+  ]) {
     final symbol = switch (currency) {
       Currency.eur => '€',
       Currency.usd => r'$',
     };
-    final number = _number(amount, 2, signed);
+    final number = _number(amount, decimals, signed);
     if (_fr) return '$number$_nbsp$symbol';
     // English puts the symbol after the sign: −€2.50, +€2.50.
     final sign = number.startsWith(_minus) || number.startsWith('+')

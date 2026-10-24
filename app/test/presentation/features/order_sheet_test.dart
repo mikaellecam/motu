@@ -198,7 +198,13 @@ void main() {
       ('Frais', '13,08$nbsp€'),
       ('Total à payer', '8${nnbsp}731,02$nbsp€'),
     ]) {
-      expect(find.text(label), findsOneWidget, reason: label);
+      // In the summary: the mode toggle says « Parts » too.
+      final summary = find.byType(Card);
+      expect(
+        find.descendant(of: summary, matching: find.text(label)),
+        findsOneWidget,
+        reason: label,
+      );
       expect(find.text(value), findsOneWidget, reason: label);
     }
     expect(
@@ -210,7 +216,10 @@ void main() {
     expect(find.textContaining('Le Nasdaq est fermé.'), findsOneWidget);
     expect(find.textContaining('h${nbsp}30'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
+    // The button names what it buys.
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Acheter pour 8${nnbsp}717,94$nbsp€'),
+    );
     await tester.pumpAndSettle();
     expect(ticket.placed.single.size, isA<AmountSize>());
     expect(result!.message, contains('Ordre envoyé'));
@@ -236,7 +245,7 @@ void main() {
   ) async {
     await show(tester);
     // Valider first: every problem shows.
-    await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
     await tester.pumpAndSettle();
     expect(find.text('Saisis un montant supérieur à zéro.'), findsOneWidget);
     expect(ticket.placed, isEmpty);
@@ -264,18 +273,26 @@ void main() {
 
   testWidgets('chips: an amount, Max, shares', (tester) async {
     await show(tester);
-    await tester.tap(find.text('500,00$nbsp€'));
+    await tester.tap(find.text('500$nbsp€'));
     await tester.pumpAndSettle();
     expect(find.text('500'), findsOneWidget, reason: 'the field follows');
     await tester.tap(find.text('Max'));
     await tester.pumpAndSettle();
     expect(find.text('Total à payer'), findsOneWidget);
 
-    await tester.tap(find.text('Quantité'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SegmentedButton<SizeMode>),
+        matching: find.text('Parts'),
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('5 parts'));
     await tester.pumpAndSettle();
-    expect(find.text('Parts'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(Card), matching: find.text('Parts')),
+      findsOneWidget,
+    );
     expect(find.text('5'), findsWidgets);
   });
 
@@ -333,7 +350,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.widgetWithText(TextField, 'Pour voir'), findsOneWidget);
     }
-    await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Acheter pour 500,00$nbsp€'),
+    );
     await tester.pumpAndSettle();
     expect(
       result!.message,

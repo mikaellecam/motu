@@ -118,6 +118,15 @@ void main() {
     expect(en.amount(d('-0.004'), Currency.eur, signed: true), '€0.00');
   });
 
+  test('a round amount can drop its cents, for a chip', () {
+    expect(
+      fr.amount(d('1000'), Currency.eur, decimals: 0),
+      '1${nnbsp}000$nbsp€',
+    );
+    expect(en.amount(d('1000'), Currency.eur, decimals: 0), '€1,000');
+    expect(fr.amount(d('2.5'), Currency.eur, decimals: 0), '2$nbsp€');
+  });
+
   test('unsupported locales fall back to English', () {
     expect(Formats('de').money(const Money(150, Currency.eur)), '€1.50');
   });
