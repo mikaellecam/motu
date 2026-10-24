@@ -1,7 +1,7 @@
 {
   "id": "ae.mission-dca",
   "type": "mission",
-  "status": "draft",
+  "status": "published",
   "title": {
     "fr": "Mets en place un DCA",
     "en": "Set up a DCA"

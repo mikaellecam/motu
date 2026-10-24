@@ -38,7 +38,8 @@ trip wizard prefilled (e.g. "Mars 2020 : vendre ou tenir ?" → trip starting 20
 ### 1.4 Non-goals (V1)
 
 Real trading, accounts/login, sync between devices, social or competitive features (no leaderboards),
-crypto, real estate, trading island, push notifications, scoring/ranking of assets (open decision, §14).
+crypto, real estate, trading island, push notifications, ranking of assets. An explainable score per asset
+is in (decided 2026-10-24, §14).
 
 ---
 
@@ -962,8 +963,9 @@ data, no key).
 
 ## 9. Content production
 
-- Lesson text is written in `content/` (fr first, en second), reviewed by Bob. Agents may draft, marked
-  `"status": "draft"`; drafts never ship in a release pack.
+- Lesson text is written in `content/` (fr first, en second), reviewed by Bob. Content ships published as it
+  is written and is corrected afterwards (decided 2026-10-24 by the user); `"status": "draft"` holds back a
+  piece on purpose, and drafts never ship in a release pack.
 - A release is the latest version of an island once `contentcheck -release` passes: no draft node or term
   (decided 2026-10-11). The server publishes only such versions; drafts stay in the app's bundle while the
   island is being built, and the graded build passes `-release` first.
@@ -1082,8 +1084,12 @@ screens; M9-5).
 ## 14. Open decisions (ask, do not guess)
 
 1. ~~Live orders while offline~~: decided 2026-10-12, queued as pending until the next session's open (§6.4).
-2. Trip maximum length (open-ended to today, or capped at 1–3 years)?
-3. Cash shared across future islands, or one wallet per island?
-4. Explainable asset scoring in V1 or later?
+2. ~~Trip maximum length~~: decided 2026-10-24, none. A trip that reaches today can no longer be sped up:
+   it goes on at the pace of real days, since prices ahead cannot be known (§4.8).
+3. ~~Cash shared across future islands~~: decided 2026-10-24, no: islands teach different things. An idea
+   for after V1 (the user's): a life simulation bringing everything together. A scenario, chosen or given,
+   sets a salary and fixed expenses; the player decides how much to save, then what to invest it in
+   (stocks, crypto, housing…).
+4. ~~Explainable asset scoring~~: decided 2026-10-24, can be in V1; what it shows is still to agree.
 5. ~~Final data provider and `dataFloor`~~: decided in ADR-004 (Twelve Data free plan, `dataFloor` 2000-01-03).
 6. ~~Final catalogue list and symbols~~: decided in ADR-004 (US listings).
