@@ -14,8 +14,11 @@ import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../domain/wallet/trip_setup.dart';
 import '../../../domain/wallet/trip_start.dart';
+import '../../widgets/section_title.dart';
+import '../node/node_screen.dart';
 
-/// The trip wizard (BRIEF §4.5), chunky « world » style: the start date, the
+/// The trip wizard (BRIEF §4.5), chunky « world » style, as the art
+/// direction's « new trip » artboards draw it: the start date, the
 /// difficulty, then the recap that creates the trip.
 class TripWizardScreen extends ConsumerStatefulWidget {
   const TripWizardScreen({super.key, this.args = const TripWizardArgs()});
@@ -47,20 +50,215 @@ class _TripWizardScreenState extends ConsumerState<TripWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final draft = ref.watch(tripWizardProvider);
-    final wizard = ref.read(tripWizardProvider.notifier);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.wallets_new_trip),
-        leading: draft.step > 1 ? BackButton(onPressed: wizard.back) : null,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Header(step: draft.step),
+            Expanded(
+              child: switch (draft.step) {
+                1 => _DateStep(draft: draft, custom: _custom),
+                2 => _DifficultyStep(draft: draft),
+                _ => _RecapStep(draft: draft),
+              },
+            ),
+          ],
+        ),
       ),
-      body: switch (draft.step) {
-        1 => _DateStep(draft: draft, custom: _custom),
-        2 => _DifficultyStep(draft: draft),
-        _ => _RecapStep(draft: draft),
-      },
+    );
+  }
+}
+
+/// On every step: close, the step bar, and the step in words.
+class _Header extends StatelessWidget {
+  const _Header({required this.step});
+
+  final int step;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpace.screenPadding,
+        AppSpace.x3,
+        AppSpace.screenPadding,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              ChunkyIconButton(
+                icon: Icons.close,
+                label: l10n.wizard_close,
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/wallets'),
+              ),
+              const SizedBox(width: AppSpace.x3),
+              Expanded(child: StepBar(done: step, of: 3)),
+            ],
+          ),
+          const SizedBox(height: AppSpace.x3),
+          Text(
+            l10n.wizard_step(step),
+            style: AppText.label.copyWith(color: AppColors.primary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A step's content, scrolling, over « Retour » (from step 2) beside the
+/// next action, always in reach.
+class _Page extends StatelessWidget {
+  const _Page({
+    required this.title,
+    this.hint,
+    required this.children,
+    required this.next,
+    this.onBack,
+    this.nextFlex = 1,
+  });
+
+  final String title;
+  final String? hint;
+  final List<Widget> children;
+  final Widget next;
+  final VoidCallback? onBack;
+
+  /// The next action's share of the width, « Retour » taking 1.
+  final int nextFlex;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpace.screenPadding),
+            children: [
+              Semantics(header: true, child: Text(title, style: AppText.title)),
+              if (hint case final hint?) ...[
+                const SizedBox(height: AppSpace.x1),
+                Text(
+                  hint,
+                  style: AppText.body.copyWith(color: AppColors.muted),
+                ),
+              ],
+              const SizedBox(height: AppSpace.x4),
+              ...children,
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.screenPadding,
+            AppSpace.x2,
+            AppSpace.screenPadding,
+            AppSpace.screenPadding,
+          ),
+          child: Row(
+            children: [
+              if (onBack != null) ...[
+                Expanded(
+                  child: ChunkyButton(
+                    label: l10n.wizard_back,
+                    kind: ChunkyButtonKind.secondary,
+                    onPressed: onBack,
+                  ),
+                ),
+                const SizedBox(width: AppSpace.x3),
+              ],
+              Expanded(flex: nextFlex, child: next),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One of the wizard's choices: quiet until chosen, then a toy block. Its
+/// radio says which one is chosen, never colour alone. A [pill] is a short
+/// one, side by side with others.
+class _Option extends StatelessWidget {
+  const _Option({
+    required this.selected,
+    required this.onTap,
+    required this.child,
+    this.pill = false,
+  });
+
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget child;
+  final bool pill;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = selected ? AppShape.chunkyBorder : 2.0;
+    // The same room inside, whichever the border.
+    final inside =
+        (pill ? AppSpace.x2 : AppSpace.x3) + AppShape.chunkyBorder - border;
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: AppSpace.minTarget),
+            padding: EdgeInsets.symmetric(
+              horizontal: inside + (pill ? AppSpace.x1 : 0),
+              vertical: inside,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(
+                pill ? AppSpace.x8 : AppShape.flatCardRadius,
+              ),
+              border: Border.all(
+                color: selected ? AppColors.ink : AppColors.line,
+                width: border,
+              ),
+              boxShadow: [
+                if (selected)
+                  const BoxShadow(
+                    color: AppColors.ink,
+                    offset: Offset(0, AppShape.chunkyButtonShadow),
+                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: pill ? MainAxisSize.min : MainAxisSize.max,
+              crossAxisAlignment: pill
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
+              children: [
+                ExcludeSemantics(
+                  child: Icon(
+                    selected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: selected ? AppColors.ink : AppColors.muted,
+                  ),
+                ),
+                const SizedBox(width: AppSpace.x3),
+                if (pill) child else Expanded(child: child),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -74,7 +272,6 @@ class _DateStep extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
     final wizard = ref.read(tripWizardProvider.notifier);
     final state = ref.watch(wizardDatesProvider);
     final dates = state.value;
@@ -94,113 +291,162 @@ class _DateStep extends ConsumerWidget {
             );
     }
 
-    Widget preset(PresetOption option) => Padding(
-      padding: const EdgeInsets.only(bottom: AppSpace.x3),
-      child: _PresetCard(
-        option,
-        catalogueSize: dates.catalogueSize,
-        selected: draft.preset == option.preset,
-        onTap: () {
-          custom.clear();
-          wizard.choose(option);
-        },
-      ),
+    Widget option(PresetOption o) => _Option(
+      selected: draft.preset == o.preset,
+      pill: !o.preset.historic,
+      onTap: () {
+        custom.clear();
+        wizard.choose(o);
+      },
+      child: o.preset.historic
+          ? _Moment(o, catalogueSize: dates.catalogueSize)
+          : _Shortcut(o, catalogueSize: dates.catalogueSize),
+    );
+    final check = draft.check;
+    final wrong =
+        draft.custom.trim().isNotEmpty && check != null && check is! StartOk;
+    const alertBorder = OutlineInputBorder(
+      borderSide: BorderSide(color: AppColors.alertText, width: 2),
     );
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpace.screenPadding),
+    return _Page(
+      title: l10n.wizard_when,
+      hint: l10n.wizard_when_hint,
+      next: ChunkyButton(
+        label: l10n.wizard_next,
+        onPressed: draft.start == null ? null : wizard.next,
+      ),
       children: [
-        Text(
-          l10n.wizard_step(1),
-          style: text.bodySmall?.copyWith(color: AppColors.muted),
+        SectionTitle(l10n.wizard_history),
+        for (final o in dates.presets)
+          if (o.preset.historic) ...[
+            option(o),
+            const SizedBox(height: AppSpace.x3),
+          ],
+        SectionTitle(l10n.wizard_quick, top: AppSpace.x2),
+        Wrap(
+          spacing: AppSpace.x2,
+          runSpacing: AppSpace.x2,
+          children: [
+            for (final o in dates.presets)
+              if (!o.preset.historic) option(o),
+          ],
         ),
-        Text(l10n.wizard_when, style: AppText.title),
-        const SizedBox(height: AppSpace.x4),
-        Text(l10n.wizard_history, style: text.titleMedium),
-        const SizedBox(height: AppSpace.x2),
-        for (final o in dates.presets)
-          if (o.preset.historic) preset(o),
-        const SizedBox(height: AppSpace.x2),
-        Text(l10n.wizard_quick, style: text.titleMedium),
-        const SizedBox(height: AppSpace.x2),
-        for (final o in dates.presets)
-          if (!o.preset.historic) preset(o),
-        const SizedBox(height: AppSpace.x2),
-        Text(l10n.wizard_custom, style: text.titleMedium),
-        const SizedBox(height: AppSpace.x2),
-        TextField(
-          controller: custom,
-          keyboardType: TextInputType.datetime,
-          decoration: InputDecoration(
-            hintText: l10n.wizard_custom_hint,
-            filled: true,
-            fillColor: AppColors.surface,
-            border: const OutlineInputBorder(),
+        const SizedBox(height: AppSpace.x3),
+        _Option(
+          selected: draft.typing,
+          onTap: () => wizard.type(custom.text),
+          child: Row(
+            children: [
+              const ExcludeSemantics(
+                child: Icon(Icons.calendar_today_outlined, size: 20),
+              ),
+              const SizedBox(width: AppSpace.x2),
+              Expanded(
+                child: Text(
+                  l10n.wizard_custom_choose,
+                  style: AppText.bodyStrong,
+                ),
+              ),
+            ],
           ),
-          onChanged: wizard.type,
         ),
-        if (draft.preset == null)
+        if (draft.typing) ...[
+          const SizedBox(height: AppSpace.x5),
+          TextField(
+            controller: custom,
+            // Opened by a tap: ready to type.
+            autofocus: draft.custom.isEmpty,
+            keyboardType: TextInputType.datetime,
+            decoration: InputDecoration(
+              labelText: l10n.wizard_start_date,
+              hintText: l10n.wizard_custom_hint,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              filled: true,
+              fillColor: AppColors.surface,
+              suffixIcon: const ExcludeSemantics(
+                child: Icon(Icons.calendar_today_outlined),
+              ),
+              border: const OutlineInputBorder(),
+              enabledBorder: wrong ? alertBorder : null,
+              focusedBorder: wrong ? alertBorder : null,
+            ),
+            onChanged: wizard.type,
+          ),
           _CustomVerdict(draft: draft, catalogue: dates),
-        const SizedBox(height: AppSpace.x6),
-        ChunkyButton(
-          label: l10n.wizard_next,
-          onPressed: draft.start == null ? null : wizard.next,
-        ),
+        ],
       ],
     );
   }
 }
 
-class _PresetCard extends StatelessWidget {
-  const _PresetCard(
-    this.option, {
-    required this.catalogueSize,
-    required this.selected,
-    required this.onTap,
-  });
+/// A historic moment: its name and day, its teaser, what existed then.
+class _Moment extends StatelessWidget {
+  const _Moment(this.option, {required this.catalogueSize});
 
   final PresetOption option;
   final int catalogueSize;
-  final bool selected;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final formats = Formats(Localizations.localeOf(context).languageCode);
-    final text = Theme.of(context).textTheme;
-    final muted = text.bodySmall?.copyWith(color: AppColors.muted);
-    final title = presetTitle(l10n, option.preset);
     final teaser = switch (option.preset) {
       TripPreset.dotcom => l10n.wizard_teaser_dotcom,
       TripPreset.lehman => l10n.wizard_teaser_lehman,
       TripPreset.covid => l10n.wizard_teaser_covid,
-      TripPreset.inflation => l10n.wizard_teaser_inflation,
-      _ => null,
+      _ => l10n.wizard_teaser_inflation,
     };
-
-    return _ChoiceCard(
-      selected: selected,
-      onTap: onTap,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(title, style: text.titleMedium),
-        Text(formats.date(option.date), style: muted),
-        if (teaser != null) ...[
-          const SizedBox(height: AppSpace.x1),
-          Text(teaser, style: text.bodyMedium),
-        ],
+        // The day on the right, or under the name when both don't fit.
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSpace.x2,
+          children: [
+            Text(presetTitle(l10n, option.preset), style: AppText.titleSmall),
+            Text(_formats(context).date(option.date), style: AppText.label),
+          ],
+        ),
+        const SizedBox(height: AppSpace.x1),
+        Text(teaser, style: AppText.body),
         const SizedBox(height: AppSpace.x1),
         Text(
           l10n.wizard_available(option.available, catalogueSize),
-          style: muted,
+          style: AppText.caption.copyWith(color: AppColors.muted),
         ),
       ],
     );
   }
 }
 
-/// What the typed date gives: an error, the day the trip moves to, or how
-/// many assets existed then.
+/// « Il y a N ans », with what existed then.
+class _Shortcut extends StatelessWidget {
+  const _Shortcut(this.option, {required this.catalogueSize});
+
+  final PresetOption option;
+  final int catalogueSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(presetTitle(l10n, option.preset), style: AppText.label),
+        Text(
+          l10n.wizard_available_short(option.available, catalogueSize),
+          style: AppText.caption.copyWith(color: AppColors.muted),
+        ),
+      ],
+    );
+  }
+}
+
+/// What the typed date gives: an error in an alert box, or the day the trip
+/// moves to and how many assets existed then.
 class _CustomVerdict extends ConsumerWidget {
   const _CustomVerdict({required this.draft, required this.catalogue});
 
@@ -210,63 +456,61 @@ class _CustomVerdict extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final formats = Formats(Localizations.localeOf(context).languageCode);
-    final text = Theme.of(context).textTheme;
-    final error = text.bodyMedium?.copyWith(color: AppColors.alertText);
-    final muted = text.bodySmall?.copyWith(color: AppColors.muted);
+    final formats = _formats(context);
     if (draft.custom.trim().isEmpty) return const SizedBox.shrink();
 
+    final error = switch (draft.check) {
+      StartUnreadable() => l10n.wizard_date_unreadable,
+      StartBeforeFloor(:final floor) => l10n.wizard_date_before_floor(
+        formats.date(floor),
+      ),
+      StartTooRecent(:final latest) => l10n.wizard_date_too_recent(
+        formats.date(latest),
+      ),
+      _ => null,
+    };
+    final lesson = draft.check is StartBeforeFloor
+        ? ref.watch(lessonBeforeProvider(parseDay(draft.custom)!)).value
+        : null;
     final lines = <Widget>[
-      ...switch (draft.check) {
-        null => const <Widget>[],
-        StartUnreadable() => [Text(l10n.wizard_date_unreadable, style: error)],
-        StartBeforeFloor(:final floor) => [
-          Text(
-            l10n.wizard_date_before_floor(formats.date(floor)),
-            style: error,
-          ),
-          if (ref.watch(lessonBeforeProvider(parseDay(draft.custom)!)).value
-              case final lesson?)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: () => context.push('/node/${lesson.id}'),
-                child: Text(
-                  l10n.wizard_lesson_link(
-                    lesson.title.of(
-                      Localizations.localeOf(context).languageCode,
+      if (error != null)
+        AlertMessage(
+          error,
+          action: lesson == null
+              ? null
+              : TextButton(
+                  onPressed: () => context.push('/node/${lesson.id}'),
+                  child: Text(
+                    l10n.wizard_lesson_link(
+                      lesson.title.of(
+                        Localizations.localeOf(context).languageCode,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-        ],
-        StartTooRecent(:final latest) => [
-          Text(l10n.wizard_date_too_recent(formats.date(latest)), style: error),
-        ],
-        StartOk(:final date, :final rolledFrom) => [
-          if (rolledFrom != null)
-            Text(
-              l10n.wizard_date_rolled(
-                formats.date(rolledFrom),
-                formats.date(date),
-              ),
-              style: text.bodyMedium,
-            ),
+        ),
+      if (draft.check case StartOk(:final date, :final rolledFrom)) ...[
+        if (rolledFrom != null)
           Text(
-            l10n.wizard_available(
-              catalogue.availableOn(date),
-              catalogue.catalogueSize,
+            l10n.wizard_date_rolled(
+              formats.date(rolledFrom),
+              formats.date(date),
             ),
-            style: muted,
+            style: AppText.body,
           ),
-        ],
-      },
+        Text(
+          l10n.wizard_available(
+            catalogue.availableOn(date),
+            catalogue.catalogueSize,
+          ),
+          style: AppText.caption.copyWith(color: AppColors.muted),
+        ),
+      ],
     ];
     return Padding(
       padding: const EdgeInsets.only(top: AppSpace.x2),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: lines,
       ),
     );
@@ -290,26 +534,40 @@ String _difficultyName(AppLocalizations l10n, Difficulty d) => switch (d) {
   Difficulty.surMesure => l10n.difficulty_sur_mesure,
 };
 
-/// « 50 000 € au départ · 200 € par mois · … », one line per setting.
-List<String> _summary(AppLocalizations l10n, Formats formats, TripSettings s) {
-  final percent = s.fxFeeRate.shift(2);
-  return [
-    l10n.wizard_cash(formats.money(s.startingCash)),
-    s.monthlyContribution.isZero
-        ? l10n.wizard_no_contribution
-        : l10n.wizard_contribution(formats.money(s.monthlyContribution)),
-    l10n.wizard_fx_fee(
-      formats.percent(s.fxFeeRate, decimals: percent.scale.clamp(0, 2)),
-    ),
-    s.fixedFee.isZero
-        ? l10n.wizard_no_fixed_fee
-        : l10n.wizard_fixed_fee(formats.money(s.fixedFee)),
-    s.fractionalShares ? l10n.wizard_fractional : l10n.wizard_whole,
-  ];
-}
-
 Formats _formats(BuildContext context) =>
     Formats(Localizations.localeOf(context).languageCode);
+
+/// Whole euros without cents (« 50 000 € »), cents when there are some.
+String _euros(Formats formats, Money money) => formats.amount(
+  money.amount,
+  money.currency,
+  decimals: money.amount.isInteger ? 0 : 2,
+);
+
+/// « Sans frais », « Frais de change 0,15 % », « 1 € par ordre + change
+/// 0,15 % ».
+String _fees(AppLocalizations l10n, Formats formats, TripSettings s) {
+  final percent = s.fxFeeRate.shift(2);
+  final fx = s.fxFeeRate == Decimal.zero
+      ? null
+      : formats.percent(s.fxFeeRate, decimals: percent.scale.clamp(0, 2));
+  final fixed = s.fixedFee.isPositive ? _euros(formats, s.fixedFee) : null;
+  return switch ((fixed, fx)) {
+    (null, null) => l10n.wizard_no_fees,
+    (null, final fx?) => l10n.wizard_fx_fee(fx),
+    (final fixed?, null) => l10n.wizard_fixed_fee(fixed),
+    (final fixed?, final fx?) => l10n.wizard_fees(fixed, fx),
+  };
+}
+
+/// A difficulty's settings, one fact per chip.
+List<String> _facts(AppLocalizations l10n, Formats formats, TripSettings s) => [
+  _euros(formats, s.startingCash),
+  if (s.monthlyContribution.isPositive)
+    l10n.wizard_contribution(_euros(formats, s.monthlyContribution)),
+  _fees(l10n, formats, s),
+  s.fractionalShares ? l10n.wizard_fractional : l10n.wizard_whole,
+];
 
 class _DifficultyStep extends ConsumerWidget {
   const _DifficultyStep({required this.draft});
@@ -319,7 +577,6 @@ class _DifficultyStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final formats = _formats(context);
-    final text = Theme.of(context).textTheme;
     final wizard = ref.read(tripWizardProvider.notifier);
     final settings = draft.settings;
     final start = draft.start!;
@@ -329,116 +586,175 @@ class _DifficultyStep extends ConsumerWidget {
         ? null
         : cushion(settings.startingCash, percent, ceiling: ceiling);
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpace.screenPadding),
+    return _Page(
+      title: l10n.wizard_how,
+      hint: l10n.wizard_departure(formats.date(start)),
+      onBack: wizard.back,
+      next: ChunkyButton(
+        label: l10n.wizard_next,
+        onPressed: draft.settingsValid ? wizard.next : null,
+      ),
       children: [
-        Text(
-          l10n.wizard_step(2),
-          style: text.bodySmall?.copyWith(color: AppColors.muted),
-        ),
-        Text(l10n.wizard_how, style: AppText.title),
-        const SizedBox(height: AppSpace.x4),
-        for (final d in Difficulty.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpace.x3),
-            child: _ChoiceCard(
-              selected: draft.difficulty == d,
-              onTap: () => wizard.chooseDifficulty(d),
-              children: [
-                Text(_difficultyName(l10n, d), style: text.titleMedium),
-                if (d != Difficulty.surMesure)
-                  for (final line in _summary(l10n, formats, presetSettings(d)))
-                    Text(
-                      line,
-                      style: text.bodySmall?.copyWith(color: AppColors.muted),
-                    ),
-              ],
-            ),
+        for (final d in Difficulty.values) ...[
+          _Option(
+            selected: draft.difficulty == d,
+            onTap: () => wizard.chooseDifficulty(d),
+            child: _DifficultyText(d),
           ),
+          const SizedBox(height: AppSpace.x3),
+        ],
         if (draft.difficulty == Difficulty.surMesure) _CustomFields(draft),
         if (settings != null &&
             (settings.fixedFee.isPositive || !settings.fractionalShares)) ...[
-          const SizedBox(height: AppSpace.x2),
-          ChunkyCard(child: Text(l10n.wizard_small_budget)),
-        ],
-        const SizedBox(height: AppSpace.x4),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(l10n.wizard_cushion),
-          value: percent != null,
-          onChanged: (on) => wizard.setCushion(on ? 20 : null),
-        ),
-        if (percent != null) ...[
-          Wrap(
-            spacing: AppSpace.x2,
-            children: [
-              for (final share in cushionShares)
-                ChoiceChip(
-                  label: Text(
-                    formats.percent(
-                      Decimal.fromInt(share).shift(-2),
-                      decimals: 0,
-                    ),
-                  ),
-                  selected: percent == share,
-                  showCheckmark: false,
-                  onSelected: (_) => wizard.setCushion(share),
-                ),
-            ],
+          LessonCard(
+            label: l10n.companion_kicker,
+            children: [Text(l10n.wizard_small_budget, style: AppText.body)],
           ),
-          if (kept != null) ...[
-            const SizedBox(height: AppSpace.x2),
-            Text(l10n.wizard_cushion_amount(formats.money(kept.amount))),
-            if (kept.capped)
-              Text(
-                l10n.wizard_cushion_capped(formats.money(ceiling!)),
-                style: text.bodySmall?.copyWith(color: AppColors.muted),
-              ),
-          ],
+          const SizedBox(height: AppSpace.x4),
         ],
-        const SizedBox(height: AppSpace.x6),
-        ChunkyButton(
-          label: l10n.wizard_next,
-          onPressed: draft.settingsValid ? wizard.next : null,
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpace.x4,
+              AppSpace.x1,
+              AppSpace.x4,
+              AppSpace.x3,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.wizard_cushion),
+                  value: percent != null,
+                  onChanged: (on) => wizard.setCushion(on ? 20 : null),
+                ),
+                if (percent != null) ...[
+                  Wrap(
+                    spacing: AppSpace.x2,
+                    children: [
+                      for (final share in cushionShares)
+                        ChoiceChip(
+                          label: Text(
+                            formats.percent(
+                              Decimal.fromInt(share).shift(-2),
+                              decimals: 0,
+                            ),
+                          ),
+                          selected: percent == share,
+                          showCheckmark: false,
+                          onSelected: (_) => wizard.setCushion(share),
+                        ),
+                    ],
+                  ),
+                  if (kept != null) ...[
+                    const SizedBox(height: AppSpace.x2),
+                    Text(
+                      l10n.wizard_cushion_amount(_euros(formats, kept.amount)),
+                    ),
+                    if (kept.capped)
+                      Text(
+                        l10n.wizard_cushion_capped(_euros(formats, ceiling!)),
+                        style: AppText.caption.copyWith(color: AppColors.muted),
+                      ),
+                  ],
+                ],
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 }
 
-/// A chunky card the user picks, marked with a check once picked.
-class _ChoiceCard extends StatelessWidget {
-  const _ChoiceCard({
-    required this.selected,
-    required this.onTap,
-    required this.children,
-  });
+/// A difficulty: its name and meter, its tagline, its settings as chips.
+class _DifficultyText extends StatelessWidget {
+  const _DifficultyText(this.difficulty);
 
-  final bool selected;
-  final VoidCallback onTap;
-  final List<Widget> children;
+  final Difficulty difficulty;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final (level, tagline) = switch (difficulty) {
+      Difficulty.decouverte => (1, l10n.wizard_tagline_decouverte),
+      Difficulty.realiste => (2, l10n.wizard_tagline_realiste),
+      Difficulty.serre => (3, l10n.wizard_tagline_serre),
+      Difficulty.surMesure => (null, l10n.wizard_tagline_sur_mesure),
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _difficultyName(l10n, difficulty),
+                style: AppText.titleSmall,
+              ),
+            ),
+            if (level != null) _Meter(level),
+          ],
+        ),
+        const SizedBox(height: AppSpace.x1),
+        Text(tagline, style: AppText.body),
+        if (difficulty != Difficulty.surMesure) ...[
+          const SizedBox(height: AppSpace.x2),
+          Wrap(
+            spacing: AppSpace.x2,
+            runSpacing: AppSpace.x2,
+            children: [
+              for (final fact in _facts(
+                l10n,
+                _formats(context),
+                presetSettings(difficulty),
+              ))
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpace.x3,
+                    vertical: AppSpace.x1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.page,
+                    borderRadius: BorderRadius.circular(AppSpace.x3),
+                  ),
+                  child: Text(fact, style: AppText.caption),
+                ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Three rising bars, [level] of them filled; screen readers hear it.
+class _Meter extends StatelessWidget {
+  const _Meter(this.level);
+
+  final int level;
 
   @override
   Widget build(BuildContext context) => Semantics(
-    button: true,
-    selected: selected,
-    child: ChunkyCard(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: children,
+    label: AppLocalizations.of(context).wizard_level(level),
+    excludeSemantics: true,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (var i = 0; i < 3; i++)
+          Container(
+            width: 10,
+            height: 8.0 + 5 * i,
+            margin: const EdgeInsets.only(left: 3),
+            decoration: BoxDecoration(
+              color: i < level ? AppColors.ink : AppColors.surface,
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: AppColors.ink, width: 2),
             ),
           ),
-          if (selected)
-            const Padding(
-              padding: EdgeInsets.only(left: AppSpace.x2),
-              child: Icon(Icons.check_circle, color: AppColors.ink),
-            ),
-        ],
-      ),
+      ],
     ),
   );
 }
@@ -592,8 +908,7 @@ class _RecapStepState extends ConsumerState<_RecapStep> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formats = _formats(context);
-    final text = Theme.of(context).textTheme;
-    final muted = text.bodySmall?.copyWith(color: AppColors.muted);
+    final muted = AppText.caption.copyWith(color: AppColors.muted);
     final draft = widget.draft;
     final wizard = ref.read(tripWizardProvider.notifier);
     final start = draft.start!;
@@ -604,52 +919,95 @@ class _RecapStepState extends ConsumerState<_RecapStep> {
         ? null
         : cushion(settings.startingCash, percent, ceiling: ceiling);
     final nameValid = tripName(_name.text) != null;
+    final moment = switch (draft.preset) {
+      final p? when p.historic => presetTitle(l10n, p),
+      _ => null,
+    };
+    final name = _difficultyName(l10n, draft.difficulty!);
+    final cash = _euros(formats, settings.startingCash);
 
-    Widget row(String label, List<String> values, int step) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpace.x1),
+    // A label, its value in bold, and « Modifier » back to its [step].
+    Widget row(String label, String value, {int? step}) => ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(width: 72, child: Text(label, style: muted)),
+          const SizedBox(width: AppSpace.x3),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: muted),
-                for (final v in values) Text(v, style: text.bodyMedium),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpace.x2),
+              child: Text(value, style: AppText.bodyStrong),
             ),
           ),
-          TextButton(
-            onPressed: () => wizard.edit(step),
-            child: Text(l10n.wizard_edit),
-          ),
+          if (step != null)
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.x2),
+              ),
+              onPressed: () => wizard.edit(step),
+              child: Text(l10n.wizard_edit),
+            ),
         ],
       ),
     );
+    final rows = [
+      row(
+        l10n.wizard_recap_start,
+        moment == null
+            ? formats.date(start)
+            : l10n.wizard_start_moment(formats.date(start), moment),
+        step: 1,
+      ),
+      row(
+        l10n.wizard_recap_budget,
+        settings.monthlyContribution.isPositive
+            ? l10n.wizard_budget_monthly(
+                name,
+                cash,
+                _euros(formats, settings.monthlyContribution),
+              )
+            : l10n.wizard_budget(name, cash),
+        step: 2,
+      ),
+      row(l10n.wizard_recap_fees, _fees(l10n, formats, settings)),
+      row(
+        l10n.wizard_recap_shares,
+        settings.fractionalShares ? l10n.wizard_fractional : l10n.wizard_whole,
+      ),
+      row(
+        l10n.wizard_recap_cushion,
+        kept == null
+            ? l10n.wizard_recap_none
+            : l10n.wizard_cushion_amount(_euros(formats, kept.amount)),
+        step: 2,
+      ),
+      row(l10n.wizard_recap_end, l10n.wizard_end_any),
+    ];
 
-    return ListView(
-      padding: const EdgeInsets.all(AppSpace.screenPadding),
+    return _Page(
+      title: l10n.wizard_recap,
+      onBack: wizard.back,
+      nextFlex: 2,
+      next: ChunkyButton(
+        label: l10n.wizard_go(formats.date(start)),
+        onPressed: nameValid && !_creating ? _create : null,
+      ),
       children: [
-        Text(l10n.wizard_step(3), style: muted),
-        Text(l10n.wizard_recap, style: AppText.title),
-        const SizedBox(height: AppSpace.x4),
         ChunkyCard(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpace.x4,
+            vertical: AppSpace.x1,
+          ),
           child: Column(
             children: [
-              row(l10n.wizard_recap_start, [formats.date(start)], 1),
-              row(l10n.wizard_recap_difficulty, [
-                _difficultyName(l10n, draft.difficulty!),
-                ..._summary(l10n, formats, settings),
-              ], 2),
-              row(l10n.wizard_recap_cushion, [
-                kept == null
-                    ? l10n.wizard_recap_none
-                    : l10n.wizard_cushion_amount(formats.money(kept.amount)),
-              ], 2),
+              for (final (i, r) in rows.indexed) ...[
+                if (i > 0) const Divider(height: 1),
+                r,
+              ],
             ],
           ),
         ),
-        const SizedBox(height: AppSpace.x4),
+        const SizedBox(height: AppSpace.x6),
         TextField(
           controller: _name,
           maxLength: 30,
@@ -666,27 +1024,48 @@ class _RecapStepState extends ConsumerState<_RecapStep> {
           },
         ),
         const SizedBox(height: AppSpace.x2),
-        Text(l10n.wizard_stops, style: text.titleMedium),
-        Text(l10n.wizard_stops_hint, style: muted),
-        for (final (stop, label) in [
-          (StopKind.portfolio, l10n.wizard_stop_portfolio),
-          (StopKind.position, l10n.wizard_stop_position),
-          (StopKind.orderFilled, l10n.wizard_stop_order),
-          if (settings.monthlyContribution.isPositive)
-            (StopKind.contribution, l10n.wizard_stop_contribution),
-        ])
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(label),
-            value: draft.stops.contains(stop),
-            onChanged: (on) => wizard.setStop(stop, on),
+        TitledSection(
+          title: l10n.wizard_stops,
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.x4,
+                AppSpace.x3,
+                AppSpace.x4,
+                AppSpace.x1,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(l10n.wizard_stops_hint, style: AppText.label),
+                  for (final (stop, label) in [
+                    (StopKind.portfolio, l10n.wizard_stop_portfolio),
+                    (StopKind.position, l10n.wizard_stop_position),
+                    (StopKind.orderFilled, l10n.wizard_stop_order),
+                    if (settings.monthlyContribution.isPositive)
+                      (StopKind.contribution, l10n.wizard_stop_contribution),
+                  ])
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(label),
+                      value: draft.stops.contains(stop),
+                      onChanged: (on) => wizard.setStop(stop, on),
+                    ),
+                ],
+              ),
+            ),
           ),
-        const SizedBox(height: AppSpace.x2),
-        Text(l10n.wizard_known_only, style: muted),
-        const SizedBox(height: AppSpace.x6),
-        ChunkyButton(
-          label: l10n.wizard_go(formats.date(start)),
-          onPressed: nameValid && !_creating ? _create : null,
+        ),
+        const SizedBox(height: AppSpace.x4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ExcludeSemantics(
+              child: Icon(Icons.schedule, size: 18, color: AppColors.muted),
+            ),
+            const SizedBox(width: AppSpace.x2),
+            Expanded(child: Text(l10n.wizard_known_only, style: muted)),
+          ],
         ),
       ],
     );

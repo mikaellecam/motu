@@ -129,6 +129,19 @@ void main() {
     expect(draft().start, day(2008, 9, 16));
   });
 
+  test('the typed date is the choice once asked for, even empty', () async {
+    expect(draft().typing, isFalse, reason: 'nothing chosen yet');
+    await wizard().type('');
+    expect(draft().typing, isTrue);
+    expect(draft().start, isNull, reason: 'no date typed yet');
+
+    final dates = await container.read(wizardDatesProvider.future);
+    wizard().choose(dates.presets.first);
+    expect(draft().typing, isFalse, reason: 'a moment replaces it');
+    await wizard().type('16/09/2008');
+    expect(draft().typing, isTrue);
+  });
+
   test('a deep link selects its moment, or types its date', () async {
     await wizard().prefill(
       TripWizardArgs(date: day(2020, 2, 18), fromNode: 'ae.march-2020'),
@@ -138,6 +151,7 @@ void main() {
 
     await wizard().prefill(TripWizardArgs(date: day(2008, 9, 13)));
     expect(draft().custom, '13/09/2008');
+    expect(draft().typing, isTrue);
     expect(draft().start, day(2008, 9, 15));
   });
 

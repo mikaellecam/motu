@@ -228,11 +228,11 @@ void main() {
     await tester.tap(find.byTooltip('Arrêts automatiques'));
     await tester.pumpAndSettle();
     expect(
-      find.text('un versement mensuel arrive'),
+      find.text('Un versement mensuel arrive'),
       findsOneWidget,
       reason: '200 € a month',
     );
-    await tester.tap(find.text('un de tes ordres est exécuté'));
+    await tester.tap(find.text('Un de tes ordres est exécuté'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Enregistrer'));
     await tester.pumpAndSettle();

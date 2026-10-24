@@ -74,7 +74,10 @@ void main() {
       'wallet_period_month',
       'wallet_period_quarter',
       'wallet_positions_title',
+      'wizard_budget',
       'wizard_preset_covid',
+      'wizard_recap_budget',
+      'wizard_start_moment',
     };
     final same = {
       for (final k in keys)

@@ -215,6 +215,10 @@ final class TripDraft {
   /// The automatic stops switched on (defaults: BRIEF §4.5).
   final Set<StopKind> stops;
 
+  /// Typing a date is the choice: asked for (a verdict, even on an empty
+  /// field) or under way, and no moment chosen since.
+  bool get typing => preset == null && (custom.isNotEmpty || check != null);
+
   /// The start day, once a valid one is chosen.
   DateTime? get start => switch (check) {
     StartOk(:final date) => date,

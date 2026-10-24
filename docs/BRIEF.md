@@ -373,6 +373,20 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
    (defaults: portfolio −15 %, order filled; position −20 % and contribution off), reminder that only data
    known at the simulated date is shown. CTA « Partir le {date} » creates the trip and opens it.
 
+Layout (decided 2026-10-24, artboards `TripStep1-A`, `TripStep1Error-A`, `TripStep2-A`, `TripStep3-A` of the
+art direction canvas): every step has a chunky close tile, a 3-segment step bar and « Nouveau voyage, étape n
+sur 3 »; « Retour » (from step 2) sits beside the next action at the bottom, always in reach. An option is
+quiet (2 px `line` border, no shadow) until chosen, then a toy block; a radio says which, never colour alone.
+Step 1: the moments as cards with their day on the title row, the « Il y a N ans » shortcuts as pills that
+keep « N actifs sur M », then « Choisir une date précise », which opens the date field; a date out of range
+turns the field's border `alertText` and shows in an alert box under it. Step 2 recalls the start day; each
+difficulty has a 1–3 meter, a tagline and its settings as chips (« Sur mesure »: a tagline only); the
+companion note is a chunky card « Ton compagnon »; the cushion sits in a flat card. Step 3: label / value rows
+with lines between (Départ with the moment's name, Budget, Frais, Actions, Matelas de sécurité, Fin « Quand
+tu veux, au plus tard aujourd'hui »), the automatic stops in a flat card under their title, the reminder by
+a clock. Not taken from the artboards: « Suggéré par ta leçon » (not in this spec), the tinted fill of the
+chosen option and the coral meter bars (no token means them, §10.2: the meter is ink).
+
 **Trip wallet screen:** identical to the live wallet plus:
 - Trip header (neutral background): clock tile, trip name + difficulty chip, simulated date in large type,
   exit button. No colored banner (color rule §10.2).

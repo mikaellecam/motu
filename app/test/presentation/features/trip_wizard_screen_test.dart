@@ -87,6 +87,7 @@ Future<void> show(
               path: '/',
               builder: (_, _) => TripWizardScreen(args: args),
             ),
+            GoRoute(path: '/wallets', builder: (_, _) => const Text('wallets')),
             GoRoute(
               path: '/wallet/:id',
               builder: (_, s) => Text('wallet ${s.pathParameters['id']}'),
@@ -106,12 +107,17 @@ Future<void> typeDate(WidgetTester tester, String text) async {
 
 Finder get next => find.text('Suivant');
 
+Finder step(int n) => find.text('Nouveau voyage, étape $n sur 3');
+
+Finder get chosen => find.byIcon(Icons.radio_button_checked);
+
 void main() {
   testWidgets('the moments and shortcuts, each with what existed then', (
     tester,
   ) async {
     await show(tester);
-    expect(find.text('Étape 1 sur 3'), findsOneWidget);
+    expect(step(1), findsOneWidget);
+    expect(find.bySemanticsLabel('Annuler ce voyage'), findsOneWidget);
     expect(find.text('Quand pars-tu$nnbsp?'), findsOneWidget);
     expect(find.text('Crise financière'), findsOneWidget);
     expect(find.text('15 septembre 2008'), findsOneWidget);
@@ -122,7 +128,11 @@ void main() {
     expect(find.text('22 actifs sur 29 disponibles'), findsOneWidget);
     expect(find.text('Il y a 1 an'), findsOneWidget);
     expect(find.text('Il y a 10 ans'), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsNothing);
+    // Each shortcut says what existed then, in short.
+    expect(find.text('29 actifs sur 29'), findsNWidgets(2));
+    expect(find.text('28 actifs sur 29'), findsOneWidget);
+    expect(chosen, findsNothing);
+    expect(find.byType(TextField), findsNothing, reason: 'no date typed');
   });
 
   testWidgets('choosing a moment enables Suivant, which moves on', (
@@ -131,21 +141,52 @@ void main() {
     await show(tester);
     await tester.tap(find.text('Crise financière'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(chosen, findsOneWidget);
     await tester.tap(next);
     await tester.pumpAndSettle();
-    expect(find.byType(BackButton), findsOneWidget, reason: 'step 2');
+    expect(step(2), findsOneWidget);
+    expect(find.text('Retour'), findsOneWidget);
+    expect(find.bySemanticsLabel('Annuler ce voyage'), findsOneWidget);
+  });
+
+  testWidgets('a shortcut is chosen like a moment', (tester) async {
+    await show(tester);
+    await tester.tap(find.text('Il y a 5 ans'));
+    await tester.pumpAndSettle();
+    final pill = find
+        .ancestor(
+          of: find.text('Il y a 5 ans'),
+          matching: find.byType(Semantics),
+        )
+        .first;
+    expect(tester.getSemantics(pill), isSemantics(isSelected: true));
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(find.text('Départ le 11 octobre 2021.'), findsOneWidget);
+  });
+
+  testWidgets('close leaves the wizard', (tester) async {
+    await show(tester);
+    await tester.tap(find.bySemanticsLabel('Annuler ce voyage'));
+    await tester.pumpAndSettle();
+    expect(find.text('wallets'), findsOneWidget);
   });
 
   testWidgets('a typed date: errors, the floor and its lesson, a roll', (
     tester,
   ) async {
     await show(tester);
+    await tester.tap(find.text('Choisir une date précise'));
+    await tester.pumpAndSettle();
+    expect(chosen, findsOneWidget, reason: 'the typed date is the choice');
+    expect(next, findsOneWidget);
     await typeDate(tester, '31/02/2020');
     expect(
       find.text("Cette date n'existe pas. Écris-la comme 15/09/2008."),
       findsOneWidget,
     );
+    // In an alert box, with its warning icon.
+    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
 
     await typeDate(tester, '24/10/1929');
     expect(
@@ -172,6 +213,7 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
     expect(find.text('22 actifs sur 29 disponibles'), findsNWidgets(2));
   });
 
@@ -198,22 +240,30 @@ void main() {
     tester,
   ) async {
     await toDifficulty(tester);
-    expect(find.text('Étape 2 sur 3'), findsOneWidget);
+    expect(step(2), findsOneWidget);
     expect(find.text('Quelle difficulté$nnbsp?'), findsOneWidget);
-    expect(find.text('50${nnbsp}000,00$nbsp€ au départ'), findsOneWidget);
-    expect(find.text('200,00$nbsp€ par mois'), findsOneWidget);
-    expect(find.text('Frais de change 0,15$nnbsp%'), findsNWidgets(2));
+    expect(find.text('Départ le 15 septembre 2008.'), findsOneWidget);
+    // A tagline, a meter and the settings as chips.
+    expect(find.text('Comme un vrai premier placement.'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Difficulté 2 sur 3')), findsWidgets);
+    expect(find.text('50${nnbsp}000$nbsp€'), findsOneWidget);
+    expect(find.text('Sans frais'), findsOneWidget);
+    expect(find.text('200$nbsp€ par mois'), findsOneWidget);
+    expect(find.text('Frais de change 0,15$nnbsp%'), findsOneWidget);
+    expect(find.text('1$nbsp€ par ordre + change 0,15$nnbsp%'), findsOneWidget);
     expect(find.text('Actions entières seulement'), findsOneWidget);
+    expect(
+      find.text('Choisis ton capital, tes versements et tes frais.'),
+      findsOneWidget,
+    );
     await tester.tap(next);
     await tester.pumpAndSettle();
-    expect(
-      find.text('Étape 2 sur 3'),
-      findsOneWidget,
-      reason: 'no difficulty yet',
-    );
+    expect(step(2), findsOneWidget, reason: 'no difficulty yet');
 
     await tester.tap(find.text('Serré'));
     await tester.pumpAndSettle();
+    expect(chosen, findsOneWidget);
+    expect(find.text('Ton compagnon'), findsOneWidget);
     expect(
       find.textContaining('les frais fixes et les actions entières'),
       findsOneWidget,
@@ -222,12 +272,12 @@ void main() {
     await tester.tap(find.text('Commencer avec un matelas de sécurité'));
     await tester.pumpAndSettle();
     expect(
-      find.text('400,00$nbsp€ sur le Livret A'),
+      find.text('400$nbsp€ sur le Livret A'),
       findsOneWidget,
     ); // 20 % of 2 000 €
     await tester.tap(find.widgetWithText(ChoiceChip, '30$nnbsp%'));
     await tester.pumpAndSettle();
-    expect(find.text('600,00$nbsp€ sur le Livret A'), findsOneWidget);
+    expect(find.text('600$nbsp€ sur le Livret A'), findsOneWidget);
   });
 
   testWidgets('« Sur mesure »: fields with their errors', (tester) async {
@@ -250,7 +300,7 @@ void main() {
     expect(find.text('Écris un nombre, par exemple 1 500.'), findsOneWidget);
     await tester.tap(next);
     await tester.pumpAndSettle();
-    expect(find.text('Étape 2 sur 3'), findsOneWidget);
+    expect(step(2), findsOneWidget);
   });
 
   testWidgets('step 3: recap, name, stops, and the trip is created', (
@@ -263,15 +313,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Récapitulatif'), findsOneWidget);
-    expect(find.text('15 septembre 2008'), findsOneWidget);
+    expect(step(3), findsOneWidget);
+    // Label / value rows.
+    expect(find.text('15 septembre 2008, Crise financière'), findsOneWidget);
+    expect(
+      find.text('Réaliste, 10${nnbsp}000$nbsp€ + 200$nbsp€ par mois'),
+      findsOneWidget,
+    );
+    expect(find.text('Frais de change 0,15$nnbsp%'), findsOneWidget);
+    expect(find.text("Fractions d'action possibles"), findsOneWidget);
     expect(find.text('Aucun'), findsOneWidget);
+    expect(
+      find.text("Quand tu veux, au plus tard aujourd'hui"),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(TextField, 'Crise financière'), findsOneWidget);
     expect(
-      find.text("ton portefeuille passe 15$nnbsp% sous l'argent versé"),
+      find.text("Ton portefeuille passe 15$nnbsp% sous l'argent versé"),
       findsOneWidget,
     );
     expect(
-      find.text('un versement mensuel arrive'),
+      find.text('Un versement mensuel arrive'),
       findsOneWidget,
       reason: '200 € a month',
     );
@@ -304,14 +366,29 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(next);
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Retour'));
+    await tester.pumpAndSettle();
+    expect(step(2), findsOneWidget, reason: 'Retour, a step back');
+    await tester.tap(next);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Modifier').first);
     await tester.pumpAndSettle();
-    expect(find.text('Étape 1 sur 3'), findsOneWidget);
+    expect(step(1), findsOneWidget);
   });
 
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await show(tester);
+    await expectAccessible(tester);
+    await tester.tap(find.text('Crise financière'));
+    await tester.pumpAndSettle();
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Serré'));
+    await tester.pumpAndSettle();
+    await expectAccessible(tester);
+    await tester.tap(next);
+    await tester.pumpAndSettle();
     await expectAccessible(tester);
   });
 }

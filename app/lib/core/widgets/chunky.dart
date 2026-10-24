@@ -354,3 +354,77 @@ class ChunkyIconButton extends StatelessWidget {
     );
   }
 }
+
+/// A world screen's progress: one segment per step, the ones reached filled.
+/// Screen readers hear the step in words beside it.
+class StepBar extends StatelessWidget {
+  const StepBar({super.key, required this.done, required this.of});
+
+  final int done;
+  final int of;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (var i = 0; i < of; i++) ...[
+        if (i > 0) const SizedBox(width: AppSpace.x1),
+        Expanded(
+          child: Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color: i < done ? AppColors.progress : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppSpace.x2),
+              border: Border.all(color: AppColors.ink, width: 2),
+            ),
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+/// What is missing or wrong, in an alert box on a world screen: a warning
+/// icon, never colour alone. [action] (a link) goes under the text.
+class AlertMessage extends StatelessWidget {
+  const AlertMessage(this.text, {super.key, this.action});
+
+  final String text;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    child: Container(
+      padding: const EdgeInsets.all(AppSpace.x3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppShape.flatCardRadius),
+        border: Border.all(color: AppColors.alertText, width: 2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ExcludeSemantics(
+            child: Icon(
+              Icons.warning_amber_rounded,
+              color: AppColors.alertText,
+            ),
+          ),
+          const SizedBox(width: AppSpace.x2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: AppText.label.copyWith(color: AppColors.alertText),
+                ),
+                ?action,
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}

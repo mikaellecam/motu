@@ -449,7 +449,7 @@
   "difficulty_realiste": "R\u00e9aliste",
   "difficulty_serre": "Serr\u00e9",
   "difficulty_sur_mesure": "Sur mesure",
-  "wizard_step": "\u00c9tape {n} sur 3",
+  "wizard_step": "Nouveau voyage, \u00e9tape {n} sur 3",
   "@wizard_step": {
     "placeholders": {
       "n": {
@@ -457,7 +457,10 @@
       }
     }
   },
+  "wizard_close": "Annuler ce voyage",
+  "wizard_back": "Retour",
   "wizard_when": "Quand pars-tu\u202f?",
+  "wizard_when_hint": "Tu repars avec de vrais cours, mais seulement ceux connus \u00e0 cette date.",
   "wizard_history": "Moments historiques",
   "wizard_preset_dotcom": "Bulle internet",
   "wizard_teaser_dotcom": "Au sommet de l'euphorie technologique",
@@ -467,7 +470,7 @@
   "wizard_teaser_covid": "Juste avant l'une des chutes les plus rapides de l'histoire",
   "wizard_preset_inflation": "Inflation et hausse des taux",
   "wizard_teaser_inflation": "Avant une ann\u00e9e difficile pour les actions et les obligations",
-  "wizard_quick": "Raccourcis",
+  "wizard_quick": "Plus simple",
   "wizard_years_ago": "{years, plural, =1{Il y a 1 an} other{Il y a {years} ans}}",
   "@wizard_years_ago": {
     "placeholders": {
@@ -488,8 +491,21 @@
       }
     }
   },
+  "wizard_available_short": "{n} actifs sur {m}",
+  "@wizard_available_short": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
   "wizard_custom": "Date pr\u00e9cise",
   "wizard_custom_hint": "JJ/MM/AAAA",
+  "wizard_custom_choose": "Choisir une date pr\u00e9cise",
+  "wizard_start_date": "Date de d\u00e9part",
   "wizard_date_unreadable": "Cette date n'existe pas. \u00c9cris-la comme 15/09/2008.",
   "wizard_date_before_floor": "Nos cours commencent le {date}.",
   "@wizard_date_before_floor": {
@@ -528,14 +544,26 @@
   },
   "wizard_next": "Suivant",
   "wizard_how": "Quelle difficult\u00e9\u202f?",
-  "wizard_cash": "{amount} au d\u00e9part",
-  "@wizard_cash": {
+  "wizard_departure": "D\u00e9part le {date}.",
+  "@wizard_departure": {
     "placeholders": {
-      "amount": {
+      "date": {
         "type": "String"
       }
     }
   },
+  "wizard_level": "Difficult\u00e9 {n} sur 3",
+  "@wizard_level": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "wizard_tagline_decouverte": "Pour explorer sans te soucier des d\u00e9tails.",
+  "wizard_tagline_realiste": "Comme un vrai premier placement.",
+  "wizard_tagline_serre": "Chaque d\u00e9cision compte, les frais aussi.",
+  "wizard_tagline_sur_mesure": "Choisis ton capital, tes versements et tes frais.",
   "wizard_contribution": "{amount} par mois",
   "@wizard_contribution": {
     "placeholders": {
@@ -544,7 +572,6 @@
       }
     }
   },
-  "wizard_no_contribution": "Pas de versement mensuel",
   "wizard_fx_fee": "Frais de change {rate}",
   "@wizard_fx_fee": {
     "placeholders": {
@@ -561,7 +588,18 @@
       }
     }
   },
-  "wizard_no_fixed_fee": "Aucun frais par ordre",
+  "wizard_fees": "{fixed} par ordre + change {rate}",
+  "@wizard_fees": {
+    "placeholders": {
+      "fixed": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_no_fees": "Sans frais",
   "wizard_fractional": "Fractions d'action possibles",
   "wizard_whole": "Actions enti\u00e8res seulement",
   "wizard_field_cash": "Argent de d\u00e9part (\u20ac)",
@@ -602,7 +640,47 @@
   "wizard_small_budget": "Avec un petit budget, les frais fixes et les actions enti\u00e8res p\u00e8sent plus lourd\u202f: 1\u00a0\u20ac de frais sur un achat de 50\u00a0\u20ac, c'est 2\u202f%.",
   "wizard_recap": "R\u00e9capitulatif",
   "wizard_recap_start": "D\u00e9part",
-  "wizard_recap_difficulty": "Difficult\u00e9",
+  "wizard_start_moment": "{date}, {moment}",
+  "@wizard_start_moment": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "moment": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_recap_budget": "Budget",
+  "wizard_budget": "{difficulty}, {cash}",
+  "@wizard_budget": {
+    "placeholders": {
+      "difficulty": {
+        "type": "String"
+      },
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_budget_monthly": "{difficulty}, {cash} + {monthly} par mois",
+  "@wizard_budget_monthly": {
+    "placeholders": {
+      "difficulty": {
+        "type": "String"
+      },
+      "cash": {
+        "type": "String"
+      },
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "wizard_recap_fees": "Frais",
+  "wizard_recap_shares": "Actions",
+  "wizard_recap_end": "Fin",
+  "wizard_end_any": "Quand tu veux, au plus tard aujourd'hui",
   "wizard_recap_cushion": "Matelas de s\u00e9curit\u00e9",
   "wizard_recap_none": "Aucun",
   "wizard_edit": "Modifier",
@@ -619,10 +697,10 @@
   },
   "wizard_stops": "Arr\u00eats automatiques",
   "wizard_stops_hint": "Le voyage s'arr\u00eate de lui-m\u00eame quand\u2026",
-  "wizard_stop_portfolio": "ton portefeuille passe 15\u202f% sous l'argent vers\u00e9",
-  "wizard_stop_position": "une position perd plus de 20\u202f%",
-  "wizard_stop_order": "un de tes ordres est ex\u00e9cut\u00e9",
-  "wizard_stop_contribution": "un versement mensuel arrive",
+  "wizard_stop_portfolio": "Ton portefeuille passe 15\u202f% sous l'argent vers\u00e9",
+  "wizard_stop_position": "Une position perd plus de 20\u202f%",
+  "wizard_stop_order": "Un de tes ordres est ex\u00e9cut\u00e9",
+  "wizard_stop_contribution": "Un versement mensuel arrive",
   "wizard_known_only": "Pendant le voyage, tu ne vois que ce qu'on savait \u00e0 cette date.",
   "wizard_go": "Partir le {date}",
   "@wizard_go": {

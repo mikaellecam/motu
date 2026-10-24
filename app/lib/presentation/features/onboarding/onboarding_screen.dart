@@ -97,7 +97,7 @@ class _Question extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpace.x2),
                     ExcludeSemantics(
-                      child: _Steps(done: state.question + 1, of: questions),
+                      child: StepBar(done: state.question + 1, of: questions),
                     ),
                     const SizedBox(height: AppSpace.x3),
                     Text(
@@ -138,7 +138,7 @@ class _Question extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (state.showError) ...[
-                _ValidationMessage(l10n.onboarding_error),
+                AlertMessage(l10n.onboarding_error),
                 const SizedBox(height: AppSpace.x3),
               ] else if (state.saveError case final failure?) ...[
                 ErrorView(failure: failure, onRetry: controller.retrySave),
@@ -170,71 +170,6 @@ class _Question extends ConsumerWidget {
       ],
     );
   }
-}
-
-/// One segment per question, the ones reached filled.
-class _Steps extends StatelessWidget {
-  const _Steps({required this.done, required this.of});
-
-  final int done;
-  final int of;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      for (var i = 0; i < of; i++) ...[
-        if (i > 0) const SizedBox(width: AppSpace.x1),
-        Expanded(
-          child: Container(
-            height: 10,
-            decoration: BoxDecoration(
-              color: i < done ? AppColors.progress : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppSpace.x2),
-              border: Border.all(color: AppColors.ink, width: 2),
-            ),
-          ),
-        ),
-      ],
-    ],
-  );
-}
-
-/// A missing answer, in an alert box.
-class _ValidationMessage extends StatelessWidget {
-  const _ValidationMessage(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    liveRegion: true,
-    child: Container(
-      padding: const EdgeInsets.all(AppSpace.x3),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppShape.flatCardRadius),
-        border: Border.all(color: AppColors.alertText, width: 2),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const ExcludeSemantics(
-            child: Icon(
-              Icons.warning_amber_rounded,
-              color: AppColors.alertText,
-            ),
-          ),
-          const SizedBox(width: AppSpace.x2),
-          Expanded(
-            child: Text(
-              text,
-              style: AppText.label.copyWith(color: AppColors.alertText),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class _Result extends ConsumerWidget {

@@ -57,8 +57,6 @@ void main() {
   Future<void> toStep2(WidgetTester tester) async {
     await tester.tap(find.text('Crise financière'));
     await tester.pump();
-    await tester.drag(find.byType(ListView), const Offset(0, -2000));
-    await tester.pump();
     await tester.tap(find.text('Suivant'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
@@ -67,7 +65,7 @@ void main() {
   screenshot(
     'm5-1-trip-wizard-dates',
     const TripWizardScreen(),
-    size: const Size(390, 1900),
+    size: const Size(390, 1100),
     overrides: overrides,
     act: (tester) async {
       await tester.tap(find.text('Crise financière'));
@@ -77,9 +75,10 @@ void main() {
   screenshot(
     'm5-1-trip-wizard-floor',
     const TripWizardScreen(),
+    size: const Size(390, 1230),
     overrides: overrides,
     act: (tester) async {
-      await tester.drag(find.byType(ListView), const Offset(0, -1200));
+      await tester.tap(find.text('Choisir une date précise'));
       await tester.pump();
       await tester.enterText(find.byType(TextField), '24/10/1929');
       await tester.pump();
@@ -88,7 +87,7 @@ void main() {
   screenshot(
     'm5-2-trip-wizard-difficulty',
     const TripWizardScreen(),
-    size: const Size(390, 1500),
+    size: const Size(390, 1080),
     overrides: overrides,
     act: (tester) async {
       await toStep2(tester);
@@ -99,17 +98,26 @@ void main() {
     },
   );
   screenshot(
+    'm9-24-trip-wizard-tight',
+    const TripWizardScreen(),
+    size: const Size(390, 1100),
+    overrides: overrides,
+    act: (tester) async {
+      await toStep2(tester);
+      await tester.tap(find.text('Serré'));
+      await tester.pump();
+    },
+  );
+  screenshot(
     'm5-2-trip-wizard-recap',
     const TripWizardScreen(),
-    size: const Size(390, 1400),
+    size: const Size(390, 1080),
     overrides: overrides,
     act: (tester) async {
       await toStep2(tester);
       await tester.tap(find.text('Réaliste'));
       await tester.pump();
       await tester.tap(find.text('Commencer avec un matelas de sécurité'));
-      await tester.pump();
-      await tester.drag(find.byType(ListView), const Offset(0, -1000));
       await tester.pump();
       await tester.tap(find.text('Suivant'));
       await tester.pump();
