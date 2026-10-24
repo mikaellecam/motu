@@ -3,7 +3,10 @@ import 'package:finance_companion/application/asset/asset_page.dart';
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
+import 'package:finance_companion/core/l10n/formats.dart';
 import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/domain/analytics/drawdown.dart';
+import 'package:finance_companion/domain/analytics/stability.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
@@ -15,6 +18,7 @@ import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
+import 'package:finance_companion/presentation/features/asset/stability_card.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -128,7 +132,8 @@ AssetOverview overview({
 Future<void> show(WidgetTester tester, AssetOverview o) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
-  tester.view.physicalSize = const Size(1170, 5200);
+  // Tall enough for every section, the position last.
+  tester.view.physicalSize = const Size(1170, 7200);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
@@ -324,9 +329,144 @@ void main() {
     expect(find.text('${minus}93,75$nbsp€'), findsOneWidget);
   });
 
+  testWidgets('« Stabilité passée »: the score, its parts, what it is not', (
+    tester,
+  ) async {
+    await show(tester, overview());
+    expect(find.text('Stabilité passée'), findsOneWidget);
+    expect(find.text('35/100'), findsOneWidget);
+    expect(
+      find.text('Plus il est haut, moins le cours a bougé par le passé.'),
+      findsOneWidget,
+    );
+    for (final (label, fact, points) in [
+      ('Mouvements', 'Volatilité sur 1 an$nnbsp: Très élevée', '0/40'),
+      ('Pire baisse', '${minus}20$nnbsp% entre janvier et mai 2026', '20/30'),
+      (
+        'Une entreprise ou un panier',
+        'Action$nnbsp: une seule entreprise',
+        '0/15',
+      ),
+      ("Durée de l'historique", '46 ans de cours, depuis 1980', '15/15'),
+    ]) {
+      final card = find.byType(StabilityCard);
+      for (final text in [label, fact, points]) {
+        expect(
+          find.descendant(of: card, matching: find.text(text)),
+          findsOneWidget,
+          reason: text,
+        );
+      }
+    }
+    expect(
+      find.text(
+        'Ce score décrit les cinq dernières années. Il ne dit rien de '
+        "l'avenir et ce n'est pas un conseil.",
+      ),
+      findsOneWidget,
+    );
+    // Between the essentials and the position.
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    expect(top('Stabilité passée'), greaterThan(top("L'essentiel")));
+    expect(top('Stabilité passée'), lessThan(top('Ta position')));
+  });
+
+  testWidgets('« Stabilité passée » reads as one sentence', (tester) async {
+    await show(tester, overview());
+    expect(
+      find.bySemanticsLabel(
+        'Stabilité passée$nnbsp: 35 sur 100. '
+        'Plus il est haut, moins le cours a bougé par le passé. '
+        'Mouvements$nnbsp: 0 sur 40, Volatilité sur 1 an$nnbsp: Très élevée. '
+        'Pire baisse$nnbsp: 20 sur 30, '
+        '${minus}20$nnbsp% entre janvier et mai 2026. '
+        'Une entreprise ou un panier$nnbsp: 0 sur 15, '
+        'Action$nnbsp: une seule entreprise. '
+        "Durée de l'historique$nnbsp: 15 sur 15, "
+        '46 ans de cours, depuis 1980. '
+        'Ce score décrit les cinq dernières années. Il ne dit rien de '
+        "l'avenir et ce n'est pas un conseil.",
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('« Stabilité passée » at level 2: the volatility figure', (
+    tester,
+  ) async {
+    final o = overview(level: 2);
+    await show(tester, o);
+    final figure = Formats('fr').percent(o.stability!.volatility, decimals: 0);
+    expect(find.text('Volatilité sur 1 an$nnbsp: $figure'), findsOneWidget);
+  });
+
+  PastStability stability({required Drawdown fall, AssetType? type}) =>
+      PastStability(
+        movementPoints: 40,
+        volatility: Decimal.zero,
+        band: 1,
+        fallPoints: 30,
+        worstFall: fall,
+        basketPoints: 15,
+        type: type ?? AssetType.etf,
+        historyPoints: 4,
+        historyYears: 3,
+        since: day(2023, 6, 1),
+      );
+
+  testWidgets('« Stabilité passée »: falls over one month, two years, none', (
+    tester,
+  ) async {
+    for (final (fall, text) in [
+      (
+        Drawdown(
+          d('-0.08'),
+          peakDate: day(2020, 3, 2),
+          troughDate: day(2020, 3, 23),
+        ),
+        '${minus}8$nnbsp% en mars 2020',
+      ),
+      (
+        Drawdown(
+          d('-0.34'),
+          peakDate: day(2019, 12, 20),
+          troughDate: day(2020, 3, 23),
+        ),
+        '${minus}34$nnbsp% entre décembre 2019 et mars 2020',
+      ),
+      (Drawdown(Decimal.zero), "Le cours n'a pas baissé"),
+    ]) {
+      await pumpApp(
+        tester,
+        StabilityCard(score: stability(fall: fall), uiLevel: 1),
+      );
+      expect(find.text(text), findsOneWidget);
+    }
+    expect(
+      find.text('ETF$nnbsp: le risque est réparti sur un panier'),
+      findsOneWidget,
+    );
+    expect(find.text('3 ans de cours, depuis 2023'), findsOneWidget);
+    expect(find.text('89/100'), findsOneWidget);
+  });
+
+  testWidgets(
+    '« Stabilité passée » under a year of closes: why there is none',
+    (tester) async {
+      await pumpApp(tester, const StabilityCard(score: null, uiLevel: 1));
+      expect(find.text('Stabilité passée'), findsOneWidget);
+      expect(
+        find.text('Pas de score$nnbsp: il faut au moins un an de cours.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('/100'), findsNothing);
+    },
+  );
+
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await show(tester, overview());
+    expect(find.byType(StabilityCard), findsOneWidget, reason: 'laid out');
     await expectAccessible(tester);
   });
 }

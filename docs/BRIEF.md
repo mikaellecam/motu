@@ -39,7 +39,8 @@ trip wizard prefilled (e.g. "Mars 2020 : vendre ou tenir ?" → trip starting 20
 
 Real trading, accounts/login, sync between devices, social or competitive features (no leaderboards),
 crypto, real estate, trading island, push notifications, ranking of assets. An explainable score per asset
-is in (decided 2026-10-24, §14).
+is in: « Stabilité passée » on the asset page (§4.8, decided 2026-10-25); ranking or sorting assets by it is
+not.
 
 ---
 
@@ -623,6 +624,25 @@ voyage » (trip). In a trip, an optional « Pourquoi ? » saves the order to the
   currency and its 1-year move against the euro; « Aucun » for EUR assets).
 - "Pourquoi ça bouge ?" card: decomposition of the chart period's move (§7.9), from its first close to the
   price now, as a stacked bar + three rows.
+- « Stabilité passée » (decided 2026-10-25, M9-36), a flat card after the essentials: a score out of 100 of
+  how little the price moved in the past. Higher means it moved less, not « better »: it is not a ranking, so
+  the Explorer never shows, sorts or ranks assets by it. Computed from the closes on or before the clock's day
+  (`pastStability`), so a trip scores as of its date. Four parts, each with its points and the fact behind it:
+  - Mouvements, 40: the annualised volatility of the last year of closes (the Volatilité tile's), 40 minus
+    one point per point of volatility, 0 from 40 % (band 5). Level 1 shows its band, level 2 its figure.
+  - Pire baisse, 30: the max drawdown over five years (opening on the last close before them, like the 5A
+    chart), with its months (« −34 % entre février et mars 2020 »), 30 minus one point per 2 % fallen, 0 from
+    −60 %.
+  - Une entreprise ou un panier, 15: an ETF spreads the risk (15), a stock does not (0).
+  - Durée de l'historique, 15: 1,5 point per full year since the asset's first close (`listingDate`), 15 from
+    ten years; a long history makes the other figures more reliable.
+
+  Each part is rounded half-even to a whole point and the score is their sum, so the rows add up to it.
+  Under a year of closes (none on or before the same day a year back, or under 20 daily returns in that year)
+  the movements cannot be measured: no score, « Pas de score : il faut au moins un an de cours. » Under five
+  years, the worst fall uses what exists. Under the parts: « Ce score décrit les cinq dernières années. Il ne
+  dit rien de l'avenir et ce n'est pas un conseil. » Neutral colours (it is neither a gain nor a loss);
+  screen readers hear the card as one sentence.
 - User position: quantity, value, P&L (amount, %), of which currency effect = value now − value at the
   average purchase rate (notional-weighted, kept by sells like the average cost).
 - Buy / Sell buttons.
@@ -1140,6 +1160,7 @@ screens; M9-5).
    for after V1 (the user's): a life simulation bringing everything together. A scenario, chosen or given,
    sets a salary and fixed expenses; the player decides how much to save, then what to invest it in
    (stocks, crypto, housing…).
-4. ~~Explainable asset scoring~~: decided 2026-10-24, can be in V1; what it shows is still to agree.
+4. ~~Explainable asset scoring~~: decided 2026-10-24, can be in V1; what it shows decided 2026-10-25:
+   « Stabilité passée », out of 100, on the asset page only (§4.8).
 5. ~~Final data provider and `dataFloor`~~: decided in ADR-004 (Twelve Data free plan, `dataFloor` 2000-01-03).
 6. ~~Final catalogue list and symbols~~: decided in ADR-004 (US listings).

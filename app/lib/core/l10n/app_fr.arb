@@ -421,6 +421,103 @@
   "asset_position_value": "Valeur",
   "asset_position_pnl": "Plus-value latente",
   "asset_position_fx": "dont effet de change",
+  "asset_score_title": "Stabilit\u00e9 pass\u00e9e",
+  "@asset_score_title": {
+    "description": "Title of the asset's past-stability score (BRIEF \u00a74.8). It describes the past; it is not a ranking."
+  },
+  "asset_score_out_of": "{points}/{max}",
+  "@asset_score_out_of": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "asset_score_meaning": "Plus il est haut, moins le cours a boug\u00e9 par le pass\u00e9.",
+  "asset_score_movements": "Mouvements",
+  "asset_score_movements_fact": "Volatilit\u00e9 sur 1 an\u202f: {value}",
+  "@asset_score_movements_fact": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_score_fall": "Pire baisse",
+  "asset_score_fall_month": "{depth} en {month}",
+  "@asset_score_fall_month": {
+    "description": "A fall from its peak to its trough within one month: \u00ab \u22128 % en mars 2020 \u00bb.",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_score_fall_dates": "{depth} entre {from} et {to}",
+  "@asset_score_fall_dates": {
+    "description": "\u00ab \u221234 % entre f\u00e9vrier et mars 2020 \u00bb: [from] carries its year only when it differs from [to]'s.",
+    "placeholders": {
+      "depth": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_score_fall_none": "Le cours n'a pas baiss\u00e9",
+  "asset_score_basket": "Une entreprise ou un panier",
+  "asset_score_basket_etf": "ETF\u202f: le risque est r\u00e9parti sur un panier",
+  "asset_score_basket_stock": "Action\u202f: une seule entreprise",
+  "asset_score_history": "Dur\u00e9e de l'historique",
+  "asset_score_history_fact": "{years, plural, one{{years} an de cours, depuis {year}} other{{years} ans de cours, depuis {year}}}",
+  "@asset_score_history_fact": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "asset_score_disclaimer": "Ce score d\u00e9crit les cinq derni\u00e8res ann\u00e9es. Il ne dit rien de l'avenir et ce n'est pas un conseil.",
+  "asset_score_none": "Pas de score\u202f: il faut au moins un an de cours.",
+  "asset_score_semantics": "Stabilit\u00e9 pass\u00e9e\u202f: {total} sur 100.",
+  "@asset_score_semantics": {
+    "description": "Screen-reader opening of the score card, followed by its parts.",
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "asset_score_part_semantics": "{label}\u202f: {points} sur {max}, {fact}.",
+  "@asset_score_part_semantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "points": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "fact": {
+        "type": "String"
+      }
+    }
+  },
   "wallets_title": "Mes portefeuilles",
   "wallets_intro": "Un portefeuille d'aujourd'hui, et autant de voyages dans le temps que tu veux.",
   "wallets_live_name": "Aujourd'hui",

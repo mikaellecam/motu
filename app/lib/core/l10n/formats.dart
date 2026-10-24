@@ -90,6 +90,9 @@ class Formats {
   /// `mars 2000`, `March 2000`.
   String month(DateTime d) => DateFormat.yMMMM(_locale).format(d);
 
+  /// `mars`, `March`: a month whose year is said next to it.
+  String monthName(DateTime d) => DateFormat.MMMM(_locale).format(d);
+
   /// `2 mars`, `1er novembre`, `March 2`: a day near the one on screen.
   String dayMonth(DateTime d) {
     final text = DateFormat.MMMMd(_locale).format(d);

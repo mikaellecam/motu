@@ -157,6 +157,22 @@ void main() {
       expect(o.fxYearChange, simpleReturn(d('0.9'), d('0.85')));
     });
 
+    test('« Stabilité passée »: the tile volatility, five years of falls', () {
+      final o = overview(live: quote);
+      final s = o.stability!;
+      expect(s.volatility, o.volatility);
+      expect(s.worstFall.depth, d('-0.2')); // 150 $ → 120 $ in May
+      expect(s.fallPoints, 20);
+      expect((s.basketPoints, s.historyYears, s.historyPoints), (0, 46, 15));
+    });
+
+    test('« Stabilité passée » in a trip: as of its day', () {
+      // Before May's dip: no fall yet, though the history goes on after.
+      final s = overview(at: DateTime.utc(2026, 4, 30, 15)).stability!;
+      expect(s.worstFall.depth, Decimal.zero);
+      expect(s.historyYears, 46);
+    });
+
     test('the position: value, P&L and the part the dollar made', () {
       final p = overview(live: quote).position!;
       expect(p.quantity, Quantity.whole(15));
@@ -200,6 +216,7 @@ void main() {
       );
       expect(o.fxYearChange, isNull);
       expect(o.yearChange, isNull);
+      expect(o.stability, isNull, reason: 'under a year of closes');
       expect(
         assetChartFor(o, AssetPeriod.fiveYears).dates.first,
         day(2000, 1, 3),

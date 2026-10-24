@@ -15,6 +15,7 @@ import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
+import 'package:finance_companion/presentation/features/asset/stability_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -128,7 +129,7 @@ void main() {
   screenshot(
     'm9-3-asset-130',
     const AssetScreen(assetId: 'apple'),
-    size: const Size(390, 1900),
+    size: const Size(390, 2250),
     textScale: 1.3,
     overrides: overrides,
   );
@@ -138,6 +139,26 @@ void main() {
     const AssetScreen(assetId: 'apple'),
     size: const Size(390, 1640),
     overrides: overrides,
+  );
+  // « Stabilité passée » (M9-36), scrolled to the top of the screen.
+  screenshot(
+    'm9-36-asset-score',
+    const AssetScreen(assetId: 'apple'),
+    overrides: overrides,
+    act: (tester) async {
+      final card = find.byType(StabilityCard);
+      await tester.scrollUntilVisible(
+        card,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.ensureVisible(card);
+    },
   );
   screenshot(
     'm4-4-asset-5y-benchmark',

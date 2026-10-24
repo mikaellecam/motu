@@ -8,6 +8,7 @@ import '../../data/repositories/wallet_repository.dart';
 import '../../domain/analytics/decomposition.dart';
 import '../../domain/analytics/drawdown.dart';
 import '../../domain/analytics/returns.dart';
+import '../../domain/analytics/stability.dart';
 import '../../domain/market/asset.dart';
 import '../../domain/market/price_bar.dart';
 import '../../domain/market/quote.dart';
@@ -57,6 +58,7 @@ final class AssetOverview {
     required this.riskBand,
     required this.yearDrawdown,
     required this.fxYearChange,
+    required this.stability,
     required this.uiLevel,
     required this.position,
     required this.bars,
@@ -89,6 +91,9 @@ final class AssetOverview {
   /// Change in the EUR value of one unit of the currency over a year; null
   /// for an EUR asset.
   final Decimal? fxYearChange;
+
+  /// « Stabilité passée »; null under a year of closes.
+  final PastStability? stability;
   final int uiLevel;
 
   /// Null when the wallet holds none.
@@ -204,6 +209,12 @@ AssetOverview buildAssetOverview({
       final then? => simpleReturn(then, fxRate),
       null => null,
     },
+    stability: pastStability(
+      closes: [for (final b in known) (b.date, b.close)],
+      type: asset.type,
+      listed: asset.listingDate,
+      asOf: asOf,
+    ),
     uiLevel: uiLevel,
     position: position,
     bars: known,

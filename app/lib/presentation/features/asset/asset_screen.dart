@@ -22,6 +22,7 @@ import '../../widgets/sign_color.dart';
 import '../companion/companion_card.dart';
 import '../glossary/term_sheet.dart';
 import '../order/order_sheet.dart';
+import 'stability_card.dart';
 
 /// An asset as of a wallet's clock: price, chart, essentials, why it moved,
 /// the wallet's position (BRIEF §4.8).
@@ -60,6 +61,8 @@ class AssetScreen extends ConsumerWidget {
               _ChartAndWhy(o, walletId: walletId),
               const SizedBox(height: AppSpace.x4),
               _Essentials(o),
+              const SizedBox(height: AppSpace.x4),
+              StabilityCard(score: o.stability, uiLevel: o.uiLevel),
               if (o.position != null) ...[
                 const SizedBox(height: AppSpace.x4),
                 _PositionCard(o),

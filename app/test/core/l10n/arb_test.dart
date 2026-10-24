@@ -46,6 +46,7 @@ void main() {
     const shared = {
       'app_title',
       'asset_eur_equivalent',
+      'asset_score_out_of',
       'asset_volatility_figure',
       'exchange_euronext',
       'exchange_nasdaq',
