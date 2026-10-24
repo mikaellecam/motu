@@ -67,6 +67,11 @@ class MainApp extends StatelessWidget {
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).app_title,
       theme: appTheme(),
+      // No stretch (Android 12+) nor glow past a list's end (M9-21);
+      // pull-to-refresh is not an overscroll effect and still works.
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        overscroll: false,
+      ),
       debugShowCheckedModeBanner: false,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
