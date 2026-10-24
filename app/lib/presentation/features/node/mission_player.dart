@@ -54,41 +54,9 @@ class MissionPlayer extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpace.x4),
-            ChunkyCard(
-              child: Semantics(
-                liveRegion: true,
-                child: Row(
-                  children: [
-                    ExcludeSemantics(
-                      child: Container(
-                        width: AppSpace.minTarget,
-                        height: AppSpace.minTarget,
-                        decoration: BoxDecoration(
-                          color: view.done
-                              ? AppColors.progress
-                              : AppColors.line,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.ink,
-                            width: AppShape.chunkyBorder,
-                          ),
-                        ),
-                        child: Icon(
-                          view.done ? Icons.check : Icons.flag_outlined,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpace.x3),
-                    Expanded(
-                      child: Text(
-                        view.done ? l10n.mission_done : l10n.mission_auto,
-                        style: view.done ? AppText.bodyStrong : text.bodyMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            MissionCard(
+              done: view.done,
+              text: view.done ? l10n.mission_done : l10n.mission_auto,
             ),
             const SizedBox(height: AppSpace.x6),
             if (view.done)
@@ -98,6 +66,71 @@ class MissionPlayer extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// Where a mission stands, in a chunky card: a flag while it waits, ✓ in
+/// the levels' gold once done, then [text] and its [detail]. The mission
+/// player, and the world screen of the buy that completed it (M9-34).
+class MissionCard extends StatelessWidget {
+  const MissionCard({
+    super.key,
+    required this.done,
+    required this.text,
+    this.detail,
+  });
+
+  final bool done;
+  final String text;
+  final String? detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme;
+    return ChunkyCard(
+      child: Semantics(
+        liveRegion: true,
+        child: Row(
+          children: [
+            ExcludeSemantics(
+              child: Container(
+                width: AppSpace.minTarget,
+                height: AppSpace.minTarget,
+                decoration: BoxDecoration(
+                  color: done ? AppColors.progress : AppColors.line,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.ink,
+                    width: AppShape.chunkyBorder,
+                  ),
+                ),
+                child: Icon(
+                  done ? Icons.check : Icons.flag_outlined,
+                  color: AppColors.ink,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpace.x3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    text,
+                    style: done ? AppText.bodyStrong : style.bodyMedium,
+                  ),
+                  if (detail case final detail?)
+                    Text(
+                      detail,
+                      style: style.bodySmall?.copyWith(color: AppColors.muted),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

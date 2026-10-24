@@ -1829,6 +1829,52 @@
   "order_coach_term": "concentration",
   "wallet_pending_title": "Ordres en attente",
   "order_view": "Voir l'ordre",
+  "order_done_pending_label": "Ordre programmé",
+  "order_done_filled_label": "Ordre exécuté",
+  "order_done_pending_title": "Ton immeuble {name} est en chantier",
+  "@order_done_pending_title": {
+    "description": "World screen after a buy that waits (M9-34): its building under construction on the island.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "order_done_filled_title": "Ton immeuble {name} est construit",
+  "@order_done_filled_title": {
+    "description": "World screen after a buy filled at once (M9-34): its building stands on the island.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "order_done_filled_line": "Marché ouvert : ton achat est passé au dernier cours, à {price}.",
+  "@order_done_filled_line": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "order_done_mission": "Mission accomplie : {mission}",
+  "@order_done_mission": {
+    "placeholders": {
+      "mission": {
+        "type": "String"
+      }
+    }
+  },
+  "order_done_mission_step": "L'étape {number} de l'île est terminée",
+  "@order_done_mission_step": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "order_done_island": "Retour à l'île",
+  "order_done_wallet": "Mon portefeuille",
   "order_screen_title": "Ton ordre",
   "order_row_title": "{side, select, buy{Achat} other{Vente}} \u00b7 {name}",
   "@order_row_title": {

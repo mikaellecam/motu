@@ -209,7 +209,11 @@ void main() {
     await ticket(Side.buy);
     actions(Side.buy).setAmount('500');
     final outcome = await actions(Side.buy).submit();
-    expect((outcome! as OrderSent).opensAt, DateTime.utc(2026, 10, 8, 13, 30));
+    final sent = outcome! as OrderSent;
+    expect(
+      (sent.side, sent.opensAt, sent.offline),
+      (Side.buy, DateTime.utc(2026, 10, 8, 13, 30), false),
+    );
     expect((await wallets.load('live')).pendingOrders, hasLength(1));
   });
 
@@ -293,10 +297,90 @@ void main() {
       ..setMode(SizeMode.quantity)
       ..setQuantity('2');
     final outcome = await actions(Side.buy).submit();
-    expect((outcome! as OrderSent).opensAt, DateTime.utc(2026, 10, 8, 13, 30));
+    final sent = outcome! as OrderSent;
+    expect(
+      (sent.opensAt, sent.offline),
+      (DateTime.utc(2026, 10, 8, 13, 30), true),
+    );
     final wallet = await wallets.load('live');
     expect(wallet.pendingOrders, hasLength(1));
     expect(wallet.positions['apple'], isNull);
+  });
+
+  test('a buy filled at once names the missions it completes', () async {
+    // M9-34: the first ETF of the live wallet; saved, it is not named again.
+    await open(at: DateTime.utc(2026, 10, 7, 15));
+    backend.quotes['world'] = {
+      'assetId': 'world',
+      'price': '101.5',
+      'currency': 'USD',
+      'asOf': '2026-10-07T14:55:00Z',
+      'marketOpen': true,
+    };
+    Future<OrderOutcome?> buyWorld() async {
+      final ticket = orderTicketProvider('world', 'live', Side.buy);
+      c
+        ..invalidate(ticket)
+        ..listen(ticket, (_, _) {});
+      await c.read(ticket.future);
+      return (c.read(ticket.notifier)
+            ..setMode(SizeMode.quantity)
+            ..setQuantity('1'))
+          .submit();
+    }
+
+    final first = await buyWorld();
+    expect((first! as OrderExecuted).missions, ['ae.mission-first-etf']);
+    await c
+        .read(profileRepositoryProvider)
+        .completeNode('ae.mission-first-etf', at: wall.now());
+    // A minute on: a new order id.
+    wall.advance(const Duration(minutes: 1));
+    expect(((await buyWorld())! as OrderExecuted).missions, isEmpty);
+  });
+
+  test('a sell filled at once completes no mission', () async {
+    await open(at: DateTime.utc(2026, 10, 7, 15));
+    backend.quotes['world'] = {
+      'assetId': 'world',
+      'price': '101.5',
+      'currency': 'USD',
+      'asOf': '2026-10-07T14:55:00Z',
+      'marketOpen': true,
+    };
+    final buy = Order(
+      id: 'b',
+      assetId: 'world',
+      side: Side.buy,
+      type: OrderType.market,
+      size: QuantitySize(Quantity.whole(2)),
+      createdAt: DateTime.utc(2026, 10, 5),
+    );
+    await wallets.placeOrder('live', buy);
+    await wallets.recordFill(
+      'live',
+      buy,
+      Fill(
+        assetId: 'world',
+        side: Side.buy,
+        date: DateTime.utc(2026, 10, 5),
+        quantity: Quantity.whole(2),
+        price: Price(d('100'), Currency.usd),
+        fxRate: d('0.85'),
+        fees: const Money.zero(Currency.eur),
+      ),
+    );
+    final ticket = orderTicketProvider('world', 'live', Side.sell);
+    c.listen(ticket, (_, _) {});
+    await c.read(ticket.future);
+    final outcome =
+        await (c.read(ticket.notifier)
+              ..setMode(SizeMode.quantity)
+              ..setQuantity('1'))
+            .submit();
+    final sold = outcome! as OrderExecuted;
+    expect(sold.side, Side.sell);
+    expect(sold.missions, isEmpty);
   });
 
   group('early close, Friday 2026-11-27 (13:00 in New York, 18:00 UTC)', () {

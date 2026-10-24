@@ -6,6 +6,7 @@ import '../../application/trip/trip_wizard.dart';
 import '../../application/learning/content.dart';
 import '../../application/learning/island_path.dart';
 import '../../application/learning/ui_level.dart';
+import '../../application/order/order_ticket.dart' show OrderDone;
 import '../../application/wallet/living_island.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
@@ -20,6 +21,7 @@ import '../features/glossary/glossary_screen.dart';
 import '../features/island/island_screen.dart';
 import '../features/node/node_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/order/order_done_screen.dart';
 import '../features/order/order_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/trip/stop_screen.dart';
@@ -101,6 +103,17 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       path: '/wallet/:walletId/order/:orderId',
       builder: (_, state) =>
           OrderScreen(orderId: state.pathParameters['orderId']!),
+    ),
+    // A buy's world screen (M9-34); without what placing did, the order.
+    GoRoute(
+      path: '/wallet/:walletId/order/:orderId/done',
+      builder: (_, state) => switch (state.extra) {
+        final OrderDone done => OrderDoneScreen(
+          walletId: state.pathParameters['walletId']!,
+          done: done,
+        ),
+        _ => OrderScreen(orderId: state.pathParameters['orderId']!),
+      },
     ),
     GoRoute(
       path: '/asset/:assetId',

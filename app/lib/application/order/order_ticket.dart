@@ -15,6 +15,7 @@ import '../../domain/wallet/validation.dart';
 import '../../domain/wallet/wallet.dart';
 import '../asset/asset_page.dart';
 import '../learning/content.dart';
+import '../learning/missions.dart';
 import '../providers.dart';
 import '../trip/trip_wizard.dart' show parseAmount;
 import '../wallet/live_catch_up.dart';
@@ -178,27 +179,72 @@ final class TicketState {
       !context.finished && order != null && errors.isEmpty && !submitting;
 }
 
-/// What placing did, for the message the sheet leaves behind.
+/// What placing did: a buy's world screen ([orderDone]) or a sell's message.
 sealed class OrderOutcome {
   const OrderOutcome(this.orderId);
 
   /// The order placed, for « Voir l'ordre ».
   final String orderId;
+  Side get side;
 }
 
 /// Live, market open: filled at the quote.
 final class OrderExecuted extends OrderOutcome {
-  const OrderExecuted(super.orderId, this.fill);
+  const OrderExecuted(super.orderId, this.fill, {this.missions = const []});
   final Fill fill;
+
+  /// The mission nodes this fill completed (BRIEF §4.3), in path order.
+  final List<String> missions;
+
+  @override
+  Side get side => fill.side;
 }
 
 /// Pending: until the market opens ([opensAt], live), the trip moves on
 /// ([trip]), or else the price is reached (limit, stop).
 final class OrderSent extends OrderOutcome {
-  const OrderSent(super.orderId, {this.opensAt, this.trip = false});
+  const OrderSent(
+    super.orderId, {
+    required this.side,
+    this.opensAt,
+    this.trip = false,
+    this.offline = false,
+  });
+
+  @override
+  final Side side;
   final DateTime? opensAt;
   final bool trip;
+
+  /// The market was open but the price not up to date: it waits for
+  /// [opensAt] all the same (BRIEF §14.1).
+  final bool offline;
 }
+
+/// The world screen a placed buy opens (BRIEF §4.6, M9-34): its building
+/// on the island, under construction while it waits, built when it filled
+/// at once, and the missions it completed.
+final class OrderDone {
+  const OrderDone(
+    this.outcome, {
+    required this.built,
+    this.missions = const [],
+  });
+  final OrderOutcome outcome;
+  final bool built;
+  final List<String> missions;
+}
+
+/// Every buy opens its world screen; a sell keeps its short message (null).
+OrderDone? orderDone(OrderOutcome outcome) => switch (outcome) {
+  _ when outcome.side == Side.sell => null,
+  OrderExecuted(:final missions) => OrderDone(
+    outcome,
+    built: true,
+    missions: missions,
+  ),
+  OrderSent() => OrderDone(outcome, built: false),
+};
 
 @riverpod
 class OrderTicket extends _$OrderTicket {
@@ -384,7 +430,7 @@ class OrderTicket extends _$OrderTicket {
           simDate: c.asOf,
           reason: submitted.form.reason.trim(),
         );
-        outcome = OrderSent(order.id, trip: true);
+        outcome = OrderSent(order.id, side: order.side, trip: true);
       } else if (c.marketOpen && !c.offline && order.type == OrderType.market) {
         final match = fillAtQuote(
           order,
@@ -397,8 +443,12 @@ class OrderTicket extends _$OrderTicket {
         );
         switch (match) {
           case Filled(:final fill):
+            // Read before booking: once booked, the outcome must come back.
+            final missions = order.side == Side.buy
+                ? await _missionsCompletedBy(c.asset.id)
+                : const <String>[];
             await wallets.executeOrder(c.walletId, order, fill);
-            outcome = OrderExecuted(order.id, fill);
+            outcome = OrderExecuted(order.id, fill, missions: missions);
           case Cancelled() || Unfilled():
             // Validation checked the same rules: only a race lands here.
             state = AsyncData(
@@ -408,9 +458,12 @@ class OrderTicket extends _$OrderTicket {
         }
       } else {
         await wallets.placeOrder(c.walletId, order);
+        final market = order.type == OrderType.market;
         outcome = OrderSent(
           order.id,
-          opensAt: order.type == OrderType.market ? c.nextOpen : null,
+          side: order.side,
+          opensAt: market ? c.nextOpen : null,
+          offline: market && c.marketOpen && c.offline,
         );
       }
       ref
@@ -422,6 +475,26 @@ class OrderTicket extends _$OrderTicket {
       state = AsyncData(_derive(c, submitted.form, failure: failure));
       return null;
     }
+  }
+
+  /// The missions buying [assetId] in the live wallet completes (BRIEF
+  /// §4.3): those it satisfies once held, not done before.
+  Future<List<String>> _missionsCompletedBy(String assetId) async {
+    final wallets = ref.read(walletRepositoryProvider);
+    final facts = await wallets.watchMissionFacts().first;
+    final satisfied = await missionsSatisfiedBy(
+      (
+        liveAssets: {...facts.liveAssets, assetId},
+        activePlan: facts.activePlan,
+      ),
+      ref.read(marketRepositoryProvider),
+      asOf: ref.read(liveClockProvider).now(),
+    );
+    final done = await ref.read(profileRepositoryProvider).completedNodes();
+    return [
+      for (final id in satisfied)
+        if (!done.contains(id)) id,
+    ];
   }
 }
 

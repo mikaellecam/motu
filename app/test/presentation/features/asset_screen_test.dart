@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/asset/asset_page.dart';
 import 'package:finance_companion/application/companion/companion.dart';
+import 'package:finance_companion/application/order/order_ticket.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/l10n/formats.dart';
@@ -162,6 +163,14 @@ Future<void> show(WidgetTester tester, AssetOverview o) async {
                 '${state.pathParameters['orderId']}',
               ),
             ),
+            GoRoute(
+              path: '/wallet/:walletId/order/:orderId/done',
+              builder: (_, state) => Text(
+                'done ${state.pathParameters['walletId']}/'
+                '${state.pathParameters['orderId']} '
+                '${(state.extra! as OrderDone).built}',
+              ),
+            ),
           ],
         ),
       ),
@@ -296,20 +305,38 @@ void main() {
     );
   });
 
-  testWidgets('once placed: the message, and « Voir l\'ordre »', (
+  testWidgets('a sell placed: the message, and « Voir l\'ordre »', (
+    tester,
+  ) async {
+    await show(tester, overview());
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Vendre'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    Navigator.of(tester.element(find.byType(OrderSheet))).pop((
+      message: 'Ordre envoyé',
+      outcome: const OrderSent('o9', side: Side.sell),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Ordre envoyé'), findsOneWidget);
+    await tester.tap(find.text('Voir l\'ordre'));
+    await tester.pumpAndSettle();
+    expect(find.text('order live/o9'), findsOneWidget);
+  });
+
+  testWidgets('a buy placed: its building on the island (M9-34)', (
     tester,
   ) async {
     await show(tester, overview());
     await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    Navigator.of(tester.element(find.byType(OrderSheet)))
-        .pop((message: 'Ordre envoyé', orderId: 'o9'));
+    Navigator.of(tester.element(find.byType(OrderSheet))).pop((
+      message: 'Ordre envoyé',
+      outcome: const OrderSent('o9', side: Side.buy),
+    ));
     await tester.pumpAndSettle();
-    expect(find.text('Ordre envoyé'), findsOneWidget);
-    await tester.tap(find.text('Voir l\'ordre'));
-    await tester.pumpAndSettle();
-    expect(find.text('order live/o9'), findsOneWidget);
+    expect(find.text('done live/o9 false'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('level 2: the band and its figure', (tester) async {

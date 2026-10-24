@@ -17,14 +17,14 @@ import '../../../domain/wallet/position.dart';
 import '../../widgets/term_text.dart';
 import '../glossary/term_sheet.dart';
 
-/// Opens the order sheet to [side] [assetId] in [walletId] (BRIEF §4.6); the
-/// message to show once placed comes back, with the order placed.
-Future<({String message, String orderId})?> showOrderSheet(
+/// Opens the order sheet to [side] [assetId] in [walletId] (BRIEF §4.6); what
+/// placing did comes back, with its message.
+Future<({String message, OrderOutcome outcome})?> showOrderSheet(
   BuildContext context, {
   required String assetId,
   required String walletId,
   required Side side,
-}) => showModalBottomSheet<({String message, String orderId})>(
+}) => showModalBottomSheet<({String message, OrderOutcome outcome})>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
@@ -96,7 +96,7 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
     final outcome = await ref.read(_provider.notifier).submit();
     if (outcome == null || !mounted) return;
     Navigator.of(context)
-        .pop((message: _message(outcome, s), orderId: outcome.orderId));
+        .pop((message: _message(outcome, s), outcome: outcome));
   }
 
   String _message(OrderOutcome outcome, TicketState s) {

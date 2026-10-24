@@ -5,6 +5,7 @@ import '../../domain/learning/content.dart';
 import '../../domain/learning/missions.dart';
 import '../../domain/learning/node.dart';
 import '../../core/failure.dart';
+import '../../data/repositories/market_repository.dart';
 import '../providers.dart';
 import 'content.dart';
 import 'island_path.dart';
@@ -19,17 +20,25 @@ Stream<Set<String>> satisfiedMissions(Ref ref) {
   final wallets = ref.watch(walletRepositoryProvider);
   final market = ref.watch(marketRepositoryProvider);
   final clock = ref.watch(liveClockProvider);
-  return wallets.watchMissionFacts().asyncMap((facts) async {
-    final assets = {
-      for (final a in await market.assets(asOf: clock.now())) a.id: a,
-    };
-    return completedMissions(
-      MissionContext(
-        liveHoldings: [for (final id in facts.liveAssets) ?assets[id]],
-        hasActiveDcaPlan: facts.activePlan,
-      ),
-    );
-  });
+  return wallets.watchMissionFacts().asyncMap(
+    (facts) => missionsSatisfiedBy(facts, market, asOf: clock.now()),
+  );
+}
+
+/// The mission nodes [facts] satisfy: the assets of the live wallet's open
+/// positions, and whether a DCA plan runs.
+Future<Set<String>> missionsSatisfiedBy(
+  ({Set<String> liveAssets, bool activePlan}) facts,
+  MarketRepository market, {
+  required DateTime asOf,
+}) async {
+  final assets = {for (final a in await market.assets(asOf: asOf)) a.id: a};
+  return completedMissions(
+    MissionContext(
+      liveHoldings: [for (final id in facts.liveAssets) ?assets[id]],
+      hasActiveDcaPlan: facts.activePlan,
+    ),
+  );
 }
 
 /// Saves each mission as done as soon as the sandbox satisfies it, never

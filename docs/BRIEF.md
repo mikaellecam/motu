@@ -569,6 +569,18 @@ order sent after it waits for the next opening.
 Order lifecycle UI: sent → market opens → executed. The map shows a pending buy as a building under
 construction that completes on fill.
 
+**After a buy** (decided 2026-10-25, M9-34, artboard `OrderDone-A` of the art direction canvas): every buy,
+in the live wallet and in trips, opens a world screen on the sea instead of the message
+(`/wallet/:walletId/order/:orderId/done`, `orderDone`): the wallet's island (the live wallet's, or the trip's
+own city) with the order's building, under construction while the buy waits, built when it filled at once;
+a chunky card with « Ordre programmé » / « Ordre exécuté », « Ton immeuble {actif} est en chantier » /
+« … est construit », one line saying why it waits and when it goes (the sheet's own copy) or at what price it
+filled, the order's steps (as on the order screen, ✓ done in `progress`, the current one in `primary`) and
+« Voir l'ordre »; « Mission accomplie : {mission} » with its step on the island for each mission the buy
+completed (a live buy filled at once: the missions it satisfies that were not done before); then « Retour à
+l'île » (the map) and « Mon portefeuille » (the wallet it was placed in). A sell keeps its message. No
+confetti: the app has no celebration widget to reuse.
+
 **Pending orders, live wallet** (M4-6, decided 2026-10-11): at launch and on the wallet's pull-to-refresh, a
 catch-up runs the trip engine over the live wallet up to the last day whose sessions have all closed. A pending
 order takes part from the first session that opened after it was placed (a limit set mid-session never fills on
@@ -579,8 +591,8 @@ as offline (M9-38). The order screen (`/wallet/:walletId/order/:orderId`) shows 
 « Envoyé » → « Ouverture du marché » (live market order sent while closed) / « Prochain jour de cotation du
 voyage » (trip market order) / « En attente du cours » (limit, stop) → « Exécuté » with its fill and fees, or
 « Annulé » with its reason. « Annuler l'ordre » (confirmed) cancels a pending order and frees what it held
-back. The wallet screen lists « Ordres en attente », each opening its screen; the message after placing an
-order carries « Voir l'ordre ».
+back. The wallet screen lists « Ordres en attente », each opening its screen; the message after placing a
+sell, and the screen after a buy, carry « Voir l'ordre ».
 
 **Pre-trade coach** (companion card in the order sheet): new weight of the asset in the wallet ("Apple
 pèserait 8 % de ton portefeuille, contre 4 % aujourd'hui"), threshold from `momentThresholds(profile)`.
@@ -591,10 +603,10 @@ lourd : c'est la concentration » in the alert color (decided 2026-10-11).
 a position; neither on a finished trip). Quick chips: 100 / 500 / 1 000 € and « Max » (all available cash, fees
 included) to buy in euros, 1 / 5 / 10 shares in quantity, « La moitié » and « Tout » to sell. The summary shows
 shares, value, fees and total, estimated at the last known price. Errors show once there is input or after
-« Valider ». Placing closes the sheet back on the asset with a message: « Achat exécuté : … » (live market
-order, market open: filled at the quote now), « Ordre envoyé : il partira à l'ouverture, le … à … » (market
-closed), « … il attend que le cours atteigne ton prix » (limit, stop) or « … au prochain jour de cotation du
-voyage » (trip). In a trip, an optional « Pourquoi ? » saves the order to the journal (decision `buy` or
+« Valider ». Placing closes the sheet back on the asset; a buy then opens its world screen (above, M9-34), a
+sell leaves a message: « Vente exécutée : … » (live market order, market open: filled at the quote now),
+« Ordre envoyé : il partira à l'ouverture, le … à … » (market closed), « … il attend que le cours atteigne ton
+prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip). In a trip, an optional « Pourquoi ? » saves the order to the journal (decision `buy` or
 `sell`, event the order id); the summary replays it with how the traded shares moved since their fill.
 
 ### 4.7 Wallet (portfolio) screen

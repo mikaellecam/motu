@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../application/asset/asset_page.dart';
+import '../../../application/order/order_ticket.dart' show orderDone;
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/l10n/formats.dart';
@@ -723,7 +724,8 @@ class _PositionCard extends StatelessWidget {
   }
 }
 
-/// « Acheter · Vendre » (BRIEF §4.8): the order sheet, then what it did.
+/// « Acheter · Vendre » (BRIEF §4.8): the order sheet, then what it did: a
+/// buy's building on the island, a sell's message.
 /// « Vendre » only with a position.
 class _TradeBar extends StatelessWidget {
   const _TradeBar(this.o);
@@ -738,13 +740,17 @@ class _TradeBar extends StatelessWidget {
     );
     if (placed == null || !context.mounted) return;
     final router = GoRouter.of(context);
+    final order = '/wallet/${o.walletId}/order/${placed.outcome.orderId}';
+    if (orderDone(placed.outcome) case final done?) {
+      router.push('$order/done', extra: done);
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(placed.message),
         action: SnackBarAction(
           label: AppLocalizations.of(context).order_view,
-          onPressed: () =>
-              router.push('/wallet/${o.walletId}/order/${placed.orderId}'),
+          onPressed: () => router.push(order),
         ),
       ),
     );

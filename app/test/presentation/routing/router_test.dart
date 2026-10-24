@@ -4,6 +4,7 @@ import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/learning/node_player.dart';
+import 'package:finance_companion/application/order/order_ticket.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/settings/settings.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
@@ -12,6 +13,7 @@ import 'package:finance_companion/application/wallet/wallets_list.dart';
 import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/dca/dca_screen.dart';
@@ -19,6 +21,7 @@ import 'package:finance_companion/presentation/features/explorer/explorer_screen
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
+import 'package:finance_companion/presentation/features/order/order_done_screen.dart';
 import 'package:finance_companion/presentation/features/order/order_screen.dart';
 import 'package:finance_companion/presentation/features/settings/settings_screen.dart';
 import 'package:finance_companion/presentation/features/trip/stop_screen.dart';
@@ -30,6 +33,7 @@ import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../fakes/quiet_map.dart';
 import '../../helpers.dart';
@@ -171,6 +175,21 @@ void main() {
   ) async {
     await open(tester, '/wallet/t1/order/o1');
     expect(tester.widget<OrderScreen>(find.byType(OrderScreen)).orderId, 'o1');
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('/wallet/:id/order/:order/done: a buy\'s world screen', (
+    tester,
+  ) async {
+    // Opened without what placing did, it is the order.
+    await open(tester, '/wallet/t1/order/o1/done');
+    expect(tester.widget<OrderScreen>(find.byType(OrderScreen)).orderId, 'o1');
+    const done = OrderDone(OrderSent('o1', side: Side.buy), built: false);
+    GoRouter.of(tester.element(find.byType(OrderScreen)))
+        .push('/wallet/t1/order/o1/done', extra: done);
+    await tester.pumpAndSettle();
+    final screen = tester.widget<OrderDoneScreen>(find.byType(OrderDoneScreen));
+    expect((screen.walletId, screen.done), ('t1', done));
     expect(find.byType(NavigationBar), findsNothing);
   });
 

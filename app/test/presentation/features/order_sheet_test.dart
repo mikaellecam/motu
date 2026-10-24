@@ -98,7 +98,12 @@ class FakeTicket extends OrderTicket {
     state = AsyncData(submitted);
     if (!submitted.canSubmit) return null;
     placed.add(submitted.order!);
-    return OrderSent('o', opensAt: fixed.nextOpen, trip: fixed.isTrip);
+    return OrderSent(
+      'o',
+      side: s.form.side,
+      opensAt: fixed.nextOpen,
+      trip: fixed.isTrip,
+    );
   }
 }
 
@@ -109,7 +114,7 @@ class _Fixed implements SimulationClock {
 }
 
 late FakeTicket ticket;
-({String message, String orderId})? result;
+({String message, OrderOutcome outcome})? result;
 
 Future<void> show(
   WidgetTester tester, {
@@ -222,7 +227,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(ticket.placed.single.size, isA<AmountSize>());
     expect(result!.message, contains('Ordre envoyé'));
-    expect(result!.orderId, 'o');
+    expect(result!.outcome.orderId, 'o');
   });
 
   testWidgets('offline, market open: it goes at the next opening', (
