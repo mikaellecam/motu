@@ -2489,5 +2489,85 @@
   "settings_about": "\u00c0 propos",
   "settings_about_money": "Tout l'argent de cette app est fictif\u202f: aucun compte, aucune banque, aucun courtier.",
   "settings_about_advice": "Rien ici n'est un conseil en investissement ni une pr\u00e9vision.",
-  "settings_about_sources": "Cours\u202f: Twelve Data, diff\u00e9r\u00e9s. Logos\u202f: Twelve Data, propri\u00e9t\u00e9 de chaque entreprise. Taux de change\u202f: Banque centrale europ\u00e9enne, via Frankfurter. Livret A\u202f: taux officiels. Les le\u00e7ons utilisent des cours r\u00e9els, fig\u00e9s."
+  "settings_about_sources": "Cours\u202f: Twelve Data, diff\u00e9r\u00e9s. Logos\u202f: Twelve Data, propri\u00e9t\u00e9 de chaque entreprise. Taux de change\u202f: Banque centrale europ\u00e9enne, via Frankfurter. Livret A\u202f: taux officiels. Les le\u00e7ons utilisent des cours r\u00e9els, fig\u00e9s.",
+  "asset_plan": "Investir chaque mois",
+  "plan_title": "Versement programm\u00e9",
+  "plan_intro": "Le m\u00eame montant est investi \u00e0 chaque date, quel que soit le cours.",
+  "plan_amount": "Montant par achat",
+  "plan_cash_note": "Chaque achat se fait \u00e0 l'ouverture du march\u00e9. Si tes liquidit\u00e9s ne suffisent pas ce jour-l\u00e0, il est annul\u00e9.",
+  "plan_first": "Premier achat\u202f: le {date}",
+  "@plan_first": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "plan_then": "{frequency, select, weekly{Puis chaque semaine le m\u00eame jour, ou le jour de bourse suivant.} other{Puis chaque mois \u00e0 la m\u00eame date, ou le jour de bourse suivant.}}",
+  "@plan_then": {
+    "placeholders": {
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "plan_submit": "{frequency, select, weekly{Investir chaque semaine} other{Investir chaque mois}}",
+  "@plan_submit": {
+    "placeholders": {
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "plan_submit_amount": "{frequency, select, weekly{Investir {amount} chaque semaine} other{Investir {amount} chaque mois}}",
+  "@plan_submit_amount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "plan_done": "Versement programm\u00e9\u202f: premier achat le {date}.",
+  "@plan_done": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_plans_title": "Versements programm\u00e9s",
+  "wallet_plan_amount": "{amount} {frequency, select, weekly{chaque semaine} other{chaque mois}}",
+  "@wallet_plan_amount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_plan_next": "Prochain achat\u202f: le {date}",
+  "@wallet_plan_next": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_plan_stop": "Arr\u00eater",
+  "wallet_plan_stop_title": "Arr\u00eater ce versement\u202f?",
+  "wallet_plan_stop_body": "Les prochains achats de {asset} n'auront pas lieu. Ceux d\u00e9j\u00e0 faits restent dans ton portefeuille.",
+  "@wallet_plan_stop_body": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      }
+    }
+  },
+  "wallet_plan_stop_keep": "Garder le versement",
+  "dca_set_up": "Le mettre en place"
 }

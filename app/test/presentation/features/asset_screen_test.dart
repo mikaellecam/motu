@@ -3,12 +3,13 @@ import 'package:finance_companion/application/asset/asset_page.dart';
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/order/order_ticket.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/dca_plans.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/l10n/formats.dart';
 import 'package:finance_companion/core/money/money.dart';
+import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/analytics/drawdown.dart';
 import 'package:finance_companion/domain/analytics/stability.dart';
-import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/market/price_bar.dart';
@@ -20,6 +21,7 @@ import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/asset/stability_card.dart';
+import 'package:finance_companion/presentation/features/dca/plan_sheet.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -28,6 +30,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../fakes/fake_plan_setup.dart';
 import '../../helpers.dart';
 
 Decimal d(String s) => Decimal.parse(s);
@@ -142,6 +145,9 @@ Future<void> show(WidgetTester tester, AssetOverview o) async {
       overrides: [
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         assetOverviewProvider.overrideWith((ref, args) async => o),
+        planSetupProvider.overrideWith2(
+          (_) => FakePlanSetup(planContext(o.asset)),
+        ),
         // The companion card has its own tests.
         walletMomentProvider.overrideWith((ref, args) async => null),
         assetChartProvider.overrideWith((ref, args) async {
@@ -155,6 +161,11 @@ Future<void> show(WidgetTester tester, AssetOverview o) async {
             GoRoute(
               path: '/',
               builder: (_, _) => const AssetScreen(assetId: 'apple'),
+            ),
+            GoRoute(
+              path: '/wallet/:walletId',
+              builder: (_, state) =>
+                  Text('wallet ${state.pathParameters['walletId']}'),
             ),
             GoRoute(
               path: '/wallet/:walletId/order/:orderId',
@@ -291,6 +302,36 @@ void main() {
   testWidgets('a finished trip takes no order', (tester) async {
     await show(tester, overview(status: WalletStatus.finished));
     expect(find.text('Acheter'), findsNothing);
+    expect(find.text('Investir chaque mois'), findsNothing);
+  });
+
+  testWidgets('« Investir chaque mois » sets up a plan in the wallet', (
+    tester,
+  ) async {
+    await show(tester, overview(held: false));
+    await tester.tap(find.text('Investir chaque mois'));
+    await tester.pumpAndSettle();
+    final sheet = tester.widget<PlanSheet>(find.byType(PlanSheet));
+    expect((sheet.assetId, sheet.walletId), ('apple', 'live'));
+
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(PlanSheet),
+        matching: find.byType(TextField),
+      ),
+      '50',
+    );
+    await tester.pump();
+    await tester.tap(find.textContaining('Investir 50,00'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PlanSheet), findsNothing);
+    expect(
+      find.text('Versement programmé\u202f: premier achat le 9 octobre 2026.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Mon portefeuille'));
+    await tester.pumpAndSettle();
+    expect(find.text('wallet live'), findsOneWidget);
   });
 
   testWidgets('« Acheter » opens the order sheet', (tester) async {

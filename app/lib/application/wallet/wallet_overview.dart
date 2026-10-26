@@ -38,6 +38,16 @@ final class PositionView {
   final Decimal? pnlRatio;
 }
 
+/// One row of « Versements programmés » (M9-41): an active DCA plan, its
+/// asset, and its next purchase after the wallet's day.
+final class PlanView {
+  const PlanView({required this.plan, required this.asset, required this.next});
+
+  final DcaPlan plan;
+  final Asset asset;
+  final DateTime next;
+}
+
 /// Everything the wallet screen shows, as of the wallet's clock.
 final class WalletOverview {
   const WalletOverview({
@@ -62,6 +72,7 @@ final class WalletOverview {
     required this.positions,
     required this.pendingOrders,
     required this.series,
+    this.plans = const [],
   });
 
   final String id;
@@ -116,6 +127,9 @@ final class WalletOverview {
 
   /// The stored daily values, today's being the current value.
   final List<DailyValue> series;
+
+  /// The active DCA plans, oldest first; none once a trip has ended.
+  final List<PlanView> plans;
 }
 
 DateTime _day(DateTime t) {
@@ -126,7 +140,7 @@ DateTime _day(DateTime t) {
 /// Builds the overview of [wallet] at [asOf]. [prices] must cover every open
 /// position and every pending order's asset, [fxRates] (EUR per unit) every
 /// non-EUR currency among them; [livret] is the Livret balance with accrued
-/// interest.
+/// interest; [plans] the rows of its active DCA plans.
 WalletOverview buildOverview({
   required WalletState wallet,
   required DateTime asOf,
@@ -134,6 +148,7 @@ WalletOverview buildOverview({
   required Map<String, ObservedPrice> prices,
   required Map<Currency, Decimal> fxRates,
   required Decimal livret,
+  List<PlanView> plans = const [],
 }) {
   final day = _day(asOf);
   Decimal rateOf(Currency currency) =>
@@ -238,6 +253,7 @@ WalletOverview buildOverview({
         ),
     ],
     series: series,
+    plans: plans,
   );
 }
 

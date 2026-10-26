@@ -119,6 +119,14 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
   Future<void> savePlan(DcaPlansCompanion row) =>
       into(dcaPlans).insertOnConflictUpdate(row);
 
+  /// A new plan; an id already taken fails rather than replace its plan.
+  Future<void> insertPlan(DcaPlansCompanion row) => into(dcaPlans).insert(row);
+
+  Future<void> stopPlan(String id) =>
+      (update(dcaPlans)..where((p) => p.id.equals(id))).write(
+        const DcaPlansCompanion(active: Value(false)),
+      );
+
   Future<List<DcaPlanRow>> plansOf(String walletId) =>
       (select(dcaPlans)..where((p) => p.walletId.equals(walletId))).get();
 

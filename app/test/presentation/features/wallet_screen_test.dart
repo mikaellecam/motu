@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/dca_plans.dart';
 import 'package:finance_companion/application/wallet/live_catch_up.dart';
 import 'package:finance_companion/application/wallet/livret_line.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
@@ -63,6 +64,7 @@ WalletOverview overview({
   List<Fill> fills = const [],
   Money? cash,
   List<Order> pending = const [],
+  List<PlanView> plans = const [],
 }) {
   final assets = {
     'apple': stock('apple', 'Apple'),
@@ -108,8 +110,19 @@ WalletOverview overview({
     },
     fxRates: {Currency.usd: d('0.85')},
     livret: Decimal.zero,
+    plans: plans,
   );
 }
+
+/// « Arrêter » only records.
+class FakePlanActions extends PlanActions {
+  final stopped = <String>[];
+
+  @override
+  Future<void> stop(String planId) async => stopped.add(planId);
+}
+
+late FakePlanActions planActions;
 
 /// Counts the catch-ups asked for.
 class FakeCatchUp extends LiveCatchUp {
@@ -132,6 +145,7 @@ Future<void> show(
   Future<WalletOverview> Function() o,
 ) async {
   catchUp = FakeCatchUp();
+  planActions = FakePlanActions();
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 4000);
@@ -148,6 +162,7 @@ Future<void> show(
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) => o()),
         liveCatchUpProvider.overrideWith(() => catchUp),
+        planActionsProvider.overrideWith2((_) => planActions),
         walletChartProvider.overrideWith((ref, args) async {
           final (_, period, benchmark) = args;
           final series = (await o()).series;
@@ -294,6 +309,63 @@ void main() {
     expect(find.text('Ordres en attente'), findsNothing);
   });
 
+  PlanView plan(String id, String asset, String amount, DcaFrequency f) =>
+      PlanView(
+        plan: DcaPlan(
+          id: id,
+          assetId: asset,
+          amount: eur(amount),
+          frequency: f,
+          start: day(10, 9),
+        ),
+        asset: stock(asset, asset == 'apple' ? 'Apple' : 'Nvidia'),
+        next: f == DcaFrequency.weekly ? day(10, 16) : day(11, 9),
+      );
+
+  testWidgets('« Versements programmés »: each plan, its next purchase, and '
+      '« Arrêter » once confirmed', (tester) async {
+    await show(
+      tester,
+      () async => overview(
+        plans: [
+          plan('live-1', 'apple', '100', DcaFrequency.monthly),
+          plan('live-2', 'nvidia', '25.5', DcaFrequency.weekly),
+        ],
+      ),
+    );
+    expect(find.text('Versements programmés'), findsOneWidget);
+    expect(find.text('100,00$nbsp€ chaque mois'), findsOneWidget);
+    expect(find.text('Prochain achat$nnbsp: le 9 novembre'), findsOne);
+    expect(find.text('25,50$nbsp€ chaque semaine'), findsOneWidget);
+    expect(find.text('Prochain achat$nnbsp: le 16 octobre'), findsOne);
+
+    // Kept: nothing changes.
+    await tester.tap(find.widgetWithText(TextButton, 'Arrêter').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Arrêter ce versement$nnbsp?'), findsOneWidget);
+    expect(
+      find.text(
+        'Les prochains achats de Nvidia n\'auront pas lieu. Ceux déjà faits '
+        'restent dans ton portefeuille.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Garder le versement'));
+    await tester.pumpAndSettle();
+    expect(planActions.stopped, isEmpty);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Arrêter').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Arrêter'));
+    await tester.pumpAndSettle();
+    expect(planActions.stopped, ['live-2']);
+  });
+
+  testWidgets('no plan, no section', (tester) async {
+    await show(tester, () async => overview());
+    expect(find.text('Versements programmés'), findsNothing);
+  });
+
   testWidgets('pulling to refresh catches the live wallet up first', (
     tester,
   ) async {
@@ -316,7 +388,11 @@ void main() {
     textAt(tester, 1.3);
     await show(
       tester,
-      () async => overview(fills: invested, cash: eur('48020')),
+      () async => overview(
+        fills: invested,
+        cash: eur('48020'),
+        plans: [plan('live-1', 'apple', '100', DcaFrequency.monthly)],
+      ),
     );
     await expectAccessible(tester);
   });

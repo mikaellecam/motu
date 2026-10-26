@@ -150,10 +150,11 @@ void main() {
     },
   );
 
+  // Down to « Le mettre en place » (M9-41).
   screenshot(
     'm8-2-dca-result',
     const DcaScreen(),
-    size: const Size(390, 1560),
+    size: const Size(390, 1660),
     overrides: overrides,
     act: (tester) async {
       await tester.tap(find.text('Simuler'));

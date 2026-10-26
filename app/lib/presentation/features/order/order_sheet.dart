@@ -266,7 +266,7 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
                   decimal: true,
                 ),
                 style: AppText.figureLarge.copyWith(color: AppColors.ink),
-                decoration: _headline(
+                decoration: headlineDecoration(
                   label: amountMode
                       ? l10n.order_amount_label
                       : l10n.order_quantity_label,
@@ -504,39 +504,6 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
     );
   }
 
-  /// The amount or quantity as the sheet's headline: a big figure in a box,
-  /// what is available under it, or why it cannot go.
-  InputDecoration _headline({
-    required String label,
-    required String? suffix,
-    required String available,
-    required List<String> errors,
-  }) {
-    OutlineInputBorder border(Color color) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppShape.flatCardRadius),
-      borderSide: BorderSide(color: color, width: 2),
-    );
-    return InputDecoration(
-      // Said by screen readers; shown only while the box is empty.
-      labelText: label,
-      floatingLabelBehavior: FloatingLabelBehavior.never,
-      labelStyle: AppText.body.copyWith(color: AppColors.muted),
-      suffixText: suffix,
-      suffixStyle: AppText.title.copyWith(color: AppColors.ink),
-      helperText: available,
-      helperMaxLines: 2,
-      error: errors.isEmpty ? null : _Errors(errors),
-      enabledBorder: border(AppColors.ink),
-      focusedBorder: border(AppColors.primary),
-      errorBorder: border(AppColors.alertText),
-      focusedErrorBorder: border(AppColors.alertText),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpace.x4,
-        vertical: AppSpace.x3,
-      ),
-    );
-  }
-
   String _error(AppLocalizations l10n, Formats formats, ValidationFailure e) =>
       switch (e.code) {
         'amount_not_positive' => l10n.order_error_amount_not_positive,
@@ -559,6 +526,39 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
         ),
         _ => e.code,
       };
+}
+
+/// An amount as a sheet's headline (BRIEF §4.6): a big figure in a box,
+/// what is [available] under it, or why it cannot go.
+InputDecoration headlineDecoration({
+  required String label,
+  required String? suffix,
+  required List<String> errors,
+  String? available,
+}) {
+  OutlineInputBorder border(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppShape.flatCardRadius),
+    borderSide: BorderSide(color: color, width: 2),
+  );
+  return InputDecoration(
+    // Said by screen readers; shown only while the box is empty.
+    labelText: label,
+    floatingLabelBehavior: FloatingLabelBehavior.never,
+    labelStyle: AppText.body.copyWith(color: AppColors.muted),
+    suffixText: suffix,
+    suffixStyle: AppText.title.copyWith(color: AppColors.ink),
+    helperText: available,
+    helperMaxLines: 2,
+    error: errors.isEmpty ? null : _Errors(errors),
+    enabledBorder: border(AppColors.ink),
+    focusedBorder: border(AppColors.primary),
+    errorBorder: border(AppColors.alertText),
+    focusedErrorBorder: border(AppColors.alertText),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: AppSpace.x4,
+      vertical: AppSpace.x3,
+    ),
+  );
 }
 
 /// Why a field cannot go, each reason with a warning icon: never colour

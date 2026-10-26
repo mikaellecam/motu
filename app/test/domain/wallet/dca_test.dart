@@ -114,6 +114,156 @@ void main() {
     });
   });
 
+  // October 2026, New York on summer time: the Nasdaq opens at 13:30 UTC;
+  // Paris too: Euronext opens at 07:00 UTC. Thanksgiving closes New York on
+  // Thursday 26 November.
+  group('firstPurchaseDay', () {
+    final calendar = MarketCalendar({
+      Exchange.nasdaq: {day(2026, 11, 26)},
+      Exchange.euronext: {day(2026, 4, 3), day(2026, 4, 6)},
+    });
+    DateTime first(
+      DateTime walletDay, {
+      DateTime? placedAt,
+      Exchange exchange = Exchange.nasdaq,
+    }) => firstPurchaseDay(
+      calendar: calendar,
+      exchange: exchange,
+      walletDay: walletDay,
+      placedAt: placedAt,
+    );
+
+    test('set up before the open: that session', () {
+      expect(
+        first(day(2026, 10, 5), placedAt: DateTime.utc(2026, 10, 6, 12)),
+        day(2026, 10, 6),
+      );
+    });
+
+    test('set up during a session: its prices are known, the next one', () {
+      expect(
+        first(day(2026, 10, 5), placedAt: DateTime.utc(2026, 10, 6, 15)),
+        day(2026, 10, 7),
+      );
+      // At the open itself, the opening price is known.
+      expect(
+        first(day(2026, 10, 5), placedAt: DateTime.utc(2026, 10, 6, 13, 30)),
+        day(2026, 10, 7),
+      );
+    });
+
+    test('set up after the close: the next session', () {
+      expect(
+        first(day(2026, 10, 6), placedAt: DateTime.utc(2026, 10, 6, 21)),
+        day(2026, 10, 7),
+      );
+      // 22:00 in New York is already Wednesday in UTC: Wednesday's open.
+      expect(
+        first(day(2026, 10, 6), placedAt: DateTime.utc(2026, 10, 7, 2)),
+        day(2026, 10, 7),
+      );
+    });
+
+    test('a weekend or a holiday rolls to the next session', () {
+      expect(
+        first(day(2026, 10, 9), placedAt: DateTime.utc(2026, 10, 10, 12)),
+        day(2026, 10, 12),
+      );
+      expect(
+        first(day(2026, 11, 25), placedAt: DateTime.utc(2026, 11, 25, 22)),
+        day(2026, 11, 27),
+      );
+    });
+
+    test('each exchange opens at its own time', () {
+      // 08:00 in Paris, before Euronext opens; 10:00, after.
+      expect(
+        first(
+          day(2026, 10, 5),
+          placedAt: DateTime.utc(2026, 10, 6, 6),
+          exchange: Exchange.euronext,
+        ),
+        day(2026, 10, 6),
+      );
+      expect(
+        first(
+          day(2026, 10, 5),
+          placedAt: DateTime.utc(2026, 10, 6, 8),
+          exchange: Exchange.euronext,
+        ),
+        day(2026, 10, 7),
+      );
+    });
+
+    test('never on a day the wallet already booked', () {
+      // A live wallet created on Tuesday morning has Tuesday as its first
+      // day: it books only the sessions after it.
+      expect(
+        first(day(2026, 10, 6), placedAt: DateTime.utc(2026, 10, 6, 12)),
+        day(2026, 10, 7),
+      );
+    });
+
+    test('a trip: the session after its day', () {
+      expect(first(day(2026, 10, 9)), day(2026, 10, 12));
+      expect(first(day(2026, 11, 25)), day(2026, 11, 27));
+      // Easter: Euronext closed on Friday 3 and Monday 6 April.
+      expect(
+        first(day(2026, 4, 2), exchange: Exchange.euronext),
+        day(2026, 4, 7),
+      );
+    });
+  });
+
+  group('nextPurchaseDay', () {
+    final calendar = MarketCalendar({
+      Exchange.nasdaq: {day(2026, 11, 26)},
+    });
+    DcaPlan plan(DateTime start, DcaFrequency frequency) => DcaPlan(
+      id: 'p',
+      assetId: 'apple',
+      amount: eur('100'),
+      frequency: frequency,
+      start: start,
+    );
+    DateTime next(DcaPlan plan, DateTime after) => nextPurchaseDay(
+      plan,
+      after: after,
+      calendar: calendar,
+      exchange: Exchange.nasdaq,
+    );
+
+    test('before the first purchase: the first purchase', () {
+      final p = plan(day(2026, 10, 7), DcaFrequency.monthly);
+      expect(next(p, day(2026, 10, 5)), day(2026, 10, 7));
+      expect(next(p, day(2026, 10, 6)), day(2026, 10, 7));
+    });
+
+    test('then the schedule, as the simulator follows it', () {
+      final monthly = plan(day(2026, 10, 7), DcaFrequency.monthly);
+      // Saturday 7 November rolls to Monday 9.
+      expect(next(monthly, day(2026, 10, 7)), day(2026, 11, 9));
+      expect(next(monthly, day(2026, 11, 9)), day(2026, 12, 7));
+      final weekly = plan(day(2026, 10, 7), DcaFrequency.weekly);
+      expect(next(weekly, day(2026, 10, 7)), day(2026, 10, 14));
+      // Thanksgiving: Thursday 26 November rolls to Friday 27.
+      final thursdays = plan(day(2026, 11, 19), DcaFrequency.weekly);
+      expect(next(thursdays, day(2026, 11, 19)), day(2026, 11, 27));
+    });
+
+    test('a month-end start keeps to the last day of shorter months', () {
+      final p = plan(day(2026, 3, 31), DcaFrequency.monthly);
+      expect(next(p, day(2026, 3, 31)), day(2026, 4, 30));
+      // Sunday 31 May rolls to Monday 1 June.
+      expect(next(p, day(2026, 4, 30)), day(2026, 6, 1));
+    });
+
+    test('a plan years old', () {
+      final p = plan(day(2020, 1, 6), DcaFrequency.weekly);
+      expect(next(p, day(2026, 10, 6)), day(2026, 10, 12));
+    });
+  });
+
   group('investFlows', () {
     // A V-shaped market: 10 → 5 → 10.
     final bars = [

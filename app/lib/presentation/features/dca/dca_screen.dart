@@ -13,6 +13,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
+import '../../../data/repositories/wallet_repository.dart';
 import '../../../domain/wallet/dca.dart';
 import '../../../domain/wallet/dca_simulator.dart';
 import '../../../domain/wallet/trip_start.dart';
@@ -22,6 +23,7 @@ import '../../widgets/section_title.dart';
 import '../../widgets/sign_color.dart';
 import '../glossary/term_sheet.dart';
 import '../node/node_screen.dart' show LessonCard;
+import 'plan_sheet.dart';
 
 /// The DCA simulator (BRIEF §4.10): the form, the result against the same
 /// money put in at once and on a Livret A, the companion's insight, and the
@@ -503,6 +505,20 @@ class _ResultCard extends ConsumerWidget {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(l10n.dca_saved_done)));
           },
+        ),
+        const SizedBox(height: AppSpace.x3),
+        // The same plan in the live wallet, from today (M9-41).
+        ChunkyButton(
+          label: l10n.dca_set_up,
+          kind: ChunkyButtonKind.secondary,
+          icon: Icons.event_repeat,
+          onPressed: () => showPlanSheet(
+            context,
+            assetId: r.asset.id,
+            walletId: WalletRepository.liveWalletId,
+            amount: r.params.amount,
+            frequency: r.params.frequency,
+          ),
         ),
       ],
     );

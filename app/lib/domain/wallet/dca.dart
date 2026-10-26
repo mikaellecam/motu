@@ -74,6 +74,44 @@ List<DateTime> dcaSchedule({
   }
 }
 
+/// The day a plan set up in a wallet at [walletDay] makes its first purchase
+/// (BRIEF §4.5): the first session of [exchange] after the wallet's day that
+/// opens after [placedAt], so its open price was not known when the plan was
+/// set up. [placedAt] is the real time for the live wallet and a trip at
+/// today; null for any other trip, whose day is seen after its close.
+DateTime firstPurchaseDay({
+  required MarketCalendar calendar,
+  required Exchange exchange,
+  required DateTime walletDay,
+  DateTime? placedAt,
+}) {
+  var day = calendar.nextTradingDay(exchange, walletDay);
+  while (placedAt != null &&
+      !calendar.openAt(exchange, day).isAfter(placedAt)) {
+    day = calendar.nextTradingDay(exchange, day);
+  }
+  return day;
+}
+
+/// [plan]'s first purchase after [after] (the wallet's day): its start, then
+/// its [dcaSchedule].
+DateTime nextPurchaseDay(
+  DcaPlan plan, {
+  required DateTime after,
+  required MarketCalendar calendar,
+  required Exchange exchange,
+}) {
+  final from = plan.start.isAfter(after) ? plan.start : after;
+  // A month, plus the longest closure a date can roll over.
+  return dcaSchedule(
+    start: plan.start,
+    end: from.add(const Duration(days: 45)),
+    frequency: plan.frequency,
+    calendar: calendar,
+    exchange: exchange,
+  ).firstWhere((day) => day.isAfter(after));
+}
+
 DateTime _sameDayOfMonth(DateTime start, int monthsLater) {
   final lastDay = DateTime.utc(
     start.year,

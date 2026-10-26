@@ -9,6 +9,7 @@ import '../../../application/trip/trip_catch_up.dart';
 import '../../../application/trip/trip_runner.dart';
 import '../../../application/trip/trip_stop.dart';
 import '../../../application/trip/trip_summary.dart';
+import '../../../application/wallet/dca_plans.dart';
 import '../../../application/wallet/live_catch_up.dart';
 import '../../../application/wallet/wallet_overview.dart';
 import '../../../application/wallet/wallet_providers.dart';
@@ -82,6 +83,10 @@ class WalletScreen extends ConsumerWidget {
             WalletCompanionCard(walletId: o.id),
             if (o.pendingOrders.isNotEmpty) ...[
               _PendingCard(o),
+              const SizedBox(height: AppSpace.x4),
+            ],
+            if (o.plans.isNotEmpty) ...[
+              _PlansCard(o),
               const SizedBox(height: AppSpace.x4),
             ],
             _ChartCard(walletId),
@@ -569,6 +574,104 @@ class _PendingCard extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// « Versements programmés » (M9-41): each active DCA plan with its amount,
+/// frequency and next purchase, and « Arrêter ».
+class _PlansCard extends ConsumerWidget {
+  const _PlansCard(this.o);
+  final WalletOverview o;
+
+  Future<void> _stop(BuildContext context, WidgetRef ref, PlanView p) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.wallet_plan_stop_title),
+        content: Text(l10n.wallet_plan_stop_body(p.asset.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.wallet_plan_stop_keep),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.wallet_plan_stop),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await ref.read(planActionsProvider(o.id).notifier).stop(p.plan.id);
+    } on Failure catch (failure) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failureMessage(context, failure))));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Alive while the list shows, so a stop can refresh the wallet.
+    ref.watch(planActionsProvider(o.id));
+    final l10n = AppLocalizations.of(context);
+    final formats = _formats(context);
+    final text = Theme.of(context).textTheme;
+    final muted = text.bodySmall?.copyWith(color: AppColors.muted);
+    return TitledSection(
+      title: l10n.wallet_plans_title,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final p in o.plans)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpace.x3,
+                    vertical: AppSpace.x2,
+                  ),
+                  child: Row(
+                    children: [
+                      AssetAvatar(p.asset),
+                      const SizedBox(width: AppSpace.x3),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(p.asset.name, style: text.titleMedium),
+                            Text(
+                              l10n.wallet_plan_amount(
+                                formats.money(p.plan.amount),
+                                p.plan.frequency.name,
+                              ),
+                              style: AppText.figure.copyWith(
+                                color: AppColors.ink,
+                              ),
+                            ),
+                            Text(
+                              l10n.wallet_plan_next(formats.dayMonth(p.next)),
+                              style: muted,
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => _stop(context, ref, p),
+                        child: Text(l10n.wallet_plan_stop),
+                      ),
+                    ],
                   ),
                 ),
             ],

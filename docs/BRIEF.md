@@ -83,6 +83,7 @@ Bottom tabs: **Carte** (home), **Portefeuille**, **Explorer**, **Glossaire**. Se
 | Explorer | `/explore` | Catalogue, search, filters, favorites |
 | Asset page | `/asset/:assetId?wallet=` | Scoped to a wallet's clock |
 | Order sheet | modal on asset | Buy / sell |
+| Plan sheet | modal on asset, DCA result | « Investir chaque mois »: a DCA plan (§4.5) |
 | Order placed | `/wallet/:id/order/:orderId` | Pending lifecycle |
 | Glossary | `/glossary` | Index |
 | Glossary sheet | modal anywhere | Term + live example |
@@ -442,6 +443,27 @@ its last close and its orders wait.
 5. Compute end-of-day valuation, append to the wallet's daily value series.
 6. Evaluate stop conditions and companion rules; if a stop condition fires → stop, persist, emit event.
 
+**DCA plans** (decided 2026-10-26, M9-41): any wallet but a finished trip runs plans, each an asset, a € amount
+per purchase (> 0, ≤ 100 000 €, above the fixed fee: `validateDcaAmount`) and a frequency, « Chaque mois » or
+« Chaque semaine ». One is set up from the asset page's « Investir chaque mois » (§4.8) or the DCA simulator's
+« Le mettre en place » (§4.10), in a flat sheet like the order sheet's: the asset with « Versement programmé »,
+a line on what DCA does, « Montant par achat » as the boxed headline with 50 / 100 / 200 € chips and its errors
+under it, « Fréquence », then a card « Premier achat : le {date} » with the schedule that follows and what a
+short day does, and the flat button « Investir 100,00 € chaque mois » over « Argent fictif. Aucune transaction
+réelle. ». Saved, it says « Versement programmé : premier achat le {date}. » with « Mon portefeuille ».
+- *First purchase* (`firstPurchaseDay`): the first session of the asset's exchange after the wallet's day that
+  opens after the plan is set up: by the real time for the live wallet and a trip at today, after the trip's
+  day (seen after its close) otherwise. No purchase uses a price known when the plan was set up: set up at
+  15:00 in New York, mid-session, a plan buys at the next session's open. The day is checked again when the
+  plan is saved, then stored as its `startDate`; the purchases after it follow `dcaSchedule`, as in the
+  simulator. A plan's id is its wallet's id and its rank in that wallet (plans are stopped, never deleted).
+- *Each due day* (step 2): a € market order `dca-<plan>-<day>` filled at that day's open. With too little cash
+  it is cancelled with its reason, as any order (« Les liquidités ne suffisaient plus quand il s'est
+  déclenché. » on its screen), and the plan goes on to its next date.
+- *« Arrêter »* (confirmed, on the wallet's « Versements programmés », §4.7) sets a plan inactive: it places no
+  more purchases. Those it made stay; one still waiting (its asset had no bar that day) stays an order in
+  « Ordres en attente », where « Annuler l'ordre » cancels it.
+
 Stop conditions: portfolio value more than X % below the money put in so far (start + contributions;
 default 15), any position loss > Y % (default 20), an order the user placed filled (DCA purchases don't
 count), a contribution arrived. Threshold conditions fire when they start to hold and re-arm once false
@@ -624,6 +646,9 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
   cash `line`; Livret `muted`.
 - Companion card when a moment is active.
 - Positions list (cash is **not** a row): avatar, name, quantity, value in €, P&L % with sign.
+- « Versements programmés » (M9-41), under the pending orders and only while the wallet has an active DCA plan
+  (none on a finished trip): each plan with its asset's avatar and name, « 100,00 € chaque mois », « Prochain
+  achat : le 9 novembre » (its first scheduled purchase after the wallet's day, §4.5) and « Arrêter ».
 
 ### 4.8 Asset page
 
@@ -658,7 +683,8 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
   screen readers hear the card as one sentence.
 - User position: quantity, value, P&L (amount, %), of which currency effect = value now − value at the
   average purchase rate (notional-weighted, kept by sells like the average cost).
-- Buy / Sell buttons.
+- Buy / Sell buttons, and under them « Investir chaque mois » (M9-41): the plan sheet for this asset in the
+  scoped wallet (§4.5). None of them on a finished trip.
 
 ### 4.9 Explorer
 
@@ -711,6 +737,9 @@ a chunky « Ton compagnon » card with the glossary's DCA as a chip; then « Enr
 « Tes simulations » is a titled flat card. The lump sum and the Livret A stay, though the artboard has none.
 No « Autre actif » button (decided 2026-10-24 by the user): the asset field opens the form, one swipe above
 the result.
+« Le mettre en place » (decided 2026-10-26, M9-41), a chunky button under « Enregistrer », opens the plan sheet
+(§4.5) for the simulated asset in the live wallet with the simulated amount and frequency; the plan starts from
+now, not from the simulated start.
 
 ### 4.11 Livret A
 

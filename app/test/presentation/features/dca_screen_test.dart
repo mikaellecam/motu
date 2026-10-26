@@ -4,6 +4,7 @@ import 'package:finance_companion/application/dca/dca_simulator.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/dca_plans.dart';
 import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/core/theme/tokens.dart';
@@ -16,11 +17,13 @@ import 'package:finance_companion/domain/wallet/dca_simulator.dart';
 import 'package:finance_companion/domain/wallet/trip_start.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/dca/dca_screen.dart';
+import 'package:finance_companion/presentation/features/dca/plan_sheet.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fakes/fake_plan_setup.dart';
 import '../../helpers.dart';
 
 const nnbsp = ' ';
@@ -136,6 +139,9 @@ Future<void> show(
               viewOf(ref.watch(dcaFormControllerProvider), errors: errors),
         ),
         dcaRunProvider.overrideWith((ref, p) async => result),
+        planSetupProvider.overrideWith2(
+          (_) => FakePlanSetup(planContext(apple)),
+        ),
         // The companion's glossary link: no pack to download.
         contentPackProvider(actionsEtfIsland).overrideWith(
           (ref) async => const ContentPack(
@@ -218,6 +224,26 @@ void main() {
     await tester.tap(find.text('Investissement programmé (DCA)'));
     await tester.pumpAndSettle();
     expect(find.byType(TermSheet), findsOneWidget);
+    await unmount(tester);
+  });
+
+  testWidgets('« Le mettre en place »: the same plan, in the live wallet', (
+    tester,
+  ) async {
+    await show(tester);
+    await tester.tap(find.text('Simuler'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Le mettre en place'));
+    await tester.pumpAndSettle();
+    final sheet = tester.widget<PlanSheet>(find.byType(PlanSheet));
+    expect(
+      (sheet.assetId, sheet.walletId, sheet.amount, sheet.frequency),
+      ('apple', 'live', eur('100'), DcaFrequency.monthly),
+    );
+    expect(
+      find.widgetWithText(FilledButton, 'Investir 100,00$nbsp€ chaque mois'),
+      findsOneWidget,
+    );
     await unmount(tester);
   });
 

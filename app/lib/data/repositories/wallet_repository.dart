@@ -795,6 +795,44 @@ class WalletRepository {
     ),
   );
 
+  /// Sets up a DCA plan in [walletId] (BRIEF §4.5), active from [start]. Its
+  /// id is the wallet's followed by the plan's rank in it: unique, since a
+  /// wallet's plans are stopped, never deleted, and go only with the wallet.
+  Future<DcaPlan> addPlan(
+    String walletId, {
+    required String assetId,
+    required Money amount,
+    required DcaFrequency frequency,
+    required DateTime start,
+  }) => guardStorage(
+    () => _db.transaction(() async {
+      final dao = _db.walletDao;
+      final plan = DcaPlan(
+        id: '$walletId-${(await dao.plansOf(walletId)).length + 1}',
+        assetId: assetId,
+        amount: amount,
+        frequency: frequency,
+        start: start,
+      );
+      await dao.insertPlan(
+        DcaPlansCompanion.insert(
+          id: plan.id,
+          walletId: walletId,
+          assetId: assetId,
+          amountCents: amount.minorUnits,
+          frequency: frequency,
+          startDate: start,
+        ),
+      );
+      return plan;
+    }),
+  );
+
+  /// « Arrêter » (M9-41): the plan places no more purchases. Those it made
+  /// stay, and one still pending stays an order the user can cancel.
+  Future<void> stopPlan(String planId) =>
+      guardStorage(() => _db.walletDao.stopPlan(planId));
+
   Fill _fill(FillRow f) => Fill(
     assetId: f.assetId,
     side: f.side,

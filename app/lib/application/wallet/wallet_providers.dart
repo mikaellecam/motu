@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:decimal/decimal.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -61,6 +63,40 @@ Future<WalletOverview> walletOverview(Ref ref, String walletId) async {
     livret = account.balance.amount + account.accrued;
   }
 
+  // The active plans with their next purchase after the wallet's day, the
+  // last one it booked; a finished trip buys nothing more.
+  final active = [
+    if (wallet.status != WalletStatus.finished)
+      for (final p in wallet.plans)
+        if (p.active) p,
+  ];
+  final plans = <PlanView>[];
+  if (active.isNotEmpty) {
+    final day = live ? wallet.values.last.date : wallet.simDate!;
+    final years = [day.year, for (final p in active) p.start.year];
+    final calendar = await market.calendar(
+      {for (final p in active) ?assets[p.assetId]?.exchange},
+      fromYear: years.reduce(math.min),
+      toYear: years.reduce(math.max) + 1,
+    );
+    for (final plan in active) {
+      final asset = assets[plan.assetId];
+      if (asset == null) throw const NotFoundFailure();
+      plans.add(
+        PlanView(
+          plan: plan,
+          asset: asset,
+          next: nextPurchaseDay(
+            plan,
+            after: day,
+            calendar: calendar,
+            exchange: asset.exchange,
+          ),
+        ),
+      );
+    }
+  }
+
   return buildOverview(
     wallet: wallet,
     asOf: asOf,
@@ -68,6 +104,7 @@ Future<WalletOverview> walletOverview(Ref ref, String walletId) async {
     prices: prices,
     fxRates: fxRates,
     livret: livret,
+    plans: plans,
   );
 }
 

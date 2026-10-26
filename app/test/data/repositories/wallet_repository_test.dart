@@ -259,6 +259,71 @@ void main() {
     expect(read.active, isTrue);
   });
 
+  test('a plan set up gets an id no other plan has', () async {
+    await repo.ensureLiveWallet(DateTime.utc(2026, 10, 7));
+    Future<DcaPlan> add(String walletId) => repo.addPlan(
+      walletId,
+      assetId: 'cw8',
+      amount: eur('100'),
+      frequency: DcaFrequency.weekly,
+      start: day(3, 2),
+    );
+    final first = await add('covid');
+    final second = await add('covid');
+    final live = await add('live');
+    expect({first.id, second.id, live.id}, hasLength(3));
+    expect(first.active, isTrue);
+
+    // Stopped plans keep their id: the next one does not take it.
+    await repo.stopPlan(first.id);
+    final third = await add('covid');
+    expect({first.id, second.id, third.id}, hasLength(3));
+
+    final plans = (await repo.load('covid')).plans;
+    expect(
+      {for (final p in plans) p.id: p.active},
+      {first.id: false, second.id: true, third.id: true},
+    );
+    expect(plans.last.start, day(3, 2));
+    expect(plans.last.frequency, DcaFrequency.weekly);
+    expect(plans.last.amount, eur('100'));
+    expect((await repo.load('live')).plans.single.id, live.id);
+  });
+
+  test('a plan id taken fails instead of replacing that plan', () async {
+    final plan = await repo.addPlan(
+      'covid',
+      assetId: 'cw8',
+      amount: eur('100'),
+      frequency: DcaFrequency.monthly,
+      start: day(3, 2),
+    );
+    // Another wallet's plan saved under the next id by other means.
+    await repo.ensureLiveWallet(DateTime.utc(2026, 10, 7));
+    await repo.savePlan(
+      'live',
+      DcaPlan(
+        id: 'covid-2',
+        assetId: 'meta',
+        amount: eur('50'),
+        frequency: DcaFrequency.weekly,
+        start: day(3, 3),
+      ),
+    );
+    await expectLater(
+      repo.addPlan(
+        'covid',
+        assetId: 'cw8',
+        amount: eur('100'),
+        frequency: DcaFrequency.monthly,
+        start: day(3, 2),
+      ),
+      throwsA(isA<StorageFailure>()),
+    );
+    expect([for (final p in (await repo.load('covid')).plans) p.id], [plan.id]);
+    expect((await repo.load('live')).plans.single.assetId, 'meta');
+  });
+
   test('storage errors become a StorageFailure', () async {
     // The wallet does not exist: the foreign key refuses the order.
     expect(

@@ -85,6 +85,7 @@ List<DailyValue> path(num end, {double wave = 450}) {
 WalletOverview overview({
   List<Order> pending = const [],
   bool onLivret = false,
+  List<PlanView> plans = const [],
 }) {
   final rules = TradingRules(
     fxFeeRate: d('0.0015'),
@@ -146,6 +147,7 @@ WalletOverview overview({
     },
     fxRates: {Currency.usd: d('0.8547')},
     livret: onLivret ? d('3021.25') : Decimal.zero,
+    plans: plans,
   );
 }
 
@@ -215,6 +217,46 @@ void main() {
       cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
       walletOverviewProvider.overrideWith(
         (ref, id) async => overview(pending: pending),
+      ),
+    ],
+  );
+  // Two plans (M9-41): the world ETF every month since July, Apple every
+  // week from Friday.
+  screenshot(
+    'm9-41-wallet-plans',
+    const WalletScreen(walletId: 'live'),
+    size: const Size(390, 900),
+    overrides: [
+      livret,
+      ...overrides.skip(3),
+      cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
+      walletOverviewProvider.overrideWith(
+        (ref, id) async => overview(
+          plans: [
+            PlanView(
+              plan: DcaPlan(
+                id: 'live-1',
+                assetId: 'world',
+                amount: eur(200),
+                frequency: DcaFrequency.monthly,
+                start: DateTime.utc(2026, 7, 2),
+              ),
+              asset: assets['world']!,
+              next: DateTime.utc(2026, 11, 2),
+            ),
+            PlanView(
+              plan: DcaPlan(
+                id: 'live-2',
+                assetId: 'apple',
+                amount: eur(50),
+                frequency: DcaFrequency.weekly,
+                start: DateTime.utc(2026, 10, 9),
+              ),
+              asset: assets['apple']!,
+              next: DateTime.utc(2026, 10, 9),
+            ),
+          ],
+        ),
       ),
     ],
   );

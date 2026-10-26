@@ -21,6 +21,7 @@ import '../../widgets/section_title.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
 import '../companion/companion_card.dart';
+import '../dca/plan_sheet.dart';
 import '../glossary/term_sheet.dart';
 import '../order/order_sheet.dart';
 import 'stability_card.dart';
@@ -726,7 +727,8 @@ class _PositionCard extends StatelessWidget {
 
 /// « Acheter · Vendre » (BRIEF §4.8): the order sheet, then what it did: a
 /// buy's building on the island, a sell's message.
-/// « Vendre » only with a position.
+/// « Vendre » only with a position. Under them, « Investir chaque mois »
+/// sets up a DCA plan (M9-41).
 class _TradeBar extends StatelessWidget {
   const _TradeBar(this.o);
   final AssetOverview o;
@@ -767,23 +769,39 @@ class _TradeBar extends StatelessWidget {
           AppSpace.screenPadding,
           AppSpace.x2,
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: FilledButton(
-                onPressed: () => _trade(context, Side.buy),
-                child: Text(l10n.asset_buy),
-              ),
-            ),
-            if (o.position != null) ...[
-              const SizedBox(width: AppSpace.x3),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _trade(context, Side.sell),
-                  child: Text(l10n.asset_sell),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => _trade(context, Side.buy),
+                    child: Text(l10n.asset_buy),
+                  ),
                 ),
+                if (o.position != null) ...[
+                  const SizedBox(width: AppSpace.x3),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _trade(context, Side.sell),
+                      child: Text(l10n.asset_sell),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: AppSpace.x2),
+            OutlinedButton.icon(
+              onPressed: () => showPlanSheet(
+                context,
+                assetId: o.asset.id,
+                walletId: o.walletId,
               ),
-            ],
+              icon: const Icon(Icons.event_repeat),
+              label: Text(l10n.asset_plan),
+            ),
           ],
         ),
       ),
