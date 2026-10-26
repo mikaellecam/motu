@@ -281,20 +281,24 @@ class MarketRepository {
   /// The holidays and early closes of [exchanges] from [fromYear] to
   /// [toYear]. A year fetched after it ended is final; any other is checked
   /// once a day, since an unscheduled closure may be added. A year the
-  /// backend does not serve has weekends only, at regular hours.
+  /// backend does not serve has weekends only, at regular hours. Offline,
+  /// the first failed check ends the others: the cache answers.
   Future<MarketCalendar> calendar(
     Set<Exchange> exchanges, {
     required int fromYear,
     required int toYear,
   }) => guardStorage(() async {
     final now = _wall.now();
+    var cacheOnly = false;
     for (final exchange in exchanges) {
       final cached = await _dao.cachedCalendarYears(exchange);
       for (var year = fromYear; year <= toYear; year++) {
         final fetchedAt = cached[year];
         // Fetched after it ended, a year is final.
         if (fetchedAt != null &&
-            (year < fetchedAt.year || now.difference(fetchedAt) < dailyCheck)) {
+            (cacheOnly ||
+                year < fetchedAt.year ||
+                now.difference(fetchedAt) < dailyCheck)) {
           continue;
         }
         try {
@@ -308,8 +312,12 @@ class MarketRepository {
           );
         } on NotFoundFailure {
           // Outside the years the backend serves.
-        } on Failure {
+        } on Failure catch (failure) {
           if (fetchedAt == null) rethrow;
+          // Each further check would fail the same way.
+          if (failure is NetworkFailure || failure is RateLimitedFailure) {
+            cacheOnly = true;
+          }
         }
       }
     }

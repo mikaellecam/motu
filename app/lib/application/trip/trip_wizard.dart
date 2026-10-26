@@ -333,6 +333,8 @@ class TripWizard extends _$TripWizard {
     final date = args.date;
     if (date == null) return;
     final dates = await ref.read(wizardDatesProvider.future);
+    // The wizard was left meanwhile.
+    if (!ref.mounted) return;
     final preset = dates.presets.where(
       (p) => p.preset.historic && p.date == date,
     );
@@ -342,6 +344,7 @@ class TripWizard extends _$TripWizard {
       await type(
         '${_two(date.day)}/${_two(date.month)}/${date.year.toString().padLeft(4, '0')}',
       );
+      if (!ref.mounted) return;
     }
     for (var step = 1; step < args.step; step++) {
       next();
@@ -370,9 +373,12 @@ class TripWizard extends _$TripWizard {
       );
     } else {
       final dates = await ref.read(wizardDatesProvider.future);
+      // The wizard was left meanwhile.
+      if (!ref.mounted) return;
       final calendar = await ref
           .read(marketRepositoryProvider)
           .calendar(dates.exchanges, fromYear: day.year, toYear: day.year + 1);
+      if (!ref.mounted) return;
       check = checkStart(
         day,
         today: today,

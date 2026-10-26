@@ -35,6 +35,8 @@ ContentPack pack(List<NodeContent> nodes) => ContentPack(
 void main() {
   late AppDatabase db;
   late ProviderContainer container;
+  // The wizard screen; closing it leaves the wizard.
+  late ProviderSubscription<TripDraft> open;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
@@ -64,7 +66,7 @@ void main() {
         ),
       ],
     );
-    container.listen(tripWizardProvider, (_, _) {});
+    open = container.listen(tripWizardProvider, (_, _) {});
   });
   tearDown(() async {
     container.dispose();
@@ -169,6 +171,17 @@ void main() {
     // No step asked: the dates step, as the lessons' links do.
     await wizard().prefill(TripWizardArgs(date: day(2020, 2, 18)));
     expect(draft().step, 1);
+  });
+
+  test('leaving the wizard while a deep link loads is quiet', () async {
+    final linked = wizard().prefill(TripWizardArgs(date: day(2020, 2, 18)));
+    open.close();
+    await expectLater(linked, completes);
+
+    open = container.listen(tripWizardProvider, (_, _) {});
+    final typed = wizard().type('13/09/2008');
+    open.close();
+    await expectLater(typed, completes);
   });
 
   test('a date before the data floor links the lesson about it', () async {

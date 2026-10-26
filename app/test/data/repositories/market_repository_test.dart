@@ -409,6 +409,50 @@ void main() {
     );
   });
 
+  test('calendar offline: the first failed check ends the others; the cache '
+      'answers', () async {
+    Future<MarketCalendar> load() => repo.calendar(
+      {Exchange.nyse, Exchange.nasdaq},
+      fromYear: 2026,
+      toYear: 2027,
+    );
+
+    await load();
+    // A day later, 2026 and 2027 are due again on both exchanges.
+    wall.advance(const Duration(days: 1));
+    backend.offline = true;
+    final offline = await load();
+    expect(backend.to('/v1/calendar'), hasLength(5), reason: '4, then 1');
+    expect(offline.isTradingDay(Exchange.nyse, day(11, 26)), isFalse);
+    expect(
+      offline.closeAt(Exchange.nasdaq, day(11, 27)),
+      DateTime.utc(2026, 11, 27, 18),
+    );
+    expect(
+      offline.isTradingDay(Exchange.nasdaq, DateTime.utc(2027, 1, 1)),
+      isFalse,
+    );
+
+    backend.offline = false;
+    await load();
+    expect(
+      backend.to('/v1/calendar'),
+      hasLength(9),
+      reason: 'back online, each is checked again',
+    );
+  });
+
+  test('calendar offline: a year never cached still fails after a failed '
+      'check', () async {
+    await repo.calendar({Exchange.nyse}, fromYear: 2026, toYear: 2026);
+    wall.advance(const Duration(days: 1));
+    backend.offline = true;
+    await expectLater(
+      repo.calendar({Exchange.nyse}, fromYear: 2026, toYear: 2027),
+      throwsA(isA<NetworkFailure>()),
+    );
+  });
+
   test('Livret history: cut at asOf, checked daily, cached offline', () async {
     final now = await repo.livret(asOf: wall.now());
     expect(

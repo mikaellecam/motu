@@ -54,7 +54,7 @@ re-adjustments and publishes `adjustedAt` with every history answer, so the app 
 | Quotes | When the cached one has expired: 15 min after its fetch if the exchange was open at that moment, otherwise at the next open (holidays included). | Until replaced |
 | Catalogue | Once a day, and once more when an unknown asset id is asked for. | Until replaced |
 | FX rates (`FxService`, from Frankfurter) | First need of a pair: its whole history since the data floor (one request, about 200 KB). After that: only if `asOf`'s day is after the last cached rate and the last check is older than 15 min, from the day after it. A day without a fixing (weekend, ECB holiday) takes the previous rate. | Forever |
-| Calendar (holidays and early closes) | A year fetched after it ended is final. Any other year once a day, since an unscheduled closure can be announced. Years the backend does not serve count as weekends-only, at regular hours. (Amended by M9-37: before, a past year was final however early it was fetched.) | Forever |
+| Calendar (holidays and early closes) | A year fetched after it ended is final. Any other year once a day, since an unscheduled closure can be announced. Years the backend does not serve count as weekends-only, at regular hours. (Amended by M9-37: before, a past year was final however early it was fetched.) Within one read, the first network failure on a cached year ends the other checks: the cache answers (M9-44). | Forever |
 
 These rules hold for every kind of data:
 
