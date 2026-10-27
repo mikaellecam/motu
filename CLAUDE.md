@@ -47,7 +47,7 @@ cd backend && gofmt -w . && go vet ./... && go test ./...
 set -a; . ./.env; set +a; go run ./cmd/server   # .env from .env.example; syncs market data
 go test -tags live ./internal/provider/            # adapter against the real API (needs .env)
 go test -tags realdata ./cmd/logos/                # every stock has its logo (after scripts/fetch-data.sh)
-../scripts/fetch-data.sh        # after a clone: datasets, app bundle, logos from .env (~15 credits once)
+../scripts/fetch-data.sh        # after a clone: datasets, app bundle, logos from .env (~17 credits once)
 ../scripts/fetch-data.sh --synthetic   # made-up prices, no key (CI; never a release)
 go run ./cmd/contentcheck -bundle ../app/assets/packs ../content  # checks every pack + the app's bundle
 go run ./cmd/contentcheck -bundle ../app/assets/packs -write ../content   # after a content change

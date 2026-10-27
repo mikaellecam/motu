@@ -51,7 +51,7 @@ scripts/fetch-data.sh                   # the lessons' datasets, the app's bundl
 ```
 
 The provider's data stays out of this repository (its terms forbid redistributing it: ADR-007), so
-`fetch-data.sh` rebuilds it from your key: about 15 credits and a few minutes, once. Without a key,
+`fetch-data.sh` rebuilds it from your key: about 17 credits and a few minutes, once. Without a key,
 `scripts/fetch-data.sh --synthetic` writes made-up prices of the same shape, enough to build and look around.
 
 Run the backend (its first start backfills price history, which takes several minutes):

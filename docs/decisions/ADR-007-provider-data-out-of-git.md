@@ -54,7 +54,9 @@ Keep the recipes in git and rebuild the data.
   recipes in `datasets.json`. The ECB and
   Livret A datasets are rebuilt as well, so the rule is the same for every dataset.
 - **Rebuilding:** `scripts/fetch-data.sh` runs `freeze -recipes` (each missing dataset, paced to 8 provider
-  calls a minute), `cmd/logos`, and `contentcheck -bundle -write`. A real run replaces made-up datasets.
+  calls a minute), `contentcheck -bundle -write`, then `cmd/logos`. A real run replaces made-up datasets.
+  `freeze` and `logos` also wait out a call the provider refuses for its rate, three tries in all: they share
+  the plan's credits with each other and with a running server (M10-9).
 - **CI:** `scripts/fetch-data.sh --synthetic` writes a deterministic walk per recipe, with the same id,
   shape, interval and range, `"source": "synthetic"` and no network. Made-up data never replaces real
   data. `contentcheck -release`, and so the server, refuses it: a release ships real data.
