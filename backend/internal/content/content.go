@@ -105,6 +105,7 @@ func Read(ref Ref, release bool) (*Pack, error) {
 	glossary := c.dir(ref.Dir, "glossary")
 	c.terms = ids(glossary)
 	c.datasets = ids(datasets)
+	c.recipes(ref.Dir, datasets)
 
 	var path []object
 	if island != nil {
@@ -301,6 +302,40 @@ func (c *checker) node(f file) {
 	c.texts(f.name, "", b)
 }
 
+// recipes checks that the pack's recipes rebuild exactly its datasets
+// (ADR-007). A dataset with a recipe counts as the pack's even when its file
+// is missing, as in a fresh clone: it is reported once, here.
+func (c *checker) recipes(packDir string, datasets []file) {
+	recipes, err := ReadRecipes(packDir)
+	if err != nil {
+		c.add(RecipesFile, "%v", err)
+		return
+	}
+	seen := map[string]bool{}
+	for i, r := range recipes {
+		name := r.ID
+		if name == "" {
+			name = fmt.Sprintf("[%d]", i)
+		}
+		if p := r.Problem(); p != "" {
+			c.add(RecipesFile, "%s: %s", name, p)
+		}
+		if seen[r.ID] {
+			c.add(RecipesFile, "%s: twice", name)
+		}
+		seen[r.ID] = true
+		if r.ID != "" && !c.datasets[r.ID] {
+			c.add(RecipesFile, "%s: datasets/%s.json is missing: rebuild it with scripts/fetch-data.sh", r.ID, r.ID)
+			c.datasets[r.ID] = true
+		}
+	}
+	for _, f := range datasets {
+		if !seen[f.id] {
+			c.add(f.name, "no recipe in %s", RecipesFile)
+		}
+	}
+}
+
 var currency = regexp.MustCompile(`^[A-Z]{3}$`)
 
 // Intervals freeze writes.
@@ -309,8 +344,11 @@ var Intervals = []string{"1day", "1week", "1month"}
 func (c *checker) dataset(f file) {
 	b := f.body
 	c.sameID(f)
-	if s, _ := b["source"].(string); s == "" {
+	switch s, _ := b["source"].(string); {
+	case s == "":
 		c.add(f.name, "source is empty")
+	case s == "synthetic" && c.release:
+		c.add(f.name, "made-up prices: a release ships real data (scripts/fetch-data.sh)")
 	}
 	if _, ok := b["adjusted"].(bool); !ok {
 		c.add(f.name, "adjusted is not true or false")

@@ -1,0 +1,18 @@
+[
+  {"id":"ds.aapl-2022-w","asset":"apple","interval":"1week","from":"2022-01-01","to":"2022-12-31"},
+  {"id":"ds.aapl-2025-d","asset":"apple","interval":"1day","from":"2025-01-01","to":"2025-12-31"},
+  {"id":"ds.acwi-2008-2025-m","asset":"world","interval":"1month","from":"2008-04-01","to":"2025-12-31"},
+  {"id":"ds.acwi-2020-w","asset":"world","interval":"1week","from":"2020-01-01","to":"2021-02-28"},
+  {"id":"ds.acwi-2022-w","asset":"world","interval":"1week","from":"2022-01-01","to":"2022-12-31"},
+  {"id":"ds.acwi-2025-d","asset":"world","interval":"1day","from":"2025-01-01","to":"2025-12-31"},
+  {"id":"ds.acwi-3y-d","asset":"world","interval":"1day","from":"2023-01-01","to":"2025-12-31"},
+  {"id":"ds.acwi-eur-2016-m","asset":"world","currency":"EUR","interval":"1month","from":"2015-12-31","to":"2026-09-30"},
+  {"id":"ds.agg-3y-d","asset":"us-bonds","interval":"1day","from":"2023-01-01","to":"2025-12-31"},
+  {"id":"ds.bwx-3y-d","asset":"intl-bonds","interval":"1day","from":"2023-01-01","to":"2025-12-31"},
+  {"id":"ds.eem-2025-d","asset":"emerging","interval":"1day","from":"2025-01-01","to":"2025-12-31"},
+  {"id":"ds.ko-2017-w","asset":"coca-cola","interval":"1week","from":"2016-12-30","to":"2017-12-29"},
+  {"id":"ds.ko-eur-2017-w","asset":"coca-cola","currency":"EUR","interval":"1week","from":"2016-12-30","to":"2017-12-29"},
+  {"id":"ds.livret-a-2016-m","livret":true,"deposit":10000,"interval":"1month","from":"2015-12-31","to":"2026-09-30"},
+  {"id":"ds.usd-eur-2017-w","fx":"USD","interval":"1week","from":"2016-12-30","to":"2017-12-29"},
+  {"id":"ds.vgk-3y-d","asset":"europe","interval":"1day","from":"2023-01-01","to":"2025-12-31"}
+]

@@ -37,7 +37,8 @@ islands share terms; moving terms out then is a format change of the tool, not o
 ## Decision
 
 - **Source:** `content/packs/<islandId>/<version>/` with `island.json`, `nodes/<id>.json`,
-  `datasets/<id>.json` (written by `cmd/freeze` only), and `glossary/<id>.json`.
+  `datasets/<id>.json` (written by `cmd/freeze` only, from the recipes in `datasets.json`, and kept out of
+  git: ADR-007), and `glossary/<id>.json`.
 - **Document:** `{"island": …, "nodes": […], "datasets": […], "glossary": […]}`. The app bundles one per
   island in `app/assets/packs/<islandId>.json`. The backend serves `GET /v1/content/manifest`
   (`{"packs": [{"islandId", "version"}]}`) and `GET /v1/content/packs/{islandId}/{version}`.
@@ -66,6 +67,7 @@ islands share terms; moving terms out then is a format change of the tool, not o
 
 - The islands work offline from the first launch, and the next content version reaches every install
   within a day of being published, without an app update.
-- The bundled document duplicates the source tree. It is assembled from `content/` by tooling (M6-2), and
-  CI fails when the two differ.
+- The bundled document duplicates the source tree. It is assembled from `content/` by tooling (M6-2).
+  Since ADR-007 it is not committed: `scripts/fetch-data.sh` assembles it, and CI assembles it from
+  made-up data.
 - `content_packs.etag` stays unused.

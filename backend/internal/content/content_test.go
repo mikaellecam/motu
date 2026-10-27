@@ -40,6 +40,7 @@ const (
 	aapl = `{"id": "ds.aapl", "source": "twelvedata", "asset": "apple", "adjusted": true,
 		"currency": "USD", "interval": "1week", "frozen_at": "2026-10-06",
 		"points": [["2022-01-07", 172.170], ["2022-01-14", 173.07]]}`
+	recipes         = `[{"id": "ds.aapl", "asset": "apple", "interval": "1week", "from": "2022-01-03", "to": "2022-01-14"}]`
 	diversification = `{"id": "diversification", "status": "published",
 		"title": {"fr": "Diversification", "en": "Diversification"},
 		"short": {"fr": "Ne pas tout miser sur un seul actif.", "en": "Not betting everything on one asset."},
@@ -60,6 +61,7 @@ func pack(t *testing.T, changes map[string]string) Ref {
 		"nodes/ae.apple.json":           apple,
 		"nodes/ae.march.json":           march,
 		"datasets/ds.aapl.json":         aapl,
+		"datasets.json":                 recipes,
 		"glossary/diversification.json": diversification,
 		"glossary/volatilite.json":      volatilite,
 	}
@@ -231,6 +233,38 @@ func TestDatasets(t *testing.T) {
 		`datasets/ds.aapl.json: points: none`)
 }
 
+func TestEveryDatasetHasItsRecipe(t *testing.T) {
+	expectProblem(t, map[string]string{"datasets.json": ""},
+		`datasets/ds.aapl.json: no recipe in datasets.json`)
+	expectProblem(t, map[string]string{"datasets.json": `[
+		{"id": "ds.aapl", "asset": "apple", "interval": "1week", "from": "2022-01-03", "to": "2022-01-14"},
+		{"id": "ds.aapl", "fx": "USD", "interval": "1week", "from": "2022-01-03", "to": "2022-01-14"},
+		{"id": "ds.gone", "fx": "USD", "interval": "1week", "from": "2022-01-03", "to": "2022-01-14"},
+		{"id": "ds.odd", "interval": "1week", "from": "2022-01-03", "to": "2022-01-14"}]`},
+		`datasets.json: ds.aapl: twice`,
+		`datasets.json: ds.gone: datasets/ds.gone.json is missing: rebuild it with scripts/fetch-data.sh`,
+		`datasets.json: ds.odd: one of asset, fx and livret`)
+	expectProblem(t, map[string]string{"datasets.json": `{`}, `datasets.json: `)
+}
+
+func TestAFreshClone_OnlyTheMissingDatasetsAreReported(t *testing.T) {
+	got := problems(t, pack(t, map[string]string{"datasets/ds.aapl.json": ""}), false)
+	if got != "datasets.json: ds.aapl: datasets/ds.aapl.json is missing: rebuild it with scripts/fetch-data.sh" {
+		t.Errorf("problems:\n%s", got)
+	}
+}
+
+func TestAReleaseRefusesMadeUpPrices(t *testing.T) {
+	ref := pack(t, map[string]string{"datasets/ds.aapl.json": strings.Replace(aapl, `"twelvedata"`, `"synthetic"`, 1)})
+	if got := problems(t, ref, false); got != "" {
+		t.Errorf("CI runs on made-up prices: %s", got)
+	}
+	if got := problems(t, ref, true); !strings.Contains(got,
+		"datasets/ds.aapl.json: made-up prices: a release ships real data (scripts/fetch-data.sh)") {
+		t.Errorf("release: %s", got)
+	}
+}
+
 func TestGlossary(t *testing.T) {
 	expectProblem(t, map[string]string{"glossary/volatilite.json": `{"id": "volatility", "status": "draft",
 		"title": {"fr": "Volatilité", "en": "Volatility"}, "short": {"fr": "x", "en": "x"},
@@ -310,6 +344,7 @@ func TestTheLibraryPublishesTheLatestRelease(t *testing.T) {
 		"nodes/ae.apple.json":           apple,
 		"nodes/ae.march.json":           march,
 		"datasets/ds.aapl.json":         aapl,
+		"datasets.json":                 recipes,
 		"glossary/diversification.json": diversification,
 		"glossary/volatilite.json":      volatilite,
 	}

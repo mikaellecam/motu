@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"finance-companion/backend/internal/content"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
 )
@@ -162,5 +163,143 @@ func TestFreezeAnAssetNeedsTheKey(t *testing.T) {
 		"-to", "2022-01-07"}, nil, nil, time.Now(), &out, &errs)
 	if code == 0 || !strings.Contains(errs.String(), "TWELVEDATA_API_KEY") {
 		t.Errorf("exit %d: %s", code, errs.String())
+	}
+}
+
+func TestFreezeRecordsTheRecipe(t *testing.T) {
+	pack := t.TempDir()
+	os.WriteFile(filepath.Join(pack, "island.json"), []byte("{}"), 0o644)
+	var out, errs bytes.Buffer
+	if code := run(context.Background(), []string{"-pack", pack, "-id", "ds.l", "-livret", "-interval", "1month",
+		"-from", "2015-12-31", "-to", "2016-01-31"}, nil, nil, time.Now(), &out, &errs); code != 0 {
+		t.Fatalf("exit %d: %s", code, errs.String())
+	}
+	recipes, err := content.ReadRecipes(pack)
+	want := content.Recipe{ID: "ds.l", Livret: true, Deposit: 10000, Interval: "1month", From: "2015-12-31", To: "2016-01-31"}
+	if err != nil || len(recipes) != 1 || recipes[0] != want {
+		t.Errorf("recipes: %+v %v", recipes, err)
+	}
+}
+
+// contentWithRecipes lays out actions-etf/1 with [recipes] and returns the
+// content directory and the pack's.
+func contentWithRecipes(t *testing.T, recipes string) (string, string) {
+	t.Helper()
+	root := t.TempDir()
+	pack := filepath.Join(root, "packs", "actions-etf", "1")
+	os.MkdirAll(pack, 0o755)
+	os.WriteFile(filepath.Join(pack, "island.json"), []byte("{}"), 0o644)
+	os.WriteFile(filepath.Join(pack, content.RecipesFile), []byte(recipes), 0o644)
+	return root, pack
+}
+
+const threeRecipes = `[
+  {"id": "ds.a", "asset": "apple", "interval": "1week", "from": "2022-01-03", "to": "2022-01-28"},
+  {"id": "ds.d", "fx": "USD", "interval": "1month", "from": "2017-01-01", "to": "2017-01-31"},
+  {"id": "ds.l", "livret": true, "deposit": 10000, "interval": "1month", "from": "2015-12-31", "to": "2016-01-31"}
+]`
+
+func appleBars(market *provider.Fake, from, to string) {
+	for d := day(from); !d.After(day(to)); d = d.AddDate(0, 0, 1) {
+		if d.Weekday() != time.Saturday && d.Weekday() != time.Sunday {
+			market.Bars["AAPL"] = append(market.Bars["AAPL"], store.Bar{Date: d, Close: "100.50"})
+		}
+	}
+}
+
+func recipesRun(root string, market provider.Provider, rates *fakeRates, extra ...string) (int, string, string) {
+	var out, errs bytes.Buffer
+	code := run(context.Background(), append([]string{"-recipes", root, "-every", "0s"}, extra...), market, rates,
+		time.Date(2026, 10, 27, 9, 0, 0, 0, time.UTC), &out, &errs)
+	return code, out.String(), errs.String()
+}
+
+func TestRecipesFreezeEveryMissingDataset(t *testing.T) {
+	root, pack := contentWithRecipes(t, threeRecipes)
+	market := provider.NewFake()
+	appleBars(market, "2022-01-03", "2022-01-28")
+	rates := &fakeRates{rates: []store.Rate{{Date: day("2017-01-02"), Rate: "1.0465"}}}
+	code, out, errs := recipesRun(root, market, rates)
+	if code != 0 || !strings.Contains(out, "3 datasets written") {
+		t.Fatalf("exit %d\n%s%s", code, out, errs)
+	}
+	for id, want := range map[string]string{"ds.a": `"source": "twelvedata"`, "ds.d": `"source": "ecb"`, "ds.l": `"source": "livret-a"`} {
+		written, _ := os.ReadFile(filepath.Join(pack, "datasets", id+".json"))
+		if !strings.Contains(string(written), want) {
+			t.Errorf("%s lacks %s:\n%s", id, want, written)
+		}
+	}
+	if market.Calls != 1 {
+		t.Errorf("provider calls: %d", market.Calls)
+	}
+
+	// What is there stays: no credit spent again.
+	if code, out, _ := recipesRun(root, market, rates); code != 0 || !strings.Contains(out, "0 datasets written") || market.Calls != 1 {
+		t.Errorf("second run: exit %d, %d calls\n%s", code, market.Calls, out)
+	}
+}
+
+func TestRecipesWaitBetweenProviderCalls(t *testing.T) {
+	root, _ := contentWithRecipes(t, `[
+  {"id": "ds.a", "asset": "apple", "interval": "1week", "from": "2022-01-03", "to": "2022-01-28"},
+  {"id": "ds.b", "asset": "apple", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}
+]`)
+	market := provider.NewFake()
+	appleBars(market, "2022-01-03", "2022-01-28")
+	start := time.Now()
+	var out, errs bytes.Buffer
+	if code := run(context.Background(), []string{"-recipes", root, "-every", "40ms"}, market, nil, time.Now(), &out, &errs); code != 0 {
+		t.Fatalf("exit %d: %s", code, errs.String())
+	}
+	if elapsed := time.Since(start); market.Calls != 2 || elapsed < 40*time.Millisecond {
+		t.Errorf("%d calls in %v", market.Calls, elapsed)
+	}
+}
+
+func TestSyntheticRecipesNeedNoProvider_AndRealDataReplacesThem(t *testing.T) {
+	root, pack := contentWithRecipes(t, threeRecipes)
+	code, out, errs := recipesRun(root, nil, nil, "-synthetic")
+	if code != 0 || !strings.Contains(out, "3 datasets written") {
+		t.Fatalf("exit %d\n%s%s", code, out, errs)
+	}
+	written, _ := os.ReadFile(filepath.Join(pack, "datasets", "ds.a.json"))
+	if !strings.Contains(string(written), `"source": "synthetic"`) || !strings.Contains(string(written), `"symbol": "AAPL"`) {
+		t.Errorf("ds.a:\n%s", written)
+	}
+
+	// A real run replaces the made-up datasets; a synthetic one never replaces real data.
+	market := provider.NewFake()
+	appleBars(market, "2022-01-03", "2022-01-28")
+	rates := &fakeRates{rates: []store.Rate{{Date: day("2017-01-02"), Rate: "1.0465"}}}
+	if code, out, errs := recipesRun(root, market, rates); code != 0 || !strings.Contains(out, "3 datasets written") {
+		t.Fatalf("real run: exit %d\n%s%s", code, out, errs)
+	}
+	if code, out, _ := recipesRun(root, nil, nil, "-synthetic"); code != 0 || !strings.Contains(out, "0 datasets written") {
+		t.Errorf("synthetic over real: exit %d\n%s", code, out)
+	}
+}
+
+func TestRecipesRefuse(t *testing.T) {
+	for name, c := range map[string]struct {
+		recipes string
+		extra   []string
+		want    string
+	}{
+		"a bad recipe": {`[{"id": "ds.a", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, nil, "actions-etf/1: ds.a: one of asset, fx and livret"},
+		"unreadable":   {`[`, nil, "actions-etf/1: datasets.json"},
+		"no key":       {`[{"id": "ds.a", "asset": "apple", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, nil, "TWELVEDATA_API_KEY"},
+		"not an asset": {`[{"id": "ds.a", "asset": "nope", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, []string{"-synthetic"}, `asset "nope" not given`},
+	} {
+		root, _ := contentWithRecipes(t, c.recipes)
+		if code, _, errs := recipesRun(root, nil, nil, c.extra...); code == 0 || !strings.Contains(errs, c.want) {
+			t.Errorf("%s: exit %d: %s", name, code, errs)
+		}
+	}
+	var out, errs bytes.Buffer
+	if code := run(context.Background(), []string{"-recipes", filepath.Join(t.TempDir(), "missing")}, nil, nil, time.Now(), &out, &errs); code == 0 {
+		t.Error("a missing content directory")
+	}
+	if code := run(context.Background(), []string{"-synthetic"}, nil, nil, time.Now(), &out, &errs); code != 2 {
+		t.Errorf("-synthetic alone: exit %d", code)
 	}
 }

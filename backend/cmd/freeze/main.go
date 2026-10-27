@@ -1,5 +1,6 @@
 // Command freeze writes a frozen dataset into a content pack (BRIEF §4.3,
-// §9), with its provenance. One of:
+// §9), with its provenance, and records its recipe in the pack's
+// datasets.json (ADR-007). One of:
 //
 //   - -asset: an asset's adjusted closes from the market data provider; with
 //     -currency EUR, each converted at the ECB rate of its day (Frankfurter).
@@ -13,10 +14,17 @@
 //
 //     freeze -pack ../content/packs/actions-etf/1 -id ds.aapl-2022-w \
 //     -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31
+//
+// Or -recipes: every dataset the recipes of a content directory list and its
+// packs miss, as git leaves them (a made-up one counts as missing). With
+// -synthetic, made-up prices instead, without the provider: for CI only.
+//
+//	freeze -recipes ../content [-synthetic]
 package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -54,12 +62,25 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 	dollar := flags.String("fx", "", "USD: what one dollar was worth in euros")
 	livret := flags.Bool("livret", false, "a Livret A holding of -deposit euros put in on -from")
 	deposit := flags.Int64("deposit", 10000, "with -livret: euros put in")
+	recipes := flags.String("recipes", "", "content directory: freeze the datasets its recipes list and its packs miss")
+	synthetic := flags.Bool("synthetic", false, "with -recipes: made-up prices, without the provider (CI only)")
+	every := flags.Duration("every", 8*time.Second, "with -recipes: pause between provider calls (free plan: 8 a minute)")
 	if err := flags.Parse(args); err != nil {
 		return 2
 	}
 	fail := func(format string, a ...any) int {
 		fmt.Fprintf(stderr, "freeze: "+format+"\n", a...)
 		return 1
+	}
+	if *recipes != "" {
+		if market != nil {
+			market = &paced{Provider: market, every: *every}
+		}
+		return runRecipes(ctx, *recipes, *synthetic, market, rates, now, stdout, stderr)
+	}
+	if *synthetic {
+		fmt.Fprintln(stderr, "freeze: -synthetic goes with -recipes")
+		return 2
 	}
 	modes := 0
 	for _, set := range []bool{*assetID != "", *dollar != "", *livret} {
@@ -75,11 +96,119 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 	if _, err := os.Stat(filepath.Join(*pack, "island.json")); err != nil {
 		return fail("%s is not a pack version directory", *pack)
 	}
-	start, err1 := time.Parse(time.DateOnly, *from)
-	end, err2 := time.Parse(time.DateOnly, *to)
-	if err1 != nil || err2 != nil {
+	if _, err1 := time.Parse(time.DateOnly, *from); err1 != nil {
 		return fail("-from and -to are days, YYYY-MM-DD")
 	}
+	if _, err2 := time.Parse(time.DateOnly, *to); err2 != nil {
+		return fail("-from and -to are days, YYYY-MM-DD")
+	}
+	if *dollar != "" && *dollar != "USD" {
+		return fail("-fx: only USD")
+	}
+	if *currency != "" && *currency != "EUR" {
+		return fail("-currency: only EUR")
+	}
+	recipe := content.Recipe{ID: *id, Asset: *assetID, Currency: *currency, FX: *dollar, Livret: *livret,
+		Interval: *interval, From: *from, To: *to}
+	if *livret {
+		recipe.Deposit = *deposit
+	}
+
+	dataset, err := freezeRecipe(ctx, recipe, market, rates, now)
+	if err != nil {
+		return fail("%v", err)
+	}
+	path, err := write(*pack, dataset)
+	if err != nil {
+		return fail("%v", err)
+	}
+	if err := content.WriteRecipe(*pack, recipe); err != nil {
+		return fail("%v", err)
+	}
+	fmt.Fprintf(stdout, "freeze: wrote %s (%d points), its recipe in %s\n", path, len(dataset.Points), content.RecipesFile)
+	return 0
+}
+
+// runRecipes freezes, in every pack version under dir, each dataset its
+// recipes list and git left out: a missing file, or a made-up one unless
+// [synthetic] makes them up too.
+func runRecipes(ctx context.Context, dir string, synthetic bool, market provider.Provider, rates fx.Source,
+	now time.Time, stdout, stderr io.Writer) int {
+	fail := func(format string, a ...any) int {
+		fmt.Fprintf(stderr, "freeze: "+format+"\n", a...)
+		return 1
+	}
+	refs, err := content.Find(dir)
+	if err != nil {
+		return fail("%v", err)
+	}
+	written := 0
+	for _, ref := range refs {
+		recipes, err := content.ReadRecipes(ref.Dir)
+		if err != nil {
+			return fail("%s/%d: %s: %v", ref.Island, ref.Version, content.RecipesFile, err)
+		}
+		for _, r := range recipes {
+			if p := r.Problem(); p != "" {
+				return fail("%s/%d: %s: %s", ref.Island, ref.Version, r.ID, p)
+			}
+			if source, ok := sourceOf(filepath.Join(ref.Dir, "datasets", r.ID+".json")); ok &&
+				(synthetic || source != "synthetic") {
+				continue
+			}
+			var dataset content.Dataset
+			if synthetic {
+				asset, _ := catalogueAsset(r.Asset)
+				dataset, err = content.Synthetic(r, asset, now.UTC())
+			} else {
+				dataset, err = freezeRecipe(ctx, r, market, rates, now)
+			}
+			if err != nil {
+				return fail("%s/%d: %v", ref.Island, ref.Version, err)
+			}
+			path, err := write(ref.Dir, dataset)
+			if err != nil {
+				return fail("%v", err)
+			}
+			fmt.Fprintf(stdout, "freeze: wrote %s (%d points)\n", path, len(dataset.Points))
+			written++
+		}
+	}
+	fmt.Fprintf(stdout, "freeze: %d datasets written\n", written)
+	return 0
+}
+
+// sourceOf reads the source of the dataset at path; false when there is none
+// to read.
+func sourceOf(path string) (string, bool) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return "", false
+	}
+	var head struct {
+		Source string `json:"source"`
+	}
+	if json.Unmarshal(raw, &head) != nil {
+		return "", false
+	}
+	return head.Source, true
+}
+
+// write puts the dataset in the pack's datasets folder and returns its path.
+func write(packDir string, dataset content.Dataset) (string, error) {
+	path := filepath.Join(packDir, "datasets", dataset.ID+".json")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return "", err
+	}
+	return path, os.WriteFile(path, dataset.Encode(), 0o644)
+}
+
+// freezeRecipe follows the recipe: real data from the provider, the ECB or the
+// Livret A rate history.
+func freezeRecipe(ctx context.Context, r content.Recipe, market provider.Provider, rates fx.Source,
+	now time.Time) (content.Dataset, error) {
+	start, _ := time.Parse(time.DateOnly, r.From)
+	end, _ := time.Parse(time.DateOnly, r.To)
 	// ECB rates around the range: the one before its first day included.
 	eurUSD := func() ([]store.Rate, error) {
 		var all []store.Rate
@@ -97,56 +226,42 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 		return all, nil
 	}
 
-	var dataset content.Dataset
-	var err error
 	switch {
-	case *livret:
-		dataset, err = content.Livret(*id, catalogue.LivretRates, *deposit*100, *interval, start, end, now.UTC())
-	case *dollar != "":
-		if *dollar != "USD" {
-			return fail("-fx: only USD")
+	case r.Livret:
+		return content.Livret(r.ID, catalogue.LivretRates, r.Deposit*100, r.Interval, start, end, now.UTC())
+	case r.FX != "":
+		rs, err := eurUSD()
+		if err != nil {
+			return content.Dataset{}, err
 		}
-		var r []store.Rate
-		if r, err = eurUSD(); err == nil {
-			dataset, err = content.DollarInEuros(*id, r, *interval, start, end, now.UTC())
-		}
-	default:
-		dataset, err = freezeAsset(ctx, market, *assetID, *id, *interval, start, end, now)
-		if err == nil && *currency != "" {
-			if *currency != "EUR" {
-				return fail("-currency: only EUR")
-			}
-			var r []store.Rate
-			if r, err = eurUSD(); err == nil {
-				dataset, err = content.ToEuros(dataset, r)
-			}
-		}
+		return content.DollarInEuros(r.ID, rs, r.Interval, start, end, now.UTC())
 	}
+	dataset, err := freezeAsset(ctx, market, r.Asset, r.ID, r.Interval, start, end, now)
+	if err != nil || r.Currency == "" {
+		return dataset, err
+	}
+	rs, err := eurUSD()
 	if err != nil {
-		return fail("%v", err)
+		return content.Dataset{}, err
 	}
-	path := filepath.Join(*pack, "datasets", *id+".json")
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fail("%v", err)
+	return content.ToEuros(dataset, rs)
+}
+
+func catalogueAsset(id string) (store.Asset, bool) {
+	for _, a := range catalogue.Assets {
+		if a.ID == id {
+			return a, true
+		}
 	}
-	if err := os.WriteFile(path, dataset.Encode(), 0o644); err != nil {
-		return fail("%v", err)
-	}
-	fmt.Fprintf(stdout, "freeze: wrote %s (%d points)\n", path, len(dataset.Points))
-	return 0
+	return store.Asset{}, false
 }
 
 // freezeAsset reads an asset's closes from the provider, in windows of its
 // longest call.
 func freezeAsset(ctx context.Context, market provider.Provider, assetID, id, interval string,
 	start, end, now time.Time) (content.Dataset, error) {
-	var asset *store.Asset
-	for _, a := range catalogue.Assets {
-		if a.ID == assetID {
-			asset = &a
-		}
-	}
-	if asset == nil {
+	asset, ok := catalogueAsset(assetID)
+	if !ok {
 		return content.Dataset{}, fmt.Errorf("%q is not a catalogue asset", assetID)
 	}
 	if market == nil {
@@ -166,5 +281,25 @@ func freezeAsset(ctx context.Context, market provider.Provider, assetID, id, int
 		}
 		bars = append(bars, got...)
 	}
-	return content.Freeze(content.Spec{ID: id, Asset: *asset, Interval: interval, From: start, To: end}, bars, now.UTC())
+	return content.Freeze(content.Spec{ID: id, Asset: asset, Interval: interval, From: start, To: end}, bars, now.UTC())
+}
+
+// paced waits [every] between two History calls, so that freezing every
+// recipe stays within the plan's credits per minute.
+type paced struct {
+	provider.Provider
+	every time.Duration
+	calls int
+}
+
+func (p *paced) History(ctx context.Context, symbol string, from, to time.Time) ([]store.Bar, error) {
+	if p.calls > 0 {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(p.every):
+		}
+	}
+	p.calls++
+	return p.Provider.History(ctx, symbol, from, to)
 }

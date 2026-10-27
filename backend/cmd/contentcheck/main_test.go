@@ -80,6 +80,17 @@ func TestTheBundleFollowsTheLatestVersion(t *testing.T) {
 	}
 }
 
+func TestWriteMakesTheBundleFolder(t *testing.T) {
+	// A fresh clone has no bundle, nor its folder: git keeps neither (ADR-007).
+	bundle := filepath.Join(t.TempDir(), "assets", "packs")
+	if code, _, errs := check("-bundle", bundle, "-write", contentDir(t, "published")); code != 0 {
+		t.Fatalf("exit %d: %s", code, errs)
+	}
+	if _, err := os.Stat(filepath.Join(bundle, "actions-etf.json")); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestUsage(t *testing.T) {
 	if code, _, _ := check(); code != 2 {
 		t.Errorf("no directory: exit %d", code)

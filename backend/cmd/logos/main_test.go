@@ -61,16 +61,3 @@ func TestEachStockGetsItsLogoAndEtfsKeepTheirLetters(t *testing.T) {
 		t.Fatalf("says why: %s", stderr.String())
 	}
 }
-
-// The app bundles a logo for every stock of the catalogue: one added to the
-// catalogue without its logo fails here (run the tool, commit the file).
-func TestEveryStockHasABundledLogo(t *testing.T) {
-	for _, a := range catalogue.Assets {
-		if a.Type != "stock" {
-			continue
-		}
-		if _, err := os.Stat(filepath.Join("..", "..", "..", "app", "assets", "logos", a.ID+".jpg")); err != nil {
-			t.Errorf("%s: no bundled logo: go run ./cmd/logos", a.ID)
-		}
-	}
-}

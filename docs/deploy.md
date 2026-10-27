@@ -14,10 +14,15 @@ Leave `DB_PATH` at its default: `data/market.db` is the image's volume. Leave `C
 reads `/app/content`, where the run command mounts `content/`. `.env` stays out of git and out of the image
 (`backend/.dockerignore`).
 
-## 2. Build and run
+## 2. Build, rebuild the datasets, and run
+
+The lessons' datasets stay out of git (ADR-007): rebuild them once into `content/` with the image's
+`freeze`, from the recipes in each pack's `datasets.json` (about 15 provider credits, a few minutes).
 
 ```bash
 docker build -t finance-companion-backend backend
+docker run --rm --user "$(id -u):$(id -g)" --env-file backend/.env \
+  -v "$PWD/content":/app/content finance-companion-backend freeze -recipes /app/content
 docker run -d --name finance-companion --restart unless-stopped \
   --env-file backend/.env \
   -v finance-companion-data:/app/data \

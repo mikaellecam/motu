@@ -239,7 +239,7 @@ Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/c
   "live_variant": {"widget": "compare_returns", "period": "1y"},
   "bridge": null }
 
-// datasets/ds.aapl-2022-w.json  (produced by cmd/freeze, never hand-typed)
+// datasets/ds.aapl-2022-w.json  (produced by cmd/freeze, never hand-typed; out of git, ADR-007)
 { "id": "ds.aapl-2022-w", "source": "twelvedata", "asset": "apple", "symbol": "AAPL", "adjusted": true,
   "currency": "USD", "interval": "1week", "from": "2022-01-01", "to": "2022-12-31", "frozen_at": "2026-10-06",
   "points": [["2022-01-07", 168.14415], ["...", 0]] }
@@ -1024,7 +1024,8 @@ provider rate limit across all clients. No user data, no accounts.
 ```
 backend/
   cmd/server/        HTTP server + scheduler
-  cmd/freeze/        builds frozen datasets for content (writes into content/…/datasets)
+  cmd/freeze/        builds frozen datasets for content (writes into content/…/datasets; -recipes
+                     rebuilds them from datasets.json, ADR-007)
   cmd/contentcheck/  validates content packs (schema, locales, glossary refs, dataset refs)
   internal/provider/ Provider interface + twelvedata adapter (+ fake for tests)
   internal/store/    SQLite (modernc.org/sqlite) — assets, bars, fx, livret_rates, sync state
@@ -1081,11 +1082,14 @@ data, no key).
 - A release is the latest version of an island once `contentcheck -release` passes: no draft node or term
   (decided 2026-10-11). The server publishes only such versions; drafts stay in the app's bundle while the
   island is being built, and the graded build passes `-release` first.
-- Datasets only via `cmd/freeze` (provenance, adjusted prices, frozen_at date). A lesson's copy quotes only
-  what its datasets show; `app/test/data/content/actions_etf_content_test.dart` checks each figure against
-  them.
-- `contentcheck` runs in CI, with the bundle check: `app/assets/packs/<island>.json` is the assembled latest
-  version (`contentcheck -bundle ../app/assets/packs -write` rewrites it).
+- Datasets only via `cmd/freeze` (provenance, adjusted prices, frozen_at date), each with its recipe in the
+  pack's `datasets.json`. The datasets, the app's bundle and the logos stay out of git (ADR-007):
+  `scripts/fetch-data.sh` rebuilds them from a Twelve Data key. A lesson's copy quotes only what its
+  datasets show; `app/test/data/content/actions_etf_copy_test.dart` (tag `real-data`) checks each figure
+  against the real prices, on the developer's machine.
+- `contentcheck` runs in CI on made-up prices (`scripts/fetch-data.sh --synthetic`), which
+  `contentcheck -release` refuses. `app/assets/packs/<island>.json` is the assembled latest version
+  (`contentcheck -bundle ../app/assets/packs -write` rewrites it).
 
 ---
 

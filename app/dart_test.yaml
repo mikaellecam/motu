@@ -1,0 +1,4 @@
+tags:
+  # Checks lesson copy against the real frozen prices (ADR-007). CI has made-up
+  # ones and runs `flutter test --exclude-tags real-data`; locally, every test runs.
+  real-data:

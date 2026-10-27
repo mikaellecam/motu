@@ -24,7 +24,8 @@ It is a graded school project (INSA, mobile development module). The mandatory r
 ```
 app/        Flutter app (Dart)
 backend/    Go service + CLI tools (cmd/server, cmd/freeze, cmd/contentcheck, cmd/logos)
-content/    Lesson packs, glossary, frozen datasets — source of truth for all learning content
+content/    Lesson packs, glossary, dataset recipes — source of truth for all learning content
+scripts/    fetch-data.sh: rebuilds what git leaves out (datasets, app bundle, logos; ADR-007)
 docs/       BRIEF.md, ROADMAP.md, decisions/ (ADRs, one file per decision)
 tracker/    Local issue tracker, gitignored (see Workflow)
 ```
@@ -35,7 +36,8 @@ tracker/    Local issue tracker, gitignored (see Workflow)
 # app
 cd app && flutter pub get
 dart run build_runner build --delete-conflicting-outputs
-dart format . && flutter analyze && flutter test
+dart format . && flutter analyze && flutter test   # needs real data (scripts/fetch-data.sh)
+flutter test --exclude-tags real-data              # what CI runs, on made-up prices
 flutter test screenshots --update-goldens   # renders screens to docs/screenshots/
 # after a drift schema change (bump schemaVersion, add the step first):
 dart run drift_dev make-migrations
@@ -45,11 +47,15 @@ dart run drift_dev schema generate --data-classes --companions drift_schemas/app
 cd backend && gofmt -w . && go vet ./... && go test ./...
 set -a; . ./.env; set +a; go run ./cmd/server   # .env from .env.example; syncs market data
 go test -tags live ./internal/provider/            # adapter against the real API (needs .env)
+go test -tags realdata ./cmd/logos/                # every stock has its logo (after scripts/fetch-data.sh)
+../scripts/fetch-data.sh        # after a clone: datasets, app bundle, logos from .env (~15 credits once)
+../scripts/fetch-data.sh --synthetic   # made-up prices, no key (CI; never a release)
 go run ./cmd/contentcheck -bundle ../app/assets/packs ../content  # checks every pack + the app's bundle
 go run ./cmd/contentcheck -bundle ../app/assets/packs -write ../content   # after a content change
-go run ./cmd/contentcheck -release ../content      # no draft in the latest versions (before a release)
+go run ./cmd/contentcheck -release ../content      # no draft, no made-up data in the latest versions
 set -a; . ./.env; set +a; go run ./cmd/freeze -pack ../content/packs/actions-etf/1 -id ds.aapl-2022-w \
-  -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31   # a frozen dataset (1 provider credit)
+  -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31   # a new dataset + its recipe (1 credit)
+set -a; . ./.env; set +a; go run ./cmd/freeze -recipes ../content   # every dataset a recipe lists and git lacks
 set -a; . ./.env; set +a; go run ./cmd/logos   # stock logos into ../app/assets/logos (paced, resumes)
 docker build -t finance-companion-backend .        # the image; self-hosting steps in docs/deploy.md
 

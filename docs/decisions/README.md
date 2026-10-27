@@ -14,6 +14,7 @@ where they apply; the main ones are listed below.
 | [ADR-004](ADR-004-market-data-provider.md) | Twelve Data free plan, US listings only | 29 instruments with history from 2000-01-03 (`dataFloor`), adjusted for dividends and splits; ACWI as the world ETF; exchange rates from Frankfurter (ECB). |
 | [ADR-005](ADR-005-market-cache-policy.md) | Market data cache policy | What the app fetches when, and keeps how long: whole history once then only new days, quotes for 15 min in session, catalogue and calendar daily, FX like history. Reads are cut at `asOf`; the cache stands in when the network fails. |
 | [ADR-006](ADR-006-content-packs.md) | Content packs: one document per version, bundled and fetched | Lessons ship inside the app (offline from the first launch) and newer versions download once a day when they read correctly; `contentcheck` validates every pack in CI. |
+| [ADR-007](ADR-007-provider-data-out-of-git.md) | Provider data stays out of git; recipes rebuild it | Git keeps each dataset's `cmd/freeze` recipe (`datasets.json`); `scripts/fetch-data.sh` rebuilds the datasets, the app's bundle and the logos from a key. CI runs on made-up prices, which a release refuses. |
 
 ## Product decisions in the brief
 

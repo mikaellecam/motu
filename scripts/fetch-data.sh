@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Rebuilds what git leaves out (ADR-007): the content packs' datasets from their recipes, the app's
+# bundled packs, and the stock logos. Run it after cloning and after a content change.
+#
+#   scripts/fetch-data.sh              real data, from TWELVEDATA_API_KEY in backend/.env (about 15
+#                                      provider credits and 22 logos the first time, a few minutes)
+#   scripts/fetch-data.sh --synthetic  made-up prices, no key: CI and a first look, never a release
+set -euo pipefail
+cd "$(dirname "$0")/../backend"
+
+if [ "${1:-}" = --synthetic ]; then
+  go run ./cmd/freeze -recipes ../content -synthetic
+else
+  if [ -f .env ]; then
+    set -a
+    . ./.env
+    set +a
+  fi
+  go run ./cmd/freeze -recipes ../content
+  go run ./cmd/logos
+fi
+go run ./cmd/contentcheck -bundle ../app/assets/packs -write ../content

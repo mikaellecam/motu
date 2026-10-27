@@ -62,7 +62,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 		path := filepath.Join(*bundle, ref.Island+".json")
 		doc := pack.Document()
 		if *write {
-			if err := os.WriteFile(path, doc, 0o644); err != nil {
+			if err := os.MkdirAll(*bundle, 0o755); err != nil {
+				report(ref, err)
+			} else if err := os.WriteFile(path, doc, 0o644); err != nil {
 				report(ref, err)
 			} else {
 				fmt.Fprintf(stdout, "contentcheck: wrote %s\n", path)
