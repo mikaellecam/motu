@@ -1,5 +1,11 @@
 name: CI
-on: push
+# Every pull request, forks' included, and main once merged; not twice per PR.
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
 
 jobs:
   app:
