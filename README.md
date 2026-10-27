@@ -17,12 +17,14 @@ It has two halves:
 - **Sandbox.** A fictional portfolio on today's prices, and "time trips": a wallet that starts on a past
   date and moves forward through real history, with automatic stops. Plus a DCA simulator.
 
+<!-- docs/readme/: the top of each screen at one phone size, from docs/screenshots/:
+     magick docs/screenshots/<name>.png -crop 1170x2532+0+0 +repage -resize 585x1266 docs/readme/<name>.png -->
 <p align="center">
-  <img src="docs/screenshots/m7-1-map.png" alt="The map of islands" width="180">
-  <img src="docs/screenshots/m6-9-island-path.png" alt="The Actions & ETF island's path of lessons" width="180">
-  <img src="docs/screenshots/m6-3-predict-reveal.png" alt="A lesson revealing what happened" width="180">
-  <img src="docs/screenshots/m4-2-wallet.png" alt="The live wallet" width="180">
-  <img src="docs/screenshots/m5-3-trip-wallet.png" alt="A time-trip wallet" width="180">
+  <img src="docs/readme/m7-1-map.png" alt="The map of islands" width="160">
+  <img src="docs/readme/m6-9-island-path.png" alt="The Actions & ETF island's path of lessons" width="160">
+  <img src="docs/readme/m6-3-predict-reveal.png" alt="A lesson revealing what happened" width="160">
+  <img src="docs/readme/m4-2-wallet.png" alt="The live wallet" width="160">
+  <img src="docs/readme/m5-3-trip-wallet.png" alt="A time-trip wallet" width="160">
 </p>
 
 ## How it is built
