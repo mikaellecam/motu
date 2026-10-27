@@ -12,6 +12,7 @@ backend/data/
 
 # Provider data, rebuilt by scripts/fetch-data.sh: never committed (ADR-007)
 content/packs/*/*/datasets/
+app/screenshots/fixtures/packs/*/*/datasets/
 app/assets/packs/*.json
 app/assets/logos/*
 !app/assets/logos/.gitkeep

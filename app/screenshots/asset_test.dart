@@ -21,38 +21,44 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'screenshot.dart';
 
-// Apple in the live wallet on 7 October 2026, from the backfilled history
-// (fixtures/apple.json: closes of Apple and the world ETF, USD→EUR rates).
-// Two buys at the real closes and rates of their days.
+// Apple in the live wallet on 7 October 2026, on real history: daily closes
+// of Apple and the world ETF, what a dollar was worth in euros. Git keeps
+// their recipes (fixtures/packs/screens/1/datasets.json); scripts/fetch-data.sh
+// rebuilds the datasets (ADR-007). Two buys at the real closes and rates of
+// their days.
 
-final _data = jsonDecode(
-  File('screenshots/fixtures/apple.json').readAsStringSync(),
-) as Map<String, dynamic>;
+List<(DateTime, Decimal)> _points(String dataset) {
+  final json = jsonDecode(
+    File('screenshots/fixtures/packs/screens/1/datasets/$dataset.json')
+        .readAsStringSync(),
+  ) as Map<String, dynamic>;
+  return [
+    for (final [date, value] in (json['points'] as List).cast<List>())
+      (_date(date as String), Decimal.parse((value as num).toString())),
+  ];
+}
 
 DateTime _date(String s) => DateTime.parse('${s}T00:00:00Z');
 
-List<PriceBar> _bars(String key) => [
-  for (final [date, close] in (_data[key] as List).cast<List>())
+List<PriceBar> _bars(String dataset) => [
+  for (final (date, close) in _points(dataset))
     PriceBar(
-      date: _date(date as String),
-      open: Decimal.parse(close as String),
-      high: Decimal.parse(close),
-      low: Decimal.parse(close),
-      close: Decimal.parse(close),
+      date: date,
+      open: close,
+      high: close,
+      low: close,
+      close: close,
       volume: 0,
       currency: Currency.usd,
     ),
 ];
 
-final _rates = [
-  for (final [date, rate] in (_data['usd_eur'] as List).cast<List>())
-    (_date(date as String), Decimal.parse(rate as String)),
-];
+final _rates = _points('ds.usd-eur');
 
 Decimal _fx(DateTime day) => _rates.lastWhere((r) => !r.$1.isAfter(day)).$2;
 
 AssetOverview _overview() {
-  final apple = _bars('apple');
+  final apple = _bars('ds.apple');
   Fill buy(String date, String qty) {
     final day = _date(date);
     return Fill(
@@ -107,7 +113,7 @@ AssetOverview _overview() {
     ),
     asOf: DateTime.utc(2026, 10, 7, 21),
     bars: apple,
-    benchmark: _bars('world'),
+    benchmark: _bars('ds.world'),
     quote: null,
     closeObservedAt: DateTime.utc(2026, 10, 7, 20),
     fx: _fx,

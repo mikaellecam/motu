@@ -14,6 +14,8 @@ times:
   Actions & ETF datasets have `"source": "twelvedata"`)
 - the app's bundled pack, `app/assets/packs/<island>.json`, which contains those datasets
 - the stock logos, `app/assets/logos/*.jpg`, fetched from the provider's `/logo` endpoint
+- the price history the asset screenshots render, `app/screenshots/fixtures/apple.json` (found later,
+  M10-8), and before it `fixtures/actions-etf.json`, which only history still holds
 
 Lessons must keep working as they do: frozen data (BRIEF §4.3, §9), every learner seeing the same figures,
 and offline from the first launch (ADR-006). CI must stay green on pull requests from forks, which get no
@@ -47,7 +49,9 @@ Keep the recipes in git and rebuild the data.
   (`asset` with optional `currency`, `fx`, or `livret` with `deposit`; `interval`, `from`, `to`). A
   single-dataset freeze records its recipe there. `content.Read` reports a recipe without its dataset and
   a dataset without its recipe.
-- **Out of git:** every `datasets/` folder, `app/assets/packs/*.json` and `app/assets/logos/*`. The ECB and
+- **Out of git:** every `datasets/` folder, `app/assets/packs/*.json` and `app/assets/logos/*`. The
+  screenshot fixture is a pack-shaped folder too, `app/screenshots/fixtures/packs/screens/1/`, with its
+  recipes in `datasets.json`. The ECB and
   Livret A datasets are rebuilt as well, so the rule is the same for every dataset.
 - **Rebuilding:** `scripts/fetch-data.sh` runs `freeze -recipes` (each missing dataset, paced to 8 provider
   calls a minute), `cmd/logos`, and `contentcheck -bundle -write`. A real run replaces made-up datasets.

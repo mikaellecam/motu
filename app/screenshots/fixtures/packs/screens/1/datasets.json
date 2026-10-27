@@ -1,0 +1,5 @@
+[
+  {"id":"ds.apple","asset":"apple","interval":"1day","from":"2021-09-24","to":"2026-10-07"},
+  {"id":"ds.usd-eur","fx":"USD","interval":"1day","from":"2021-09-20","to":"2026-10-07"},
+  {"id":"ds.world","asset":"world","interval":"1day","from":"2021-09-24","to":"2026-10-07"}
+]
