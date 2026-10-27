@@ -17,14 +17,17 @@
 //
 // Or -recipes: every dataset the recipes of a content directory list and its
 // packs miss, as git leaves them (a made-up one counts as missing). With
-// -synthetic, made-up prices instead, without the provider: for CI only.
+// -synthetic, made-up prices instead, without the provider: for CI only. With
+// -prune, a dataset no recipe lists is removed, as after an upgrade dropped
+// its recipe (the backend image's start does it).
 //
-//	freeze -recipes ../content [-synthetic]
+//	freeze -recipes ../content [-synthetic] [-prune]
 package main
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -64,6 +67,7 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 	deposit := flags.Int64("deposit", 10000, "with -livret: euros put in")
 	recipes := flags.String("recipes", "", "content directory: freeze the datasets its recipes list and its packs miss")
 	synthetic := flags.Bool("synthetic", false, "with -recipes: made-up prices, without the provider (CI only)")
+	prune := flags.Bool("prune", false, "with -recipes: remove the datasets no recipe lists")
 	every := flags.Duration("every", 8*time.Second, "with -recipes: pause between provider calls (free plan: 8 a minute)")
 	retry := flags.Duration("retry", 65*time.Second, "with -recipes: after the provider's per-minute limit, wait this long and try again")
 	if err := flags.Parse(args); err != nil {
@@ -77,10 +81,10 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 		if market != nil {
 			market = &paced{Provider: market, every: *every, retry: *retry}
 		}
-		return runRecipes(ctx, *recipes, *synthetic, market, rates, now, stdout, stderr)
+		return runRecipes(ctx, *recipes, *synthetic, *prune, market, rates, now, stdout, stderr)
 	}
-	if *synthetic {
-		fmt.Fprintln(stderr, "freeze: -synthetic goes with -recipes")
+	if *synthetic || *prune {
+		fmt.Fprintln(stderr, "freeze: -synthetic and -prune go with -recipes")
 		return 2
 	}
 	modes := 0
@@ -132,8 +136,8 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 
 // runRecipes freezes, in every pack version under dir, each dataset its
 // recipes list and git left out: a missing file, or a made-up one unless
-// [synthetic] makes them up too.
-func runRecipes(ctx context.Context, dir string, synthetic bool, market provider.Provider, rates fx.Source,
+// [synthetic] makes them up too. [prune] removes the datasets no recipe lists.
+func runRecipes(ctx context.Context, dir string, synthetic, prune bool, market provider.Provider, rates fx.Source,
 	now time.Time, stdout, stderr io.Writer) int {
 	fail := func(format string, a ...any) int {
 		fmt.Fprintf(stderr, "freeze: "+format+"\n", a...)
@@ -174,9 +178,40 @@ func runRecipes(ctx context.Context, dir string, synthetic bool, market provider
 			fmt.Fprintf(stdout, "freeze: wrote %s (%d points)\n", path, len(dataset.Points))
 			written++
 		}
+		if prune {
+			if err := pruneDatasets(ref.Dir, recipes, stdout); err != nil {
+				return fail("%v", err)
+			}
+		}
 	}
 	fmt.Fprintf(stdout, "freeze: %d datasets written\n", written)
 	return 0
+}
+
+// pruneDatasets removes the pack's datasets that none of its recipes list.
+func pruneDatasets(packDir string, recipes []content.Recipe, stdout io.Writer) error {
+	listed := map[string]bool{}
+	for _, r := range recipes {
+		listed[r.ID+".json"] = true
+	}
+	entries, err := os.ReadDir(filepath.Join(packDir, "datasets"))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if e.IsDir() || filepath.Ext(e.Name()) != ".json" || listed[e.Name()] {
+			continue
+		}
+		path := filepath.Join(packDir, "datasets", e.Name())
+		if err := os.Remove(path); err != nil {
+			return err
+		}
+		fmt.Fprintf(stdout, "freeze: removed %s (no recipe)\n", path)
+	}
+	return nil
 }
 
 // sourceOf reads the source of the dataset at path; false when there is none

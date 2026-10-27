@@ -320,3 +320,26 @@ func TestRecipesWaitOutTheMinuteLimit(t *testing.T) {
 		t.Errorf("exit %d, %d calls\n%s%s", code, market.Calls, out, errs)
 	}
 }
+
+func TestPruneRemovesTheDatasetsNoRecipeLists(t *testing.T) {
+	// A newer image dropped a recipe: its dataset would make content.Read refuse the pack.
+	root, pack := contentWithRecipes(t, `[{"id": "ds.l", "livret": true, "deposit": 10000, "interval": "1month", "from": "2015-12-31", "to": "2016-01-31"}]`)
+	os.MkdirAll(filepath.Join(pack, "datasets"), 0o755)
+	os.WriteFile(filepath.Join(pack, "datasets", "ds.old.json"), []byte(`{"source": "twelvedata"}`), 0o644)
+	if code, _, errs := recipesRun(root, nil, nil, "-synthetic"); code != 0 {
+		t.Fatalf("exit %d: %s", code, errs)
+	}
+	if _, err := os.Stat(filepath.Join(pack, "datasets", "ds.old.json")); err != nil {
+		t.Error("without -prune, a dataset stays")
+	}
+	code, out, errs := recipesRun(root, nil, nil, "-synthetic", "-prune")
+	if code != 0 || !strings.Contains(out, "removed") {
+		t.Fatalf("exit %d\n%s%s", code, out, errs)
+	}
+	if _, err := os.Stat(filepath.Join(pack, "datasets", "ds.old.json")); !os.IsNotExist(err) {
+		t.Errorf("ds.old.json: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(pack, "datasets", "ds.l.json")); err != nil {
+		t.Errorf("ds.l.json has its recipe: %v", err)
+	}
+}

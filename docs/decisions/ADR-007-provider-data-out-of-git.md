@@ -71,7 +71,9 @@ Keep the recipes in git and rebuild the data.
 - A fresh clone needs one step before the app builds: `scripts/fetch-data.sh` with a free Twelve Data key,
   or `--synthetic` to look around without one. Building the app without it fails on the missing
   `assets/packs/` folder.
-- A self-hosted server rebuilds its datasets the same way (`docs/deploy.md`).
+- A self-hosted server rebuilds its datasets the same way. The published image (M10-11) carries the lessons
+  and recipes but no dataset; at each start it freezes the missing datasets into its data volume and prunes
+  those no recipe lists (`backend/start.sh`, `docs/deploy.md`).
 - CI no longer compares the bundle with the source, because there is no committed bundle. It still checks
   every pack, on made-up data. The check of the copy against the real prices now runs on the developer's
   machine, before a release, not on every push.

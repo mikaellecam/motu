@@ -47,4 +47,8 @@ jobs:
       - run: go vet ./...
       - run: go test ./...
       - run: ../scripts/fetch-data.sh --synthetic
-      - run: docker build -t motu-backend .
+      # The image from the repository root; the datasets just made up must stay out of it (ADR-007).
+      - run: docker build -f Dockerfile -t motu-backend ..
+      - run: >-
+          docker run --rm --entrypoint sh motu-backend -c
+          '! find / \( -path "*/datasets/*.json" -o -name .env \) 2>/dev/null | grep .'
