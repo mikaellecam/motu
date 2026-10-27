@@ -1,8 +1,8 @@
 # Motu — agent guide
 
-Work happens one issue at a time, following **Workflow** below. `docs/BRIEF.md` is the product and
-architecture spec; `docs/ROADMAP.md` is the original plan the tracker was seeded from. When they disagree
-with this file, this file wins; when the issue disagrees with the brief, ask.
+Work happens one issue at a time: one branch and one pull request per issue, domain code test-first.
+`docs/BRIEF.md` is the product and architecture spec; `docs/ROADMAP.md` is the original plan. When they
+disagree with this file, this file wins; when the issue disagrees with the brief, ask.
 
 ## What we are building
 
@@ -27,7 +27,6 @@ backend/    Go service + CLI tools (cmd/server, cmd/freeze, cmd/contentcheck, cm
 content/    Lesson packs, glossary, dataset recipes — source of truth for all learning content
 scripts/    fetch-data.sh: rebuilds what git leaves out (datasets, app bundle, logos; ADR-007)
 docs/       BRIEF.md, ROADMAP.md, decisions/ (ADRs, one file per decision)
-tracker/    Local issue tracker, gitignored (see Workflow)
 ```
 
 ## Commands
@@ -58,37 +57,7 @@ set -a; . ./.env; set +a; go run ./cmd/freeze -pack ../content/packs/actions-etf
 set -a; . ./.env; set +a; go run ./cmd/freeze -recipes ../content   # every dataset a recipe lists and git lacks
 set -a; . ./.env; set +a; go run ./cmd/logos   # stock logos into ../app/assets/logos (paced, resumes)
 docker build -t motu-backend .        # the image; self-hosting steps in docs/deploy.md
-
-# tracker
-tracker/board        # every issue in roadmap order, then the next one to work on
-tracker/board next   # only the next issue id
-tracker/start M1-2   # status doing + worktree from up-to-date main (Workflow step 1)
-tracker/finish M1-2 <pr> "<log line>"   # squash-merge, remove worktree, status done (step 5)
 ```
-
-## Workflow
-
-`tracker/` holds one Markdown file per issue. It is gitignored, so Grep and Glob skip it: open issue files by
-path and list them with `tracker/board`. It exists only in the main checkout, as does `backend/.env`; from a
-worktree, reach them through `../../` (symlink `.env` into the worktree when the backend needs it).
-Frontmatter: `status` (todo | doing | blocked | done), `priority` (`must` = covers a graded requirement of
-`docs/BRIEF.md` §2, `normal` otherwise), `depends` (issue ids), `spec` (BRIEF sections).
-
-1. **Pick.** Take the issue the user names, or `tracker/board next`. Set `status: doing`, then work in a
-   worktree branched from an up-to-date `main` (lowercase id + slug):
-   `git pull && git worktree add .worktrees/m1-2-simulation-clock -b m1-2-simulation-clock`.
-2. **Read.** The issue, every BRIEF section in `spec`, and the code the change touches. Done when you can name
-   every file you will change.
-3. **Build.** Domain code test-first. Tick an acceptance-criterion box when its test passes. Work outside the
-   issue's scope becomes a new issue file (next free number in the milestone), not part of this branch.
-4. **Blocked.** On a product question, or something only the user can provide (API key, account), write it
-   under `## Questions` with the options and their trade-offs, set `status: blocked`, tell the user, and
-   move to `tracker/board next`.
-5. **Finish.** Definition of done met. Commit, push the branch, and open a PR to `main` with `gh pr create`:
-   title `M1-2: <issue title>`, body = what changed, the acceptance criteria, screenshots for UI changes.
-   Watch CI with `gh pr checks --watch` and fix until green, then `gh pr merge --squash --delete-branch` and
-   `git worktree remove`. Set `status: done` and add a dated line under `## Log`: PR link, decisions taken,
-   anything deferred.
 
 ## Architecture rules (non-negotiable)
 
@@ -110,10 +79,10 @@ Frontmatter: `status` (todo | doing | blocked | done), `priority` (`must` = cove
 
 ## Guardrails
 
-- **Do not make product decisions.** If the spec is silent or ambiguous, ask (Workflow step 4). Known open
+- **Do not make product decisions.** If the spec is silent or ambiguous, ask. Known open
   decisions: `docs/BRIEF.md` §14.
 - One issue per branch and per PR. Small diffs. No drive-by refactors or renames outside the issue's scope.
-- New dependency → justify it in the issue log. Prefer the allowed list in `docs/BRIEF.md` §5.4.
+- New dependency → justify it in the PR. Prefer the allowed list in `docs/BRIEF.md` §5.4.
 - Every domain function ships with unit tests, including edge cases: empty history, single data point, zero
   or negative amount, missing price for a date, weekend/holiday dates, dates outside the data range, division
   by zero, currency mismatch.
