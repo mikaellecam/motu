@@ -20,6 +20,9 @@ else
   fi
   go run ./cmd/freeze -recipes ../content
   go run ./cmd/freeze -recipes ../app/screenshots/fixtures
-  go run ./cmd/logos
 fi
 go run ./cmd/contentcheck -bundle ../app/assets/packs -write ../content
+# Last: the app shows initials without them. Like freeze, logos waits out the provider's per-minute limit.
+if [ "${1:-}" != --synthetic ]; then
+  go run ./cmd/logos
+fi

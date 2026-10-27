@@ -65,6 +65,7 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 	recipes := flags.String("recipes", "", "content directory: freeze the datasets its recipes list and its packs miss")
 	synthetic := flags.Bool("synthetic", false, "with -recipes: made-up prices, without the provider (CI only)")
 	every := flags.Duration("every", 8*time.Second, "with -recipes: pause between provider calls (free plan: 8 a minute)")
+	retry := flags.Duration("retry", 65*time.Second, "with -recipes: after the provider's per-minute limit, wait this long and try again")
 	if err := flags.Parse(args); err != nil {
 		return 2
 	}
@@ -74,7 +75,7 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 	}
 	if *recipes != "" {
 		if market != nil {
-			market = &paced{Provider: market, every: *every}
+			market = &paced{Provider: market, every: *every, retry: *retry}
 		}
 		return runRecipes(ctx, *recipes, *synthetic, market, rates, now, stdout, stderr)
 	}
@@ -285,11 +286,13 @@ func freezeAsset(ctx context.Context, market provider.Provider, assetID, id, int
 }
 
 // paced waits [every] between two History calls, so that freezing every
-// recipe stays within the plan's credits per minute.
+// recipe stays within the plan's credits per minute. Others spend those
+// credits too (cmd/logos, a running server): a call refused for the rate
+// waits [retry] and goes again, three tries in all.
 type paced struct {
 	provider.Provider
-	every time.Duration
-	calls int
+	every, retry time.Duration
+	calls        int
 }
 
 func (p *paced) History(ctx context.Context, symbol string, from, to time.Time) ([]store.Bar, error) {
@@ -301,5 +304,10 @@ func (p *paced) History(ctx context.Context, symbol string, from, to time.Time) 
 		}
 	}
 	p.calls++
-	return p.Provider.History(ctx, symbol, from, to)
+	var bars []store.Bar
+	err := provider.WaitOutRateLimit(ctx, p.retry, 3, func() (err error) {
+		bars, err = p.Provider.History(ctx, symbol, from, to)
+		return err
+	})
+	return bars, err
 }

@@ -44,6 +44,7 @@ func run(ctx context.Context, args []string, logos logoSource, client *http.Clie
 	flags.SetOutput(stderr)
 	out := flags.String("out", "../app/assets/logos", "the app's logo folder")
 	every := flags.Duration("every", 8*time.Second, "pause between provider calls (free plan: 8 a minute)")
+	retry := flags.Duration("retry", 65*time.Second, "after the provider's per-minute limit, wait this long and try again")
 	force := flags.Bool("force", false, "fetch the logos already in the folder again")
 	if err := flags.Parse(args); err != nil {
 		return 2
@@ -69,7 +70,7 @@ func run(ctx context.Context, args []string, logos logoSource, client *http.Clie
 			}
 		}
 		calls++
-		image, err := fetch(ctx, logos, client, a.ProviderSymbol)
+		image, err := fetch(ctx, logos, client, a.ProviderSymbol, *retry)
 		if err != nil {
 			fmt.Fprintf(stderr, "logos: %s: %v\n", a.ID, err)
 			return 1
@@ -84,9 +85,15 @@ func run(ctx context.Context, args []string, logos logoSource, client *http.Clie
 	return 0
 }
 
-// fetch downloads a symbol's logo; anything but an image is refused.
-func fetch(ctx context.Context, logos logoSource, client *http.Client, symbol string) ([]byte, error) {
-	address, err := logos.Logo(ctx, symbol)
+// fetch downloads a symbol's logo; anything but an image is refused. Others
+// spend the plan's per-minute credits too (cmd/freeze, a running server): a
+// call refused for the rate waits [retry] and goes again, three tries in all.
+func fetch(ctx context.Context, logos logoSource, client *http.Client, symbol string, retry time.Duration) ([]byte, error) {
+	var address string
+	err := provider.WaitOutRateLimit(ctx, retry, 3, func() (err error) {
+		address, err = logos.Logo(ctx, symbol)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}

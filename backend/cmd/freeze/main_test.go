@@ -303,3 +303,20 @@ func TestRecipesRefuse(t *testing.T) {
 		t.Errorf("-synthetic alone: exit %d", code)
 	}
 }
+
+func TestRecipesWaitOutTheMinuteLimit(t *testing.T) {
+	// Another tool, or the server, spent this minute's credits: the call waits and goes again.
+	root, _ := contentWithRecipes(t, `[{"id": "ds.a", "asset": "apple", "interval": "1week", "from": "2022-01-03", "to": "2022-01-28"}]`)
+	market := provider.NewFake()
+	appleBars(market, "2022-01-03", "2022-01-28")
+	market.Fail = func(n int) error {
+		if n == 1 {
+			return provider.ErrRateLimited
+		}
+		return nil
+	}
+	code, out, errs := recipesRun(root, market, nil, "-retry", "1ms")
+	if code != 0 || market.Calls != 2 || !strings.Contains(out, "1 datasets written") {
+		t.Errorf("exit %d, %d calls\n%s%s", code, market.Calls, out, errs)
+	}
+}

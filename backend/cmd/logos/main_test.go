@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"finance-companion/backend/internal/catalogue"
+	"finance-companion/backend/internal/provider"
 )
 
 // jpeg is enough of a JPEG for content sniffing.
@@ -59,5 +60,36 @@ func TestEachStockGetsItsLogoAndEtfsKeepTheirLetters(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "not an image") {
 		t.Fatalf("says why: %s", stderr.String())
+	}
+}
+
+// limitedLogos refuses its first call for the provider's rate.
+type limitedLogos struct {
+	fakeLogos
+	calls int
+}
+
+func (l *limitedLogos) Logo(ctx context.Context, symbol string) (string, error) {
+	l.calls++
+	if l.calls == 1 {
+		return "", provider.ErrRateLimited
+	}
+	return l.fakeLogos.Logo(ctx, symbol)
+}
+
+func TestALogoWaitsOutTheMinuteLimit(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write(jpeg) }))
+	defer srv.Close()
+	logos := &limitedLogos{fakeLogos: fakeLogos{}}
+	for _, a := range catalogue.Assets {
+		logos.fakeLogos[a.ProviderSymbol] = srv.URL + "/" + a.ID
+	}
+	out := t.TempDir()
+	var stdout, stderr bytes.Buffer
+	if code := run(context.Background(), []string{"-out", out, "-every", "0", "-retry", "1ms"}, logos, srv.Client(), &stdout, &stderr); code != 0 {
+		t.Fatalf("exit %d: %s", code, stderr.String())
+	}
+	if _, err := os.Stat(filepath.Join(out, "apple.jpg")); err != nil {
+		t.Error(err)
 	}
 }
