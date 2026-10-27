@@ -1,0 +1,8 @@
+# The image's build context is the repository root (backend/Dockerfile): only the backend and the lessons go
+# in. Never a dataset (ADR-007), the key, or a local database.
+*
+!backend/
+!content/
+backend/.env
+backend/data/
+content/packs/*/*/datasets/

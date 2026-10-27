@@ -1035,6 +1035,8 @@ backend/
 ```
 
 Go ≥ 1.22, stdlib `net/http` routing, structured logs (`log/slog`), config via env, Docker image, self-hosted.
+The image is published on each `v*` tag as `ghcr.io/mikaellecam/motu-backend` (amd64, arm64), with the lessons
+and no dataset: it freezes them at start (ADR-007, `docs/deploy.md`).
 
 ### 8.3 Endpoints (JSON, read-only)
 
