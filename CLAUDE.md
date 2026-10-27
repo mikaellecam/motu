@@ -1,4 +1,4 @@
-# Investment Companion — agent guide
+# Motu — agent guide
 
 Work happens one issue at a time, following **Workflow** below. `docs/BRIEF.md` is the product and
 architecture spec; `docs/ROADMAP.md` is the original plan the tracker was seeded from. When they disagree
@@ -57,7 +57,7 @@ set -a; . ./.env; set +a; go run ./cmd/freeze -pack ../content/packs/actions-etf
   -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31   # a new dataset + its recipe (1 credit)
 set -a; . ./.env; set +a; go run ./cmd/freeze -recipes ../content   # every dataset a recipe lists and git lacks
 set -a; . ./.env; set +a; go run ./cmd/logos   # stock logos into ../app/assets/logos (paced, resumes)
-docker build -t finance-companion-backend .        # the image; self-hosting steps in docs/deploy.md
+docker build -t motu-backend .        # the image; self-hosting steps in docs/deploy.md
 
 # tracker
 tracker/board        # every issue in roadmap order, then the next one to work on

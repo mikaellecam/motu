@@ -1,7 +1,8 @@
-# Investment Companion — product & architecture brief
+# Motu — product & architecture brief
 
 Status: V1 spec. Owner: Bob. Agents implement; they do not decide product questions (see §14).
-Visual reference (for humans): design canvas "Investment Companion", direction A ("toy blocks").
+Visual reference (for humans): design canvas "Investment Companion" (the project's working name), direction A
+("toy blocks").
 Agents rely on the tokens and rules in §10, not on the canvas.
 
 ---

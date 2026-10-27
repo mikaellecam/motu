@@ -20,15 +20,15 @@ The lessons' datasets stay out of git (ADR-007): rebuild them once into `content
 `freeze`, from the recipes in each pack's `datasets.json` (about 15 provider credits, a few minutes).
 
 ```bash
-docker build -t finance-companion-backend backend
+docker build -t motu-backend backend
 docker run --rm --user "$(id -u):$(id -g)" --env-file backend/.env \
-  -v "$PWD/content":/app/content finance-companion-backend freeze -recipes /app/content
-docker run -d --name finance-companion --restart unless-stopped \
+  -v "$PWD/content":/app/content motu-backend freeze -recipes /app/content
+docker run -d --name motu --restart unless-stopped \
   --env-file backend/.env \
-  -v finance-companion-data:/app/data \
+  -v motu-data:/app/data \
   -v "$PWD/content":/app/content:ro \
   -p 127.0.0.1:8080:8080 \
-  finance-companion-backend
+  motu-backend
 ```
 
 The server publishes, for each island, the content pack versions without drafts (`contentcheck -release`,
@@ -42,8 +42,8 @@ at 17:00 New York time.
 ## 3. Check
 
 ```bash
-docker inspect -f '{{.State.Health.Status}}' finance-companion   # healthy: /healthz answers
-docker logs -f finance-companion                                 # JSON logs
+docker inspect -f '{{.State.Health.Status}}' motu   # healthy: /healthz answers
+docker logs -f motu                                 # JSON logs
 curl -s localhost:8080/v1/assets
 curl -s localhost:8080/v1/content/manifest                       # the published content packs
 ```
@@ -67,12 +67,12 @@ clients as one. Set `API_REQUESTS_PER_MINUTE=0` and rate-limit at the proxy inst
 
 ```bash
 git pull
-docker build -t finance-companion-backend backend
-docker rm -f finance-companion   # then the docker run command above
+docker build -t motu-backend backend
+docker rm -f motu   # then the docker run command above
 ```
 
 The volume keeps the data, and the server migrates its schema at start. Content is read at start too: after a
-`git pull` that only changes `content/`, `docker restart finance-companion` publishes it.
+`git pull` that only changes `content/`, `docker restart motu` publishes it.
 
 ## Backup
 
@@ -80,7 +80,7 @@ Everything in the database can be rebuilt by a backfill, so a backup only saves 
 one, stop the container so SQLite is not mid-write, copy the file out, and start it again:
 
 ```bash
-docker stop finance-companion
-docker run --rm -v finance-companion-data:/data -v "$PWD":/backup alpine cp /data/market.db /backup/
-docker start finance-companion
+docker stop motu
+docker run --rm -v motu-data:/data -v "$PWD":/backup alpine cp /data/market.db /backup/
+docker start motu
 ```

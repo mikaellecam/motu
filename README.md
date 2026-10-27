@@ -1,4 +1,4 @@
-# Investment Companion
+# Motu
 
 A Flutter app that teaches French beginners to invest with fictional money on real market data, backed by a
 small self-hosted Go service. INSA school project.

@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "app_title": "Investment Companion",
+  "app_title": "Motu",
   "common_retry": "Retry",
   "common_loading": "Loading\u2026",
   "cache_offline_banner": "Offline. You're seeing prices from {date}, {time}.",

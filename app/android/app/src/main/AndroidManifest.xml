@@ -2,7 +2,7 @@
     <!-- Market data from the backend and Frankfurter. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="finance_companion"
+        android:label="Motu"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

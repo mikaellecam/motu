@@ -1,4 +1,4 @@
-# Build from this directory: docker build -t finance-companion-backend .
+# Build from this directory: docker build -t motu-backend .
 # Self-hosting steps: docs/deploy.md.
 FROM golang:1.27-alpine AS build
 WORKDIR /src
