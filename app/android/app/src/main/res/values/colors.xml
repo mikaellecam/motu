@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The map's sea (BRIEF §10.2 `sea`): behind the icon's island and the launch screen. -->
+    <color name="motu_sea">#86D9EC</color>
+</resources>

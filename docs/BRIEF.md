@@ -1161,6 +1161,15 @@ figures; screen readers hear the end figures only.
 Others: value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
 (package-provided, counts as the third non-coded animation).
 
+
+### 10.6 App icon and splash
+
+Motu's icon is the developed island, drawn like the map (`MapPalette`, the map's 2:1 projection): sand and
+grass tiles, cube trees, and a skyline that rises from the yellow building to the flagged blue tower, on the
+`sea`. The user chose it on 2026-10-27, as "Motu · Tour" on the design canvas. The launch screen is the
+island on the `sea`; from Android 12 the system draws it from the adaptive icon. Sources are in
+`docs/brand/`: `motu.py` writes the SVGs, and `icons.sh` renders every Android and iOS file from them.
+
 ---
 
 ## 11. Localization
