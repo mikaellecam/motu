@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'content.dart';
 import 'reveal.dart';
 
@@ -31,3 +33,19 @@ int quizScore(List<QuizQuestion> questions, List<String?> answers) => [
   for (var i = 0; i < questions.length && i < answers.length; i++)
     if (answers[i] == questions[i].answer) i,
 ].length;
+
+/// [questions] in their order, each one's choices in a new order drawn from
+/// [random] (decided 2026-10-28: a pack's order would always put the right
+/// answer in the same place); answers and labels unchanged.
+List<QuizQuestion> shuffleChoices(
+  List<QuizQuestion> questions,
+  Random random,
+) => [
+  for (final q in questions)
+    QuizQuestion(
+      question: q.question,
+      choices: [...q.choices]..shuffle(random),
+      answer: q.answer,
+      explanation: q.explanation,
+    ),
+];

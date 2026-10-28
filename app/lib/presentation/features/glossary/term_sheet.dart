@@ -163,10 +163,10 @@ class _TermSheetState extends ConsumerState<TermSheet> {
               ],
             ),
           ],
-          if (value.term.quiz.isNotEmpty) ...[
+          if (value.quiz.isNotEmpty) ...[
             const SizedBox(height: AppSpace.x6),
             if (_quiz)
-              _TermQuizPanel(termId: widget.termId, quiz: value.term.quiz)
+              _TermQuizPanel(termId: widget.termId, quiz: value.quiz)
             else ...[
               ChunkyButton(
                 label: l10n.glossary_quiz_start,

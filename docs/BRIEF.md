@@ -320,8 +320,10 @@ Type payloads (M6-3; the player refuses a pack that breaks them):
   volatility (rebalanced daily, over the days every weighted asset has; below 100 % the rest is cash) and each
   rule are checked live by domain calculations; « Valider » once they all hold.
 - `checkpoint` (M6-4): `questions[{question, choices[{id, label}], answer, explanation?}]` (4–6 in content),
-  one at a time; done at the end whatever the score. A `quiz` (M12-4) takes the same payload and plays the
-  same way, named « Quiz » with its own icon; it counts as no checkpoint for the levels (§4.15).
+  one at a time; done at the end whatever the score. Each question's choices come in a new order each time
+  the node opens (decided 2026-10-28, M12-14): the pack's order would keep the right answer in one place. A
+  `quiz` (M12-4) takes the same payload and plays the same way, named « Quiz » with its own icon; it counts as
+  no checkpoint for the levels (§4.15).
 - `mission` (M6-5): `goal` (what to do), `go` (`explorer` | `wallet`: where the button leads). It completes by
   itself, never by a button: while the app runs, the live wallet's holdings, the DCA plans and the live
   wallet's Livret A (more put in than taken out: Les bases' « Range ton matelas », M12-4) are watched and each
@@ -369,7 +371,8 @@ Rules:
 - Sheet (modal bottom sheet, opened from any `{{term}}` link or essentials tile): title, "Nouvelle notion"
   chip on first open, definition, live example on real data (scoped to the current asset when opened from
   an asset page), "Ce que ça change pour toi", related chips, "Tester en 30 secondes".
-- First open marks the term discovered (persisted).
+- First open marks the term discovered (persisted). « Tester en 30 secondes » shows its choices in a new order
+  each time the sheet opens, as a checkpoint does (M12-14).
 - Layout (decided 2026-10-24, artboards Glossary-A, GlossarySheet-A): the index scrolls as one page and
   opens with « n notions découvertes sur m » (the pack's terms, whatever the search) over a bar in
   `progress`, then an outlined search box and the filters. Letters in small Baloo `primary`; each letter's

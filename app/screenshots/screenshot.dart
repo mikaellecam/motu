@@ -5,6 +5,7 @@
 //
 // Files land in docs/screenshots/<name>.png.
 import 'dart:io';
+import 'dart:math';
 
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/learning/content.dart';
@@ -107,7 +108,12 @@ void _capture(
     addTearDown(db.close);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(db), ...overrides],
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          // A quiz's choices in the same order on every run (M12-14).
+          randomProvider.overrideWithValue(Random(0)),
+          ...overrides,
+        ],
         child: app(),
       ),
     );

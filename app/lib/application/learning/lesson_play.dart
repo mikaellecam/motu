@@ -382,9 +382,13 @@ Future<CheckpointView> checkpointView(Ref ref, String nodeId) async {
     NodeType.checkpoint,
     or: NodeType.quiz,
   );
+  final checkpoint = playable(() => decodeCheckpoint(node, pack));
   return CheckpointView(
     node: node,
-    checkpoint: playable(() => decodeCheckpoint(node, pack)),
+    // A new order each time the node opens (M12-14).
+    checkpoint: Checkpoint(
+      shuffleChoices(checkpoint.questions, ref.read(randomProvider)),
+    ),
     terms: terms,
   );
 }

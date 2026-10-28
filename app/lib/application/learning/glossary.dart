@@ -121,9 +121,14 @@ final class TermSheetView {
     required this.related,
     required this.firstOpen,
     required this.terms,
+    this.quiz = const [],
   });
 
   final GlossaryTerm term;
+
+  /// The term's quiz, its choices in a new order each time the sheet opens
+  /// (M12-14).
+  final List<QuizQuestion> quiz;
 
   /// The related terms the pack holds, in the term's order.
   final List<GlossaryTerm> related;
@@ -146,6 +151,7 @@ Future<TermSheetView> termSheet(Ref ref, String termId) async {
     related: [for (final id in term.related) ?glossary[id]],
     firstOpen: await repo.discover(termId, clock.now()),
     terms: {for (final t in glossary.values) t.id: t.title},
+    quiz: shuffleChoices(term.quiz, ref.read(randomProvider)),
   );
 }
 
