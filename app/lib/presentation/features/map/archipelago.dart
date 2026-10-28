@@ -365,6 +365,9 @@ class ArchipelagoPainter extends CustomPainter {
     final (x, y) = (cx - _footprint / 2, cy - _footprint / 2);
     final (shades, lit) = MapPalette.buildings[spot];
     final standing = b.height * b.built.clamp(0, 1);
+    // A pending buy: its finished volume first, so that what stands covers
+    // the ghost's foot.
+    if (b.ghost > 0) _ghost(pen, p, x, y, b.height, shades, b.ghost);
     if (standing > 0) {
       pen.block(boxFacets(p, x, y, _footprint, _footprint, standing), shades);
       _windows(
@@ -382,13 +385,9 @@ class ArchipelagoPainter extends CustomPainter {
       if (spot == _spots.length - 1) {
         _flag(pen, p.project(cx, cy, standing), p.unit);
       }
-    }
-    if (b.scaffold > 0) {
-      if (standing <= 0) {
-        // Nothing built yet: the foundation slab.
-        pen.block(boxFacets(p, x, y, _footprint, _footprint, 0.06), shades);
-      }
-      _scaffold(pen, p, x, y, b.height, b.scaffold);
+    } else if (b.ghost > 0) {
+      // Nothing built yet: the foundation slab.
+      pen.block(boxFacets(p, x, y, _footprint, _footprint, 0.06), shades);
     }
   }
 
@@ -471,51 +470,75 @@ class ArchipelagoPainter extends CustomPainter {
       );
   }
 
-  /// A construction frame round a building's footprint, up to [height]
-  /// (BRIEF §10.5: a pending buy is a building under construction): a pole
-  /// at each corner, and on each visible side a rail every half unit, braced
-  /// across.
-  static void _scaffold(
+  /// How opaque a ghost's faces are, at its full [DrawnBuilding.ghost].
+  static const _ghostFill = 0.32;
+
+  /// The building a pending buy raises (BRIEF §10.5, M9-45): its finished
+  /// volume up to [height], in its own [shades] seen through, its visible
+  /// edges dashed. [opacity] fades it as the building completes.
+  static void _ghost(
     BlockPen pen,
     IsoProjection p,
     double x,
     double y,
     double height,
+    Shades shades,
     double opacity,
   ) {
-    const gap = 0.08;
-    final (x0, y0) = (x - gap, y - gap);
-    final (x1, y1) = (x + _footprint + gap, y + _footprint + gap);
+    for (final (:face, :path) in boxFacets(
+      p,
+      x,
+      y,
+      _footprint,
+      _footprint,
+      height,
+    )) {
+      final color = switch (face) {
+        Face.top => shades.top,
+        Face.left => shades.left,
+        Face.right => shades.right,
+      };
+      pen.canvas.drawPath(
+        path,
+        Paint()..color = color.withValues(alpha: _ghostFill * opacity),
+      );
+    }
+    final (x1, y1) = (x + _footprint, y + _footprint);
     final paint = Paint()
       ..color = pen.ink.withValues(alpha: opacity)
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round;
-    void line(
-      double ax,
-      double ay,
-      double az,
-      double bx,
-      double by,
-      double bz,
-    ) => pen.canvas.drawLine(
-      p.project(ax, ay, az),
-      p.project(bx, by, bz),
-      paint,
-    );
-    // The back pole first: the others stand in front of it.
-    for (final (cx, cy) in [(x0, y0), (x1, y0), (x0, y1), (x1, y1)]) {
-      line(cx, cy, 0, cx, cy, height);
+    // Its nine visible edges, each dashed once: the foot, the three front
+    // corners, the roof.
+    for (final (a, b) in [
+      ((x, y1, 0.0), (x1, y1, 0.0)),
+      ((x1, y1, 0.0), (x1, y, 0.0)),
+      ((x, y1, 0.0), (x, y1, height)),
+      ((x1, y1, 0.0), (x1, y1, height)),
+      ((x1, y, 0.0), (x1, y, height)),
+      ((x, y1, height), (x1, y1, height)),
+      ((x1, y1, height), (x1, y, height)),
+      ((x1, y, height), (x, y, height)),
+      ((x, y, height), (x, y1, height)),
+    ]) {
+      _dash(
+        pen.canvas,
+        p.project(a.$1, a.$2, a.$3),
+        p.project(b.$1, b.$2, b.$3),
+        paint,
+      );
     }
-    final levels = [for (var z = 0.0; z < height - 0.05; z += 0.5) z, height];
-    for (var i = 0; i < levels.length; i++) {
-      final z = levels[i];
-      // The two visible sides: y = y1 (left) and x = x1 (right).
-      line(x0, y1, z, x1, y1, z);
-      line(x1, y0, z, x1, y1, z);
-      if (i == 0) continue;
-      final below = levels[i - 1];
-      line(x0, y1, below, x1, y1, z);
-      line(x1, y0, below, x1, y1, z);
+  }
+
+  /// A dashed line from [a] to [b]: dashes of 4 px, gaps of 3.
+  static void _dash(Canvas canvas, Offset a, Offset b, Paint paint) {
+    const dash = 4.0, gap = 3.0;
+    final length = (b - a).distance;
+    if (length == 0) return;
+    final along = (b - a) / length;
+    for (var d = 0.0; d < length; d += dash + gap) {
+      final end = d + dash < length ? d + dash : length;
+      canvas.drawLine(a + along * d, a + along * end, paint);
     }
   }
 

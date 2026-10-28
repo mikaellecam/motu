@@ -12,30 +12,31 @@ final class DrawnBuilding {
   const DrawnBuilding({
     required this.height,
     required this.built,
-    required this.scaffold,
+    required this.ghost,
   });
 
   /// Its full height, in height units; 0 draws nothing.
   final double height;
 
-  /// The share standing, 0 to 1; the rest is still scaffolding.
+  /// The share standing, 0 to 1; the rest shows as its ghost.
   final double built;
 
-  /// How visible the construction frame is, 0 to 1.
-  final double scaffold;
+  /// How visible the ghost of its finished volume is, 0 to 1: shown while a
+  /// buy raises it (M9-45).
+  final double ghost;
 
   @override
   bool operator ==(Object other) =>
       other is DrawnBuilding &&
       other.height == height &&
       other.built == built &&
-      other.scaffold == scaffold;
+      other.ghost == ghost;
 
   @override
-  int get hashCode => Object.hash(height, built, scaffold);
+  int get hashCode => Object.hash(height, built, ghost);
 
   @override
-  String toString() => 'DrawnBuilding($height, $built, $scaffold)';
+  String toString() => 'DrawnBuilding($height, $built, $ghost)';
 }
 
 /// The smallest and the tallest building, in height units: one block to
@@ -44,7 +45,7 @@ const minBuildingHeight = 1.0;
 const maxBuildingHeight = 4.0;
 
 /// [buildings] as they stand: the largest at full height, every one at least
-/// [minBuildingHeight], scaffolding round those a buy is still raising.
+/// [minBuildingHeight], the ghost of those a buy is still raising.
 List<DrawnBuilding> drawnBuildings(List<IslandBuilding> buildings) => [
   for (final b in buildings)
     DrawnBuilding(
@@ -52,19 +53,19 @@ List<DrawnBuilding> drawnBuildings(List<IslandBuilding> buildings) => [
           minBuildingHeight +
           (maxBuildingHeight - minBuildingHeight) * b.height.toDouble(),
       built: b.built.toDouble(),
-      scaffold: b.built < Decimal.one ? 1 : 0,
+      ghost: b.built < Decimal.one ? 1 : 0,
     ),
 ];
 
 const _heights = Interval(0, 0.6, curve: Curves.easeInOut);
 const _rising = Interval(0.3, 0.9, curve: Curves.easeOut);
-const _scaffoldUp = Interval(0, 0.15);
-const _scaffoldDown = Interval(0.85, 1);
+const _ghostIn = Interval(0, 0.15);
+const _ghostOut = Interval(0.85, 1);
 
 /// The island between [from] and [to] at [t] (0 to 1), in three stages
 /// (BRIEF §10.5): heights grow or shrink, then what a filled buy built
-/// rises into its frame, then a completed frame comes down. A new
-/// construction puts its frame up at once.
+/// rises into its ghost, then a completed building's ghost fades. A new
+/// construction shows its ghost at once.
 List<DrawnBuilding> islandFrame(
   List<DrawnBuilding> from,
   List<DrawnBuilding> to,
@@ -84,13 +85,9 @@ DrawnBuilding _between(DrawnBuilding? start, DrawnBuilding? end, double t) {
   return DrawnBuilding(
     height: lerp(a.height, b.height, _heights),
     built: lerp(a.built, b.built, _rising),
-    scaffold: lerp(
-      a.scaffold,
-      b.scaffold,
-      b.scaffold < a.scaffold ? _scaffoldDown : _scaffoldUp,
-    ),
+    ghost: lerp(a.ghost, b.ghost, b.ghost < a.ghost ? _ghostOut : _ghostIn),
   );
 }
 
 DrawnBuilding _flat(DrawnBuilding b) =>
-    DrawnBuilding(height: 0, built: b.built, scaffold: b.scaffold);
+    DrawnBuilding(height: 0, built: b.built, ghost: b.ghost);
