@@ -783,6 +783,38 @@ void main() {
         DateTime.utc(2026, 10, 7),
       );
     });
+
+    test('its first day run again replaces the start value (M12-13)', () async {
+      await repo.ensureLiveWallet(DateTime.utc(2026, 10, 5, 9));
+      expect(await repo.createdAt('live'), DateTime.utc(2026, 10, 5, 9));
+      expect(await repo.everAdvanced('live'), isFalse);
+      final before = await repo.liveState(livretRates: rates);
+      await repo.saveAdvance(
+        'live',
+        TripAdvance(
+          state: before.copyWith(
+            values: [
+              DailyValue(
+                date: DateTime.utc(2026, 10, 5),
+                value: eur('49990'),
+                flow: eur('50000'),
+              ),
+            ],
+          ),
+          events: const [],
+          stop: const [],
+          atToday: true,
+        ),
+        before: before.copyWith(date: DateTime.utc(2026, 10, 4)),
+      );
+      expect(await repo.everAdvanced('live'), isTrue);
+      final values = (await repo.load('live')).values;
+      expect(values, hasLength(1));
+      expect(
+        (values.single.date, values.single.value, values.single.flow),
+        (DateTime.utc(2026, 10, 5), eur('49990'), eur('50000')),
+      );
+    });
   });
 
   test('an order\'s detail: pending, filled, cancelled by the user', () async {

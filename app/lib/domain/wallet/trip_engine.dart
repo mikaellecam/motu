@@ -526,10 +526,16 @@ final class TripEngine {
       pendingOrders: pending,
       dcaPlans: s.dcaPlans,
       livret: livret,
-      values: [
-        ...s.values,
-        DailyValue(date: day, value: value, flow: flow),
-      ],
+      values: switch (s.values) {
+        // A day already valued runs again: the live wallet's first, its
+        // start booked before that day's sessions (M12-13). One value: the
+        // close, with the starting cash still put in.
+        [...final earlier, final last] when last.date == day => [
+          ...earlier,
+          DailyValue(date: day, value: value, flow: last.flow + flow),
+        ],
+        _ => [...s.values, DailyValue(date: day, value: value, flow: flow)],
+      },
       breached: breached,
       companion: companion,
       companionLog: [...s.companionLog, ...moments.map((m) => m.logEntry)],

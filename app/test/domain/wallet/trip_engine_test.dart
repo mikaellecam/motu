@@ -313,6 +313,49 @@ void main() {
     });
   });
 
+  test(
+    'a day run again keeps one value: its close, the flows added (M12-13)',
+    () {
+      // The live wallet started on Friday 29 May with 1 000 € and an order
+      // placed before that day's open: the state is taken from the day
+      // before, so Friday runs once more.
+      final start = TripState.start(day(5, 29), eur('1000'));
+      final order = buy(
+        'o1',
+        'cw8',
+        QuantitySize(Quantity.whole(2)),
+        day(5, 29),
+      );
+      final result = advance(
+        engine(),
+        start.copyWith(date: day(5, 28), pendingOrders: [order]),
+        day(6, 1),
+        {
+          'cw8': series(
+            'cw8',
+            day(5, 25),
+            day(6, 5),
+            overrides: {day(5, 29): '110'},
+          ),
+        },
+      );
+
+      expect(
+        result.events.whereType<OrderFilled>().single.fill.date,
+        day(5, 29),
+      );
+      expect(
+        [for (final v in result.state.values) v.date],
+        [day(5, 29), day(6, 1)],
+      );
+      final friday = result.state.values.first;
+      // 2 shares at 110 and 780 € of cash, the starting cash still put in.
+      expect(friday.value, eur('1000'));
+      expect(friday.flow, eur('1000'));
+      expect(result.state.invested, eur('1000'));
+    },
+  );
+
   test('contributions arrive on the first trip day of each month only', () {
     final result = advance(
       engine(contribution: eur('200')),

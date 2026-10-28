@@ -49,16 +49,30 @@ class LiveCatchUp extends _$LiveCatchUp {
     final now = ref.read(liveClockProvider).now().toUtc();
     final profile = await ref.read(profileRepositoryProvider).load();
     final wallet = await wallets.load(WalletRepository.liveWalletId);
-    final from = wallet.values.last.date;
+    final last = wallet.values.last.date;
+    final dayBefore = DateTime.utc(last.year, last.month, last.day - 1);
 
     final catalogue = await market.assets(asOf: now);
     final exchanges = {for (final Asset a in catalogue) a.id: a.exchange};
     final allExchanges = exchanges.values.toSet();
     final calendar = await market.calendar(
       allExchanges,
-      fromYear: from.year,
+      fromYear: dayBefore.year,
       toYear: now.year,
     );
+    // Never caught up, and created before its first day's sessions closed:
+    // its start value came before them, so that day runs too and its close
+    // replaces it (M12-13, decided 2026-10-28).
+    var firstDay = false;
+    if (!await wallets.everAdvanced(WalletRepository.liveWalletId)) {
+      final created = await wallets.createdAt(WalletRepository.liveWalletId);
+      firstDay = allExchanges.any(
+        (e) =>
+            calendar.isTradingDay(e, last) &&
+            calendar.closeAt(e, last).isAfter(created),
+      );
+    }
+    final from = firstDay ? dayBefore : last;
 
     final target = calendar.lastClosedDay(allExchanges, after: from, now: now);
     if (target == null) return null;
@@ -80,7 +94,8 @@ class LiveCatchUp extends _$LiveCatchUp {
     final livret = await market.livret(asOf: now);
     // Past sessions are valued with the holdings of now: no fill at the
     // quote is booked before they are (the order ticket waits for this).
-    final before = await wallets.liveState(livretRates: livret.rates);
+    final live = await wallets.liveState(livretRates: livret.rates);
+    final before = firstDay ? live.copyWith(date: from) : live;
     final usdEur = await fx.lookup(
       Currency.usd,
       Currency.eur,
@@ -116,7 +131,7 @@ class LiveCatchUp extends _$LiveCatchUp {
               .openAt(exchanges[order.assetId]!, day)
               .isAfter(order.createdAt),
         );
-    if (advance.state.values.length == before.values.length) return null;
+    if (!advance.state.date.isAfter(before.date)) return null;
     await wallets.saveAdvance(
       WalletRepository.liveWalletId,
       advance,
