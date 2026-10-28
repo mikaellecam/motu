@@ -3,6 +3,7 @@ import 'package:finance_companion/application/asset/asset_page.dart';
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/order/order_ticket.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/application/wallet/dca_plans.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/l10n/formats.dart';
@@ -14,6 +15,7 @@ import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/market/price_bar.dart';
 import 'package:finance_companion/domain/market/quote.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
@@ -23,6 +25,8 @@ import 'package:finance_companion/presentation/features/asset/asset_screen.dart'
 import 'package:finance_companion/presentation/features/asset/stability_card.dart';
 import 'package:finance_companion/presentation/features/dca/plan_sheet.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
 import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -134,7 +138,11 @@ AssetOverview overview({
   );
 }
 
-Future<void> show(WidgetTester tester, AssetOverview o) async {
+Future<void> show(
+  WidgetTester tester,
+  AssetOverview o, {
+  List<IslandBuilding> island = const [],
+}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   // Tall enough for every section, the position last.
@@ -146,6 +154,7 @@ Future<void> show(WidgetTester tester, AssetOverview o) async {
       overrides: [
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         assetOverviewProvider.overrideWith((ref, args) async => o),
+        walletIslandProvider.overrideWith((ref, args) async => island),
         planSetupProvider.overrideWith2(
           (_) => FakePlanSetup(planContext(o.asset)),
         ),
@@ -396,6 +405,62 @@ void main() {
     expect(find.text('+1${nnbsp}140,00$nbsp€ (+80,85$nnbsp%)'), findsOneWidget);
     expect(find.text('dont effet de change'), findsOneWidget);
     expect(find.text('${minus}93,75$nbsp€'), findsOneWidget);
+  });
+
+  testWidgets('position: its building as the island draws it (M11-6)', (
+    tester,
+  ) async {
+    await show(
+      tester,
+      overview(),
+      island: [
+        IslandBuilding('world', height: Decimal.one, built: Decimal.one),
+        IslandBuilding(
+          'apple',
+          height: Decimal.parse('0.5'),
+          built: Decimal.one,
+        ),
+      ],
+    );
+    final portrait = find.byWidgetPredicate(
+      (w) => w is CustomPaint && w.painter is BuildingPortraitPainter,
+    );
+    expect(portrait, findsOneWidget);
+    final painter =
+        tester.widget<CustomPaint>(portrait).painter!
+            as BuildingPortraitPainter;
+    // Second on the island, at its height there, built.
+    expect(painter.rank, 1);
+    expect(
+      painter.building,
+      drawnBuildings([
+        IslandBuilding(
+          'apple',
+          height: Decimal.parse('0.5'),
+          built: Decimal.one,
+        ),
+      ]).single,
+    );
+    expect(find.text('Ton immeuble'), findsOneWidget);
+    // Beside the figures, in the same card.
+    expect(
+      tester.getCenter(portrait).dx,
+      lessThan(tester.getCenter(find.text('15 actions')).dx),
+    );
+  });
+
+  testWidgets('position: no building where the island has none', (
+    tester,
+  ) async {
+    await show(tester, overview());
+    expect(find.text('Ta position'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is CustomPaint && w.painter is BuildingPortraitPainter,
+      ),
+      findsNothing,
+    );
+    expect(find.text('Ton immeuble'), findsNothing);
   });
 
   testWidgets('« Stabilité passée »: the score, its parts, what it is not', (

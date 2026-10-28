@@ -97,6 +97,37 @@ void main() {
     expect(ArchipelagoPainter.buildingRects(island, const []), isEmpty);
   });
 
+  test('one building alone, as on the island: each rank, built, rising or '
+      'a ghost on its slab (M11-6)', () {
+    for (final rank in [0, 1, 2, 3, 4]) {
+      for (final b in const [
+        DrawnBuilding(height: 4, built: 1, ghost: 0),
+        DrawnBuilding(height: 2, built: 0.5, ghost: 1),
+        DrawnBuilding(height: 1, built: 0, ghost: 1),
+      ]) {
+        final recorder = PictureRecorder();
+        BuildingPortraitPainter(
+          b,
+          rank: rank,
+        ).paint(Canvas(recorder), BuildingPortraitPainter.size);
+        expect(recorder.endRecording(), isNotNull);
+      }
+    }
+    const b = DrawnBuilding(height: 2, built: 1, ghost: 0);
+    final painter = BuildingPortraitPainter(b, rank: 1);
+    expect(painter.shouldRepaint(BuildingPortraitPainter(b, rank: 1)), isFalse);
+    expect(painter.shouldRepaint(BuildingPortraitPainter(b, rank: 0)), isTrue);
+    expect(
+      painter.shouldRepaint(
+        BuildingPortraitPainter(
+          const DrawnBuilding(height: 3, built: 1, ghost: 0),
+          rank: 1,
+        ),
+      ),
+      isTrue,
+    );
+  });
+
   test('repaints when the buildings change, not otherwise', () {
     final a = ArchipelagoPainter(buildings: const [b1, b2]);
     expect(

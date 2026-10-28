@@ -433,6 +433,10 @@
     }
   },
   "asset_position_title": "Ta position",
+  "asset_position_building": "Ton immeuble",
+  "@asset_position_building": {
+    "description": "Under the asset's building, as the island draws it, in « Ta position »."
+  },
   "asset_position_quantity": "Quantit\u00e9",
   "asset_position_value": "Valeur",
   "asset_position_pnl": "Plus-value latente",

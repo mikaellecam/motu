@@ -698,6 +698,10 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
   screen readers hear the card as one sentence.
 - User position: quantity, value, P&L (amount, %), of which currency effect = value now − value at the
   average purchase rate (notional-weighted, kept by sells like the average cost).
+- Beside the position, its building (decided 2026-10-28 by the user, M11-6, option B of the canvas « The world
+  on every tab »): on a 92×116 square of `sea`, as Actions & ETF draws it at the island's scale, in the colours,
+  windows and flag of its place there, a waiting buy's ghost included (`BuildingPortraitPainter`), « Ton
+  immeuble » under it. An asset the island does not draw shows none.
 - Buy / Sell buttons, and under them « Investir chaque mois » (M9-41): the plan sheet for this asset in the
   scoped wallet (§4.5). None of them on a finished trip.
 
