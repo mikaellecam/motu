@@ -29,14 +29,17 @@ class MissionPlayer extends ConsumerWidget {
       ref.watch(missionViewProvider(nodeId)),
       onRetry: () => ref.invalidate(missionViewProvider(nodeId)),
       data: (view) {
-        final (go, place) = switch (view.mission.place) {
+        // The Explorer is a tab, with its bar; the wallet opens full screen
+        // above the mission, so back returns to it (M12-9).
+        final (go, open) = switch (view.mission.place) {
           MissionPlace.explorer => (
             l10n.mission_go_explorer,
-            '/explore?wallet=${WalletRepository.liveWalletId}',
+            () =>
+                context.go('/explore?wallet=${WalletRepository.liveWalletId}'),
           ),
           MissionPlace.wallet => (
             l10n.mission_go_wallet,
-            '/wallet/${WalletRepository.liveWalletId}',
+            () => context.push('/wallet/${WalletRepository.liveWalletId}'),
           ),
         };
         return ListView(
@@ -62,7 +65,7 @@ class MissionPlayer extends ConsumerWidget {
             if (view.done)
               LessonEnd(node: view.node)
             else
-              ChunkyButton(label: go, onPressed: () => context.go(place)),
+              ChunkyButton(label: go, onPressed: open),
           ],
         );
       },
