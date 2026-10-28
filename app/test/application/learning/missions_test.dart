@@ -86,7 +86,7 @@ void main() {
       Future<void>.delayed(const Duration(milliseconds: 50));
 
   test('missions complete by themselves, once each', () async {
-    c.listen(missionTrackerProvider, (_, _) {});
+    startMissionTracker(c);
     await settle();
     expect(await attempts(), isEmpty);
 

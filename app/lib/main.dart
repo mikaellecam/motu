@@ -29,7 +29,7 @@ Future<void> main() async {
       .then((_) => container.read(tripCatchUpProvider.notifier).run())
       .ignore();
   // Missions complete by themselves while the app runs (BRIEF §4.3).
-  container.read(missionTrackerProvider);
+  startMissionTracker(container);
   final router = buildRouter(
     initialLocation: profile == null ? '/onboarding' : '/',
   );
