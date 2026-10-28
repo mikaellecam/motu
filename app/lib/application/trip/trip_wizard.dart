@@ -487,8 +487,6 @@ Future<Money> livretCeilingOn(Ref ref, DateTime day) async {
 /// The lesson to link from a date before the data floor, from the packs.
 @riverpod
 Future<NodeContent?> lessonBefore(Ref ref, DateTime day) async =>
-    lessonCovering([
-      await ref.watch(contentPackProvider(actionsEtfIsland).future),
-    ], day);
+    lessonCovering(await ref.watch(contentPacksProvider.future), day);
 
 String _two(int n) => n.toString().padLeft(2, '0');

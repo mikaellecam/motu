@@ -149,7 +149,9 @@ class MapTab extends ConsumerWidget {
               progress: path == null || path.nodes.isEmpty
                   ? null
                   : (done: path.done, total: path.nodes.length),
-              onOpen: (_) => context.push('/island/actions-etf'),
+              onOpen: (id) => context.push(
+                '/island/${archipelago.firstWhere((i) => i.id == id).pack}',
+              ),
             ),
           ),
           const Positioned(

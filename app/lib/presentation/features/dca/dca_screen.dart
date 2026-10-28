@@ -304,11 +304,7 @@ class _ResultCard extends ConsumerWidget {
     String whole(Decimal v) => formats.amount(v, Currency.eur, decimals: 0);
     final gain = roundHalfEven(dca.gain, 0);
     final first = dca.series.isEmpty ? r.params.start : dca.series.first.date;
-    final term = ref
-        .watch(contentPackProvider(actionsEtfIsland))
-        .value
-        ?.glossary[_dcaTerm]
-        ?.title;
+    final term = ref.watch(glossaryTermsProvider).value?[_dcaTerm]?.title;
 
     final insight = switch (r.insight) {
       DcaLoss(change: final c) => l10n.dca_insight_loss(

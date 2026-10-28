@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
+import '../../../application/learning/content.dart';
 import '../../../core/theme/tokens.dart';
 import 'island_growth.dart';
 import 'iso.dart';
@@ -21,7 +22,7 @@ final class IslandLayout {
     required this.halo,
     required this.label,
     this.clouds = const [],
-    this.locked = true,
+    this.pack,
   });
 
   final IslandId id;
@@ -46,8 +47,11 @@ final class IslandLayout {
   /// Its clouds: where each one's left puff floats, and its scale.
   final List<(Offset, double)> clouds;
 
+  /// Its content pack, once playable (one of `playableIslands`).
+  final String? pack;
+
   /// Visible, not playable yet (« Bientôt », BRIEF §4.2).
-  final bool locked;
+  bool get locked => pack == null;
 
   IsoProjection get projection =>
       IsoProjection(tile: tile, unit: unit, origin: origin);
@@ -96,7 +100,7 @@ const archipelago = [
     ],
     halo: Rect.fromLTRB(85, 381, 292, 495),
     label: Offset(197, 506),
-    locked: false,
+    pack: actionsEtfIsland,
   ),
   IslandLayout(
     IslandId.crypto,

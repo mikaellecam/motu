@@ -39,7 +39,13 @@ Future<IslandPathView> islandPath(Ref ref, String islandId) async {
     await completed,
     await profiles.load(),
   );
-  final states = pathStates(profile, content.path, done);
+  // The questionnaire's start is Actions & ETF's (BRIEF §4.1): another
+  // island starts at its first lesson.
+  final states = pathStates(
+    islandId == actionsEtfIsland ? profile : null,
+    content.path,
+    done,
+  );
   return IslandPathView(content.title, [
     for (final (i, node) in content.nodes.indexed) PathNode(node, states[i]),
   ]);

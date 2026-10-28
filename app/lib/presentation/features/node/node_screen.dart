@@ -99,7 +99,16 @@ class _IslandProgress extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
+    // The lesson's own island.
+    final island = ref
+        .watch(contentPacksProvider)
+        .value
+        ?.where((p) => p.nodes.any((n) => n.id == nodeId))
+        .firstOrNull
+        ?.id;
+    final path = island == null
+        ? null
+        : ref.watch(islandPathProvider(island)).value;
     if (path == null || path.nodes.every((n) => n.node.id != nodeId)) {
       return const SizedBox.shrink();
     }

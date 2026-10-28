@@ -10,7 +10,6 @@ import '../../domain/learning/node.dart';
 import '../../domain/learning/puzzle.dart';
 import '../../domain/learning/sort.dart';
 import '../providers.dart';
-import 'content.dart';
 import 'node_player.dart';
 
 part 'lesson_play.g.dart';
@@ -19,16 +18,12 @@ part 'lesson_play.g.dart';
 /// nodes (BRIEF §4.3). Each saves the node as done in `node_progress` the
 /// way its type completes.
 
-/// [nodeId] of the Actions & ETF pack, when it is of [type].
-Future<(NodeContent, ContentPack)> _node(
-  Ref ref,
-  String nodeId,
-  NodeType type,
-) async {
-  final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final node = findNode(pack, nodeId);
-  if (node.type != type) throw const NotFoundFailure();
-  return (node, pack);
+/// The lesson [nodeId] of any island ([lessonOf]), when it is of [type].
+Future<({NodeContent node, ContentPack pack, Map<String, Localized> terms})>
+_node(Ref ref, String nodeId, NodeType type) async {
+  final lesson = await lessonOf(ref, nodeId);
+  if (lesson.node.type != type) throw const NotFoundFailure();
+  return lesson;
 }
 
 /// Saves [nodeId] as done; null when saved, else the failure.
@@ -79,7 +74,7 @@ final class DecisionView {
 
 @riverpod
 Future<DecisionView> decisionView(Ref ref, String nodeId) async {
-  final (node, pack) = await _node(ref, nodeId, NodeType.decision);
+  final (:node, :pack, :terms) = await _node(ref, nodeId, NodeType.decision);
   final decision = playable(() => decodeDecision(node, pack));
   final dataset = pack.datasets[decision.dataset]!;
   final (before, after) = splitAt(dataset.points, decision.moment);
@@ -95,7 +90,7 @@ Future<DecisionView> decisionView(Ref ref, String nodeId) async {
       for (final c in decision.choices)
         c.id: choiceOutcome(decision.invested, kept: c.kept, change: change),
     },
-    terms: termTitles(pack),
+    terms: terms,
   );
 }
 
@@ -152,7 +147,7 @@ final class SortView {
 
 @riverpod
 Future<SortView> sortView(Ref ref, String nodeId) async {
-  final (node, pack) = await _node(ref, nodeId, NodeType.sort);
+  final (:node, :pack, :terms) = await _node(ref, nodeId, NodeType.sort);
   final sort = playable(() => decodeSort(node, pack));
   final values = <String, Decimal>{};
   for (final item in sort.items) {
@@ -169,7 +164,7 @@ Future<SortView> sortView(Ref ref, String nodeId) async {
     sort: sort,
     values: values,
     truth: trueOrder([for (final i in sort.items) i.id], values),
-    terms: termTitles(pack),
+    terms: terms,
   );
 }
 
@@ -244,7 +239,7 @@ final class PuzzleView {
 
 @riverpod
 Future<PuzzleView> puzzleView(Ref ref, String nodeId) async {
-  final (node, pack) = await _node(ref, nodeId, NodeType.buildPuzzle);
+  final (:node, :pack, :terms) = await _node(ref, nodeId, NodeType.buildPuzzle);
   final puzzle = playable(() => decodePuzzle(node, pack));
   return PuzzleView(
     node: node,
@@ -253,7 +248,7 @@ Future<PuzzleView> puzzleView(Ref ref, String nodeId) async {
       for (final a in puzzle.assets)
         a.dataset: pack.datasets[a.dataset]!.points,
     },
-    terms: termTitles(pack),
+    terms: terms,
   );
 }
 
@@ -369,11 +364,11 @@ final class CheckpointView {
 
 @riverpod
 Future<CheckpointView> checkpointView(Ref ref, String nodeId) async {
-  final (node, pack) = await _node(ref, nodeId, NodeType.checkpoint);
+  final (:node, :pack, :terms) = await _node(ref, nodeId, NodeType.checkpoint);
   return CheckpointView(
     node: node,
     checkpoint: playable(() => decodeCheckpoint(node, pack)),
-    terms: termTitles(pack),
+    terms: terms,
   );
 }
 

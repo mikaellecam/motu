@@ -283,8 +283,10 @@ Type payloads (M6-3; the player refuses a pack that breaks them):
 
 Rules:
 - `{{term}}` in any text renders as a tappable glossary link showing the term's title; `{{term|text}}` shows
-  `text` instead, to fit the sentence (« la {{diversification|diversification}} »). Unknown terms fail
-  `contentcheck`.
+  `text` instead, to fit the sentence (« la {{diversification|diversification}} »). A lesson may link a
+  term another island's latest pack holds (M12-1: Les bases links Actions & ETF's « inflation »); the
+  Glossary tab shows every island's terms. Unknown terms fail `contentcheck`, and so does a term or lesson
+  id two islands hold.
 - Every text field has `fr` and `en`; missing locale fails `contentcheck`.
 - Datasets are produced by `cmd/freeze` from the same provider as live data, adjusted for splits, with
   provenance shown in-app ("Cours réels, clôtures hebdo, 2022, en dollars"). A weekly or monthly point is

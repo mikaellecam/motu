@@ -12,19 +12,32 @@ import 'content.dart';
 
 part 'node_player.g.dart';
 
-/// A node of the Actions & ETF island (BRIEF §4.3).
+/// A node of any island (BRIEF §4.3).
 @riverpod
-Future<NodeContent> islandNode(Ref ref, String nodeId) async => findNode(
-  await ref.watch(contentPackProvider(actionsEtfIsland).future),
-  nodeId,
-);
+Future<NodeContent> islandNode(Ref ref, String nodeId) async =>
+    (await lessonOf(ref, nodeId)).node;
 
-/// The node [nodeId] of [pack], or a [NotFoundFailure].
-NodeContent findNode(ContentPack pack, String nodeId) {
-  for (final node in pack.nodes) {
-    if (node.id == nodeId) return node;
+/// The node [nodeId] among [packs], with the pack holding it, or a
+/// [NotFoundFailure].
+({ContentPack pack, NodeContent node}) findNode(
+  List<ContentPack> packs,
+  String nodeId,
+) {
+  for (final pack in packs) {
+    for (final node in pack.nodes) {
+      if (node.id == nodeId) return (pack: pack, node: node);
+    }
   }
   throw const NotFoundFailure();
+}
+
+/// The lesson [nodeId] of any island: the node, its own pack (its datasets)
+/// and every island's term titles, for its `{{term}}` links.
+Future<({NodeContent node, ContentPack pack, Map<String, Localized> terms})>
+lessonOf(Ref ref, String nodeId) async {
+  final packs = await ref.watch(contentPacksProvider.future);
+  final (:pack, :node) = findNode(packs, nodeId);
+  return (node: node, pack: pack, terms: termTitles(packs));
 }
 
 /// One curve as drawn: what an amount became (decided 2026-10-11), or base
@@ -104,8 +117,7 @@ List<LessonCurve> _curves(
 
 @riverpod
 Future<RevealView> revealView(Ref ref, String nodeId) async {
-  final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final node = findNode(pack, nodeId);
+  final (:node, :pack, :terms) = await lessonOf(ref, nodeId);
   if (node.type != NodeType.predictReveal) throw const NotFoundFailure();
   final reveal = playable(() => decodePredictReveal(node, pack));
   final datasets = [for (final s in reveal.series) pack.datasets[s.dataset]!];
@@ -121,7 +133,7 @@ Future<RevealView> revealView(Ref ref, String nodeId) async {
       first.currency,
     ),
     assets: [for (final d in datasets) d.asset],
-    terms: termTitles(pack),
+    terms: terms,
   );
 }
 
@@ -219,8 +231,7 @@ final class ToyView {
 
 @riverpod
 Future<ToyView> toyView(Ref ref, String nodeId) async {
-  final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final node = findNode(pack, nodeId);
+  final (:node, :pack, :terms) = await lessonOf(ref, nodeId);
   if (node.type != NodeType.toy) throw const NotFoundFailure();
   final toy = playable(() => decodeToy(node, pack));
   final points = switch (toy.returnFrom) {
@@ -234,7 +245,7 @@ Future<ToyView> toyView(Ref ref, String nodeId) async {
     past: rate == null
         ? null
         : (rate: rate, from: points!.first.$1, to: points.last.$1),
-    terms: termTitles(pack),
+    terms: terms,
   );
 }
 
@@ -363,9 +374,9 @@ class ToyPlay extends _$ToyPlay {
   }
 }
 
-/// The title of each glossary term of [pack], for `{{term}}` links.
-Map<String, Localized> termTitles(ContentPack pack) => {
-  for (final t in pack.glossary.values) t.id: t.title,
+/// The title of each glossary term of [packs], for `{{term}}` links.
+Map<String, Localized> termTitles(List<ContentPack> packs) => {
+  for (final t in glossaryOf(packs).values) t.id: t.title,
 };
 
 Decimal _clamp(Decimal value, Decimal min, Decimal max) =>

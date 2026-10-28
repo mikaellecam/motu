@@ -113,14 +113,14 @@ void main() {
   });
 
   test('suggestions: the bridges of completed lessons, in path order', () {
-    expect(bridgeSuggestions(bundled, completed: const {}), isEmpty);
+    expect(bridgeSuggestions([bundled], completed: const {}), isEmpty);
     expect(
-      bridgeSuggestions(bundled, completed: {'ae.livret-vs-etf'}),
+      bridgeSuggestions([bundled], completed: {'ae.livret-vs-etf'}),
       isEmpty,
       reason: 'no bridge on node 1',
     );
     final s = bridgeSuggestions(
-      bundled,
+      [bundled],
       completed: {'ae.livret-vs-etf', 'ae.march-2020'},
     ).single;
     expect(s.nodeId, 'ae.march-2020');

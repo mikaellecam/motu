@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,12 @@ void main() {
     expect(archipelago.where((i) => !i.locked).map((i) => i.id), [
       IslandId.actionsEtf,
     ]);
+  });
+
+  test('the map opens the playable islands, each on its pack', () {
+    expect([
+      for (final i in archipelago) ?i.pack,
+    ], unorderedEquals(playableIslands));
   });
 
   test('every island, its shallows and its label lie on the map', () {

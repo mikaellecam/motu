@@ -7,7 +7,6 @@ import '../../domain/learning/node.dart';
 import '../../core/failure.dart';
 import '../../data/repositories/market_repository.dart';
 import '../providers.dart';
-import 'content.dart';
 import 'island_path.dart';
 import 'node_player.dart';
 
@@ -79,13 +78,12 @@ final class MissionView {
 @riverpod
 Future<MissionView> missionView(Ref ref, String nodeId) async {
   final completed = ref.watch(completedNodesProvider.future);
-  final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final node = findNode(pack, nodeId);
+  final (:node, :pack, :terms) = await lessonOf(ref, nodeId);
   if (node.type != NodeType.mission) throw const NotFoundFailure();
   return MissionView(
     node: node,
     mission: playable(() => decodeMission(node, pack)),
     done: (await completed).contains(nodeId),
-    terms: termTitles(pack),
+    terms: terms,
   );
 }

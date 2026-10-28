@@ -45,14 +45,16 @@ final class CompanionNames {
 Future<CompanionNames> companionNames(Ref ref) async {
   final market = ref.watch(marketRepositoryProvider);
   final now = ref.watch(liveClockProvider).now();
-  final packF = ref.watch(contentPackProvider(actionsEtfIsland).future)
-    ..ignore();
+  final packsF = ref.watch(contentPacksProvider.future)..ignore();
   final assets = await market.assets(asOf: now);
-  final pack = await packF;
+  final packs = await packsF;
   return CompanionNames(
     assets: {for (final a in assets) a.id: a.name},
-    terms: termTitles(pack),
-    lessons: {for (final n in pack.nodes) n.id: n.title},
+    terms: termTitles(packs),
+    lessons: {
+      for (final pack in packs)
+        for (final n in pack.nodes) n.id: n.title,
+    },
   );
 }
 
