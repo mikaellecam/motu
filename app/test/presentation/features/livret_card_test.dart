@@ -140,6 +140,27 @@ void main() {
     expect(moved.single.amount, eur('1000'));
   });
 
+  testWidgets('the sheet rises above the keyboard (M12-10)', (tester) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await show(tester, line());
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Verser'));
+    await tester.pumpAndSettle();
+    // A 300-point keyboard: 900 physical pixels.
+    tester.view.viewInsets = const FakeViewPadding(bottom: 900);
+    await tester.pumpAndSettle();
+    final deposit = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.widgetWithText(ChunkyButton, 'Verser'),
+    );
+    expect(tester.getRect(deposit).bottom, lessThanOrEqualTo(844 - 300));
+    expect(
+      tester.getRect(find.byType(TextField)).bottom,
+      lessThanOrEqualTo(844 - 300),
+    );
+  });
+
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await show(tester, line(balance: '1000', accrued: '0.708333'));

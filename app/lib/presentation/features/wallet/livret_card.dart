@@ -117,8 +117,9 @@ Future<String?> showLivretSheet(
   isScrollControlled: true,
   useSafeArea: true,
   showDragHandle: true,
-  builder: (_) => Padding(
-    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+  // The sheet's own context: the page's has no keyboard inset (M12-10).
+  builder: (sheet) => Padding(
+    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(sheet).bottom),
     child: LivretSheet(walletId: walletId, deposit: deposit),
   ),
 );
