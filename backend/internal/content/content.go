@@ -62,6 +62,61 @@ func Find(contentDir string) ([]Ref, error) {
 	return refs, nil
 }
 
+// Shared is what the latest version of each island holds: its terms and its
+// lessons, by id, each with its island. A lesson may link a term another
+// island holds (BRIEF §4.3).
+type Shared struct {
+	terms, nodes map[string]string
+}
+
+// Index reads the ids the latest version of each island holds, from its
+// file names; an id two islands hold is reported.
+func Index(refs []Ref) (*Shared, []error) {
+	s := &Shared{terms: map[string]string{}, nodes: map[string]string{}}
+	var errs []error
+	for i, ref := range refs {
+		if i+1 < len(refs) && refs[i+1].Island == ref.Island {
+			continue
+		}
+		for _, held := range []struct {
+			sub, what string
+			ids       map[string]string
+		}{{"glossary", "term", s.terms}, {"nodes", "lesson", s.nodes}} {
+			for _, id := range names(filepath.Join(ref.Dir, held.sub)) {
+				if other, ok := held.ids[id]; ok {
+					errs = append(errs, fmt.Errorf("%s is a %s of both %s and %s", id, held.what, other, ref.Island))
+					continue
+				}
+				held.ids[id] = ref.Island
+			}
+		}
+	}
+	return s, errs
+}
+
+// TermsBesides is every term an island other than [island] holds.
+func (s *Shared) TermsBesides(island string) map[string]bool {
+	out := map[string]bool{}
+	for id, owner := range s.terms {
+		if owner != island {
+			out[id] = true
+		}
+	}
+	return out
+}
+
+// names lists the ids of dir's .json files; a missing directory has none.
+func names(dir string) []string {
+	entries, _ := os.ReadDir(dir)
+	var ids []string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".json") {
+			ids = append(ids, strings.TrimSuffix(e.Name(), ".json"))
+		}
+	}
+	return ids
+}
+
 // Pack is a version that passed the checks.
 type Pack struct {
 	Ref      Ref
@@ -94,16 +149,20 @@ func (p *Pack) Stats() string {
 
 // Read loads and checks the pack at ref (BRIEF §4.3): the island and its
 // path, every node, dataset and glossary term, both languages on every text,
-// and every reference to a term or dataset. In a [release], no node or term
+// and every reference to a term or dataset; a term may be one [others] holds
+// (another island's, [Shared.TermsBesides]). In a [release], no node or term
 // may be a draft (BRIEF §9). Every problem is reported, one per line, each
 // prefixed with its file.
-func Read(ref Ref, release bool) (*Pack, error) {
+func Read(ref Ref, release bool, others map[string]bool) (*Pack, error) {
 	c := checker{release: release}
 	island := c.file(ref.Dir, "island.json")
 	nodes := c.dir(ref.Dir, "nodes")
 	datasets := c.dir(ref.Dir, "datasets")
 	glossary := c.dir(ref.Dir, "glossary")
 	c.terms = ids(glossary)
+	for id := range others {
+		c.terms[id] = true
+	}
 	c.datasets = ids(datasets)
 	c.recipes(ref.Dir, datasets)
 
@@ -559,9 +618,9 @@ func Load(contentDir string) (*Library, []error) {
 	if err != nil {
 		return lib, []error{err}
 	}
-	var errs []error
+	shared, errs := Index(refs)
 	for _, ref := range refs {
-		p, err := Read(ref, true)
+		p, err := Read(ref, true, shared.TermsBesides(ref.Island))
 		if err != nil {
 			errs = append(errs, fmt.Errorf("%s/%d: %w", ref.Island, ref.Version, err))
 			continue

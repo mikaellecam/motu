@@ -98,15 +98,14 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
     walletBenchmarkProvider(walletId, Benchmark.world).future,
   )..ignore();
   final livretF = ref.watch(walletLivretProvider(walletId).future)..ignore();
-  final packF = ref.watch(contentPackProvider(actionsEtfIsland).future)
-    ..ignore();
+  final glossaryF = ref.watch(glossaryTermsProvider.future)..ignore();
   final walletF = wallets.load(walletId)..ignore();
   final journalF = wallets.journal(walletId)..ignore();
   final momentsF = wallets.moments(walletId)..ignore();
   final overview = await overviewF;
   final world = await worldF;
   final livret = await livretF;
-  final pack = await packF;
+  final glossary = await glossaryF;
   final wallet = await walletF;
   final journal = await journalF;
   final moments = await momentsF;
@@ -219,7 +218,7 @@ Future<TripSummary> tripSummary(Ref ref, String walletId) async {
           ),
         ),
     ],
-    terms: [for (final id in termsMet(moments)) ?pack.glossary[id]],
+    terms: [for (final id in termsMet(moments)) ?glossary[id]],
   );
 }
 

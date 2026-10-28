@@ -41,7 +41,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	failed := false
+	shared, errs := content.Index(refs)
+	for _, err := range errs {
+		fmt.Fprintf(stderr, "contentcheck: %v\n", err)
+	}
+	failed := len(errs) > 0
 	report := func(ref content.Ref, err error) {
 		failed = true
 		for _, line := range strings.Split(err.Error(), "\n") {
@@ -50,7 +54,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	for i, ref := range refs {
 		latest := i == len(refs)-1 || refs[i+1].Island != ref.Island
-		pack, err := content.Read(ref, *release && latest)
+		pack, err := content.Read(ref, *release && latest, shared.TermsBesides(ref.Island))
 		if err != nil {
 			report(ref, err)
 			continue

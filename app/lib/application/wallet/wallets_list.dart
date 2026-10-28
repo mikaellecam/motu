@@ -63,14 +63,15 @@ TripLine tripLine(WalletSummary trip) {
   };
 }
 
-/// The bridges of the [completed] nodes of [pack], in path order.
+/// The bridges of the [completed] nodes of [packs], in path order.
 List<BridgeSuggestion> bridgeSuggestions(
-  ContentPack pack, {
+  List<ContentPack> packs, {
   required Set<String> completed,
 }) => [
-  for (final node in pack.nodes)
-    if (node.bridge case final bridge? when completed.contains(node.id))
-      BridgeSuggestion(node.id, node.title, bridge),
+  for (final pack in packs)
+    for (final node in pack.nodes)
+      if (node.bridge case final bridge? when completed.contains(node.id))
+        BridgeSuggestion(node.id, node.title, bridge),
 ];
 
 @riverpod
@@ -84,7 +85,7 @@ Stream<Set<String>> completedNodes(Ref ref) =>
 /// Rebuilt whenever a wallet or a lesson's progress changes.
 @riverpod
 Future<WalletsList> walletsList(Ref ref) async {
-  final pack = ref.watch(contentPackProvider(actionsEtfIsland).future);
+  final packs = ref.watch(contentPacksProvider.future);
   final completed = ref.watch(completedNodesProvider.future);
   final all = await ref.watch(walletSummariesProvider.future);
   return WalletsList(
@@ -93,6 +94,6 @@ Future<WalletsList> walletsList(Ref ref) async {
       for (final w in all.reversed)
         if (w.kind == WalletKind.trip) w,
     ],
-    suggestions: bridgeSuggestions(await pack, completed: await completed),
+    suggestions: bridgeSuggestions(await packs, completed: await completed),
   );
 }

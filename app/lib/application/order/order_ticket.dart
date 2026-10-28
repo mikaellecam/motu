@@ -350,8 +350,8 @@ class OrderTicket extends _$OrderTicket {
       OrderType.market => null,
     };
     if (term == null) return null;
-    final pack = await ref.read(contentPackProvider(actionsEtfIsland).future);
-    if (!pack.glossary.containsKey(term)) return null;
+    final glossary = await ref.read(glossaryTermsProvider.future);
+    if (!glossary.containsKey(term)) return null;
     final seen = await ref.read(glossaryRepositoryProvider).watch().first;
     return seen.containsKey(term) ? null : term;
   }

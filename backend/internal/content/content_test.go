@@ -2,6 +2,7 @@ package content
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -79,9 +80,13 @@ func pack(t *testing.T, changes map[string]string) Ref {
 }
 
 // problems reads [ref] and returns its problems, one per line.
-func problems(t *testing.T, ref Ref, release bool) string {
+func problems(t *testing.T, ref Ref, release bool, others ...map[string]bool) string {
 	t.Helper()
-	_, err := Read(ref, release)
+	var shared map[string]bool
+	if len(others) > 0 {
+		shared = others[0]
+	}
+	_, err := Read(ref, release, shared)
 	if err == nil {
 		return ""
 	}
@@ -99,7 +104,7 @@ func expectProblem(t *testing.T, changes map[string]string, want ...string) {
 }
 
 func TestAValidPack(t *testing.T) {
-	p, err := Read(pack(t, nil), true)
+	p, err := Read(pack(t, nil), true, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +127,7 @@ func TestAValidPack(t *testing.T) {
 }
 
 func TestTheDocumentKeepsTextAndDigitsAsWritten(t *testing.T) {
-	p, err := Read(pack(t, nil), false)
+	p, err := Read(pack(t, nil), false, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +140,7 @@ func TestTheDocumentKeepsTextAndDigitsAsWritten(t *testing.T) {
 	if strings.Contains(doc, "\n") {
 		t.Error("the document is one line")
 	}
-	again, _ := Read(pack(t, nil), false)
+	again, _ := Read(pack(t, nil), false, nil)
 	if string(again.Document()) != doc {
 		t.Error("the same pack assembles to the same bytes")
 	}
@@ -375,5 +380,65 @@ func TestTheLibraryPublishesTheLatestRelease(t *testing.T) {
 	empty, errs := Load(filepath.Join(root, "missing"))
 	if len(errs) != 1 || len(empty.Manifest()) != 0 {
 		t.Errorf("no content: %v %v", errs, empty.Manifest())
+	}
+}
+
+// twoIslands lays out actions-etf (the valid pack) and les-bases, whose one
+// lesson links {{[link]}}, with [extra] files of its own.
+func twoIslands(t *testing.T, link string, extra map[string]string) string {
+	t.Helper()
+	root := filepath.Dir(filepath.Dir(filepath.Dir(pack(t, nil).Dir)))
+	files := map[string]string{
+		"island.json": `{"id": "les-bases", "version": 1, "title": {"fr": "Les bases", "en": "Foundations"},
+			"nodes": ["lb.cash"]}`,
+		"nodes/lb.cash.json": `{"id": "lb.cash", "type": "decision", "status": "published",
+			"title": {"fr": "Le liquide", "en": "Cash"},
+			"context": {"fr": "Voir la {{` + link + `}}.", "en": "See {{` + link + `}}."},
+			"glossary": ["` + link + `"]}`,
+	}
+	for path, body := range extra {
+		files[path] = body
+	}
+	write(t, filepath.Join(root, "packs", "les-bases", "1"), files)
+	return root
+}
+
+func TestALessonLinksATermOfAnotherIsland(t *testing.T) {
+	lib, errs := Load(twoIslands(t, "diversification", nil))
+	if len(errs) != 0 || len(lib.Manifest()) != 2 {
+		t.Fatalf("a term of actions-etf, linked from les-bases: %v %v", errs, lib.Manifest())
+	}
+
+	root := twoIslands(t, "diversity", nil)
+	refs, _ := Find(root)
+	shared, errs := Index(refs)
+	if len(errs) != 0 {
+		t.Fatal(errs)
+	}
+	got := problems(t, refs[1], false, shared.TermsBesides("les-bases"))
+	for _, want := range []string{
+		`nodes/lb.cash.json: glossary: "diversity" is not a term of the pack`,
+		`nodes/lb.cash.json: context.en: {{diversity}} is not a term of the pack`,
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("want %q, got:\n%s", want, got)
+		}
+	}
+}
+
+func TestATermOrALessonBelongsToOneIsland(t *testing.T) {
+	refs, _ := Find(twoIslands(t, "volatilite", map[string]string{
+		"glossary/volatilite.json": volatilite,
+		"nodes/ae.march.json":      march,
+	}))
+	_, errs := Index(refs)
+	got := fmt.Sprint(errs)
+	for _, want := range []string{
+		"volatilite is a term of both actions-etf and les-bases",
+		"ae.march is a lesson of both actions-etf and les-bases",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("want %q, got %s", want, got)
+		}
 	}
 }

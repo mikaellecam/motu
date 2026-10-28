@@ -66,24 +66,25 @@ final class GlossaryIndex {
 Future<GlossaryIndex> glossaryIndex(Ref ref, String language) async {
   final search = ref.watch(glossarySearchProvider);
   final repo = ref.watch(glossaryRepositoryProvider);
-  final packF = ref.watch(contentPackProvider(actionsEtfIsland).future)
-    ..ignore();
+  final packsF = ref.watch(contentPacksProvider.future)..ignore();
   final progressF = ref.watch(glossaryProgressProvider.future)..ignore();
   final completedF = ref.watch(completedNodesProvider.future)..ignore();
-  final pack = await packF;
+  final packs = await packsF;
+  final glossary = glossaryOf(packs);
   final discovered = (await progressF).keys.toSet();
   final completed = await completedF;
   final met = termsMet(
     completed: [
-      for (final node in pack.nodes)
-        if (completed.contains(node.id)) node,
+      for (final pack in packs)
+        for (final node in pack.nodes)
+          if (completed.contains(node.id)) node,
     ],
     moments: await repo.momentsShown(),
   );
 
   final query = searchKey(search.query);
   final rows = [
-    for (final term in pack.glossary.values)
+    for (final term in glossary.values)
       if (query.isEmpty ||
           searchKey(term.title.of(language)).contains(query) ||
           searchKey(term.short.of(language)).contains(query))
@@ -107,8 +108,8 @@ Future<GlossaryIndex> glossaryIndex(Ref ref, String language) async {
   }
   return GlossaryIndex(
     groups,
-    discovered: pack.glossary.keys.where(discovered.contains).length,
-    total: pack.glossary.length,
+    discovered: glossary.keys.where(discovered.contains).length,
+    total: glossary.length,
   );
 }
 
@@ -137,14 +138,14 @@ final class TermSheetView {
 Future<TermSheetView> termSheet(Ref ref, String termId) async {
   final repo = ref.watch(glossaryRepositoryProvider);
   final clock = ref.watch(liveClockProvider);
-  final pack = await ref.watch(contentPackProvider(actionsEtfIsland).future);
-  final term = pack.glossary[termId];
+  final glossary = await ref.watch(glossaryTermsProvider.future);
+  final term = glossary[termId];
   if (term == null) throw const NotFoundFailure();
   return TermSheetView(
     term: term,
-    related: [for (final id in term.related) ?pack.glossary[id]],
+    related: [for (final id in term.related) ?glossary[id]],
     firstOpen: await repo.discover(termId, clock.now()),
-    terms: {for (final t in pack.glossary.values) t.id: t.title},
+    terms: {for (final t in glossary.values) t.id: t.title},
   );
 }
 
@@ -271,8 +272,8 @@ class TermQuiz extends _$TermQuiz {
   /// The next question, or the result after the last one.
   Future<void> next() async {
     if (!state.checked || state.finished) return;
-    final pack = await ref.read(contentPackProvider(actionsEtfIsland).future);
-    final quiz = pack.glossary[termId]?.quiz ?? const [];
+    final glossary = await ref.read(glossaryTermsProvider.future);
+    final quiz = glossary[termId]?.quiz ?? const [];
     if (state.index + 1 < quiz.length) {
       state = QuizState(index: state.index + 1, answers: state.answers);
       return;

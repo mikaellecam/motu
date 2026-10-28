@@ -149,10 +149,9 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
     _sync(_price, form.price);
     final terms =
         ref
-            .watch(contentPackProvider(actionsEtfIsland))
+            .watch(glossaryTermsProvider)
             .value
-            ?.glossary
-            .map((id, t) => MapEntry(id, t.title)) ??
+            ?.map((id, t) => MapEntry(id, t.title)) ??
         const {};
 
     // Where each error shows: a price error under the price, the rest

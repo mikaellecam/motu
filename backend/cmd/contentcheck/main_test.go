@@ -99,3 +99,16 @@ func TestUsage(t *testing.T) {
 		t.Errorf("missing directory: exit %d", code)
 	}
 }
+
+func TestALessonTwoIslandsHoldFails(t *testing.T) {
+	root := contentDir(t, "published")
+	dir := filepath.Join(root, "packs", "les-bases", "1")
+	os.MkdirAll(filepath.Join(dir, "nodes"), 0o755)
+	os.WriteFile(filepath.Join(dir, "island.json"), []byte(`{"id": "les-bases", "version": 1,
+		"title": {"fr": "Les bases", "en": "Foundations"}, "nodes": ["ae.fees"]}`), 0o644)
+	os.WriteFile(filepath.Join(dir, "nodes", "ae.fees.json"), []byte(strings.Replace(node, "%s", "published", 1)), 0o644)
+	code, _, errs := check(root)
+	if code != 1 || !strings.Contains(errs, "contentcheck: ae.fees is a lesson of both actions-etf and les-bases") {
+		t.Errorf("exit %d, stderr:\n%s", code, errs)
+	}
+}

@@ -253,10 +253,9 @@ class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
     };
     final terms =
         ref
-            .watch(contentPackProvider(actionsEtfIsland))
+            .watch(glossaryTermsProvider)
             .value
-            ?.glossary
-            .map((id, t) => MapEntry(id, t.title)) ??
+            ?.map((id, t) => MapEntry(id, t.title)) ??
         const {};
     final section = AppText.label.copyWith(color: AppColors.ink);
     final muted = AppText.caption.copyWith(color: AppColors.muted);

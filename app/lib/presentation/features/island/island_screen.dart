@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../application/learning/content.dart';
 import '../../../application/learning/island_path.dart';
 import '../../../application/wallet/living_island.dart';
 import '../../../core/failure.dart';
@@ -113,11 +112,10 @@ class _Path extends ConsumerWidget {
             ? null
             : () => context.push('/node/${n.node.id}'),
     ];
-    final island = islandId == actionsEtfIsland
-        ? archipelago.firstWhere((i) => i.id == IslandId.actionsEtf)
-        : null;
+    final island = archipelago.where((i) => i.pack == islandId).firstOrNull;
     // Offline or still loading, the island stands as it last did, or bare.
-    final buildings = island == null
+    // The wallet's buildings stand on Actions & ETF only.
+    final buildings = island?.id != IslandId.actionsEtf
         ? const <DrawnBuilding>[]
         : drawnBuildings(ref.watch(livingIslandProvider).value ?? const []);
 
