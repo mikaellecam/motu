@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/clock/simulation_clock.dart';
@@ -30,6 +32,7 @@ Future<void> show(
   WidgetTester tester,
   String nodeId, {
   String quizType = 'checkpoint',
+  Random? random,
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -47,6 +50,7 @@ Future<void> show(
             .overrideWith((ref) async => decodePack(emptyBasesJson())),
         profileRepositoryProvider.overrideWithValue(profiles),
         liveClockProvider.overrideWithValue(const _Fixed()),
+        if (random != null) randomProvider.overrideWithValue(random),
       ],
       child: MainApp.screen(NodeScreen(nodeId: nodeId)),
     ),
@@ -200,6 +204,21 @@ void main() {
     expect(find.text('1 sur 2'), findsOneWidget);
     expect(find.text("Point d'étape terminé."), findsOneWidget);
     expect(profiles.completed, [('ae.quiz', '1/2')]);
+  });
+
+  testWidgets('a checkpoint\'s choices come in a random order (M12-14)', (
+    tester,
+  ) async {
+    // Seed 1 swaps two choices: the pack's second comes first.
+    await show(tester, 'ae.quiz', random: Random(1));
+    expect(
+      tester.getTopLeft(find.text("Des milliers d'entreprises")).dy,
+      lessThan(tester.getTopLeft(find.text('Une seule entreprise')).dy),
+    );
+    // Still marked by id: the right answer stays right.
+    await tap(tester, "Des milliers d'entreprises");
+    await tap(tester, 'Valider');
+    expect(find.text('Bien vu$nnbsp!'), findsOneWidget);
   });
 
   testWidgets('a quiz says so at its end (M12-11)', (tester) async {

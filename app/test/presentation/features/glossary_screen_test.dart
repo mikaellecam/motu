@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/learning/glossary.dart';
@@ -45,7 +47,7 @@ final apple = Asset(
 
 late FakeGlossary glossary;
 
-Future<void> show(WidgetTester tester, Widget screen) async {
+Future<void> show(WidgetTester tester, Widget screen, {Random? random}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 3000);
@@ -63,6 +65,7 @@ Future<void> show(WidgetTester tester, Widget screen) async {
         // `ae.fees` is done: its term `etf` was met.
         completedNodesProvider.overrideWith((ref) => Stream.value({'ae.fees'})),
         liveClockProvider.overrideWithValue(const _Fixed()),
+        if (random != null) randomProvider.overrideWithValue(random),
         liveExampleProvider.overrideWith(
           (ref, args) async => LiveExampleView(
             kind: args.$1,
@@ -216,6 +219,21 @@ void main() {
     }
     expect(find.text('Tout juste$nnbsp: notion acquise.'), findsOneWidget);
     expect(glossary.passed, ['etf']);
+  });
+
+  testWidgets('the quiz\'s choices come in a random order (M12-14)', (
+    tester,
+  ) async {
+    // Seed 1 swaps two choices: the pack's first comes second.
+    await show(tester, const GlossaryScreen(), random: Random(1));
+    await tester.tap(find.text('ETF'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tester en 30 secondes'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('Une seule action')).dy,
+      lessThan(tester.getTopLeft(find.text('Un indice')).dy),
+    );
   });
 
   testWidgets('a {{term}} link in lesson text opens its sheet', (tester) async {

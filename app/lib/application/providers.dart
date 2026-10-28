@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../core/cache_status.dart';
@@ -22,6 +24,10 @@ part 'providers.g.dart';
 /// The device clock (the live wallet's), overridable in tests.
 @Riverpod(keepAlive: true)
 SimulationClock liveClock(Ref ref) => const LiveClock();
+
+/// Where a quiz draws its choices' order (M12-14), seeded in tests.
+@Riverpod(keepAlive: true)
+Random random(Ref ref) => Random();
 
 /// The app's database, opened once and closed with the app (ADR-002).
 @Riverpod(keepAlive: true)

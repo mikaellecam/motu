@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/domain/learning/checkpoint.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/learning/decision.dart';
 import 'package:finance_companion/domain/learning/puzzle.dart';
+import 'package:finance_companion/domain/learning/reveal.dart';
 import 'package:finance_companion/domain/learning/sort.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -264,6 +267,55 @@ void main() {
     test('unanswered questions score nothing', () {
       expect(quizScore(questions, ['a']), 1);
       expect(quizScore(questions, const []), 0);
+    });
+
+    group('shuffled choices (decided 2026-10-28)', () {
+      const abc = QuizQuestion(
+        question: _l,
+        choices: [
+          RevealChoice('a', _l),
+          RevealChoice('b', _l),
+          RevealChoice('c', _l),
+        ],
+        answer: 'a',
+        explanation: _l,
+      );
+      List<String> ids(QuizQuestion q) => [for (final c in q.choices) c.id];
+
+      test('each question keeps its choices, its answer, its place', () {
+        final shuffled = shuffleChoices([abc, abc], Random(1));
+        expect(shuffled, hasLength(2));
+        for (final q in shuffled) {
+          expect(ids(q), unorderedEquals(['a', 'b', 'c']));
+          expect(q.answer, 'a');
+          expect(q.question, same(_l));
+          expect(q.explanation, same(_l));
+        }
+        // The pack's order is left as it was.
+        expect(ids(abc), ['a', 'b', 'c']);
+      });
+
+      test('the order comes from the random source', () {
+        final firsts = {
+          for (var seed = 0; seed < 20; seed++)
+            ids(shuffleChoices([abc], Random(seed)).single).first,
+        };
+        expect(firsts, {'a', 'b', 'c'});
+        expect(
+          ids(shuffleChoices([abc], Random(7)).single),
+          ids(shuffleChoices([abc], Random(7)).single),
+        );
+      });
+
+      test('no question, or a single choice', () {
+        expect(shuffleChoices(const [], Random(1)), isEmpty);
+        const one = QuizQuestion(
+          question: _l,
+          choices: [RevealChoice('a', _l)],
+          answer: 'a',
+        );
+        expect(ids(shuffleChoices([one], Random(1)).single), ['a']);
+      });
     });
   });
 }
