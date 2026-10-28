@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/wallet/dca_plans.dart';
@@ -14,6 +16,7 @@ import 'package:finance_companion/core/l10n/formats.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/analytics/returns.dart';
+import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/market/price_bar.dart';
@@ -23,6 +26,7 @@ import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
+import 'package:finance_companion/presentation/features/wallet/wallet_island_band.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
@@ -162,6 +166,10 @@ Future<void> show(
         walletMomentProvider.overrideWith((ref, args) async => null),
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) => o()),
+        // The island greens as the lessons did: none here.
+        islandPathProvider(actionsEtfIsland).overrideWith(
+          (ref) async => const IslandPathView(Localized('x', 'x'), []),
+        ),
         liveCatchUpProvider.overrideWith(() => catchUp),
         planActionsProvider.overrideWith2((_) => planActions),
         walletChartProvider.overrideWith((ref, args) async {
@@ -187,6 +195,18 @@ Future<void> show(
               path: '/wallet/:walletId/order/:orderId',
               builder: (_, state) =>
                   Text('order ${state.pathParameters['orderId']}'),
+            ),
+            GoRoute(
+              path: '/asset/:id',
+              builder: (_, state) => Text(
+                'asset ${state.pathParameters['id']} '
+                '${state.uri.queryParameters['wallet']}',
+              ),
+            ),
+            GoRoute(
+              path: '/explore',
+              builder: (_, state) =>
+                  Text('explore ${state.uri.queryParameters['wallet']}'),
             ),
           ],
         ),
@@ -278,6 +298,52 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('Cours du'), findsNothing);
+  });
+
+  testWidgets('the island: a building per position, each opens its asset '
+      '(M11-4)', (tester) async {
+    await show(
+      tester,
+      () async => overview(fills: invested, cash: eur('48020')),
+    );
+    expect(
+      find.text('Touche un immeuble pour ouvrir sa ligne'),
+      findsOneWidget,
+    );
+    expect(find.byType(BarePlot), findsNothing);
+    for (final name in ['Apple', 'Nvidia']) {
+      final building = find.bySemanticsLabel(name);
+      expect(building, findsOneWidget, reason: name);
+      expect(
+        tester.getSemantics(building),
+        matchesSemantics(label: name, isButton: true, hasTapAction: true),
+        reason: name,
+      );
+      // On screen, zoomed with the island.
+      final size = tester.getRect(building).size;
+      expect(size.width, greaterThanOrEqualTo(44), reason: name);
+      expect(size.height, greaterThanOrEqualTo(44), reason: name);
+    }
+    await tester.tap(find.bySemanticsLabel('Nvidia'));
+    await tester.pumpAndSettle();
+    expect(find.text('asset nvidia live'), findsOneWidget);
+  });
+
+  testWidgets('before the first buy: the bare island, a plot, and the way '
+      'to the assets (M11-4)', (tester) async {
+    await show(tester, () async => overview());
+    expect(find.text('Ton île attend son premier immeuble'), findsOneWidget);
+    expect(find.byType(BarePlot), findsOneWidget);
+    expect(
+      find.text('Ton premier achat posera la première pierre de ton île.'),
+      findsOneWidget,
+    );
+    final explore = find.widgetWithText(ChunkyButton, 'Explorer les actifs');
+    await tester.ensureVisible(explore);
+    await tester.pumpAndSettle();
+    await tester.tap(explore);
+    await tester.pumpAndSettle();
+    expect(find.text('explore live'), findsOneWidget);
   });
 
   testWidgets('pending orders: each opens its order screen', (tester) async {

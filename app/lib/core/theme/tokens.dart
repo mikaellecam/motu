@@ -52,8 +52,9 @@ abstract final class AppColors {
 typedef Shades = ({Color top, Color left, Color right});
 
 /// The painted archipelago's own colours, from the art direction (BRIEF
-/// §10.2, decided 2026-10-13): the map and the island path's islets only,
-/// never a screen or a widget. They draw a place and carry no meaning.
+/// §10.2, decided 2026-10-13): the map, the island path's islets, and the
+/// world scenes inside a money screen (a wallet's islet and island, M11-3,
+/// M11-4); never a tint. They draw a place and carry no meaning.
 abstract final class MapPalette {
   static const wave = Color(0x8CFFFFFF);
 

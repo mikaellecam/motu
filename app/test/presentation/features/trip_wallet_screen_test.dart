@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/trip/trip_catch_up.dart';
 import 'package:finance_companion/application/trip/trip_runner.dart';
@@ -12,6 +14,7 @@ import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
+import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/analytics/returns.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
@@ -157,6 +160,10 @@ Future<FakeRunner> show(WidgetTester tester, WalletOverview o) async {
         walletMomentProvider.overrideWith((ref, args) async => null),
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) async => o),
+        // The island greens as the lessons did: none here.
+        islandPathProvider(actionsEtfIsland).overrideWith(
+          (ref) async => const IslandPathView(Localized('x', 'x'), []),
+        ),
         // Monday 3 November: the 1st is a Saturday.
         nextContributionProvider.overrideWith(
           (ref, id) async => DateTime.utc(2008, 11, 3),

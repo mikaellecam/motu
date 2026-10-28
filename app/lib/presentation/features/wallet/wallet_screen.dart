@@ -33,6 +33,7 @@ import '../order/order_screen.dart';
 import '../trip/trip_header.dart';
 import '../trip/trip_sheets.dart';
 import 'livret_card.dart';
+import 'wallet_island_band.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/sign_color.dart';
 
@@ -67,6 +68,8 @@ class WalletScreen extends ConsumerWidget {
           children: [
             CacheStatusBanner(onRetry: refresh),
             const SizedBox(height: AppSpace.x2),
+            WalletIslandBand(o),
+            const SizedBox(height: AppSpace.x4),
             _Header(o),
             if (o.kind == WalletKind.trip) _NextContribution(o),
             const SizedBox(height: AppSpace.x4),
@@ -698,7 +701,11 @@ class _PositionsCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (o.positions.isEmpty)
+              // Before the first buy, what it will build (M11-4); a finished
+              // trip that held nothing just says so.
+              if (o.positions.isEmpty && o.status != WalletStatus.finished)
+                _NoPositionYet(o)
+              else if (o.positions.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
                   child: Text(
@@ -710,6 +717,54 @@ class _PositionsCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// No position yet: a bare plot, what the first buy will do, and the way to
+/// the assets.
+class _NoPositionYet extends StatelessWidget {
+  const _NoPositionYet(this.o);
+  final WalletOverview o;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.x3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const BarePlot(),
+              const SizedBox(width: AppSpace.x3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpace.x1,
+                  children: [
+                    Text(
+                      l10n.wallet_positions_empty,
+                      style: AppText.bodyStrong,
+                    ),
+                    Text(
+                      l10n.wallet_positions_empty_body,
+                      style: AppText.caption.copyWith(color: AppColors.muted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpace.x3),
+          ChunkyButton(
+            label: l10n.wallet_positions_explore,
+            kind: ChunkyButtonKind.secondary,
+            onPressed: () => context.go('/explore?wallet=${o.id}'),
+          ),
+        ],
       ),
     );
   }

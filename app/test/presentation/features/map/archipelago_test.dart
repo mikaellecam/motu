@@ -73,6 +73,30 @@ void main() {
     }
   });
 
+  test('where each building stands, for taps: left to right, the largest '
+      'last; a strip per spot, from its roof to its foot', () {
+    final island = archipelago.firstWhere((i) => i.id == IslandId.actionsEtf);
+    const tall = DrawnBuilding(height: 4, built: 1, ghost: 0);
+    const short = DrawnBuilding(height: 1, built: 0, ghost: 1);
+    final rects = ArchipelagoPainter.buildingRects(island, [tall, short]);
+    expect(rects, hasLength(2));
+    final (largest, second) = (rects[0], rects[1]);
+    // Neighbours: the second spot just left of the largest's, touching it.
+    expect(second.right, closeTo(largest.left, 1e-9));
+    expect(largest.width, closeTo(second.width, 1e-9));
+    // A taller building reaches higher; both rest on the ground.
+    expect(largest.top, lessThan(second.top - 2 * island.unit));
+    expect(largest.height, greaterThan(4 * island.unit));
+    // A ghost counts at its full height: what will stand.
+    expect(second.height, greaterThan(island.unit));
+    // No more than the island's five spots.
+    expect(
+      ArchipelagoPainter.buildingRects(island, List.filled(7, tall)),
+      hasLength(5),
+    );
+    expect(ArchipelagoPainter.buildingRects(island, const []), isEmpty);
+  });
+
   test('repaints when the buildings change, not otherwise', () {
     final a = ArchipelagoPainter(buildings: const [b1, b2]);
     expect(
