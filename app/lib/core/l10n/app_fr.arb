@@ -523,6 +523,19 @@
   "wallets_live_name": "Aujourd'hui",
   "wallets_live_chip": "En direct",
   "wallets_live_subtitle": "Cours r\u00e9els du jour",
+  "wallets_islet_live": "Ton \u00eele",
+  "@wallets_islet_live": {
+    "description": "Screen readers: the live wallet's island in its card, one building per position."
+  },
+  "wallets_islet_trip": "La ville du voyage {name}",
+  "@wallets_islet_trip": {
+    "description": "Screen readers: a trip's city in its card, one building per position.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "wallets_trips_title": "Voyages dans le temps",
   "wallets_trip_date": "Le {date}",
   "@wallets_trip_date": {

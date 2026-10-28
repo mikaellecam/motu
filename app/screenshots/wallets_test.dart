@@ -1,4 +1,5 @@
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
@@ -6,6 +7,7 @@ import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/analytics/returns.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
@@ -83,6 +85,17 @@ void main() {
     'lehman': valued('10000', '9412.30'),
     'bubble': valued('2000', '1236.00'),
   };
+  final islands = {
+    'live': [
+      ('world', '1', '1'),
+      ('apple', '0.5', '0.5'),
+      ('asml', '0.3', '0.3'),
+      ('coca-cola', '0.25', '0'),
+    ],
+    'covid': [('world', '1', '1'), ('sp500', '0.6', '0.6')],
+    'lehman': [('sp500', '1', '1'), ('coca-cola', '0.7', '0.7')],
+    'bubble': const <(String, String, String)>[],
+  };
   screenshot(
     'm4-7-wallets',
     const WalletsScreen(),
@@ -137,6 +150,17 @@ void main() {
         ),
       ),
       walletOverviewProvider.overrideWith((ref, id) async => values[id]!),
+      // Each wallet's own city: the live one with a buy still waiting.
+      walletIslandProvider.overrideWith(
+        (ref, args) async => [
+          for (final (asset, height, built) in islands[args.$1]!)
+            IslandBuilding(
+              asset,
+              height: Decimal.parse(height),
+              built: Decimal.parse(built),
+            ),
+        ],
+      ),
     ],
   );
 }

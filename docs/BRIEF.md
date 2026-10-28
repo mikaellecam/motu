@@ -348,8 +348,9 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
 
 **Wallets list** (the Portefeuille tab; layout decided 2026-10-24, artboard `Wallets-A` of the art direction
 canvas, money family §10.1): « Mes portefeuilles », and under it « Un portefeuille d'aujourd'hui, et autant de
-voyages dans le temps que tu veux. » Each wallet is a flat row: an icon tile (a wallet for the live one, a
-calendar for a trip), its name and a chip, a status line, and on the right its value over its change in %
+voyages dans le temps que tu veux. » Each wallet is a flat row: its islet (decided 2026-10-28, M11-3: the
+wallet's buildings on Actions & ETF as the map draws them and as the lessons greened it, on a 68 px square of
+`sea`, still; « Ton île » or « La ville du voyage {nom} » for screen readers), its name and a chip, a status line, and on the right its value over its change in %
 (signed; the amount when nothing was put in). The live wallet is « Aujourd'hui », chip « En direct », « Cours
 réels du jour ». A trip's chip is its difficulty; its status line reads « En cours, tu es le {date} » until it
 ends (a stopped trip adds « Arrêt automatique : à toi de décider » in `alertText`), then « Terminé, de {mois} à
@@ -1145,7 +1146,9 @@ main line and marks where it ends with a dot.
 No decorative color. A screen state (e.g. being in a trip) is signalled by content (date, icon, label), not
 by tinting the screen. One exception (decided 2026-10-13): the painted archipelago (§4.2) uses the art
 direction's own colours (sand, grass, dirt, coloured buildings, grey stone), tokens of their own
-(`MapPalette`), on the map and the island path's islets (§4.3) only; they draw a place and carry no meaning. A second
+(`MapPalette`), on the map and the island path's islets (§4.3) only; they draw a place and carry no meaning.
+Since M11-3 (decided 2026-10-28) they, and `sea` under them, may also draw a small world scene inside a money
+screen: a wallet's islet (§4.5); still a place, never a tint. A second
 (decided 2026-10-24, M9-29): a stock's avatar shows its company's logo, in the company's colours, bundled
 with the app (`go run ./cmd/logos`) and credited in « À propos »; it identifies the company and carries no
 other meaning. ETFs keep their two letters (§10.1). Selected tabs, segments and chips use the neutral `line` container; app bars use
