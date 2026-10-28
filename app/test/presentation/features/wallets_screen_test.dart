@@ -1,4 +1,7 @@
 import 'package:decimal/decimal.dart';
+import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/application/wallet/wallet_overview.dart';
 import 'package:finance_companion/application/wallet/wallet_providers.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
@@ -6,10 +9,13 @@ import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/analytics/returns.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:finance_companion/presentation/features/wallets/wallet_islet.dart';
 import 'package:finance_companion/presentation/features/wallets/wallets_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,7 +84,11 @@ WalletOverview valued(String id, String start, String value) => buildOverview(
   livret: Decimal.zero,
 );
 
-Future<GoRouter> show(WidgetTester tester, WalletsList list) async {
+Future<GoRouter> show(
+  WidgetTester tester,
+  WalletsList list, {
+  Map<String, List<IslandBuilding>> islands = const {},
+}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 4000);
@@ -102,6 +112,13 @@ Future<GoRouter> show(WidgetTester tester, WalletsList list) async {
           (ref, id) async => id == 'live'
               ? valued(id, '50000', '51598.14')
               : valued(id, '10000', '9800'),
+        ),
+        walletIslandProvider.overrideWith(
+          (ref, args) async => islands[args.$1] ?? const [],
+        ),
+        // The islets green Actions & ETF as the lessons did: none here.
+        islandPathProvider(actionsEtfIsland).overrideWith(
+          (ref) async => const IslandPathView(Localized('x', 'x'), []),
         ),
       ],
       child: MainApp(router: router),
@@ -163,6 +180,60 @@ void main() {
     await tester.tap(find.text('Crise 2008'));
     await tester.pumpAndSettle();
     expect(find.text('wallet t1'), findsOneWidget);
+  });
+
+  testWidgets('each wallet shows its own island (M11-3)', (tester) async {
+    await show(
+      tester,
+      WalletsList(
+        live: summary('live', WalletKind.live),
+        trips: [summary('t1', WalletKind.trip)],
+        suggestions: const [],
+      ),
+      islands: {
+        'live': [
+          IslandBuilding('world', height: Decimal.one, built: Decimal.one),
+          IslandBuilding(
+            'apple',
+            height: Decimal.parse('0.5'),
+            built: Decimal.zero,
+          ),
+        ],
+      },
+    );
+    ArchipelagoPainter painterOf(String label) {
+      final islet = find.ancestor(
+        of: find.byType(CustomPaint),
+        matching: find.byWidgetPredicate(
+          (w) => w is WalletIslet && w.label == label,
+        ),
+      );
+      return tester
+              .widget<CustomPaint>(
+                find.descendant(of: islet, matching: find.byType(CustomPaint)),
+              )
+              .painter!
+          as ArchipelagoPainter;
+    }
+
+    // The live wallet's two buildings, the second still a ghost; the trip
+    // holds nothing yet: its island bare.
+    final live = painterOf('Ton île').buildings;
+    expect(live, hasLength(2));
+    expect(live.last.ghost, 1);
+    expect(painterOf('La ville du voyage Crise 2008').buildings, isEmpty);
+    // Each row is one button for screen readers, its islet said first.
+    expect(
+      find.bySemanticsLabel(RegExp(r"^Ton île\nAujourd'hui")),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel(
+        RegExp(r'^La ville du voyage Crise 2008\nCrise 2008'),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.getSize(find.byType(WalletIslet).first), const Size(68, 68));
   });
 
   testWidgets('no trips yet: no count, the way to start one', (tester) async {

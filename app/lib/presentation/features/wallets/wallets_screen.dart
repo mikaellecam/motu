@@ -18,6 +18,7 @@ import '../../../domain/wallet/wallet.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/sign_color.dart';
 import '../node/node_screen.dart' show LessonCard;
+import 'wallet_islet.dart';
 
 /// The Portefeuille tab (BRIEF §3, artboard Wallets-A): the live wallet, the
 /// time trips, the lessons the user can replay as a trip, a new trip, and the
@@ -85,7 +86,7 @@ class WalletsScreen extends ConsumerWidget {
             const SizedBox(height: AppSpace.x6),
             // The sandbox's other tool (BRIEF §4.10).
             _Row(
-              icon: Icons.event_repeat_outlined,
+              leading: const _IconTile(Icons.event_repeat_outlined),
               onTap: () => context.push('/tools/dca'),
               lines: [
                 Text(l10n.wallets_dca_title, style: AppText.bodyStrong),
@@ -123,18 +124,17 @@ String _difficulty(AppLocalizations l10n, String id) => switch (id) {
   final other => other,
 };
 
-/// A flat row of the list: an icon tile (neutral, §10.2: no token means the
-/// artboard's tints), what it is, then [trailing]. The whole row opens
-/// [onTap].
+/// A flat row of the list: [leading] (a wallet's islet, a tool's icon), what
+/// it is, then [trailing]. The whole row opens [onTap].
 class _Row extends StatelessWidget {
   const _Row({
-    required this.icon,
+    required this.leading,
     required this.lines,
     required this.onTap,
     this.trailing,
   });
 
-  final IconData icon;
+  final Widget leading;
   final List<Widget> lines;
   final VoidCallback onTap;
   final Widget? trailing;
@@ -148,15 +148,7 @@ class _Row extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpace.x3),
         child: Row(
           children: [
-            Container(
-              width: AppSpace.minTarget,
-              height: AppSpace.minTarget,
-              decoration: BoxDecoration(
-                color: AppColors.line,
-                borderRadius: BorderRadius.circular(AppShape.flatButtonRadius),
-              ),
-              child: Icon(icon, color: AppColors.ink),
-            ),
+            leading,
             const SizedBox(width: AppSpace.x3),
             Expanded(
               child: Column(
@@ -173,6 +165,24 @@ class _Row extends StatelessWidget {
         ),
       ),
     ),
+  );
+}
+
+/// A tool's icon on a neutral tile (§10.2: no token means the artboard's
+/// tints).
+class _IconTile extends StatelessWidget {
+  const _IconTile(this.icon);
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: AppSpace.minTarget,
+    height: AppSpace.minTarget,
+    decoration: BoxDecoration(
+      color: AppColors.line,
+      borderRadius: BorderRadius.circular(AppShape.flatButtonRadius),
+    ),
+    child: Icon(icon, color: AppColors.ink),
   );
 }
 
@@ -234,9 +244,12 @@ class _WalletRow extends ConsumerWidget {
     };
 
     return _Row(
-      icon: live
-          ? Icons.account_balance_wallet_outlined
-          : Icons.calendar_today_outlined,
+      leading: WalletIslet(
+        walletId: wallet.id,
+        label: live
+            ? l10n.wallets_islet_live
+            : l10n.wallets_islet_trip(wallet.name),
+      ),
       onTap: () => context.push('/wallet/${wallet.id}'),
       lines: [
         Wrap(

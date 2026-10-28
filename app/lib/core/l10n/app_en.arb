@@ -162,6 +162,8 @@
   "wallets_title": "My portfolios",
   "wallets_intro": "One portfolio for today, and as many time trips as you like.",
   "wallets_live_name": "Today",
+  "wallets_islet_live": "Your island",
+  "wallets_islet_trip": "The {name} trip's city",
   "wallets_live_chip": "Live",
   "wallets_live_subtitle": "Today's real prices",
   "wallets_trips_title": "Time trips",
