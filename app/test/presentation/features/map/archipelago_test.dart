@@ -2,15 +2,31 @@ import 'dart:ui';
 
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:finance_companion/presentation/features/map/island_growth.dart';
 import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('five islands, only Actions & ETF playable', () {
+  test('five islands, Actions & ETF and Les bases playable (M12-6)', () {
     expect(archipelago.map((i) => i.id), unorderedEquals(IslandId.values));
-    expect(archipelago.where((i) => !i.locked).map((i) => i.id), [
-      IslandId.actionsEtf,
-    ]);
+    expect(
+      archipelago.where((i) => !i.locked).map((i) => i.id),
+      unorderedEquals([IslandId.actionsEtf, IslandId.basics]),
+    );
+  });
+
+  test('Les bases: a piece a lesson, the house first, its light last', () {
+    expect(
+      [for (var done = 0; done <= 9; done++) lesBasesPieces(done / 9)],
+      [for (var done = 0; done <= 9; done++) done],
+    );
+    expect(lesBasesPieces(-1), 0);
+    expect(lesBasesPieces(2), 9);
+    for (var done = 0; done <= 9; done++) {
+      final recorder = PictureRecorder();
+      ArchipelagoPainter(grownBases: done / 9).paint(Canvas(recorder), mapSize);
+      expect(recorder.endRecording(), isNotNull);
+    }
   });
 
   test('the map opens the playable islands, each on its pack', () {

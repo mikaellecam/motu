@@ -17,6 +17,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:decimal/decimal.dart';
 
+import '../../fakes/lesson_pack.dart';
+
 final bundled = decodePack(
   File('assets/packs/actions-etf.json').readAsStringSync(),
 );
@@ -136,6 +138,8 @@ void main() {
           databaseProvider.overrideWithValue(db),
           contentPackProvider(actionsEtfIsland)
               .overrideWith((ref) async => bundled),
+          contentPackProvider(lesBasesIsland)
+              .overrideWith((ref) async => decodePack(emptyBasesJson())),
         ],
       );
       addTearDown(() async {

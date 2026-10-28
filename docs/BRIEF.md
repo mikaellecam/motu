@@ -126,8 +126,8 @@ Rules:
 
 ### 4.2 Map
 
-- Isometric archipelago drawn in code (`CustomPainter`), 5 islands: Actions & ETF (centre, playable),
-  Trading, Immobilier, Crypto, Les bases (locked: clouds/greyed, label "Bientôt").
+- Isometric archipelago drawn in code (`CustomPainter`), 5 islands: Actions & ETF (centre, playable), Les bases
+  (bottom right, playable since M12-6), Trading, Immobilier, Crypto (locked: clouds/greyed, label "Bientôt").
   Built (M9-11): in the style of the approved art direction, the « map » artboard of the canvas « Investment
   Companion — Art direction » (https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5), its islands where it places
   them: block islands on the sea, Actions & ETF in sand and grass with trees, the locked ones in grey stone
@@ -150,6 +150,11 @@ Rules:
   right end (`landmarkStands`). Its shape never changes, so the wallet's buildings always stand on land. On
   the map the change eases in over 1,4 s (at once with animations off, and at once when the lessons first
   load); the island path's header shows it too, and onboarding the sand bank the user starts from.
+- Les bases grows with its lessons only, never with the wallet (M12-6, canvas « Les bases », board 3): from a
+  sand bank in its shape, each lesson done adds a piece (`lesBasesPieces`): 1 the house, 2 to 6 the
+  lighthouse's five courses in white and coral, 7 its gallery, 8 its lantern, 9 the light, gold, with two
+  beams. Its grass and three trees green as Actions & ETF's. Its pill is chunky with « {n}/9 »; its path
+  screen draws it as wide as Actions & ETF's. Built at once on the map (no easing yet).
 - The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
   (normalised), animated on change. Pending orders show as a building under construction (§10.5).
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back

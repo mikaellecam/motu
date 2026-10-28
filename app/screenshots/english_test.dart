@@ -45,6 +45,7 @@ void main() {
     size: const Size(390, 1250),
     overrides: [
       contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+      lesBasesPack,
       cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
     ],
     act: (tester) async {

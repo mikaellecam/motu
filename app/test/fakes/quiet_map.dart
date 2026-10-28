@@ -7,7 +7,7 @@ import 'package:finance_companion/domain/learning/content.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 
 /// The map with nothing behind it, for tests that only pass through it: no
-/// wallet on the island, no next step, level 1, an island without lessons.
+/// wallet on the island, no next step, level 1, islands without lessons.
 final quietMap = <Override>[
   livingIslandProvider.overrideWith((ref) async => const []),
   nextStepViewProvider.overrideWith((ref) async => null),
@@ -15,5 +15,9 @@ final quietMap = <Override>[
   islandPathProvider(actionsEtfIsland).overrideWith(
     (ref) async =>
         const IslandPathView(Localized('Actions & ETF', 'Stocks & ETFs'), []),
+  ),
+  islandPathProvider(lesBasesIsland).overrideWith(
+    (ref) async =>
+        const IslandPathView(Localized('Les bases', 'Foundations'), []),
   ),
 ];

@@ -25,8 +25,30 @@ void main() {
     overrides: [
       island,
       contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+      lesBasesPack,
       completedNodesProvider.overrideWith(
         (ref) => Stream.value({'ae.livret-vs-etf', 'ae.fees-toy'}),
+      ),
+    ],
+  );
+
+  // Les bases after its first three lessons (M12-6): « Range ton matelas »
+  // current, the island with its house and two courses of its lighthouse.
+  final bases = decodePack(
+    File('assets/packs/les-bases.json').readAsStringSync(),
+  );
+  screenshot(
+    'm12-6-bases-path',
+    const IslandScreen(islandId: lesBasesIsland),
+    size: const Size(390, 1500),
+    overrides: [
+      contentPackProvider(lesBasesIsland).overrideWith((ref) async => bases),
+      completedNodesProvider.overrideWith(
+        (ref) => Stream.value({
+          'lb.safety-cushion',
+          'lb.cash-inflation',
+          'lb.livret-inflation',
+        }),
       ),
     ],
   );

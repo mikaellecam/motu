@@ -100,7 +100,7 @@ void main() {
     await open(tester, '/');
     expect(find.byType(MapTab), findsOneWidget);
     expect(find.text('Ton archipel'), findsOneWidget);
-    expect(find.text('1 île ouverte sur 5'), findsOneWidget);
+    expect(find.text('2 îles ouvertes sur 5'), findsOneWidget);
     expect(find.text('Niveau 1'), findsOneWidget);
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(4));

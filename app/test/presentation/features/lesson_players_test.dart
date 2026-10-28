@@ -13,6 +13,7 @@ import '../../fakes/more_lessons.dart';
 import '../../fakes/recording_profiles.dart';
 
 import '../../helpers.dart';
+import '../../fakes/lesson_pack.dart';
 
 const nnbsp = ' ';
 const nbsp = ' ';
@@ -37,6 +38,8 @@ Future<void> show(WidgetTester tester, String nodeId) async {
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(morePackJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         profileRepositoryProvider.overrideWithValue(profiles),
         liveClockProvider.overrideWithValue(const _Fixed()),
       ],

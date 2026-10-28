@@ -26,6 +26,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_plan_setup.dart';
 import '../../helpers.dart';
+import '../../fakes/lesson_pack.dart';
+
+import 'package:finance_companion/data/content/pack_codec.dart';
 
 const nnbsp = ' ';
 const nbsp = ' ';
@@ -154,6 +157,8 @@ Future<void> show(
             glossary: {'dca': dcaTerm},
           ),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         termSheetProvider.overrideWith(
           (ref, id) async => const TermSheetView(
             term: dcaTerm,

@@ -134,6 +134,7 @@ void main() {
     dcaRunProvider.overrideWith((ref, p) async => r),
     // The companion's link to the glossary's DCA.
     contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+    lesBasesPack,
   ];
 
   screenshot('m8-2-dca-form', const DcaScreen(), overrides: overrides);

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../application/trip/trip_wizard.dart';
-import '../../application/learning/content.dart';
 import '../../application/learning/island_path.dart';
 import '../../application/learning/ui_level.dart';
 import '../../application/order/order_ticket.dart' show OrderDone;
@@ -135,7 +134,11 @@ class MapTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     // Offline or still loading, the island stands as it last did, or bare.
     final buildings = ref.watch(livingIslandProvider).value ?? const [];
-    final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
+    final paths = {
+      for (final island in archipelago)
+        if (island.pack case final pack?)
+          island.id: ref.watch(islandPathProvider(pack)).value,
+    };
     final level = ref.watch(currentUiLevelProvider).value;
     final open = archipelago.where((i) => !i.locked).length;
     return Scaffold(
@@ -146,9 +149,11 @@ class MapTab extends ConsumerWidget {
           Positioned.fill(
             child: ArchipelagoMap(
               buildings: buildings,
-              progress: path == null || path.nodes.isEmpty
-                  ? null
-                  : (done: path.done, total: path.nodes.length),
+              progress: {
+                for (final MapEntry(key: id, value: path) in paths.entries)
+                  if (path != null && path.nodes.isNotEmpty)
+                    id: (done: path.done, total: path.nodes.length),
+              },
               onOpen: (id) => context.push(
                 '/island/${archipelago.firstWhere((i) => i.id == id).pack}',
               ),

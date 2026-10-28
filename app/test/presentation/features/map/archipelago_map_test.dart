@@ -11,7 +11,7 @@ import '../../../helpers.dart';
 void main() {
   Future<List<IslandId>> pumpMap(
     WidgetTester tester, {
-    ({int done, int total})? progress,
+    Map<IslandId, ({int done, int total})> progress = const {},
   }) async {
     final opened = <IslandId>[];
     tester.view.physicalSize = const Size(1170, 2532);
@@ -24,7 +24,7 @@ void main() {
     return opened;
   }
 
-  testWidgets('five labelled islands, four of them coming soon', (
+  testWidgets('five labelled islands, three of them coming soon (M12-6)', (
     tester,
   ) async {
     await pumpMap(tester);
@@ -37,7 +37,7 @@ void main() {
     ]) {
       expect(find.text(name), findsOneWidget, reason: name);
     }
-    expect(find.byIcon(Icons.lock_outline), findsNWidgets(4));
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(3));
   });
 
   testWidgets('it opens on all five islands, above the next-step card', (
@@ -59,11 +59,31 @@ void main() {
     }
   });
 
-  testWidgets('Actions & ETF opens; locked islands do nothing', (tester) async {
+  testWidgets('Les bases and Actions & ETF open; locked islands do nothing', (
+    tester,
+  ) async {
     final opened = await pumpMap(tester);
+    await tester.tap(find.text('Les bases'));
     await tester.tap(find.text('Actions & ETF'));
     await tester.tap(find.text('Trading'), warnIfMissed: false);
-    expect(opened, [IslandId.actionsEtf]);
+    expect(opened, [IslandId.basics, IslandId.actionsEtf]);
+  });
+
+  testWidgets('Les bases shows its lessons done and is built as far (M12-6)', (
+    tester,
+  ) async {
+    await pumpMap(tester, progress: {IslandId.basics: (done: 3, total: 9)});
+    expect(find.text('3/9'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Les bases, 3 sur 9 terminées'),
+      findsOneWidget,
+    );
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<ArchipelagoPainter>()
+        .single;
+    expect(painter.grownBases, 3 / 9);
   });
 
   testWidgets('screen readers hear each island, and which ones are not open', (
@@ -88,7 +108,10 @@ void main() {
   testWidgets('Actions & ETF shows its lessons done, to the eye and the ear', (
     tester,
   ) async {
-    await pumpMap(tester, progress: (done: 2, total: 12));
+    await pumpMap(
+      tester,
+      progress: {IslandId.actionsEtf: (done: 2, total: 12)},
+    );
     expect(find.text('2/12'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Actions & ETF, 2 sur 12 terminées'),
@@ -223,8 +246,10 @@ void main() {
           data: MediaQueryData(disableAnimations: reducedMotion),
           child: ValueListenableBuilder(
             valueListenable: lessons,
-            builder: (_, progress, _) =>
-                ArchipelagoMap(onOpen: (_) {}, progress: progress),
+            builder: (_, progress, _) => ArchipelagoMap(
+              onOpen: (_) {},
+              progress: {IslandId.actionsEtf: ?progress},
+            ),
           ),
         ),
       );

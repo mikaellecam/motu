@@ -41,6 +41,7 @@ void main() {
   final world = pack.datasets['ds.acwi-2025-d']!.points;
   final overrides = <Override>[
     contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+    lesBasesPack,
     glossaryProgressProvider.overrideWith(
       (ref) => Stream.value({
         for (final id in ['indice', 'action'])

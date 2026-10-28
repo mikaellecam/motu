@@ -20,6 +20,7 @@ void main() {
     size: const Size(390, 520),
     overrides: [
       contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+      lesBasesPack,
       completedNodesProvider.overrideWith((ref) => Stream.value(const {})),
     ],
   );

@@ -89,6 +89,7 @@ void main() {
           File('assets/packs/actions-etf.json').readAsStringSync(),
         ),
       ),
+      lesBasesPack,
       completedNodesProvider.overrideWith(
         (ref) => Stream.value({
           for (final id in [

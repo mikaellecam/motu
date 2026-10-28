@@ -84,6 +84,8 @@ class IslandScreen extends ConsumerWidget {
   }
 }
 
+final _actionsEtf = archipelago.firstWhere((i) => i.id == IslandId.actionsEtf);
+
 class _Path extends ConsumerWidget {
   const _Path({required this.islandId, required this.path});
 
@@ -113,6 +115,7 @@ class _Path extends ConsumerWidget {
             : () => context.push('/node/${n.node.id}'),
     ];
     final island = archipelago.where((i) => i.pack == islandId).firstOrNull;
+    final grown = path.nodes.isEmpty ? 1.0 : path.done / path.nodes.length;
     // Offline or still loading, the island stands as it last did, or bare.
     // The wallet's buildings stand on Actions & ETF only.
     final buildings = island?.id != IslandId.actionsEtf
@@ -128,14 +131,18 @@ class _Path extends ConsumerWidget {
             children: [
               if (island != null)
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: ArchipelagoPainter(
-                      buildings: buildings,
-                      only: island,
-                      // Greened by the lessons below it (M9-19).
-                      grown: path.nodes.isEmpty
-                          ? 1
-                          : path.done / path.nodes.length,
+                  // Every island as wide as Actions & ETF's (M12-6).
+                  child: Transform.scale(
+                    scale: _actionsEtf.halo.width / island.halo.width,
+                    alignment: Alignment.bottomCenter,
+                    child: CustomPaint(
+                      painter: ArchipelagoPainter(
+                        buildings: buildings,
+                        only: island,
+                        // Grown by the lessons below it (M9-19, M12-6).
+                        grown: grown,
+                        grownBases: grown,
+                      ),
                     ),
                   ),
                 ),

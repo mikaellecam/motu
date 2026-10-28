@@ -119,3 +119,17 @@ String packJson({String? worldAsset = 'world', Object? choices}) => jsonEncode({
     },
   ],
 });
+
+/// Les bases with no lesson nor term: tests of Actions & ETF's lessons load
+/// it beside theirs, as every playable island loads (M12-6).
+String emptyBasesJson() => jsonEncode({
+  'island': {
+    'id': 'les-bases',
+    'version': 1,
+    'title': text('Les bases'),
+    'nodes': <String>[],
+  },
+  'nodes': <Object>[],
+  'datasets': <Object>[],
+  'glossary': <Object>[],
+});

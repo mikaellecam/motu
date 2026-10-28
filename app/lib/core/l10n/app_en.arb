@@ -54,7 +54,7 @@
   "island_trading": "Trading",
   "island_realEstate": "Real estate",
   "island_crypto": "Crypto",
-  "island_basics": "The basics",
+  "island_basics": "Foundations",
   "map_island_progress": "{done}/{total}",
   "map_island_open": "{island}, {done} of {total} done",
   "map_island_locked": "{island}, coming soon",

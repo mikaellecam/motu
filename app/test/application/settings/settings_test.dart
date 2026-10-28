@@ -14,6 +14,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_backend.dart';
+import '../../fakes/lesson_pack.dart';
+
+import 'package:finance_companion/data/content/pack_codec.dart';
 
 void main() {
   late AppDatabase db;
@@ -45,6 +48,8 @@ void main() {
             glossary: {},
           ),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     await c.read(walletRepositoryProvider).ensureLiveWallet(now);

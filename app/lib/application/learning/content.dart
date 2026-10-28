@@ -8,9 +8,12 @@ part 'content.g.dart';
 /// The playable island of V1 (BRIEF §4.3).
 const actionsEtfIsland = 'actions-etf';
 
+/// Money before investing (M12, BRIEF §4.3).
+const lesBasesIsland = 'les-bases';
+
 /// The islands the app plays, each with a bundled pack (BRIEF §4.2). The
 /// map draws each one open (`IslandLayout.pack`).
-const playableIslands = [actionsEtfIsland];
+const playableIslands = [lesBasesIsland, actionsEtfIsland];
 
 /// The content of [islandId]: bundled, or a newer version once downloaded
 /// (ADR-006). Kept for the session; the repository checks once a day.

@@ -68,6 +68,8 @@ Future<void> show(WidgetTester tester) async {
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(packJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         profileRepositoryProvider.overrideWithValue(profiles),
         livingIslandProvider.overrideWith((ref) async => const []),
       ],

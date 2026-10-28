@@ -4,8 +4,12 @@
 //   flutter test screenshots --update-goldens
 //
 // Files land in docs/screenshots/<name>.png.
+import 'dart:io';
+
 import 'package:drift/native.dart';
+import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/routing/router.dart';
@@ -14,6 +18,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+
+/// Les bases' bundled pack, for screens of Actions & ETF's lessons: every
+/// playable island loads (M12-6).
+final lesBasesPack = contentPackProvider(lesBasesIsland).overrideWith(
+  (ref) async =>
+      decodePack(File('assets/packs/les-bases.json').readAsStringSync()),
+);
 
 /// Phone-sized canvas, in logical pixels.
 const phone = Size(390, 844);

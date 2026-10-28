@@ -22,6 +22,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_backend.dart' show WallClock;
+import '../../fakes/lesson_pack.dart';
 
 Profile profile({
   Knowledge knowledge = Knowledge.nothing,
@@ -52,6 +53,8 @@ void main() {
         databaseProvider.overrideWithValue(db),
         liveClockProvider.overrideWithValue(WallClock(now)),
         contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     c.listen(nextStepViewProvider, (_, _) {});

@@ -25,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../fakes/fake_backend.dart';
 import '../../fakes/fake_frankfurter.dart';
 import '../../fakes/glossary_pack.dart';
+import '../../fakes/lesson_pack.dart';
 
 Decimal d(String s) => Decimal.parse(s);
 Money eur(String s) => Money.book(d(s), Currency.eur);
@@ -79,6 +80,8 @@ void main() {
           (ref) async =>
               decodePack(glossaryPackJson(withOrderTerms: withGateTerm)),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     wallets = c.read(walletRepositoryProvider);
