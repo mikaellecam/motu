@@ -248,7 +248,7 @@ func TestEveryDatasetHasItsRecipe(t *testing.T) {
 		{"id": "ds.odd", "interval": "1week", "from": "2022-01-03", "to": "2022-01-14"}]`},
 		`datasets.json: ds.aapl: twice`,
 		`datasets.json: ds.gone: datasets/ds.gone.json is missing: rebuild it with scripts/fetch-data.sh`,
-		`datasets.json: ds.odd: one of asset, fx and livret`)
+		`datasets.json: ds.odd: one of asset, fx, livret and cash`)
 	expectProblem(t, map[string]string{"datasets.json": `{`}, `datasets.json: `)
 }
 

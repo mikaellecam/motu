@@ -294,8 +294,10 @@ Rules:
   (M6-8): `-currency EUR` converts each close at the ECB rate of its day or the last one before (`"fx":
   "ecb"`); `-fx USD` is what one dollar was worth in euros (`"source": "ecb"`); `-livret` is a Livret A
   holding of `-deposit` euros put in on `-from`, valued each day as the app values a Livret (§4.11) from the
-  backend's rate history (`"source": "livret-a"`). A series that is not an asset's has no `asset` nor
-  `symbol`, so it has no « Et aujourd'hui ? ».
+  backend's rate history (`"source": "livret-a"`). `-cash` is `-deposit` euros kept as notes (`"source":
+  "cash"`); with `-cpi`, a Livret or cash is restated each month in euros of `-from`'s month at INSEE's
+  consumer price index (`"prices": "insee"`, ADR-008): what it buys. A series that is not an asset's has no
+  `asset` nor `symbol`, so it has no « Et aujourd'hui ? ».
 - The app bundles a baseline pack in assets (first launch works offline) and fetches newer versions from
   `/v1/content`. On the wire and in the bundle a pack is one document, `{island, nodes, datasets,
   glossary}`; glossary terms live in `glossary/<id>.json` inside the pack (ADR-006).
