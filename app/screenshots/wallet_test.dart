@@ -87,6 +87,7 @@ WalletOverview overview({
   List<Order> pending = const [],
   bool onLivret = false,
   List<PlanView> plans = const [],
+  bool fresh = false,
 }) {
   final rules = TradingRules(
     fxFeeRate: d('0.0015'),
@@ -94,19 +95,21 @@ WalletOverview overview({
     fractionalShares: true,
   );
   final fills = [
-    for (final (id, qty, price, _) in holdings)
-      Fill(
-        assetId: id,
-        side: Side.buy,
-        date: DateTime.utc(2026, 7, 2),
-        quantity: Quantity.truncate(d(qty)),
-        price: Price(d(price), Currency.usd),
-        fxRate: d('0.8612'),
-        fees: Money.book(
-          d(qty) * d(price) * d('0.8612') * d('0.0015'),
-          Currency.eur,
+    // A fresh wallet: nothing bought yet (M11-4).
+    if (!fresh)
+      for (final (id, qty, price, _) in holdings)
+        Fill(
+          assetId: id,
+          side: Side.buy,
+          date: DateTime.utc(2026, 7, 2),
+          quantity: Quantity.truncate(d(qty)),
+          price: Price(d(price), Currency.usd),
+          fxRate: d('0.8612'),
+          fees: Money.book(
+            d(qty) * d(price) * d('0.8612') * d('0.0015'),
+            Currency.eur,
+          ),
         ),
-      ),
   ];
   var cash = eur(50000);
   for (final f in fills) {
@@ -129,7 +132,15 @@ WalletOverview overview({
       fills: fills,
       positions: positionsFrom(fills),
       pendingOrders: pending,
-      values: path(51050),
+      values: fresh
+          ? [
+              DailyValue(
+                date: DateTime.utc(2026, 10, 8),
+                value: eur(50000),
+                flow: eur(50000),
+              ),
+            ]
+          : path(51050),
       livretMovements: const [],
       plans: const [],
     ),
@@ -266,6 +277,22 @@ void main() {
     const WalletScreen(walletId: 'live'),
     size: const Size(390, 1560),
     overrides: overrides,
+  );
+  // Before the first buy (M11-4): the bare island, and a plot waiting.
+  screenshot(
+    'm11-4-wallet-empty',
+    const WalletScreen(walletId: 'live'),
+    size: const Size(390, 1400),
+    overrides: [
+      livret,
+      cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
+      walletOverviewProvider.overrideWith(
+        (ref, id) async => overview(fresh: true),
+      ),
+      walletChartProvider.overrideWith(
+        (ref, args) async => chartFor(overview(fresh: true).series, args.$2),
+      ),
+    ],
   );
   // Relaunched offline (BRIEF §6.4): the last prices, dated, under the banner.
   screenshot(

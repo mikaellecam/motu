@@ -642,6 +642,11 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
 
 ### 4.7 Wallet (portfolio) screen
 
+- The wallet's island first (decided 2026-10-28 by the user, M11-4, the canvas « The world on every tab »),
+  for the live wallet and every trip (under its header): a 250 px panel of `sea` with its city, zoomed ×1.75 on
+  its buildings so that each one, as the map draws it (pending ghosts included), is a 44 px target that opens
+  its asset (`/asset/{id}?wallet=`), its name for screen readers. Under it « Touche un immeuble pour ouvrir sa
+  ligne », or before the first buy « Ton île attend son premier immeuble ». Still: it changes at once.
 - Header: total value, change since start (amount and %; TWR when contributions exist), data timestamp
   (the oldest price on screen), two tiles "Investi" (market value of the positions now, so tiles + Livret
   add up to the total) / "Liquidités disponibles" (cash minus what pending buys hold back), primary button
@@ -653,7 +658,9 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
 - Allocation bar + legend (includes cash and Livret lines): positions in shades of `primary`, largest first;
   cash `line`; Livret `muted`.
 - Companion card when a moment is active.
-- Positions list (cash is **not** a row): avatar, name, quantity, value in €, P&L % with sign.
+- Positions list (cash is **not** a row): avatar, name, quantity, value in €, P&L % with sign. None yet (and
+  the wallet not finished): a bare plot on `sea`, « Aucune position pour l'instant. », « Ton premier achat
+  posera la première pierre de ton île. » and « Explorer les actifs » (M11-4).
 - « Versements programmés » (M9-41), under the pending orders and only while the wallet has an active DCA plan
   (none on a finished trip): each plan with its asset's avatar and name, « 100,00 € chaque mois », « Prochain
   achat : le 9 novembre » (its first scheduled purchase after the wallet's day, §4.5) and « Arrêter ».

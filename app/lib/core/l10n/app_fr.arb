@@ -233,6 +233,22 @@
   "wallet_allocation_livret": "Livret A",
   "wallet_positions_title": "Positions",
   "wallet_positions_empty": "Aucune position pour l'instant.",
+  "wallet_positions_empty_body": "Ton premier achat posera la premi\u00e8re pierre de ton \u00eele.",
+  "@wallet_positions_empty_body": {
+    "description": "Under « Aucune position pour l'instant. », beside a bare plot of the island."
+  },
+  "wallet_positions_explore": "Explorer les actifs",
+  "@wallet_positions_explore": {
+    "description": "Opens Explore for this wallet, from its empty positions."
+  },
+  "wallet_island_hint": "Touche un immeuble pour ouvrir sa ligne",
+  "@wallet_island_hint": {
+    "description": "Under a wallet's island: each building opens its asset."
+  },
+  "wallet_island_empty": "Ton \u00eele attend son premier immeuble",
+  "@wallet_island_empty": {
+    "description": "Under a wallet's island before its first buy."
+  },
   "wallet_quantity_stock": "{form, select, one{{quantity} action} other{{quantity} actions}}",
   "@wallet_quantity_stock": {
     "description": "Shares held; form is \"one\" below 2 in French.",

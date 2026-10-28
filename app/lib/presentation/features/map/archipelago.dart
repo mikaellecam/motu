@@ -295,6 +295,31 @@ class ArchipelagoPainter extends CustomPainter {
   ];
   static const _footprint = 0.72;
 
+  /// Where each of [buildings] stands on [island]'s canvas, in their order
+  /// (the largest first), for taps (M11-4): a strip as wide as the step from
+  /// one spot to the next, from its roof (its ghost's while a buy waits) to
+  /// its foot. At most the island's five spots.
+  static List<Rect> buildingRects(
+    IslandLayout island,
+    List<DrawnBuilding> buildings,
+  ) {
+    final p = island.projection;
+    final step =
+        p.project(_spots[1].$1, _spots[1].$2).dx -
+        p.project(_spots[0].$1, _spots[0].$2).dx;
+    const half = _footprint / 2;
+    return [
+      for (var i = 0; i < buildings.length && i < _spots.length; i++)
+        if (_spots[_spots.length - 1 - i] case (final cx, final cy))
+          Rect.fromLTRB(
+            p.project(cx, cy).dx - step / 2,
+            p.project(cx - half, cy - half, buildings[i].height).dy,
+            p.project(cx, cy).dx + step / 2,
+            p.project(cx + half, cy + half).dy,
+          ),
+    ];
+  }
+
   /// Where Actions & ETF's landmark stands once every lesson is done (M9-19):
   /// its right end, clear of the buildings and the trees.
   static const _landmarkSpot = (6.5, 3.5);
