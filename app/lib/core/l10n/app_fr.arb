@@ -1261,6 +1261,51 @@
       }
     }
   },
+  "toy_months": "{months, plural, one{{months} mois} other{{months} mois}}",
+  "@toy_months": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "toy_cushion_saved": "Ce que tu mets de c\u00f4t\u00e9",
+  "toy_cushion_target": "Ton matelas",
+  "toy_cushion_result": "Ton matelas de {target} est plein en {months}.",
+  "@toy_cushion_result": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      },
+      "months": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_cushion_never": "Sans rien mettre de c\u00f4t\u00e9 chaque mois, le matelas ne se remplit pas.",
+  "toy_loan_repaid": "D\u00e9j\u00e0 rembours\u00e9",
+  "toy_loan_borrowed": "Somme emprunt\u00e9e",
+  "toy_loan_payment": "Chaque mois",
+  "toy_loan_result": "Le cr\u00e9dit co\u00fbte {cost}.",
+  "@toy_loan_result": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_loan_paid_back": "Au bout de {month} mois, tu as rendu les {amount} : la suite, c'est le prix du cr\u00e9dit.",
+  "@toy_loan_paid_back": {
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "toy_loan_no_cost": "Sans int\u00e9r\u00eats, tu rends exactement ce que tu as emprunt\u00e9.",
   "toy_fee_line": "Frais de {fee} par an",
   "@toy_fee_line": {
     "placeholders": {

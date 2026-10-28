@@ -17,7 +17,8 @@ import 'reveal_chart.dart';
 
 /// `toy` (BRIEF §4.3): sliders on a formula chart. The yearly return starts
 /// from a real past average (decided 2026-10-11) and says when it became an
-/// assumption. Done once every slider moved.
+/// assumption. The cushion and the loan draw a dashed level to reach (M12-3).
+/// Done once every slider moved.
 class ToyPlayer extends ConsumerWidget {
   const ToyPlayer({super.key, required this.nodeId});
 
@@ -37,41 +38,87 @@ class ToyPlayer extends ConsumerWidget {
       onRetry: () => ref.invalidate(toyPlayProvider(nodeId)),
       data: (s) {
         final toy = s.view.toy;
-        final years = l10n.toy_years(s.value('years').toBigInt().toInt());
-        // Each line: its name, its yearly values, its color.
-        final (lines, result) = switch (s.outcome) {
+        String euros(Decimal v) => formats.amount(v, Currency.eur);
+        String years() => l10n.toy_years(s.value('years').toBigInt().toInt());
+        // A level to reach, as long as the curve beside it.
+        List<Decimal> level(Decimal v, List<Decimal> beside) =>
+            List.filled(beside.length, v);
+        // Each line: its name, its values (a year or a month each), its
+        // color, dashed for a level; then figures without a line, the
+        // result, and a line under it.
+        final (lines, figures, result, note) = switch (s.outcome) {
           FeesOutcome(:final result) => (
             [
               (
                 l10n.toy_fee_line(formats.percent(s.value('fee_low'))),
                 result.low,
                 lineColors[0],
+                false,
               ),
               (
                 l10n.toy_fee_line(formats.percent(s.value('fee_high'))),
                 result.high,
                 lineColors[1],
+                false,
               ),
             ],
-            l10n.toy_fees_result(
-              years,
-              formats.amount(result.gap, Currency.eur),
-            ),
+            const <(String, String)>[],
+            l10n.toy_fees_result(years(), euros(result.gap)),
+            _returnLine(l10n, s, language, formats),
           ),
           CompoundOutcome(:final result) => (
             [
-              (l10n.toy_value, result.value, lineColors[0]),
-              (l10n.toy_money_in, result.moneyIn, lineColors[2]),
+              (l10n.toy_value, result.value, lineColors[0], false),
+              (l10n.toy_money_in, result.moneyIn, lineColors[2], false),
             ],
+            const <(String, String)>[],
             l10n.toy_compound_result(
-              years,
-              formats.amount(result.value.last, Currency.eur),
-              formats.amount(result.moneyIn.last, Currency.eur),
+              years(),
+              euros(result.value.last),
+              euros(result.moneyIn.last),
             ),
+            _returnLine(l10n, s, language, formats),
+          ),
+          CushionOutcome(:final result) => (
+            [
+              (l10n.toy_cushion_saved, result.saved, lineColors[0], false),
+              (
+                l10n.toy_cushion_target,
+                level(result.target, result.saved),
+                lineColors[1],
+                true,
+              ),
+            ],
+            const <(String, String)>[],
+            switch (result.fullIn) {
+              null => l10n.toy_cushion_never,
+              final months => l10n.toy_cushion_result(
+                euros(result.target),
+                l10n.toy_months(months),
+              ),
+            },
+            null,
+          ),
+          LoanOutcome(:final result) => (
+            [
+              (l10n.toy_loan_repaid, result.repaid, lineColors[0], false),
+              (
+                l10n.toy_loan_borrowed,
+                level(result.amount, result.repaid),
+                lineColors[1],
+                true,
+              ),
+            ],
+            [(l10n.toy_loan_payment, euros(result.payment))],
+            l10n.toy_loan_result(euros(result.cost)),
+            result.cost == Decimal.zero
+                ? l10n.toy_loan_no_cost
+                : l10n.toy_loan_paid_back(
+                    result.paidBackIn,
+                    euros(result.amount),
+                  ),
           ),
         };
-        final rate = formats.percent(s.value('return'), signed: true);
-        final past = s.view.past;
 
         return ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
@@ -94,48 +141,47 @@ class ToyPlayer extends ConsumerWidget {
                 children: [
                   RevealChart(
                     lines: [
-                      for (final (_, values, color) in lines)
-                        ChartLine([
-                          for (final (year, v) in values.indexed)
-                            (year.toDouble(), v.toDouble()),
-                        ], color),
+                      for (final (_, values, color, dashed) in lines)
+                        ChartLine(
+                          [
+                            for (final (i, v) in values.indexed)
+                              (i.toDouble(), v.toDouble()),
+                          ],
+                          color,
+                          dashed: dashed,
+                        ),
                     ],
                     animate: false,
                     semanticsLabel: l10n.node_chart_semantics(
                       [
-                        for (final (label, values, _) in lines)
+                        for (final (label, values, _, _) in lines)
                           l10n.node_chart_line(
                             label,
-                            formats.amount(values.first, Currency.eur),
-                            formats.amount(values.last, Currency.eur),
+                            euros(values.first),
+                            euros(values.last),
                           ),
                       ].join('; '),
                     ),
                   ),
                   const SizedBox(height: AppSpace.x3),
-                  for (final (label, values, color) in lines)
+                  for (final (label, values, color, dashed) in lines)
                     ChartLegendRow(
                       color: color,
+                      dashed: dashed,
                       label: label,
-                      value: formats.amount(values.last, Currency.eur),
+                      value: euros(values.last),
                     ),
+                  for (final (label, value) in figures)
+                    ChartLegendRow(label: label, value: value),
                   const SizedBox(height: AppSpace.x2),
                   Semantics(
                     liveRegion: true,
                     child: Text(result, style: AppText.bodyStrong),
                   ),
-                  const SizedBox(height: AppSpace.x2),
-                  Text(
-                    s.returnIsPast && past != null && toy.returnFrom != null
-                        ? l10n.toy_return_past(
-                            rate,
-                            toy.returnFrom!.label.of(language),
-                            '${past.from.year}',
-                            '${past.to.year}',
-                          )
-                        : l10n.toy_return_hypothesis(rate),
-                    style: muted,
-                  ),
+                  if (note != null) ...[
+                    const SizedBox(height: AppSpace.x2),
+                    Text(note, style: muted),
+                  ],
                 ],
               ),
             ),
@@ -182,14 +228,39 @@ class ToyPlayer extends ConsumerWidget {
     );
   }
 
+  /// Where the yearly return comes from: a real past average, or an
+  /// assumption once moved.
+  static String _returnLine(
+    AppLocalizations l10n,
+    ToyState s,
+    String language,
+    Formats formats,
+  ) {
+    final rate = formats.percent(s.value('return'), signed: true);
+    final past = s.view.past;
+    final from = s.view.toy.returnFrom;
+    return s.returnIsPast && past != null && from != null
+        ? l10n.toy_return_past(
+            rate,
+            from.label.of(language),
+            '${past.from.year}',
+            '${past.to.year}',
+          )
+        : l10n.toy_return_hypothesis(rate);
+  }
+
   String _format(
     AppLocalizations l10n,
     Formats formats,
     String control,
     Decimal value,
   ) => switch (control) {
-    'amount' || 'monthly' => formats.amount(value, Currency.eur),
+    'amount' ||
+    'monthly' ||
+    'spending' ||
+    'saving' => formats.amount(value, Currency.eur),
     'years' => l10n.toy_years(value.toBigInt().toInt()),
+    'months' => l10n.toy_months(value.toBigInt().toInt()),
     'return' => formats.percent(value, signed: true),
     _ => formats.percent(value),
   };

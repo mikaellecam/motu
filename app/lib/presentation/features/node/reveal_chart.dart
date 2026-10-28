@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 
@@ -9,9 +11,12 @@ import '../../../core/theme/tokens.dart';
 /// A line to draw. x and y are plot positions only: the figures shown next
 /// to the chart come from the decimals, never from these doubles.
 class ChartLine {
-  const ChartLine(this.points, this.color);
+  const ChartLine(this.points, this.color, {this.dashed = false});
   final List<(double, double)> points;
   final Color color;
+
+  /// A level to reach (what was borrowed, the cushion), not a curve.
+  final bool dashed;
 }
 
 /// The colors of a lesson's curves, in drawing order (BRIEF §10.2: the main
@@ -148,6 +153,15 @@ class LinesPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round;
       for (final metric in path.computeMetrics()) {
         final length = metric.length * progress;
+        if (line.dashed) {
+          for (var at = 0.0; at < length; at += 11) {
+            canvas.drawPath(
+              metric.extractPath(at, math.min(at + 6, length)),
+              paint,
+            );
+          }
+          continue;
+        }
         canvas.drawPath(metric.extractPath(0, length), paint);
         final tip = metric.getTangentForOffset(length)?.position;
         if (tip != null && progress > 0) {
@@ -225,9 +239,13 @@ class ChartLegendRow extends StatelessWidget {
     this.change,
     this.changeColor,
     this.count,
+    this.dashed = false,
   });
 
   final Color? color;
+
+  /// The swatch of a dashed line ([ChartLine.dashed]).
+  final bool dashed;
   final String label;
   final String value;
   final String? change;
@@ -264,14 +282,27 @@ class ChartLegendRow extends StatelessWidget {
         children: [
           if (color != null) ...[
             ExcludeSemantics(
-              child: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
+              child: dashed
+                  ? SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: Row(
+                        children: [
+                          for (final i in [0, 1]) ...[
+                            if (i > 0) const SizedBox(width: 2),
+                            Container(width: 5, height: 2.5, color: color),
+                          ],
+                        ],
+                      ),
+                    )
+                  : Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
             ),
             const SizedBox(width: AppSpace.x2),
           ],

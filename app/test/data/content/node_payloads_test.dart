@@ -166,6 +166,30 @@ void main() {
       expect(node.returnFrom!.label.fr, "l'ETF Monde");
     });
 
+    test('the cushion and the loan read their own sliders (M12-3)', () {
+      for (final (formula, controls) in [
+        (ToyFormula.cushion, ['spending', 'months', 'saving']),
+        (ToyFormula.loan, ['amount', 'months', 'rate']),
+      ]) {
+        final node = toy()
+          ..remove('return_from')
+          ..['formula'] = formula.json
+          ..['controls'] = [
+            for (final id in controls) control(id, 0, 10, 1, 5),
+          ];
+        final pack = packWith(node);
+        expect(decodeToy(pack.nodes.single, pack).formula, formula);
+
+        (node['controls']! as List)[1] = control('years', 0, 10, 1, 5);
+        final wrong = packWith(node);
+        expect(
+          () => decodeToy(wrong.nodes.single, wrong),
+          throwsFormatException,
+          reason: '${formula.json} reads months, not years',
+        );
+      }
+    });
+
     for (final (what, edit) in <(String, void Function(Map<String, Object?>))>[
       ('an unknown formula', (n) => n['formula'] = 'tax'),
       ('a missing control', (n) => (n['controls']! as List).removeAt(0)),
