@@ -122,6 +122,63 @@ void main() {
     },
   );
 
+  test('created before the open, an order of the first day fills that day (M12-13)', () async {
+    // Monday 12:00 UTC, before Nasdaq opens at 13:30.
+    await db.walletDao.deleteWallet(live);
+    await wallets.ensureLiveWallet(DateTime.utc(2026, 10, 5, 12));
+    await wallets.placeOrder(live, buy('o5', DateTime.utc(2026, 10, 5, 12, 5)));
+    await run();
+
+    final detail = (await wallets.orderDetail('o5'))!;
+    expect(detail.status, OrderStatus.filled);
+    expect(detail.fill!.date, day(2026, 10, 5));
+    expect(detail.fill!.price, Price(d('100'), Currency.usd));
+
+    // Monday's close replaced the start value: one value a day, the
+    // starting cash still the money put in, the FX fee already out.
+    var wallet = await wallets.load(live);
+    expect(
+      [for (final v in wallet.values) v.date],
+      [day(2026, 10, 5), day(2026, 10, 6), day(2026, 10, 7)],
+    );
+    expect(wallet.values.first.flow, const Money(5000000, Currency.eur));
+    expect(
+      wallet.values.first.value.minorUnits,
+      lessThan(wallet.values.first.flow.minorUnits),
+    );
+
+    // The next launch does not run Monday again.
+    await run();
+    wallet = await wallets.load(live);
+    expect(wallet.fills, hasLength(1));
+    expect(wallet.values, hasLength(3));
+  });
+
+  test(
+    'created after the close, the first day keeps its start value',
+    () async {
+      // Monday 21:00 UTC, Nasdaq closed at 20:00 (M12-13).
+      await db.walletDao.deleteWallet(live);
+      await wallets.ensureLiveWallet(DateTime.utc(2026, 10, 5, 21));
+      await wallets.placeOrder(
+        live,
+        buy('o6', DateTime.utc(2026, 10, 5, 21, 5)),
+      );
+      await run();
+
+      expect((await wallets.orderDetail('o6'))!.fill!.date, day(2026, 10, 6));
+      final first = (await wallets.load(live)).values.first;
+      expect(
+        (first.date, first.value, first.flow),
+        (
+          day(2026, 10, 5),
+          const Money(5000000, Currency.eur),
+          const Money(5000000, Currency.eur),
+        ),
+      );
+    },
+  );
+
   test('a limit set mid-session waits for the next session', () async {
     // Tuesday 15:00 UTC, Nasdaq open: Tuesday's bar (101) already crossed
     // the limit, but that session's prices came before the order.

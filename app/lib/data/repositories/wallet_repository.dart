@@ -396,6 +396,22 @@ class WalletRepository {
     return _engineState(wallet, date, livretRates);
   });
 
+  /// When [walletId] was created: the live wallet's first day runs again if
+  /// that came before the day's close (M12-13).
+  Future<DateTime> createdAt(String walletId) => guardStorage(() async {
+    final row = await _db.walletDao.wallet(walletId);
+    if (row == null) throw const NotFoundFailure();
+    return row.createdAt;
+  });
+
+  /// Whether the engine booked any of [walletId]'s days: every advance
+  /// [saveAdvance] books saves the companion's state with them.
+  Future<bool> everAdvanced(String walletId) => guardStorage(() async {
+    final row = await _db.walletDao.wallet(walletId);
+    if (row == null) throw const NotFoundFailure();
+    return row.companionState != null;
+  });
+
   /// The live wallet as the engine takes it to catch up with the sessions
   /// that closed (M4-6): its day is the last one valued.
   Future<TripState> liveState({required List<LivretRate> livretRates}) =>
@@ -466,7 +482,11 @@ class WalletRepository {
             );
         }
       }
-      for (final value in advance.state.values.skip(before.values.length)) {
+      // From the last value [before] had: the first day run again replaces
+      // it (M12-13); otherwise it is written as it was.
+      for (final value in advance.state.values.skip(
+        before.values.isEmpty ? 0 : before.values.length - 1,
+      )) {
         await appendValue(walletId, value);
       }
       final trip =
