@@ -41,17 +41,17 @@
       },
       "choices": [
         {
-          "id": "wary",
-          "label": {
-            "fr": "Je me méfie",
-            "en": "I'm wary"
-          }
-        },
-        {
           "id": "trust",
           "label": {
             "fr": "Il a l'air de réussir, j'y vais",
             "en": "They look successful, I go for it"
+          }
+        },
+        {
+          "id": "wary",
+          "label": {
+            "fr": "Je me méfie",
+            "en": "I'm wary"
           }
         }
       ],
@@ -95,17 +95,17 @@
       },
       "choices": [
         {
-          "id": "never",
-          "label": {
-            "fr": "Je ne le donne jamais",
-            "en": "I never give it"
-          }
-        },
-        {
           "id": "give",
           "label": {
             "fr": "Je le donne, c'est ma banque",
             "en": "I give it, it's my bank"
+          }
+        },
+        {
+          "id": "never",
+          "label": {
+            "fr": "Je ne le donne jamais",
+            "en": "I never give it"
           }
         }
       ],
@@ -122,17 +122,17 @@
       },
       "choices": [
         {
-          "id": "lists",
-          "label": {
-            "fr": "Les listes noires de l'AMF et le registre de l'Orias",
-            "en": "The AMF's blacklists and the Orias register"
-          }
-        },
-        {
           "id": "reviews",
           "label": {
             "fr": "Les avis sur son propre site",
             "en": "The reviews on its own site"
+          }
+        },
+        {
+          "id": "lists",
+          "label": {
+            "fr": "Les listes noires de l'AMF et le registre de l'Orias",
+            "en": "The AMF's blacklists and the Orias register"
           }
         }
       ],

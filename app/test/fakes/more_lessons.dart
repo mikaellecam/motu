@@ -36,7 +36,7 @@ Map<String, Object> _dataset(
   'points': points,
 };
 
-String morePackJson() => jsonEncode({
+String morePackJson({String quizType = 'checkpoint'}) => jsonEncode({
   'island': {
     'id': 'actions-etf',
     'version': 1,
@@ -105,7 +105,7 @@ String morePackJson() => jsonEncode({
     },
     {
       'id': 'ae.quiz',
-      'type': 'checkpoint',
+      'type': quizType,
       'title': text('Point d\'étape'),
       'status': 'draft',
       'questions': [

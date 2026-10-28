@@ -97,6 +97,20 @@ void main() {
     expect(packs.fold(0, (n, p) => n + p.glossary.length), terms.length);
   });
 
+  test('its quizzes do not keep the right answer in one place (M12-11)', () {
+    for (final id in ['lb.spot-the-scam', 'lb.checkpoint-1']) {
+      final quiz = decodeCheckpoint(
+        pack.nodes.firstWhere((n) => n.id == id),
+        pack,
+      );
+      final places = {
+        for (final q in quiz.questions)
+          q.choices.indexWhere((c) => c.id == q.answer),
+      };
+      expect(places.length, greaterThan(1), reason: id);
+    }
+  });
+
   test('its inflation curves are restated at INSEE prices', () {
     expect(pack.datasets['ds.cash-real-2016-m']!.prices, 'insee');
     expect(pack.datasets['ds.livret-a-real-2022-m']!.prices, 'insee');
