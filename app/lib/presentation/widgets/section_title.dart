@@ -7,7 +7,13 @@ import '../../core/theme/tokens.dart';
 /// flat card, so a screen reads by its sections rather than as a column of
 /// identical cards.
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.title, {super.key, this.top = 0, this.line});
+  const SectionTitle(
+    this.title, {
+    super.key,
+    this.top = 0,
+    this.line,
+    this.leading,
+  });
 
   final String title;
 
@@ -17,10 +23,13 @@ class SectionTitle extends StatelessWidget {
   /// A line under the title saying what the section holds.
   final String? line;
 
+  /// Drawn before the title and its line: what the section holds, as a
+  /// small scene (Explore's, M11-5).
+  final Widget? leading;
+
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(top: top, bottom: AppSpace.x2),
-    child: Column(
+  Widget build(BuildContext context) {
+    final words = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -28,8 +37,21 @@ class SectionTitle extends StatelessWidget {
         if (line case final line?)
           Text(line, style: AppText.caption.copyWith(color: AppColors.muted)),
       ],
-    ),
-  );
+    );
+    return Padding(
+      padding: EdgeInsets.only(top: top, bottom: AppSpace.x2),
+      child: switch (leading) {
+        null => words,
+        final leading => Row(
+          children: [
+            leading,
+            const SizedBox(width: AppSpace.x3),
+            Expanded(child: words),
+          ],
+        ),
+      },
+    );
+  }
 }
 
 /// [child] under its [title].
