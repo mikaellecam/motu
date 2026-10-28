@@ -12,7 +12,6 @@ import '../../../core/widgets/chunky.dart';
 import '../../../data/repositories/wallet_repository.dart';
 import '../../../domain/learning/next_step.dart';
 import '../companion/companion_card.dart';
-import '../glossary/term_sheet.dart';
 
 /// The one action the map recommends (BRIEF §4.2), as `nextStep` picks it;
 /// it follows the user's progress as it happens. Nothing before the
@@ -41,13 +40,6 @@ class NextStepCard extends ConsumerWidget {
         l10n.next_step_mission_go,
         ChunkyButtonKind.progress,
         () => context.push('/node/$nodeId'),
-      ),
-      OpenGlossary(:final termId) => (
-        l10n.next_step_cushion,
-        title,
-        l10n.next_step_read,
-        ChunkyButtonKind.progress,
-        () => showTermSheet(context, termId),
       ),
       ContinueTrip(:final walletId) => (
         l10n.next_step_trip,

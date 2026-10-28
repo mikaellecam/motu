@@ -10,7 +10,8 @@ A Flutter app that teaches beginners (French market first) to invest, backed by 
 service. It has two halves that never block each other:
 
 - **Islands (lessons).** A map of islands, one per domain. Each island is a path of short interactive
-  exercises built on *frozen* real historical data. V1 ships one playable island: **Actions & ETF**.
+  exercises built on *frozen* real historical data. V1 ships one playable island: **Actions & ETF**; since
+  M12, **Les bases** comes before it and opens it.
 - **Sandbox.** A Trading 212-style fictional portfolio: one wallet on today's prices, plus "time-trip"
   wallets that start at a past date and move forward through real history. Plus a DCA simulator.
 

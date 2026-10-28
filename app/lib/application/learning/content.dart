@@ -1,6 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/learning/content.dart';
+import '../../domain/learning/path.dart';
+import '../../domain/learning/profile.dart';
+import '../../domain/learning/profile_rules.dart';
 import '../providers.dart';
 
 part 'content.g.dart';
@@ -20,6 +23,28 @@ const playableIslands = [lesBasesIsland, actionsEtfIsland];
 @Riverpod(keepAlive: true)
 Future<ContentPack> contentPack(Ref ref, String islandId) =>
     ref.watch(contentRepositoryProvider).pack(islandId);
+
+/// The lessons each island's lessons wait for (decided 2026-10-28, M12-7): Les
+/// bases comes first, and Actions & ETF opens after its fifth lesson. Here
+/// rather than in `island.json`, since a published version never changes
+/// (ADR-006); it moves into the pack with Actions & ETF's next version. The
+/// later islands' are in BRIEF §4.2.
+const islandRequires = {
+  actionsEtfIsland: ['lb.cushion-2020'],
+};
+
+/// Whether [pack]'s lessons are open (`islandOpen`, M12-7): the questionnaire
+/// opens Actions & ETF for those who skip Les bases.
+bool lessonsOpen(ContentPack pack, Set<String> completed, Profile? profile) =>
+    islandOpen(
+      requires: islandRequires[pack.id] ?? const [],
+      lessons: [for (final n in pack.nodes) n.id],
+      completed: completed,
+      opened:
+          pack.id == actionsEtfIsland &&
+          profile != null &&
+          skipsTheBasics(profile),
+    );
 
 /// Every playable island's pack, in [playableIslands]' order: a lesson or a
 /// term is looked up in all of them (M12-1).

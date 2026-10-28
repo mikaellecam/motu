@@ -30,28 +30,28 @@ int startingNode(Profile p) => switch (p.knowledge) {
   Knowledge.alreadyInvesting => 4,
 };
 
+/// Q3 (M12-7): someone who knows ETFs or invests already skips Les bases:
+/// Actions & ETF's lessons open at once, and the way starts there.
+bool skipsTheBasics(Profile p) =>
+    p.knowledge == Knowledge.etfs || p.knowledge == Knowledge.alreadyInvesting;
+
 /// Q3: level of detail shown from the start (§4.15).
 int initialUiLevel(Profile p) =>
     p.knowledge == Knowledge.alreadyInvesting ? 2 : 1;
 
 /// Q4: savings on a Livret put node 1, « Livret ou ETF ? », before the
-/// starting node, flagged as chosen for that answer.
+/// starting node of Actions & ETF, flagged as chosen for that answer.
 int? forcedFirstNode(Profile p) => p.savings == Savings.livret ? 1 : null;
 
-/// Q4: without savings, the safety-cushion sheet comes before any lesson.
-bool cushionFirst(Profile p) => p.savings == Savings.none;
-
-/// Glossary term opened first when [cushionFirst].
-const cushionTerm = 'matelas-de-securite';
-
 /// Which answer decided the start, for « On commence par X parce que tu as
-/// répondu Y ».
+/// répondu Y »: on Actions & ETF, Livret savings or what one knows; on Les
+/// bases (M12-7), no savings or what one knows.
 enum StartReason { knowledge, livretSavings, noSavings }
 
 StartReason startReason(Profile p) => switch (p.savings) {
-  Savings.livret => StartReason.livretSavings,
-  Savings.none => StartReason.noSavings,
-  Savings.currentAccount || Savings.invested => StartReason.knowledge,
+  Savings.livret when skipsTheBasics(p) => StartReason.livretSavings,
+  Savings.none when !skipsTheBasics(p) => StartReason.noSavings,
+  _ => StartReason.knowledge,
 };
 
 /// Q5: new lesson nodes suggested per day.

@@ -7,6 +7,7 @@ import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
 import 'package:finance_companion/domain/learning/profile_rules.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:finance_companion/application/learning/content.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Fails the first [failures] saves.
@@ -167,27 +168,41 @@ void main() {
       savings: s,
       weeklyTime: WeeklyTime.fifteen,
     );
-    final cases = <(Knowledge, Savings, StartReason, int)>[
-      (Knowledge.nothing, Savings.currentAccount, StartReason.knowledge, 1),
-      (Knowledge.etfs, Savings.invested, StartReason.knowledge, 3),
+    // Les bases' first lesson, or Actions & ETF's node for those who skip
+    // Les bases (M12-7).
+    const bases = lesBasesIsland, etf = actionsEtfIsland;
+    final cases = <(Knowledge, Savings, StartReason, String, int)>[
+      (
+        Knowledge.nothing,
+        Savings.currentAccount,
+        StartReason.knowledge,
+        bases,
+        1,
+      ),
+      (Knowledge.stocks, Savings.livret, StartReason.knowledge, bases, 1),
+      (Knowledge.nothing, Savings.none, StartReason.noSavings, bases, 1),
+      (Knowledge.etfs, Savings.invested, StartReason.knowledge, etf, 3),
       (
         Knowledge.alreadyInvesting,
         Savings.currentAccount,
         StartReason.knowledge,
+        etf,
         4,
       ),
       (
         Knowledge.alreadyInvesting,
         Savings.livret,
         StartReason.livretSavings,
+        etf,
         1,
       ),
-      (Knowledge.etfs, Savings.none, StartReason.noSavings, 3),
+      (Knowledge.etfs, Savings.none, StartReason.knowledge, etf, 3),
     ];
-    for (final (k, s, reason, node) in cases) {
-      test('$k, $s → $reason, node $node', () {
+    for (final (k, s, reason, island, node) in cases) {
+      test('$k, $s → $reason, $island node $node', () {
         final e = startExplanation(p(k, s));
         expect(e.reason, reason);
+        expect(e.island, island);
         expect(e.node, node);
       });
     }

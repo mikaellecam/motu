@@ -3,6 +3,7 @@ import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/domain/learning/missions.dart';
 import 'package:finance_companion/domain/learning/next_step.dart';
 import 'package:finance_companion/domain/learning/node.dart';
+import 'package:finance_companion/domain/learning/path.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
 import 'package:finance_companion/domain/learning/profile_rules.dart';
 import 'package:finance_companion/domain/market/asset.dart';
@@ -85,17 +86,37 @@ void main() {
       }
     });
 
-    test('Q4: Livret savings force node 1 first; no savings start with the cushion', () {
-      for (final (savings, forced, cushion, reason) in [
-        (Savings.livret, 1, false, StartReason.livretSavings),
-        (Savings.currentAccount, null, false, StartReason.knowledge),
-        (Savings.invested, null, false, StartReason.knowledge),
-        (Savings.none, null, true, StartReason.noSavings),
+    test('Q4: Livret savings force node 1 first; the answer the start '
+        'follows (M12-7)', () {
+      for (final (knowledge, savings, forced, reason) in [
+        // Starting on Actions & ETF: Livret savings bring node 1 first.
+        (Knowledge.etfs, Savings.livret, 1, StartReason.livretSavings),
+        (Knowledge.etfs, Savings.currentAccount, null, StartReason.knowledge),
+        (Knowledge.etfs, Savings.invested, null, StartReason.knowledge),
+        (Knowledge.etfs, Savings.none, null, StartReason.knowledge),
+        // Starting on Les bases: no savings is why, else what one knows.
+        (Knowledge.nothing, Savings.none, null, StartReason.noSavings),
+        (Knowledge.nothing, Savings.livret, 1, StartReason.knowledge),
+        (Knowledge.stocks, Savings.currentAccount, null, StartReason.knowledge),
       ]) {
-        final p = profile(savings: savings, knowledge: Knowledge.etfs);
-        expect(forcedFirstNode(p), forced, reason: '$savings');
-        expect(cushionFirst(p), cushion, reason: '$savings');
-        expect(startReason(p), reason, reason: '$savings');
+        final p = profile(savings: savings, knowledge: knowledge);
+        expect(forcedFirstNode(p), forced, reason: '$knowledge $savings');
+        expect(startReason(p), reason, reason: '$knowledge $savings');
+      }
+    });
+
+    test('Q3: knowing ETFs or investing already skips Les bases (M12-7)', () {
+      for (final (knowledge, skips) in [
+        (Knowledge.nothing, false),
+        (Knowledge.stocks, false),
+        (Knowledge.etfs, true),
+        (Knowledge.alreadyInvesting, true),
+      ]) {
+        expect(
+          skipsTheBasics(profile(knowledge: knowledge)),
+          skips,
+          reason: '$knowledge',
+        );
       }
     });
 
@@ -148,16 +169,62 @@ void main() {
     });
   });
 
+  group('an island\'s lessons open (M12-7)', () {
+    const lessons = ['ae.one', 'ae.two'];
+    for (final (name, requires, completed, opened, open) in [
+      ('nothing required', const <String>[], const <String>{}, false, true),
+      ('its lesson to wait for done', ['lb.five'], {'lb.five'}, false, true),
+      ('waiting for it', ['lb.five'], {'lb.four'}, false, false),
+      ('one of two required', ['lb.five', 'lb.six'], {'lb.five'}, false, false),
+      (
+        'its own progress kept (an install from v1.0.0)',
+        ['lb.five'],
+        {'ae.two'},
+        false,
+        true,
+      ),
+      (
+        'opened by the questionnaire',
+        ['lb.five'],
+        const <String>{},
+        true,
+        true,
+      ),
+    ]) {
+      test(name, () {
+        expect(
+          islandOpen(
+            requires: requires,
+            lessons: lessons,
+            completed: completed,
+            opened: opened,
+          ),
+          open,
+        );
+      });
+    }
+  });
+
   group('nextStep (BRIEF §4.2)', () {
+    const bases = [
+      IslandNode('lb.one', NodeType.toy),
+      IslandNode('lb.two', NodeType.predictReveal),
+    ];
     LearningState state({
       Profile? p,
       Map<String, DateTime> completed = const {},
       Set<String> discovered = const {},
       List<String> moments = const [],
       List<String> trips = const [],
+      List<IslandNode> before = const [],
+      bool pathOpen = true,
+      List<IslandNode> after = const [],
     }) => LearningState(
       profile: p ?? profile(),
+      before: before,
       path: island,
+      pathOpen: pathOpen,
+      after: after,
       completedOn: completed,
       today: today,
       discoveredTerms: discovered,
@@ -176,17 +243,44 @@ void main() {
         const ReadMoment('m1'),
       ),
       (
-        'no savings: the cushion sheet first',
+        'no savings: no sheet first any more, the path (M12-7)',
         state(p: profile(savings: Savings.none)),
-        const OpenGlossary('matelas-de-securite'),
+        const PlayNode('ae.livret-vs-etf'),
       ),
       (
-        'no savings, cushion read: the path',
+        'Les bases first, Actions & ETF still closed: its first lesson',
+        state(before: bases, pathOpen: false),
+        const PlayNode('lb.one'),
+      ),
+      (
+        'Les bases to its end before Actions & ETF, open or not',
+        state(before: bases, completed: {'lb.one': yesterday}),
+        const PlayNode('lb.two'),
+      ),
+      (
+        'Les bases done, Actions & ETF open: from its start',
         state(
-          p: profile(savings: Savings.none),
-          discovered: {'matelas-de-securite'},
+          before: bases,
+          completed: {'lb.one': yesterday, 'lb.two': yesterday},
         ),
         const PlayNode('ae.livret-vs-etf'),
+      ),
+      (
+        'Les bases done, Actions & ETF closed: nothing to play',
+        state(
+          before: bases,
+          pathOpen: false,
+          completed: {'lb.one': yesterday, 'lb.two': yesterday},
+        ),
+        const OpenLiveWallet(),
+      ),
+      (
+        'skipping Les bases: Actions & ETF first, then Les bases',
+        state(
+          after: bases,
+          completed: {for (final n in island) n.id: yesterday},
+        ),
+        const PlayNode('lb.one'),
       ),
       (
         'knows ETFs: starts at node 3, a mission',
@@ -284,7 +378,6 @@ void main() {
     test('next steps are values', () {
       final steps = <NextStep Function()>[
         () => ReadMoment('x'.toString()),
-        () => OpenGlossary('x'.toString()),
         () => PlayNode('x'.toString()),
         () => DoMission('x'.toString()),
         () => ContinueTrip('x'.toString()),

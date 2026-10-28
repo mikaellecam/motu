@@ -19,17 +19,6 @@ final class ReadMoment extends NextStep {
   int get hashCode => momentId.hashCode;
 }
 
-final class OpenGlossary extends NextStep {
-  const OpenGlossary(this.termId);
-  final String termId;
-
-  @override
-  bool operator ==(Object other) =>
-      other is OpenGlossary && other.termId == termId;
-  @override
-  int get hashCode => termId.hashCode;
-}
-
 final class PlayNode extends NextStep {
   const PlayNode(this.nodeId);
   final String nodeId;
@@ -74,7 +63,10 @@ final class OpenLiveWallet extends NextStep {
 final class LearningState {
   const LearningState({
     required this.profile,
+    this.before = const [],
     required this.path,
+    this.pathOpen = true,
+    this.after = const [],
     required this.completedOn,
     required this.today,
     required this.discoveredTerms,
@@ -84,8 +76,17 @@ final class LearningState {
 
   final Profile profile;
 
-  /// The island's nodes, in order.
+  /// Actions & ETF's nodes, in order: the questionnaire's start applies to
+  /// them (§4.1).
   final List<IslandNode> path;
+
+  /// Whether [path]'s lessons are open yet (`islandOpen`, M12-7).
+  final bool pathOpen;
+
+  /// Another island's nodes, walked from its first before [path] (Les bases
+  /// for a beginner) or [after] it (for those who skip it, M12-7).
+  final List<IslandNode> before;
+  final List<IslandNode> after;
 
   /// Completed node id → when; compared with [today] by calendar day.
   final Map<String, DateTime> completedOn;
@@ -102,22 +103,24 @@ final class LearningState {
 /// Picks the next step, first match wins (decided 2026-10-07):
 ///
 /// 1. an unread companion moment;
-/// 2. the safety-cushion sheet, for users without savings who haven't read it;
-/// 3. the current node if it is a mission;
-/// 4. the current lesson node, while fewer nodes than the pacing were
+/// 2. the current node if it is a mission;
+/// 3. the current lesson node, while fewer nodes than the pacing were
 ///    completed today;
-/// 5. an open trip;
-/// 6. the live wallet.
+/// 4. an open trip;
+/// 5. the live wallet.
 ///
-/// The current node is the first not completed in path order: the forced
-/// node 1 (Livret savings), then from the starting node to the end, then the
-/// nodes skipped before it.
+/// The current node is the first not completed of [LearningState.before],
+/// then of the path if open (the forced node 1 for Livret savings, then from
+/// the starting node to the end, then the nodes skipped before it), then of
+/// [LearningState.after]. Decided 2026-10-28: no safety-cushion sheet first
+/// any more, Les bases' first lesson is about it.
 NextStep nextStep(LearningState s) {
   if (s.unreadMoments.isNotEmpty) return ReadMoment(s.unreadMoments.first);
-  if (cushionFirst(s.profile) && !s.discoveredTerms.contains(cushionTerm)) {
-    return const OpenGlossary(cushionTerm);
-  }
-  final current = currentNode(s.profile, s.path, s.completedOn.keys.toSet());
+  final done = s.completedOn.keys.toSet();
+  final current =
+      currentNode(null, s.before, done) ??
+      (s.pathOpen ? currentNode(s.profile, s.path, done) : null) ??
+      currentNode(null, s.after, done);
   if (current != null) {
     if (current.type == NodeType.mission) return DoMission(current.id);
     final doneToday = s.completedOn.values

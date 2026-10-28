@@ -28,7 +28,8 @@ trip wizard prefilled (e.g. "Mars 2020 : vendre ou tenir ?" → trip starting 20
 ### 1.3 V1 scope
 
 - Map with 5 islands; only **Actions & ETF** is playable, the others are visible and locked ("Bientôt").
-- Actions & ETF island: 12 nodes (§4.3).
+  Since M12: **Les bases** is playable too and comes first; Actions & ETF's lessons open after its fifth (§4.2).
+- Actions & ETF island: 12 nodes (§4.3); Les bases: 9 nodes (§4.3).
 - Sandbox: live wallet, trip wallets with wizard, orders (market, limit, stop), DCA simulator.
 - Glossary with bottom sheets and live examples.
 - Livret A: rate history, simulated Livret line in wallets, comparisons (§4.11).
@@ -102,7 +103,8 @@ Routing: `go_router`. Deep links use the routes above (lesson → trip wizard pr
 Five single-choice questions, each required (validation error if none picked: « Choisis une réponse pour
 continuer. Aucune n'est mauvaise. »). Reassurance line: the answers only choose a starting point, not advice.
 Layout (decided 2026-10-24, artboard `Onboarding-A` of the art direction canvas): a world screen on the
-sea under the bare Actions & ETF island. One chunky card holds « Question n sur 5 », a segmented progress
+sea under the bare island the way starts on (since M12-7: Les bases' sand bank, or Actions & ETF's for the
+answers that skip Les bases). One chunky card holds « Question n sur 5 », a segmented progress
 bar, the question and the reassurance line; the answers are toy blocks under it (they press down, so they
 sit on the sea rather than inside the card). « Retour » (from the second question) and « Suivant » stay at
 the bottom, with the validation error in an alert box just above them. The result: the island, then a card
@@ -113,13 +115,14 @@ question is required.
 |---|---|---|---|
 | Q1 | Pourquoi veux-tu investir ? | Projet dans moins de 3 ans / Dans 3 à 8 ans / Long terme, plus de 8 ans / Je découvre | `defaultHorizonYears` (2 / 5 / 15 / 10) used by projections, DCA defaults, companion wording |
 | Q2 | Ton portefeuille perd 20 % en un mois. Tu fais quoi ? | Je vends tout / J'attends / J'achète plus / Je ne sais pas | `riskComfort` (low/medium/high/unknown→medium) → moment thresholds + pre-trade coach sensitivity |
-| Q3 | Tu sais déjà… | Rien / Ce qu'est une action / Ce qu'est un ETF / J'investis déjà | `startingNode` (1 / 1 / 3 / 4) and `initialUiLevel` (1 / 1 / 1 / 2) |
-| Q4 | Où est ton épargne aujourd'hui ? | Livret A ou livrets / Compte courant / Déjà investie / Pas d'épargne | if Livret → node 1 "Livret ou ETF ?" is forced first and flagged; if none → the "matelas de sécurité" glossary sheet comes first |
+| Q3 | Tu sais déjà… | Rien / Ce qu'est une action / Ce qu'est un ETF / J'investis déjà | `startingNode` (1 / 1 / 3 / 4) and `initialUiLevel` (1 / 1 / 1 / 2); since M12-7 « Ce qu'est un ETF » and « J'investis déjà » skip Les bases (`skipsTheBasics`): Actions & ETF opens at once and the way starts there, the others start on Les bases' lesson 1 |
+| Q4 | Où est ton épargne aujourd'hui ? | Livret A ou livrets / Compte courant / Déjà investie / Pas d'épargne | if Livret → node 1 "Livret ou ETF ?" is forced first and flagged, once Actions & ETF is open; ~~if none → the "matelas de sécurité" glossary sheet comes first~~ (dropped 2026-10-28, M12-7: Les bases' lesson 1 is about it) |
 | Q5 | Combien de temps par semaine ? | 5 min / 15 min / 30 min et plus | next-step pacing (1 / 2 / 3 suggestions per day) |
 
 Rules:
 - The profile **never** drives asset suggestions. It only shapes path, UI level, thresholds, wording.
-- After onboarding, show one sentence explaining the choice ("On commence par X parce que tu as répondu Y").
+- After onboarding, show one sentence explaining the choice ("On commence par X parce que tu as répondu Y"):
+  on Les bases, « Pas d'épargne » or the Q3 answer; on Actions & ETF, Livret savings or the Q3 answer.
 - Pure domain functions, unit-tested: `startingNode(profile)`, `initialUiLevel(profile)`,
   `momentThresholds(profile)`, `pacing(profile)`.
 - Retaking the questionnaire recomputes these but never erases progress.
@@ -136,9 +139,11 @@ Rules:
   lessons done (« 2/12 »); a locked island's name with a lock (screen readers: « {île}, bientôt »).
 - Header: title "Ton archipel", islands opened count, level chip.
 - Next-step card at the bottom: always exactly one recommended action. Selection is a pure function
-  `nextStep(state)`, first match wins: an unread companion moment; the safety-cushion sheet (Q4 "Pas
-  d'épargne", until read); the current node if it is a mission; the current lesson node while fewer nodes
-  than the pacing (Q5) were completed today; an open trip; the live wallet.
+  `nextStep(state)`, first match wins: an unread companion moment; the current node if it is a mission; the
+  current lesson node while fewer nodes than the pacing (Q5) were completed today; an open trip; the live
+  wallet. Since M12-7 the current node walks the open islands in order: Les bases to its end, then Actions &
+  ETF; for those who skip Les bases, Actions & ETF first, then Les bases (decided 2026-10-28). The
+  safety-cushion sheet no longer comes first.
   Built (M7-3): the card names what it opens (the lesson, the mission, the term, the trip) and follows the
   user's progress as it happens; "today" is the user's local day; an open trip is one not finished, the newest
   first. Header: « {n} île(s) ouverte(s) sur 5 » under the title, and « Niveau {n} » (§4.15) in the level
@@ -150,6 +155,16 @@ Rules:
   right end (`landmarkStands`). Its shape never changes, so the wallet's buildings always stand on land. On
   the map the change eases in over 1,4 s (at once with animations off, and at once when the lessons first
   load); the island path's header shows it too, and onboarding the sand bank the user starts from.
+- Les bases comes first and opens the other islands (decided 2026-10-28, M12-7): an island's lessons open
+  once the lessons it waits for are done (`islandOpen`), or as soon as it has progress (installs from v1.0.0
+  keep Actions & ETF), or when the questionnaire opens it (Q3, §4.1). Closed, its lessons are all locked; its
+  pill shows a lock in place of its progress, screen readers hear « {île}, s'ouvre après « {leçon} » », and
+  its path's header says « S'ouvre après « {leçon} » ». The sandbox is never gated: Actions & ETF is still
+  drawn with the wallet's buildings. The gates (`islandRequires`, in the app since a published pack never
+  changes, ADR-006; into `island.json` with Actions & ETF's next version):
+  - Actions & ETF after `lb.cushion-2020`, « Février 2020 : et ton matelas ? » (Les bases' lesson 5).
+  - Recorded for later islands: Immobilier after `lb.loan-cost`; Trading after `lb.spot-the-scam` and
+    `ae.checkpoint-1`; Crypto after `lb.spot-the-scam` and `ae.risk-ladder`.
 - Les bases grows with its lessons only, never with the wallet (M12-6, canvas « Les bases », board 3): from a
   sand bank in its shape, each lesson done adds a piece (`lesBasesPieces`): 1 the house, 2 to 6 the
   lighthouse's five courses in white and coral, 7 its gallery, 8 its lantern, 9 the light, gold, with two

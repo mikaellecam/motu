@@ -30,4 +30,25 @@ void main() {
       }
     },
   );
+
+  // A beginner without savings (M12-7): the way starts on Les bases.
+  screenshotRoute(
+    'm12-7-onboarding-result-bases',
+    '/onboarding',
+    act: (tester) async {
+      for (final answer in [
+        'Je découvre',
+        'Je ne sais pas',
+        'Rien',
+        "Pas d'épargne",
+        '5\u00a0min',
+      ]) {
+        await tester.tap(find.text(answer));
+        await tester.pump();
+        await tester.tap(find.text('Suivant'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+    },
+  );
 }

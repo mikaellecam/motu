@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
@@ -15,7 +17,7 @@ void main() {
   late AppDatabase db;
   late ProviderContainer container;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     container = ProviderContainer(
       retry: (_, _) => null,
@@ -27,10 +29,43 @@ void main() {
             .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
+    // Les bases' fifth lesson done: Actions & ETF's lessons are open (M12-7).
+    await container
+        .read(profileRepositoryProvider)
+        .completeNode('lb.cushion-2020', at: DateTime.utc(2026, 10, 1));
   });
   tearDown(() async {
     container.dispose();
     await db.close();
+  });
+
+  test('closed until Les bases\' fifth lesson: every lesson locked, the one '
+      'it waits for named (M12-7)', () async {
+    final fresh = ProviderContainer(
+      retry: (_, _) => null,
+      overrides: [
+        databaseProvider.overrideWithValue(
+          AppDatabase(NativeDatabase.memory()),
+        ),
+        contentPackProvider(actionsEtfIsland)
+            .overrideWith((ref) async => decodePack(packJson())),
+        contentPackProvider(lesBasesIsland).overrideWith(
+          (ref) async => decodePack(
+            File('assets/packs/les-bases.json').readAsStringSync(),
+          ),
+        ),
+      ],
+    );
+    addTearDown(fresh.dispose);
+    fresh.listen(islandPathProvider(actionsEtfIsland), (_, _) {});
+    final view = await fresh.read(islandPathProvider(actionsEtfIsland).future);
+    expect(view.open, isFalse);
+    expect(view.opensAfter!.fr, 'Février 2020\u202f: et ton matelas\u202f?');
+    expect({for (final n in view.nodes) n.state}, {NodeState.locked});
+    // Les bases itself is open from its first lesson.
+    fresh.listen(islandPathProvider(lesBasesIsland), (_, _) {});
+    final bases = await fresh.read(islandPathProvider(lesBasesIsland).future);
+    expect((bases.open, bases.nodes.first.state), (true, NodeState.current));
   });
 
   Future<IslandPathView> path() async {
