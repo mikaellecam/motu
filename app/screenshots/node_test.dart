@@ -20,6 +20,7 @@ void main() {
   );
   final overrides = <Override>[
     contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+    lesBasesPack,
     cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
   ];
 

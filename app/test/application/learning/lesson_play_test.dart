@@ -14,6 +14,7 @@ import 'package:finance_companion/data/repositories/market_repository.dart';
 
 import '../../fakes/fake_backend.dart';
 import '../../fakes/more_lessons.dart';
+import '../../fakes/lesson_pack.dart';
 
 Decimal d(String s) => Decimal.parse(s);
 
@@ -32,6 +33,8 @@ void main() {
         ),
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(morePackJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
   });
@@ -133,6 +136,8 @@ void main() {
           marketRepositoryProvider.overrideWithValue(market),
           contentPackProvider(actionsEtfIsland)
               .overrideWith((ref) async => decodePack(pack)),
+          contentPackProvider(lesBasesIsland)
+              .overrideWith((ref) async => decodePack(emptyBasesJson())),
         ],
       );
       final online = container();
@@ -165,6 +170,8 @@ void main() {
             morePackJson().replaceFirst('"type":"checkpoint"', '"type":"quiz"'),
           ),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     addTearDown(container.dispose);

@@ -117,16 +117,18 @@ const archipelago = [
     origin: Offset(312, 530),
     tile: 30,
     unit: 14,
-    tiles: ['aaa.', 'abca', 'acba', '.aa.'],
+    tiles: ['SSS.', 'SgGS', 'SGgS', '.SS.'],
     halo: Rect.fromLTRB(257, 539, 367, 603.4),
-    label: Offset(312, 608),
-    clouds: [(Offset(260, 552), 1.0), (Offset(320, 582), 0.8)],
+    // Left of the island's centre: its pill and progress stay on screen.
+    label: Offset(300, 608),
+    pack: lesBasesIsland,
   ),
 ];
 
 /// The part of the art direction's screen the map shows: every island, its
-/// tallest prop and its label.
-const mapBounds = Rect.fromLTRB(0, 166, 390, 660);
+/// tallest prop and its label, with room for Les bases' tap target under its
+/// pill (M12-6).
+const mapBounds = Rect.fromLTRB(0, 166, 390, 680);
 final mapSize = mapBounds.size;
 
 /// Where the art direction ripples the sea.
@@ -151,16 +153,26 @@ const _waves = [
 
 /// Draws the archipelago as the art direction does (BRIEF §4.2, §10.2): toy
 /// blocks on the sea; Actions & ETF in sand and grass, with trees and the
-/// live wallet's buildings ([buildings], the largest first, M7-2); the
-/// locked islands in grey stone under clouds.
+/// live wallet's buildings ([buildings], the largest first, M7-2); Les bases
+/// growing its house and lighthouse (M12-6); the locked islands in grey
+/// stone under clouds.
 class ArchipelagoPainter extends CustomPainter {
-  ArchipelagoPainter({this.buildings = const [], this.only, this.grown = 1});
+  ArchipelagoPainter({
+    this.buildings = const [],
+    this.only,
+    this.grown = 1,
+    this.grownBases = 1,
+  });
 
   final List<DrawnBuilding> buildings;
 
   /// How far the lessons have greened Actions & ETF, 0 (sand, no tree) to 1
   /// (as the art direction draws it): its grass and trees (`grownTiles`).
   final double grown;
+
+  /// How far Les bases' lessons have built it, 0 (a sand bank) to 1 (its
+  /// light on): its grass, trees and [lesBasesPieces].
+  final double grownBases;
 
   /// Paints this island alone, its halo resting on the bottom centre, with
   /// no waves: the island path's header (BRIEF §4.3).
@@ -189,14 +201,11 @@ class ArchipelagoPainter extends CustomPainter {
       final pen = island.locked
           ? BlockPen(canvas, MapPalette.lockedInk, 1.1)
           : BlockPen(canvas, AppColors.ink, 1.3);
-      ground(
-        pen,
-        island.projection,
-        island.id == IslandId.actionsEtf
-            ? grownTiles(island.tiles, grown)
-            : island.tiles,
-        locked: island.locked,
-      );
+      ground(pen, island.projection, switch (island.id) {
+        IslandId.actionsEtf => grownTiles(island.tiles, grown),
+        IslandId.basics => grownTiles(island.tiles, grownBases),
+        _ => island.tiles,
+      }, locked: island.locked);
       final p = island.projection;
       switch (island.id) {
         case IslandId.actionsEtf:
@@ -208,7 +217,7 @@ class ArchipelagoPainter extends CustomPainter {
         case IslandId.crypto:
           _crypto(pen, p);
         case IslandId.basics:
-          _basics(pen, p);
+          _lesBases(pen, p, grownBases);
       }
       for (final (at, scale) in island.clouds) {
         _cloud(canvas, at, scale);
@@ -651,11 +660,13 @@ class ArchipelagoPainter extends CustomPainter {
     required double w,
     required double wall,
     required double roof,
+    Shades walls = MapPalette.wall,
+    Shades tiles = MapPalette.roof,
   }) {
     final (x, y) = (cx - w / 2, cy - w / 2);
     pen
-      ..block(boxFacets(p, x, y, w, w, wall), MapPalette.wall)
-      ..block(gableFacets(p, x, y, w, w, roof, z: wall), MapPalette.roof);
+      ..block(boxFacets(p, x, y, w, w, wall), walls)
+      ..block(gableFacets(p, x, y, w, w, roof, z: wall), tiles);
   }
 
   /// Crypto: a crystal on its tip between two small blocks.
@@ -686,33 +697,90 @@ class ArchipelagoPainter extends CustomPainter {
     MapPalette.blockDark,
   );
 
-  /// Les bases: a house and a lighthouse of five courses.
-  static void _basics(BlockPen pen, IsoProjection p) {
-    _house(pen, p, 1.1, 2.6, w: 0.55, wall: 0.57, roof: 0.5);
-    const cx = 2.3, cy = 1.7;
-    Rect footprint(double w) =>
-        Rect.fromCenter(center: const Offset(cx, cy), width: w, height: w);
-    void course(double w, double z, double h, Shades shades) {
-      final f = footprint(w);
-      pen.block(boxFacets(p, f.left, f.top, w, w, h, z: z), shades);
-    }
+  /// Les bases' trees, in the order its lessons sprout them.
+  static const _basesTrees = [(3.5, 1.4), (0.5, 1.2), (2.7, 3.4)];
 
-    const step = 9 / 14;
-    for (var i = 0; i < 5; i++) {
+  /// Les bases (M12-6), as far as [grown]: its trees, then a piece a lesson
+  /// ([lesBasesPieces]): the house, the lighthouse's five courses in white and
+  /// coral, its gallery, its lantern, its light.
+  static void _lesBases(BlockPen pen, IsoProjection p, double grown) {
+    final pieces = lesBasesPieces(grown);
+    final things = <(double, VoidCallback)>[
+      for (final (x, y) in _basesTrees.take(
+        grownTrees(_basesTrees.length, grown),
+      ))
+        (x + y, () => _tree(pen, p, x, y, MapPalette.trunk, MapPalette.leaves)),
+      if (pieces >= 1)
+        (
+          3.7,
+          () => _house(
+            pen,
+            p,
+            1.1,
+            2.6,
+            w: 0.55,
+            wall: 0.57,
+            roof: 0.5,
+            walls: MapPalette.lighthouse,
+            tiles: MapPalette.roofCoral,
+          ),
+        ),
+      (4.0, () => _lighthouse(pen, p, pieces - 1)),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    for (final (_, draw) in things) {
+      draw();
+    }
+  }
+
+  /// The lighthouse's first [built] pieces: five courses, the gallery, the
+  /// lantern, the light.
+  static void _lighthouse(BlockPen pen, IsoProjection p, int built) {
+    const cx = 2.3, cy = 1.7, step = 9 / 14;
+    void course(double w, double z, double h, Shades shades) =>
+        pen.block(boxFacets(p, cx - w / 2, cy - w / 2, w, w, h, z: z), shades);
+    for (var i = 0; i < built.clamp(0, 5); i++) {
       course(
         0.5,
         i * step,
         step,
-        i.isEven ? MapPalette.wall : MapPalette.wallDark,
+        i.isEven ? MapPalette.lighthouse : MapPalette.lighthouseBand,
       );
     }
-    course(0.72, 5 * step, 0.21, MapPalette.wall);
-    course(0.38, 5 * step + 0.21, 0.57, MapPalette.wall);
-    final cap = footprint(0.38);
-    pen.block(
-      roofFacets(p, cap.left, cap.top, 0.38, 0.38, 0.65, z: 5 * step + 0.78),
-      MapPalette.wallDark,
-    );
+    if (built >= 6) course(0.72, 5 * step, 0.21, MapPalette.lighthouse);
+    final lit = built >= 8;
+    if (built >= 7) {
+      course(
+        0.38,
+        5 * step + 0.21,
+        0.57,
+        lit ? MapPalette.crown : MapPalette.lantern,
+      );
+      pen.block(
+        roofFacets(
+          p,
+          cx - 0.19,
+          cy - 0.19,
+          0.38,
+          0.38,
+          0.65,
+          z: 5 * step + 0.78,
+        ),
+        MapPalette.roofCoral,
+      );
+    }
+    if (!lit) return;
+    final lamp = p.project(cx, cy, 5 * step + 0.5);
+    final beam = Paint()..color = MapPalette.beam;
+    for (final side in [-1.0, 1.0]) {
+      pen.canvas.drawPath(
+        Path()
+          ..moveTo(lamp.dx, lamp.dy)
+          ..lineTo(lamp.dx + side * 62, lamp.dy - 16)
+          ..lineTo(lamp.dx + side * 62, lamp.dy + 6)
+          ..close(),
+        beam,
+      );
+    }
   }
 
   /// Six white puffs, as the art direction draws a cloud.
@@ -734,6 +802,7 @@ class ArchipelagoPainter extends CustomPainter {
   bool shouldRepaint(ArchipelagoPainter old) =>
       old.only != only ||
       old.grown != grown ||
+      old.grownBases != grownBases ||
       !listEquals(old.buildings, buildings);
 }
 

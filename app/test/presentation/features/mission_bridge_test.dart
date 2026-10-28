@@ -30,6 +30,8 @@ Future<void> show(
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(packJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         completedNodesProvider.overrideWith((ref) => Stream.value(completed)),
         cacheStatusProvider.overrideWith(
           (ref) => Stream.value(const Offline(null)),

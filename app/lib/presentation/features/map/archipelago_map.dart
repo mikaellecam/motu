@@ -18,7 +18,7 @@ class ArchipelagoMap extends StatefulWidget {
     super.key,
     required this.onOpen,
     this.buildings = const [],
-    this.progress,
+    this.progress = const {},
   });
 
   /// Called with the playable island the user taps.
@@ -28,8 +28,9 @@ class ArchipelagoMap extends StatefulWidget {
   /// M7-2). A change animates in stages (BRIEF §10.5).
   final List<IslandBuilding> buildings;
 
-  /// Lessons done on Actions & ETF, of all of them: its label shows them.
-  final ({int done, int total})? progress;
+  /// Lessons done on each playable island, of all of them: its label shows
+  /// them, and they build it.
+  final Map<IslandId, ({int done, int total})> progress;
 
   @override
   State<ArchipelagoMap> createState() => _ArchipelagoMapState();
@@ -63,18 +64,18 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
   late final _green = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
-    value: _greened(widget.progress),
+    value: _greened(widget.progress[IslandId.actionsEtf]),
   );
 
   @override
   void didUpdateWidget(ArchipelagoMap old) {
     super.didUpdateWidget(old);
     final still = MediaQuery.disableAnimationsOf(context);
-    final greened = _greened(widget.progress);
-    if (greened != _greened(old.progress)) {
+    final greened = _greened(widget.progress[IslandId.actionsEtf]);
+    if (greened != _greened(old.progress[IslandId.actionsEtf])) {
       // Lessons known at last: the island stands as it is, no greening
       // back from the full art.
-      if (still || old.progress == null) {
+      if (still || old.progress[IslandId.actionsEtf] == null) {
         _green.value = greened;
       } else {
         // Its whole duration, however small the step: animateTo alone
@@ -158,6 +159,8 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
                       painter: ArchipelagoPainter(
                         buildings: _frame,
                         grown: _green.value,
+                        // Built at once, as far as its lessons (M12-6).
+                        grownBases: _greened(widget.progress[IslandId.basics]),
                       ),
                     ),
                   ),
@@ -167,7 +170,7 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
                     island: island,
                     // ≥ 44 px on screen even at the smallest zoom.
                     target: AppSpace.minTarget / scale,
-                    progress: island.locked ? null : widget.progress,
+                    progress: widget.progress[island.id],
                     onTap: island.locked
                         ? null
                         : () => widget.onOpen(island.id),

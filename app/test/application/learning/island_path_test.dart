@@ -23,6 +23,8 @@ void main() {
         databaseProvider.overrideWithValue(db),
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(packJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
   });

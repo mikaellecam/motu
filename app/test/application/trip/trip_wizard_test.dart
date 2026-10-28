@@ -18,6 +18,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_backend.dart';
+import '../../fakes/lesson_pack.dart';
+
+import 'package:finance_companion/data/content/pack_codec.dart';
 
 DateTime day(int y, int m, int d) => DateTime.utc(y, m, d);
 
@@ -64,6 +67,8 @@ void main() {
             ),
           ]),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     open = container.listen(tripWizardProvider, (_, _) {});

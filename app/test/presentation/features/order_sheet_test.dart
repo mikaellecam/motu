@@ -23,6 +23,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers.dart';
+import '../../fakes/lesson_pack.dart';
+
+import 'package:finance_companion/data/content/pack_codec.dart';
 
 const nnbsp = ' ';
 const nbsp = ' ';
@@ -150,6 +153,8 @@ Future<void> show(
             glossary: {},
           ),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         liveClockProvider.overrideWithValue(const _Fixed()),
         termSheetProvider.overrideWith(
           (ref, id) async => TermSheetView(

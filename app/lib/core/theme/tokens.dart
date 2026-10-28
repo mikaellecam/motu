@@ -147,6 +147,30 @@ abstract final class MapPalette {
     right: Color(0xFF8A5C31),
   );
 
+  // Les bases (M12-6): the lighthouse's white and coral courses, the coral
+  // roofs, the lantern unlit (lit: [crown]) and its beams.
+  static const lighthouse = (
+    top: Color(0xFFFFFFFF),
+    left: Color(0xFFD5DDE3),
+    right: Color(0xFFEDF1F4),
+  );
+  static const lighthouseBand = (
+    top: Color(0xFFFFE0D6),
+    left: Color(0xFFE25E3F),
+    right: Color(0xFFFF7D5C),
+  );
+  static const roofCoral = (
+    top: Color(0xFFFF7D5C),
+    left: Color(0xFFE25E3F),
+    right: Color(0xFFEDF1F4),
+  );
+  static const lantern = (
+    top: Color(0xFFDCE6FF),
+    left: Color(0xFF9FB3D9),
+    right: Color(0xFFBCD0FF),
+  );
+  static const beam = Color(0x99FFF4C2);
+
   // Locked islands: grey stone, slate edges, white clouds.
   static const lockedInk = Color(0xFF56627A);
   static const stone = Color(0xFFE3E7E8);

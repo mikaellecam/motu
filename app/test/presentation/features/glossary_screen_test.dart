@@ -22,6 +22,7 @@ import '../../fakes/fake_glossary.dart';
 import '../../fakes/glossary_pack.dart';
 
 import '../../helpers.dart';
+import '../../fakes/lesson_pack.dart';
 
 const nnbsp = ' ';
 
@@ -56,6 +57,8 @@ Future<void> show(WidgetTester tester, Widget screen) async {
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(glossaryPackJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         glossaryRepositoryProvider.overrideWithValue(glossary),
         // `ae.fees` is done: its term `etf` was met.
         completedNodesProvider.overrideWith((ref) => Stream.value({'ae.fees'})),

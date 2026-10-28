@@ -95,6 +95,7 @@ void main() {
         (ref, id) async => islandBuildings(held: held, pending: pending),
       ),
       contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+      lesBasesPack,
       completedNodesProvider.overrideWith(
         (ref) => Stream.value(completed.toSet()),
       ),

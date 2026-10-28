@@ -24,6 +24,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_backend.dart';
 import '../../fakes/fake_frankfurter.dart';
+import '../../fakes/lesson_pack.dart';
+
+import 'package:finance_companion/data/content/pack_codec.dart';
 
 DateTime day(int d) => DateTime.utc(2026, 10, d);
 Decimal dec(String s) => Decimal.parse(s);
@@ -101,6 +104,8 @@ void main() {
             glossary: {'volatilite': volatility},
           ),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     wallets = WalletRepository(db);

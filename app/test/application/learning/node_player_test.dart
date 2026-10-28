@@ -39,6 +39,8 @@ void main() {
           (ref) async =>
               decodePack(packJson(worldAsset: worldAsset, choices: choices)),
         ),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     addTearDown(c.dispose);

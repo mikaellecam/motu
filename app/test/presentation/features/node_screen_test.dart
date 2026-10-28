@@ -48,6 +48,8 @@ Future<void> show(
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(packJson())),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
         // Les bases' toys beside the lesson pack (M12-3).
         contentPacksProvider.overrideWith(
           (ref) async => [

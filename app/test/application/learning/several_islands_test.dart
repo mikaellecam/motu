@@ -32,7 +32,7 @@ void main() {
         databaseProvider.overrideWithValue(db),
         contentPackProvider(actionsEtfIsland)
             .overrideWith((_) async => actionsEtf),
-        contentPackProvider('les-bases').overrideWith((_) async => bases),
+        contentPackProvider(lesBasesIsland).overrideWith((_) async => bases),
         contentPacksProvider.overrideWith((_) async => [actionsEtf, bases]),
       ],
     );
@@ -52,6 +52,8 @@ void main() {
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((_) async => actionsEtf),
+        contentPackProvider(lesBasesIsland)
+            .overrideWith((ref) async => decodePack(emptyBasesJson())),
       ],
     );
     addTearDown(container.dispose);

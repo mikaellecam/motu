@@ -42,6 +42,11 @@ int grownTrees(int trees, double grown) =>
     // A hair under, so a share landing on a whole tree does not round up.
     (trees * (grown.clamp(0.0, 1.0) * 2).clamp(0.0, 1.0) - 1e-9).ceil();
 
+/// The pieces of Les bases built at [grown] (0 to 1), one a lesson of its
+/// nine (M12-6): 1 the house, 2 to 6 the lighthouse's courses, 7 its gallery,
+/// 8 its lantern, 9 its light.
+int lesBasesPieces(double grown) => (grown.clamp(0.0, 1.0) * 9).round();
+
 /// Every lesson done: the island's landmark stands.
 bool landmarkStands(double grown) => grown >= 1;
 
