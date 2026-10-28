@@ -48,21 +48,38 @@ class OnboardingScreen extends ConsumerWidget {
   }
 }
 
-/// Actions & ETF as the map paints it, bare: where the path will start.
+/// The island the way starts on as the map paints it, bare (M12-7): Les
+/// bases, or Actions & ETF for those who skip it.
 class _Island extends StatelessWidget {
-  const _Island();
+  const _Island({this.id = IslandId.basics});
+
+  final IslandId id;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 170,
-    child: CustomPaint(
-      painter: ArchipelagoPainter(
-        only: archipelago.firstWhere((i) => i.id == IslandId.actionsEtf),
-        // No lesson done yet: a sand bank for them to green (M9-19).
-        grown: 0,
+  Widget build(BuildContext context) {
+    final island = archipelago.firstWhere((i) => i.id == id);
+    return SizedBox(
+      height: 170,
+      // Les bases as wide as Actions & ETF, as on its path screen.
+      child: Transform.scale(
+        scale: _actionsEtfHalo / island.halo.width,
+        alignment: Alignment.bottomCenter,
+        child: CustomPaint(
+          painter: ArchipelagoPainter(
+            only: island,
+            // No lesson done yet: a sand bank for them to build (M9-19).
+            grown: 0,
+            grownBases: 0,
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  static final _actionsEtfHalo = archipelago
+      .firstWhere((i) => i.id == IslandId.actionsEtf)
+      .halo
+      .width;
 }
 
 class _Question extends ConsumerWidget {
@@ -181,20 +198,18 @@ class _Result extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final profile = state.profile!;
-    final (:reason, :node) = startExplanation(profile);
-    // The starting node's title comes from the island's content pack.
-    final pack = ref.watch(contentPackProvider(actionsEtfIsland)).value;
-    if (pack == null && reason != StartReason.noSavings) {
+    final (:reason, :island, :node) = startExplanation(profile);
+    // The starting node's title comes from its island's content pack.
+    final pack = ref.watch(contentPackProvider(island)).value;
+    if (pack == null) {
       return const Padding(
         padding: EdgeInsets.all(AppSpace.screenPadding),
         child: AsyncSkeleton(lines: 3),
       );
     }
-    final start = reason == StartReason.noSavings
-        ? l10n.onboarding_start_cushion
-        : pack!.nodes[node - 1].title.of(
-            Localizations.localeOf(context).languageCode,
-          );
+    final start = pack.nodes[node - 1].title.of(
+      Localizations.localeOf(context).languageCode,
+    );
     final answer = answerLabel(
       l10n,
       reason == StartReason.knowledge ? profile.knowledge : profile.savings,
@@ -203,7 +218,11 @@ class _Result extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpace.screenPadding),
       children: [
-        const _Island(),
+        _Island(
+          id: island == actionsEtfIsland
+              ? IslandId.actionsEtf
+              : IslandId.basics,
+        ),
         ChunkyCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

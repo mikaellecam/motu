@@ -52,8 +52,11 @@ void main() {
       island,
       nextStepViewProvider.overrideWith(
         (ref) async => const NextStepView(
-          PlayNode('ae.fees-toy'),
-          title: Localized('Le jouet des frais', 'The fees toy'),
+          PlayNode('lb.cash-inflation'),
+          title: Localized(
+            '10 000 € sous le matelas',
+            '€10,000 under the mattress',
+          ),
         ),
       ),
       currentUiLevelProvider.overrideWith((ref) async => 2),

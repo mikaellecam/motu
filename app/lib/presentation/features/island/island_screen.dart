@@ -225,6 +225,14 @@ class _Header extends StatelessWidget {
             l10n.island_progress(path.done, total),
             style: AppText.label.copyWith(color: AppColors.muted),
           ),
+          // Closed: the lesson it waits for (M12-7).
+          if (path.opensAfter case final lesson?) ...[
+            const SizedBox(height: AppSpace.x1),
+            Text(
+              l10n.map_island_opens_after(lesson.of(language)),
+              style: AppText.bodyStrong,
+            ),
+          ],
           const SizedBox(height: AppSpace.x2),
           ExcludeSemantics(
             child: DecoratedBox(

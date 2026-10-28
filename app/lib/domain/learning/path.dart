@@ -17,6 +17,20 @@ enum NodeState {
   locked,
 }
 
+/// Whether an island's lessons are open (M12-7): every lesson it [requires]
+/// (of any island) is done, or one of its own [lessons] already is, since
+/// progress is never taken away, or the questionnaire [opened] it. An island
+/// requiring nothing is open.
+bool islandOpen({
+  required List<String> requires,
+  required List<String> lessons,
+  required Set<String> completed,
+  bool opened = false,
+}) =>
+    opened ||
+    requires.every(completed.contains) ||
+    lessons.any(completed.contains);
+
 /// The node the path points to: the first not completed in path order, the
 /// forced node 1 (Livret savings) first, then from the starting node to the
 /// end, then the nodes skipped before it (§4.1). Null when every node is

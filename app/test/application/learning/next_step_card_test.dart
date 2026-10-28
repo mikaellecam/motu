@@ -22,7 +22,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes/fake_backend.dart' show WallClock;
-import '../../fakes/lesson_pack.dart';
 
 Profile profile({
   Knowledge knowledge = Knowledge.nothing,
@@ -44,6 +43,10 @@ void main() {
   final pack = decodePack(
     File('assets/packs/actions-etf.json').readAsStringSync(),
   );
+  // The way starts on Les bases (M12-7).
+  final bases = decodePack(
+    File('assets/packs/les-bases.json').readAsStringSync(),
+  );
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
@@ -53,8 +56,7 @@ void main() {
         databaseProvider.overrideWithValue(db),
         liveClockProvider.overrideWithValue(WallClock(now)),
         contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
-        contentPackProvider(lesBasesIsland)
-            .overrideWith((ref) async => decodePack(emptyBasesJson())),
+        contentPackProvider(lesBasesIsland).overrideWith((ref) async => bases),
       ],
     );
     c.listen(nextStepViewProvider, (_, _) {});
@@ -77,20 +79,32 @@ void main() {
     expect(await view(), isNull);
   });
 
-  test('no savings: the safety cushion first, then the first lesson as soon '
-      'as it is read', () async {
+  test('a beginner starts on Les bases, no savings or not: no sheet first '
+      '(M12-7)', () async {
     await c
         .read(profileRepositoryProvider)
         .save(profile(savings: Savings.none));
     c.invalidate(nextStepViewProvider);
-    var v = (await view())!;
-    expect(v.step, const OpenGlossary('matelas-de-securite'));
-    expect(v.title!.of('fr'), 'Matelas de sécurité');
+    final v = (await view())!;
+    expect(v.step, const PlayNode('lb.safety-cushion'));
+    expect(v.title!.of('fr'), 'Ton matelas de sécurité');
+  });
 
+  test('Les bases to its end, Actions & ETF opening after its fifth lesson '
+      '(M12-7)', () async {
     await c
-        .read(glossaryRepositoryProvider)
-        .discover('matelas-de-securite', now);
-    v = (await view())!;
+        .read(profileRepositoryProvider)
+        .save(profile(weeklyTime: WeeklyTime.thirtyPlus));
+    c.invalidate(nextStepViewProvider);
+    final yesterday = now.subtract(const Duration(days: 1));
+    for (final n in bases.path.take(5)) {
+      await complete(n.id, yesterday);
+    }
+    expect((await view())!.step, const PlayNode('lb.loan-cost'));
+    for (final n in bases.path.skip(5)) {
+      await complete(n.id, yesterday);
+    }
+    final v = (await view())!;
     expect(v.step, const PlayNode('ae.livret-vs-etf'));
     expect(v.title!.of('fr'), 'Livret ou ETF\u202f?');
   });
@@ -143,8 +157,8 @@ void main() {
   test('yesterday\'s lessons leave today\'s free', () async {
     await c.read(profileRepositoryProvider).save(profile());
     c.invalidate(nextStepViewProvider);
-    await complete('ae.livret-vs-etf', now.subtract(const Duration(days: 1)));
-    expect((await view())!.step, const PlayNode('ae.fees-toy'));
+    await complete('lb.safety-cushion', now.subtract(const Duration(days: 1)));
+    expect((await view())!.step, const PlayNode('lb.cash-inflation'));
   });
 
   test('the level follows the lessons as they are completed', () async {
@@ -177,7 +191,7 @@ void main() {
       expect(v.moment!.rule, CompanionRule.idleCash);
 
       await c.read(companionActionsProvider.notifier).dismiss(v.moment!);
-      expect((await view())!.step, const PlayNode('ae.livret-vs-etf'));
+      expect((await view())!.step, const PlayNode('lb.safety-cushion'));
     },
   );
 }

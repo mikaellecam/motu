@@ -4,7 +4,6 @@ import 'package:finance_companion/core/l10n/app_localizations.dart';
 import 'package:finance_companion/core/theme/app_theme.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/learning/next_step.dart';
-import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/features/map/next_step_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,19 +88,6 @@ void main() {
     expect(find.text('Ta mission'), findsOneWidget);
     await go(tester, 'Voir la mission');
     expect(find.text('node ae.mission-first-etf'), findsOneWidget);
-  });
-
-  testWidgets('the safety cushion opens its sheet', (tester) async {
-    await show(
-      tester,
-      const NextStepView(
-        OpenGlossary('matelas-de-securite'),
-        title: Localized('Matelas de sécurité', 'Safety cushion'),
-      ),
-    );
-    expect(find.text("Avant d'investir"), findsOneWidget);
-    await go(tester, 'Lire');
-    expect(find.byType(TermSheet), findsOneWidget);
   });
 
   testWidgets('a trip: its name, then its wallet', (tester) async {

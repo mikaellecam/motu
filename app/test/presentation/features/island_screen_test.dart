@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/core/theme/tokens.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
+import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/learning/path.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,10 +21,11 @@ import '../../fakes/lesson_pack.dart';
 
 import '../../helpers.dart';
 
-/// No profile; completions come from [completions].
+/// No profile; completions come from [completions], Les bases' fifth lesson
+/// always among them: Actions & ETF's lessons are open (M12-7).
 class StreamedProfiles extends Fake implements ProfileRepository {
   final completions = StreamController<Set<String>>.broadcast();
-  Set<String> last = const {};
+  Set<String> last = const {'lb.cushion-2020'};
 
   @override
   Stream<Set<String>> watchCompletedNodes() async* {
@@ -30,8 +34,8 @@ class StreamedProfiles extends Fake implements ProfileRepository {
   }
 
   void complete(Set<String> ids) {
-    last = ids;
-    completions.add(ids);
+    last = {...ids, 'lb.cushion-2020'};
+    completions.add(last);
   }
 
   @override
@@ -164,5 +168,39 @@ void main() {
     textAt(tester, 1.3);
     await show(tester);
     await expectAccessible(tester);
+  });
+
+  testWidgets('closed: every islet locked, its header names the lesson it '
+      'waits for (M12-7)', (tester) async {
+    tester.platformDispatcher.localesTestValue = [const Locale('fr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    final pack = decodePack(packJson());
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          islandPathProvider(actionsEtfIsland).overrideWith(
+            (ref) async => IslandPathView(
+              pack.title,
+              [for (final n in pack.nodes) PathNode(n, NodeState.locked)],
+              open: false,
+              opensAfter: const Localized(
+                'Février 2020\u202f: et ton matelas\u202f?',
+                'February 2020: and your cushion?',
+              ),
+            ),
+          ),
+          livingIslandProvider.overrideWith((ref) async => const []),
+        ],
+        child: MainApp.screen(const IslandScreen(islandId: actionsEtfIsland)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        "S'ouvre après «\u00a0Février 2020\u202f: et ton matelas\u202f?\u00a0»",
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Commencer'), findsNothing);
   });
 }

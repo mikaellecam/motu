@@ -12,6 +12,7 @@ void main() {
   Future<List<IslandId>> pumpMap(
     WidgetTester tester, {
     Map<IslandId, ({int done, int total})> progress = const {},
+    Map<IslandId, String> opensAfter = const {},
   }) async {
     final opened = <IslandId>[];
     tester.view.physicalSize = const Size(1170, 2532);
@@ -19,7 +20,11 @@ void main() {
     addTearDown(tester.view.reset);
     await pumpApp(
       tester,
-      ArchipelagoMap(onOpen: opened.add, progress: progress),
+      ArchipelagoMap(
+        onOpen: opened.add,
+        progress: progress,
+        opensAfter: opensAfter,
+      ),
     );
     return opened;
   }
@@ -67,6 +72,28 @@ void main() {
     await tester.tap(find.text('Actions & ETF'));
     await tester.tap(find.text('Trading'), warnIfMissed: false);
     expect(opened, [IslandId.basics, IslandId.actionsEtf]);
+  });
+
+  testWidgets('a closed island names the lesson it waits for (M12-7)', (
+    tester,
+  ) async {
+    final opened = await pumpMap(
+      tester,
+      progress: {IslandId.actionsEtf: (done: 0, total: 12)},
+      opensAfter: {IslandId.actionsEtf: 'Février 2020 : et ton matelas ?'},
+    );
+    // A lock on the map; the lesson in its label and on its path.
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(4));
+    expect(find.text('0/12'), findsNothing);
+    expect(
+      find.bySemanticsLabel(
+        'Actions & ETF, s\'ouvre après «\u00a0Février 2020 : et ton matelas ?\u00a0»',
+      ),
+      findsOneWidget,
+    );
+    // Its path still opens, every lesson locked.
+    await tester.tap(find.text('Actions & ETF'));
+    expect(opened, [IslandId.actionsEtf]);
   });
 
   testWidgets('Les bases shows its lessons done and is built as far (M12-6)', (

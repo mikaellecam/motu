@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/repositories/companion_repository.dart';
 import '../../domain/learning/content.dart';
 import '../../domain/learning/next_step.dart';
+import '../../domain/learning/profile_rules.dart';
 import '../../domain/wallet/wallet.dart';
 import '../companion/companion.dart';
 import '../providers.dart';
@@ -40,15 +41,20 @@ Future<NextStepView?> nextStepView(Ref ref) async {
   // Every dependency is read before the first await.
   final profiles = ref.watch(profileRepositoryProvider);
   final now = ref.watch(liveClockProvider).now().toLocal();
-  final packF = ref.watch(contentPackProvider(actionsEtfIsland).future)
-    ..ignore();
+  final packsF = ref.watch(contentPacksProvider.future)..ignore();
   final doneF = ref.watch(completionsProvider.future)..ignore();
   final termsF = ref.watch(glossaryProgressProvider.future)..ignore();
   final walletsF = ref.watch(walletSummariesProvider.future)..ignore();
   final momentsF = ref.watch(activeMomentsProvider.future)..ignore();
   final profile = await profiles.load();
   if (profile == null) return null;
-  final pack = await packF;
+  final packs = await packsF;
+  ContentPack? island(String id) => packs.where((p) => p.id == id).firstOrNull;
+  final pack = island(actionsEtfIsland)!;
+  final bases = island(lesBasesIsland)?.path ?? const [];
+  // Les bases first, Actions & ETF opening after it; or Actions & ETF first
+  // for those the questionnaire sends there (M12-7).
+  final basesFirst = !skipsTheBasics(profile);
   final done = await doneF;
   final terms = await termsF;
   final moments = await momentsF;
@@ -60,7 +66,10 @@ Future<NextStepView?> nextStepView(Ref ref) async {
   final step = nextStep(
     LearningState(
       profile: profile,
+      before: basesFirst ? bases : const [],
       path: pack.path,
+      pathOpen: lessonsOpen(pack, done.keys.toSet(), profile),
+      after: basesFirst ? const [] : bases,
       // The pacing counts the lessons of the user's day.
       completedOn: {
         for (final MapEntry(:key, :value) in done.entries) key: value.toLocal(),
@@ -71,15 +80,14 @@ Future<NextStepView?> nextStepView(Ref ref) async {
       openTrips: [for (final t in trips) t.id],
     ),
   );
-  Localized? nodeTitle(String id) =>
-      pack.nodes.where((n) => n.id == id).firstOrNull?.title;
+  Localized? nodeTitle(String id) => [
+    for (final p in packs)
+      for (final n in p.nodes)
+        if (n.id == id) n.title,
+  ].firstOrNull;
   return switch (step) {
     PlayNode(:final nodeId) ||
     DoMission(:final nodeId) => NextStepView(step, title: nodeTitle(nodeId)),
-    OpenGlossary(:final termId) => NextStepView(
-      step,
-      title: pack.glossary[termId]?.title,
-    ),
     ContinueTrip(:final walletId) => NextStepView(
       step,
       tripName: trips.firstWhere((t) => t.id == walletId).name,

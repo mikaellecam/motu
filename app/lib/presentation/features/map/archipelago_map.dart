@@ -19,6 +19,7 @@ class ArchipelagoMap extends StatefulWidget {
     required this.onOpen,
     this.buildings = const [],
     this.progress = const {},
+    this.opensAfter = const {},
   });
 
   /// Called with the playable island the user taps.
@@ -31,6 +32,10 @@ class ArchipelagoMap extends StatefulWidget {
   /// Lessons done on each playable island, of all of them: its label shows
   /// them, and they build it.
   final Map<IslandId, ({int done, int total})> progress;
+
+  /// The lesson each closed island waits for, by name (M12-7): its pill says
+  /// so instead of its progress.
+  final Map<IslandId, String> opensAfter;
 
   @override
   State<ArchipelagoMap> createState() => _ArchipelagoMapState();
@@ -171,6 +176,7 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
                     // ≥ 44 px on screen even at the smallest zoom.
                     target: AppSpace.minTarget / scale,
                     progress: widget.progress[island.id],
+                    opensAfter: widget.opensAfter[island.id],
                     onTap: island.locked
                         ? null
                         : () => widget.onOpen(island.id),
@@ -192,10 +198,12 @@ class _IslandLabel extends StatelessWidget {
     required this.target,
     required this.progress,
     required this.onTap,
+    this.opensAfter,
   });
 
   final IslandLayout island;
   final ({int done, int total})? progress;
+  final String? opensAfter;
 
   /// The tap target's height, in map px.
   final double target;
@@ -218,6 +226,10 @@ class _IslandLabel extends StatelessWidget {
         button: onTap != null,
         label: switch (progress) {
           _ when island.locked => l10n.map_island_locked(name),
+          _ when opensAfter != null => l10n.map_island_closed(
+            name,
+            opensAfter!,
+          ),
           (:final done, :final total) => l10n.map_island_open(
             name,
             done,
@@ -236,7 +248,12 @@ class _IslandLabel extends StatelessWidget {
             child: Center(
               child: island.locked
                   ? _LockedPill(name)
-                  : _OpenPill(name, progress: progress, sink: sink),
+                  : _OpenPill(
+                      name,
+                      progress: opensAfter == null ? progress : null,
+                      closed: opensAfter != null,
+                      sink: sink,
+                    ),
             ),
           ),
         ),
@@ -246,9 +263,18 @@ class _IslandLabel extends StatelessWidget {
 }
 
 class _OpenPill extends StatelessWidget {
-  const _OpenPill(this.name, {required this.progress, required this.sink});
+  const _OpenPill(
+    this.name, {
+    required this.progress,
+    required this.sink,
+    this.closed = false,
+  });
   final String name;
   final ({int done, int total})? progress;
+
+  /// Its lessons wait for another island's (M12-7): a lock in place of its
+  /// progress; the lesson it waits for in its label and on its path.
+  final bool closed;
 
   /// How far the pill is pressed down onto its shadow.
   final double sink;
@@ -271,46 +297,48 @@ class _OpenPill extends StatelessWidget {
           ),
         ],
       ),
-      child: Center(
-        widthFactor: 1,
-        heightFactor: 1,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                name,
-                style: AppText.titleSmall.copyWith(color: AppColors.ink),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            if (progress case (:final done, :final total)) ...[
-              const SizedBox(width: AppSpace.x2),
-              DecoratedBox(
-                decoration: const ShapeDecoration(
-                  color: AppColors.progress,
-                  shape: StadiumBorder(),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpace.x2,
-                    vertical: 2,
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context)
-                        .map_island_progress(done, total),
-                    style: AppText.label.copyWith(
-                      color: AppColors.ink,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
+      child: Center(widthFactor: 1, heightFactor: 1, child: _line(context)),
+    ),
+  );
+
+  /// Its name, then its lessons done, or a lock while it waits.
+  Widget _line(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Flexible(
+        child: Text(
+          name,
+          style: AppText.titleSmall.copyWith(color: AppColors.ink),
+          textAlign: TextAlign.center,
         ),
       ),
-    ),
+      if (closed) ...[
+        const SizedBox(width: AppSpace.x2),
+        const Icon(Icons.lock_outline, size: 18, color: AppColors.ink),
+      ],
+      if (progress case (:final done, :final total)) ...[
+        const SizedBox(width: AppSpace.x2),
+        DecoratedBox(
+          decoration: const ShapeDecoration(
+            color: AppColors.progress,
+            shape: StadiumBorder(),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.x2,
+              vertical: 2,
+            ),
+            child: Text(
+              AppLocalizations.of(context).map_island_progress(done, total),
+              style: AppText.label.copyWith(
+                color: AppColors.ink,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ],
   );
 }
 

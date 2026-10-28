@@ -154,6 +154,12 @@ class MapTab extends ConsumerWidget {
                   if (path != null && path.nodes.isNotEmpty)
                     id: (done: path.done, total: path.nodes.length),
               },
+              // A closed island names the lesson it waits for (M12-7).
+              opensAfter: {
+                for (final MapEntry(key: id, value: path) in paths.entries)
+                  if (path?.opensAfter case final lesson?)
+                    id: lesson.of(Localizations.localeOf(context).languageCode),
+              },
               onOpen: (id) => context.push(
                 '/island/${archipelago.firstWhere((i) => i.id == id).pack}',
               ),

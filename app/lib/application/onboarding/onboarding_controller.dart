@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/failure.dart';
 import '../../domain/learning/profile.dart';
 import '../../domain/learning/profile_rules.dart';
+import '../learning/content.dart';
 import '../providers.dart';
 
 part 'onboarding_controller.g.dart';
@@ -127,9 +128,15 @@ class OnboardingController extends _$OnboardingController {
   }
 }
 
-/// Why the path starts where it does, for « On commence par X parce que tu
-/// as répondu Y ».
-({StartReason reason, int node}) startExplanation(Profile profile) => (
-  reason: startReason(profile),
-  node: forcedFirstNode(profile) ?? startingNode(profile),
-);
+/// Where the way starts and why, for « On commence par X parce que tu as
+/// répondu Y »: Les bases' first lesson, or for those who skip it (M12-7)
+/// Actions & ETF's node 1-based [node].
+({StartReason reason, String island, int node}) startExplanation(
+  Profile profile,
+) => skipsTheBasics(profile)
+    ? (
+        reason: startReason(profile),
+        island: actionsEtfIsland,
+        node: forcedFirstNode(profile) ?? startingNode(profile),
+      )
+    : (reason: startReason(profile), island: lesBasesIsland, node: 1);

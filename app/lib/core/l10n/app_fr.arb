@@ -67,7 +67,6 @@
   "onboarding_error": "Choisis une r\u00e9ponse pour continuer. Aucune n'est mauvaise.",
   "onboarding_result": "On commence par \u00ab\u00a0{start}\u00a0\u00bb parce que tu as r\u00e9pondu \u00ab\u00a0{answer}\u00a0\u00bb.",
   "onboarding_go": "C'est parti",
-  "onboarding_start_cushion": "Le matelas de s\u00e9curit\u00e9",
   "onboarding_goal_question": "Pourquoi veux-tu investir\u202f?",
   "onboarding_goal_under3Years": "Projet dans moins de 3 ans",
   "onboarding_goal_from3To8Years": "Dans 3 \u00e0 8 ans",
@@ -137,6 +136,27 @@
     "description": "Screen-reader label of a locked island.",
     "placeholders": {
       "island": {
+        "type": "String"
+      }
+    }
+  },
+  "map_island_opens_after": "S'ouvre apr\u00e8s \u00ab\u00a0{lesson}\u00a0\u00bb",
+  "@map_island_opens_after": {
+    "description": "Under a closed island's name (M12-7): the lesson its lessons wait for.",
+    "placeholders": {
+      "lesson": {
+        "type": "String"
+      }
+    }
+  },
+  "map_island_closed": "{island}, s'ouvre apr\u00e8s \u00ab\u00a0{lesson}\u00a0\u00bb",
+  "@map_island_closed": {
+    "description": "Screen-reader label of a closed island (M12-7).",
+    "placeholders": {
+      "island": {
+        "type": "String"
+      },
+      "lesson": {
         "type": "String"
       }
     }
@@ -2112,7 +2132,6 @@
   "next_step_play": "Jouer",
   "next_step_mission": "Ta mission",
   "next_step_mission_go": "Voir la mission",
-  "next_step_cushion": "Avant d'investir",
   "next_step_read": "Lire",
   "next_step_trip": "Ton voyage dans le temps",
   "next_step_trip_go": "Reprendre",
