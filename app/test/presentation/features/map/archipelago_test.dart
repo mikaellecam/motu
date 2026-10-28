@@ -50,19 +50,19 @@ void main() {
     expect(rows, [...rows]..sort());
   });
 
-  const b1 = DrawnBuilding(height: 1, built: 1, scaffold: 0);
-  const b2 = DrawnBuilding(height: 2, built: 1, scaffold: 0);
-  const b3 = DrawnBuilding(height: 2, built: 0.5, scaffold: 1);
+  const b1 = DrawnBuilding(height: 1, built: 1, ghost: 0);
+  const b2 = DrawnBuilding(height: 2, built: 1, ghost: 0);
+  const b3 = DrawnBuilding(height: 2, built: 0.5, ghost: 1);
 
-  test('the painter draws every island, buildings and scaffolds, without '
+  test('the painter draws every island, buildings and ghosts, without '
       'error', () {
     for (final buildings in [
       const <DrawnBuilding>[],
       const [
-        DrawnBuilding(height: 4, built: 1, scaffold: 0),
-        DrawnBuilding(height: 2.5, built: 0.6, scaffold: 1),
-        DrawnBuilding(height: 0, built: 1, scaffold: 0),
-        DrawnBuilding(height: 1, built: 0, scaffold: 0.5),
+        DrawnBuilding(height: 4, built: 1, ghost: 0),
+        DrawnBuilding(height: 2.5, built: 0.6, ghost: 1),
+        DrawnBuilding(height: 0, built: 1, ghost: 0),
+        DrawnBuilding(height: 1, built: 0, ghost: 0.5),
         b1,
         b2,
       ],

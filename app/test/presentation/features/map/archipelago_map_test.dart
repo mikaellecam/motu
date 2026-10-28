@@ -175,7 +175,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       final [growing, site] = drawn();
       expect(growing.height, inExclusiveRange(0, maxBuildingHeight));
-      expect(site.scaffold, 1, reason: 'a pending buy: its frame goes up');
+      expect(site.ghost, 1, reason: 'a pending buy: its ghost shows');
 
       await tester.pumpAndSettle();
       expect(drawn(), drawnBuildings([world, apple]));
@@ -196,7 +196,7 @@ void main() {
       expect(drawn()[1].built, inExclusiveRange(0, 1));
       await tester.pumpAndSettle();
       expect(drawn()[1], drawnBuildings([filled]).single);
-      expect(drawn()[1].scaffold, 0);
+      expect(drawn()[1].ghost, 0);
     });
 
     testWidgets('with animations off, the island changes at once', (

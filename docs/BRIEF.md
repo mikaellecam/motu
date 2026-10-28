@@ -155,8 +155,9 @@ Rules:
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back
   (sells change nothing until they fill); the 5 largest stand in a row across the island, rising to the
   right, the largest last with a flag (M9-11), each as tall as its size against the largest's (1 to 4 height
-  units, one unit a block's height). The part a pending buy
-  adds is scaffolding round the building, a bare foundation for an asset not held yet.
+  units, one unit a block's height). A pending buy shows the building it will make as a ghost: its finished
+  volume in its own colours, see-through, with dashed edges. The part already standing is solid inside it;
+  an asset not held yet stands on a bare foundation slab (decided 2026-10-28, M9-45).
 
 ### 4.3 Islands, nodes and content packs
 
@@ -1152,8 +1153,8 @@ French formatting: narrow no-break space before « : ? ! », thousands with narr
 Hand-coded (count for the school requirement):
 1. Map buildings grow/shrink with positions (`AnimationController` + `CustomPainter`).
 2. Pending order: building under construction → completes on fill (staged controller). One 1,4 s controller,
-   three intervals (`islandFrame`): heights 0–0.6, the built part rising into its frame 0.3–0.9, a completed
-   frame coming down 0.85–1. With animations turned off in the system, the island changes at once.
+   three intervals (`islandFrame`): heights 0–0.6, the built part rising into its ghost 0.3–0.9, a completed
+   building's ghost fading 0.85–1. With animations turned off in the system, the island changes at once.
 3. Predict-reveal: curves draw progressively (`Tween<double>` over `PathMetric`). Built (M6-3, M7-4): 1,6 s,
    ease in-out, a dot at each line's tip; the decision's curve draws the same way once a choice is made.
 All three run at once, without motion, when the system's animations are off.
