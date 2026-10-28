@@ -32,7 +32,10 @@ type Dataset struct {
 	Currency string
 	// FX is the source of the rates the values were converted with ("ecb");
 	// empty when they are as published.
-	FX       string
+	FX string
+	// Prices is the index the values are restated in euros of From's month with
+	// ("insee"); empty when they are in euros of their day.
+	Prices   string
 	Interval string
 	From, To time.Time
 	FrozenAt time.Time
@@ -127,7 +130,8 @@ func trimZeros(s string) string {
 
 // Encode writes the dataset as the pack's datasets/<id>.json: one field per
 // line, one point per line. A series that is not an asset's leaves out asset
-// and symbol; fx only when the values were converted.
+// and symbol; fx only when the values were converted, prices only when
+// restated.
 func (d Dataset) Encode() []byte {
 	var b bytes.Buffer
 	b.WriteString("{\n")
@@ -136,7 +140,7 @@ func (d Dataset) Encode() []byte {
 		value any
 	}{
 		{"id", d.ID}, {"source", d.Source}, {"asset", d.Asset}, {"symbol", d.Symbol},
-		{"adjusted", d.Adjusted}, {"currency", d.Currency}, {"fx", d.FX}, {"interval", d.Interval},
+		{"adjusted", d.Adjusted}, {"currency", d.Currency}, {"fx", d.FX}, {"prices", d.Prices}, {"interval", d.Interval},
 		{"from", d.From.Format(time.DateOnly)}, {"to", d.To.Format(time.DateOnly)},
 		{"frozen_at", d.FrozenAt.Format(time.DateOnly)},
 	} {

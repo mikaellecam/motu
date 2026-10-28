@@ -33,7 +33,7 @@ func TestFreezeWritesTheDatasetIntoThePack(t *testing.T) {
 	code := run(context.Background(), []string{
 		"-pack", pack, "-id", "ds.aapl-2022-01-w", "-asset", "apple",
 		"-interval", "1week", "-from", "2022-01-03", "-to", "2022-01-28",
-	}, market, nil, time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC), &out, &errs)
+	}, market, nil, nil, time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC), &out, &errs)
 	if code != 0 {
 		t.Fatalf("exit %d: %s", code, errs.String())
 	}
@@ -71,14 +71,16 @@ func TestFreezeRefuses(t *testing.T) {
 		"no data": {[]string{"-pack", pack, "-id", "x", "-asset", "apple", "-from", "2022-01-03", "-to", "2022-01-07"},
 			"no close"},
 		"two kinds at once": {[]string{"-pack", pack, "-id", "x", "-asset", "apple", "-livret", "-from", "2022-01-03", "-to", "2022-01-07"},
-			"one of -asset, -fx and -livret"},
+			"one of -asset, -fx, -livret and -cash"},
 		"none": {[]string{"-pack", pack, "-id", "x", "-from", "2022-01-03", "-to", "2022-01-07"},
-			"one of -asset, -fx and -livret"},
+			"one of -asset, -fx, -livret and -cash"},
 		"another currency": {[]string{"-pack", pack, "-id", "x", "-fx", "GBP", "-from", "2022-01-03", "-to", "2022-01-07"},
 			"only USD"},
+		"an asset at prices": {[]string{"-pack", pack, "-id", "x", "-asset", "apple", "-cpi", "-interval", "1month", "-from", "2022-01-03", "-to", "2022-01-31"},
+			"cpi goes with cash or livret"},
 	} {
 		var out, errs bytes.Buffer
-		code := run(context.Background(), c.args, provider.NewFake(), &fakeRates{}, time.Now(), &out, &errs)
+		code := run(context.Background(), c.args, provider.NewFake(), &fakeRates{}, nil, time.Now(), &out, &errs)
 		if code == 0 || !strings.Contains(errs.String(), c.want) {
 			t.Errorf("%s: exit %d, %s", name, code, errs.String())
 		}
@@ -107,7 +109,7 @@ func freeze(t *testing.T, market provider.Provider, rates *fakeRates, args ...st
 	pack := t.TempDir()
 	os.WriteFile(filepath.Join(pack, "island.json"), []byte("{}"), 0o644)
 	var out, errs bytes.Buffer
-	code := run(context.Background(), append([]string{"-pack", pack, "-id", "ds.x"}, args...), market, rates,
+	code := run(context.Background(), append([]string{"-pack", pack, "-id", "ds.x"}, args...), market, rates, fakePrices{},
 		time.Date(2026, 10, 11, 9, 0, 0, 0, time.UTC), &out, &errs)
 	if code != 0 {
 		t.Fatalf("exit %d: %s", code, errs.String())
@@ -155,12 +157,43 @@ func TestFreezeALivretA_WithoutTheProvider(t *testing.T) {
 	}
 }
 
+// fakePrices serves INSEE's index from December 2015 to February 2016.
+type fakePrices struct{}
+
+func (fakePrices) ConsumerPrices(context.Context, time.Time, time.Time) ([]store.Rate, error) {
+	return []store.Rate{{Date: day("2015-12-01"), Rate: "82.71"}, {Date: day("2016-01-01"), Rate: "81.92"},
+		{Date: day("2016-02-01"), Rate: "82.13"}}, nil
+}
+
+func TestFreezeWhatCashAndALivretBuy_AtINSEEPrices(t *testing.T) {
+	notes := freeze(t, nil, nil, "-cash", "-deposit", "10000", "-interval", "1month", "-from", "2015-12-31", "-to", "2016-02-29")
+	bought := freeze(t, nil, nil, "-cash", "-cpi", "-deposit", "10000", "-interval", "1month", "-from", "2015-12-31", "-to", "2016-02-29")
+	livret := freeze(t, nil, nil, "-livret", "-cpi", "-interval", "1month", "-from", "2015-12-31", "-to", "2016-01-31")
+	for name, c := range map[string]struct {
+		written string
+		want    []string
+	}{
+		"notes":  {notes, []string{`"source": "cash"`, `["2016-02-29", 10000]`}},
+		"bought": {bought, []string{`"source": "cash"`, `"prices": "insee"`, `["2016-01-31", 10096.435547]`, `["2016-02-29", 10070.619749]`}},
+		"livret": {livret, []string{`"source": "livret-a"`, `"prices": "insee"`, `["2015-12-31", 10000]`, `["2016-01-31", 10099.590683]`}},
+	} {
+		for _, want := range c.want {
+			if !strings.Contains(c.written, want) {
+				t.Errorf("%s lacks %s:\n%s", name, want, c.written)
+			}
+		}
+	}
+	if strings.Contains(notes, `"prices"`) {
+		t.Errorf("notes are in euros of their day:\n%s", notes)
+	}
+}
+
 func TestFreezeAnAssetNeedsTheKey(t *testing.T) {
 	pack := t.TempDir()
 	os.WriteFile(filepath.Join(pack, "island.json"), []byte("{}"), 0o644)
 	var out, errs bytes.Buffer
 	code := run(context.Background(), []string{"-pack", pack, "-id", "x", "-asset", "apple", "-from", "2022-01-03",
-		"-to", "2022-01-07"}, nil, nil, time.Now(), &out, &errs)
+		"-to", "2022-01-07"}, nil, nil, nil, time.Now(), &out, &errs)
 	if code == 0 || !strings.Contains(errs.String(), "TWELVEDATA_API_KEY") {
 		t.Errorf("exit %d: %s", code, errs.String())
 	}
@@ -171,7 +204,7 @@ func TestFreezeRecordsTheRecipe(t *testing.T) {
 	os.WriteFile(filepath.Join(pack, "island.json"), []byte("{}"), 0o644)
 	var out, errs bytes.Buffer
 	if code := run(context.Background(), []string{"-pack", pack, "-id", "ds.l", "-livret", "-interval", "1month",
-		"-from", "2015-12-31", "-to", "2016-01-31"}, nil, nil, time.Now(), &out, &errs); code != 0 {
+		"-from", "2015-12-31", "-to", "2016-01-31"}, nil, nil, nil, time.Now(), &out, &errs); code != 0 {
 		t.Fatalf("exit %d: %s", code, errs.String())
 	}
 	recipes, err := content.ReadRecipes(pack)
@@ -209,7 +242,7 @@ func appleBars(market *provider.Fake, from, to string) {
 
 func recipesRun(root string, market provider.Provider, rates *fakeRates, extra ...string) (int, string, string) {
 	var out, errs bytes.Buffer
-	code := run(context.Background(), append([]string{"-recipes", root, "-every", "0s"}, extra...), market, rates,
+	code := run(context.Background(), append([]string{"-recipes", root, "-every", "0s"}, extra...), market, rates, fakePrices{},
 		time.Date(2026, 10, 27, 9, 0, 0, 0, time.UTC), &out, &errs)
 	return code, out.String(), errs.String()
 }
@@ -248,7 +281,7 @@ func TestRecipesWaitBetweenProviderCalls(t *testing.T) {
 	appleBars(market, "2022-01-03", "2022-01-28")
 	start := time.Now()
 	var out, errs bytes.Buffer
-	if code := run(context.Background(), []string{"-recipes", root, "-every", "40ms"}, market, nil, time.Now(), &out, &errs); code != 0 {
+	if code := run(context.Background(), []string{"-recipes", root, "-every", "40ms"}, market, nil, nil, time.Now(), &out, &errs); code != 0 {
 		t.Fatalf("exit %d: %s", code, errs.String())
 	}
 	if elapsed := time.Since(start); market.Calls != 2 || elapsed < 40*time.Millisecond {
@@ -285,7 +318,7 @@ func TestRecipesRefuse(t *testing.T) {
 		extra   []string
 		want    string
 	}{
-		"a bad recipe": {`[{"id": "ds.a", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, nil, "actions-etf/1: ds.a: one of asset, fx and livret"},
+		"a bad recipe": {`[{"id": "ds.a", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, nil, "actions-etf/1: ds.a: one of asset, fx, livret and cash"},
 		"unreadable":   {`[`, nil, "actions-etf/1: datasets.json"},
 		"no key":       {`[{"id": "ds.a", "asset": "apple", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, nil, "TWELVEDATA_API_KEY"},
 		"not an asset": {`[{"id": "ds.a", "asset": "nope", "interval": "1day", "from": "2022-01-03", "to": "2022-01-07"}]`, []string{"-synthetic"}, `asset "nope" not given`},
@@ -296,10 +329,10 @@ func TestRecipesRefuse(t *testing.T) {
 		}
 	}
 	var out, errs bytes.Buffer
-	if code := run(context.Background(), []string{"-recipes", filepath.Join(t.TempDir(), "missing")}, nil, nil, time.Now(), &out, &errs); code == 0 {
+	if code := run(context.Background(), []string{"-recipes", filepath.Join(t.TempDir(), "missing")}, nil, nil, nil, time.Now(), &out, &errs); code == 0 {
 		t.Error("a missing content directory")
 	}
-	if code := run(context.Background(), []string{"-synthetic"}, nil, nil, time.Now(), &out, &errs); code != 2 {
+	if code := run(context.Background(), []string{"-synthetic"}, nil, nil, nil, time.Now(), &out, &errs); code != 2 {
 		t.Errorf("-synthetic alone: exit %d", code)
 	}
 }
@@ -341,5 +374,18 @@ func TestPruneRemovesTheDatasetsNoRecipeLists(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(pack, "datasets", "ds.l.json")); err != nil {
 		t.Errorf("ds.l.json has its recipe: %v", err)
+	}
+}
+
+func TestRecipesRebuildWhatCashBuys_WithoutTheProvider(t *testing.T) {
+	root, pack := contentWithRecipes(t,
+		`[{"id": "ds.c", "cash": true, "deposit": 10000, "cpi": true, "interval": "1month", "from": "2015-12-31", "to": "2016-02-29"}]`)
+	code, out, errs := recipesRun(root, nil, nil)
+	if code != 0 || !strings.Contains(out, "1 datasets written") {
+		t.Fatalf("exit %d\n%s%s", code, out, errs)
+	}
+	written, _ := os.ReadFile(filepath.Join(pack, "datasets", "ds.c.json"))
+	if !strings.Contains(string(written), `"prices": "insee"`) || !strings.Contains(string(written), `["2016-02-29", 10070.619749]`) {
+		t.Errorf("dataset:\n%s", written)
 	}
 }

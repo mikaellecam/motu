@@ -40,6 +40,12 @@ func Synthetic(r Recipe, asset store.Asset, frozenAt time.Time) (Dataset, error)
 		value, low, high = 9000, -40, 40
 	case r.Livret:
 		value, low, high = r.Deposit*10000, 1, 1
+	case r.Cash:
+		value, low, high = r.Deposit*10000, 0, 0
+	}
+	if r.CPI {
+		// What it buys: a little less each day.
+		d.Prices, low, high = "insee", low-2, low-1
 	}
 
 	seed := fnv.New64a()

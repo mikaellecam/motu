@@ -12,6 +12,11 @@
 //   - -livret: a Livret A holding of -deposit euros put in on -from, from the
 //     rate history of the catalogue.
 //
+//   - -cash: -deposit euros kept as notes from -from.
+//
+//     With -cpi, a Livret or cash is restated each month in euros of -from's
+//     month, at INSEE's consumer prices (no key): what it buys.
+//
 //     freeze -pack ../content/packs/actions-etf/1 -id ds.aapl-2022-w \
 //     -asset apple -interval 1week -from 2022-01-01 -to 2022-12-31
 //
@@ -38,6 +43,7 @@ import (
 	"finance-companion/backend/internal/catalogue"
 	"finance-companion/backend/internal/content"
 	"finance-companion/backend/internal/fx"
+	"finance-companion/backend/internal/insee"
 	"finance-companion/backend/internal/provider"
 	"finance-companion/backend/internal/store"
 )
@@ -48,11 +54,12 @@ func main() {
 	if key := os.Getenv("TWELVEDATA_API_KEY"); key != "" {
 		market = provider.NewTwelveData(key)
 	}
-	os.Exit(run(context.Background(), os.Args[1:], market, fx.NewFrankfurter(), time.Now(), os.Stdout, os.Stderr))
+	os.Exit(run(context.Background(), os.Args[1:], market, fx.NewFrankfurter(), insee.New(), time.Now(),
+		os.Stdout, os.Stderr))
 }
 
-func run(ctx context.Context, args []string, market provider.Provider, rates fx.Source, now time.Time,
-	stdout, stderr io.Writer) int {
+func run(ctx context.Context, args []string, market provider.Provider, rates fx.Source, prices insee.Source,
+	now time.Time, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("freeze", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	pack := flags.String("pack", "", "pack version directory, e.g. ../content/packs/actions-etf/1")
@@ -64,7 +71,9 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 	currency := flags.String("currency", "", "with -asset: EUR converts the closes at ECB rates")
 	dollar := flags.String("fx", "", "USD: what one dollar was worth in euros")
 	livret := flags.Bool("livret", false, "a Livret A holding of -deposit euros put in on -from")
-	deposit := flags.Int64("deposit", 10000, "with -livret: euros put in")
+	cash := flags.Bool("cash", false, "-deposit euros kept as notes from -from")
+	deposit := flags.Int64("deposit", 10000, "with -livret or -cash: euros put in")
+	cpi := flags.Bool("cpi", false, "with -livret or -cash: in euros of -from's month, at INSEE consumer prices")
 	recipes := flags.String("recipes", "", "content directory: freeze the datasets its recipes list and its packs miss")
 	synthetic := flags.Bool("synthetic", false, "with -recipes: made-up prices, without the provider (CI only)")
 	prune := flags.Bool("prune", false, "with -recipes: remove the datasets no recipe lists")
@@ -81,20 +90,20 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 		if market != nil {
 			market = &paced{Provider: market, every: *every, retry: *retry}
 		}
-		return runRecipes(ctx, *recipes, *synthetic, *prune, market, rates, now, stdout, stderr)
+		return runRecipes(ctx, *recipes, *synthetic, *prune, market, rates, prices, now, stdout, stderr)
 	}
 	if *synthetic || *prune {
 		fmt.Fprintln(stderr, "freeze: -synthetic and -prune go with -recipes")
 		return 2
 	}
 	modes := 0
-	for _, set := range []bool{*assetID != "", *dollar != "", *livret} {
+	for _, set := range []bool{*assetID != "", *dollar != "", *livret, *cash} {
 		if set {
 			modes++
 		}
 	}
 	if *pack == "" || *id == "" || *from == "" || *to == "" || modes != 1 {
-		fmt.Fprintln(stderr, "freeze: one of -asset, -fx and -livret, with -pack, -id, -from and -to")
+		fmt.Fprintln(stderr, "freeze: one of -asset, -fx, -livret and -cash, with -pack, -id, -from and -to")
 		flags.Usage()
 		return 2
 	}
@@ -114,12 +123,15 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 		return fail("-currency: only EUR")
 	}
 	recipe := content.Recipe{ID: *id, Asset: *assetID, Currency: *currency, FX: *dollar, Livret: *livret,
-		Interval: *interval, From: *from, To: *to}
-	if *livret {
+		Cash: *cash, CPI: *cpi, Interval: *interval, From: *from, To: *to}
+	if *livret || *cash {
 		recipe.Deposit = *deposit
 	}
+	if p := recipe.Problem(); p != "" {
+		return fail("%s", p)
+	}
 
-	dataset, err := freezeRecipe(ctx, recipe, market, rates, now)
+	dataset, err := freezeRecipe(ctx, recipe, market, rates, prices, now)
 	if err != nil {
 		return fail("%v", err)
 	}
@@ -138,7 +150,7 @@ func run(ctx context.Context, args []string, market provider.Provider, rates fx.
 // recipes list and git left out: a missing file, or a made-up one unless
 // [synthetic] makes them up too. [prune] removes the datasets no recipe lists.
 func runRecipes(ctx context.Context, dir string, synthetic, prune bool, market provider.Provider, rates fx.Source,
-	now time.Time, stdout, stderr io.Writer) int {
+	prices insee.Source, now time.Time, stdout, stderr io.Writer) int {
 	fail := func(format string, a ...any) int {
 		fmt.Fprintf(stderr, "freeze: "+format+"\n", a...)
 		return 1
@@ -166,7 +178,7 @@ func runRecipes(ctx context.Context, dir string, synthetic, prune bool, market p
 				asset, _ := catalogueAsset(r.Asset)
 				dataset, err = content.Synthetic(r, asset, now.UTC())
 			} else {
-				dataset, err = freezeRecipe(ctx, r, market, rates, now)
+				dataset, err = freezeRecipe(ctx, r, market, rates, prices, now)
 			}
 			if err != nil {
 				return fail("%s/%d: %v", ref.Island, ref.Version, err)
@@ -239,10 +251,10 @@ func write(packDir string, dataset content.Dataset) (string, error) {
 	return path, os.WriteFile(path, dataset.Encode(), 0o644)
 }
 
-// freezeRecipe follows the recipe: real data from the provider, the ECB or the
-// Livret A rate history.
+// freezeRecipe follows the recipe: real data from the provider, the ECB, the
+// Livret A rate history or INSEE.
 func freezeRecipe(ctx context.Context, r content.Recipe, market provider.Provider, rates fx.Source,
-	now time.Time) (content.Dataset, error) {
+	prices insee.Source, now time.Time) (content.Dataset, error) {
 	start, _ := time.Parse(time.DateOnly, r.From)
 	end, _ := time.Parse(time.DateOnly, r.To)
 	// ECB rates around the range: the one before its first day included.
@@ -263,8 +275,19 @@ func freezeRecipe(ctx context.Context, r content.Recipe, market provider.Provide
 	}
 
 	switch {
-	case r.Livret:
-		return content.Livret(r.ID, catalogue.LivretRates, r.Deposit*100, r.Interval, start, end, now.UTC())
+	case r.Livret, r.Cash:
+		held, err := content.Cash(r.ID, r.Deposit*100, r.Interval, start, end, now.UTC())
+		if r.Livret {
+			held, err = content.Livret(r.ID, catalogue.LivretRates, r.Deposit*100, r.Interval, start, end, now.UTC())
+		}
+		if err != nil || !r.CPI {
+			return held, err
+		}
+		index, err := prices.ConsumerPrices(ctx, start, end)
+		if err != nil {
+			return content.Dataset{}, err
+		}
+		return content.InEurosOf(held, index)
 	case r.FX != "":
 		rs, err := eurUSD()
 		if err != nil {

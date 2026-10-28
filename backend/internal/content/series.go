@@ -10,8 +10,9 @@ import (
 )
 
 // Series that are not an asset's closes: an asset in euros, the dollar in
-// euros, a Livret A deposit (M6-8). Each is computed from published
-// figures, ECB rates or the Livret A rate history, never hand-typed.
+// euros, a Livret A deposit (M6-8), cash, and what a Livret or cash buys
+// (M12-2). Each is computed from published figures, ECB rates, the Livret A
+// rate history or INSEE's consumer prices, never hand-typed.
 
 type dated struct {
 	date  time.Time
@@ -152,6 +153,74 @@ func Livret(id string, history []store.LivretRate, depositCents int64, interval 
 		ID: id, Source: "livret-a", Currency: "EUR", Interval: interval,
 		From: from, To: to, FrozenAt: frozenAt, Points: bucket(daily, interval),
 	}, nil
+}
+
+// Cash is depositCents kept as notes from from to to: the same euros at the
+// end of each period, beside what they buy ([InEurosOf]).
+func Cash(id string, depositCents int64, interval string, from, to, frozenAt time.Time) (Dataset, error) {
+	if err := checkRange(interval, from, to); err != nil {
+		return Dataset{}, err
+	}
+	if depositCents <= 0 {
+		return Dataset{}, fmt.Errorf("deposit %d cents is not positive", depositCents)
+	}
+	value := decimal6(big.NewRat(depositCents, 100))
+	var daily []Point
+	for day := from; !day.After(to); day = day.AddDate(0, 0, 1) {
+		daily = append(daily, Point{day, value})
+	}
+	return Dataset{
+		ID: id, Source: "cash", Currency: "EUR", Interval: interval,
+		From: from, To: to, FrozenAt: frozenAt, Points: bucket(daily, interval),
+	}, nil
+}
+
+// InEurosOf restates d, a monthly series in euros, in euros of its first
+// month: each point times the index of that month over the index of its own
+// (INSEE's, by month, each dated on its first day). What the money buys.
+func InEurosOf(d Dataset, index []store.Rate) (Dataset, error) {
+	if d.Interval != "1month" {
+		return Dataset{}, fmt.Errorf("%s: only a monthly series, as INSEE's index", d.ID)
+	}
+	if d.Currency != "EUR" {
+		return Dataset{}, fmt.Errorf("%s: only euros, not %s", d.ID, d.Currency)
+	}
+	months, err := ratesOf(index)
+	if err != nil {
+		return Dataset{}, err
+	}
+	of := func(p Point) (*big.Rat, error) {
+		month := time.Date(p.Date.Year(), p.Date.Month(), 1, 0, 0, 0, 0, time.UTC)
+		for _, m := range months {
+			if m.date.Equal(month) {
+				return m.value, nil
+			}
+		}
+		return nil, fmt.Errorf("no INSEE index for %s", month.Format("2006-01"))
+	}
+	if len(d.Points) == 0 {
+		return Dataset{}, fmt.Errorf("%s has no point", d.ID)
+	}
+	base, err := of(d.Points[0])
+	if err != nil {
+		return Dataset{}, err
+	}
+	out := d
+	out.Points = make([]Point, 0, len(d.Points))
+	for _, p := range d.Points {
+		idx, err := of(p)
+		if err != nil {
+			return Dataset{}, err
+		}
+		value, ok := new(big.Rat).SetString(p.Value)
+		if !ok {
+			return Dataset{}, fmt.Errorf("value %q is not a number", p.Value)
+		}
+		value.Mul(value, base)
+		out.Points = append(out.Points, Point{p.Date, decimal6(value.Quo(value, idx))})
+	}
+	out.Prices = "insee"
+	return out, nil
 }
 
 func fortnightStart(d time.Time) time.Time {

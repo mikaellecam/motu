@@ -1,6 +1,7 @@
 package content
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -142,5 +143,69 @@ func TestEncode_OmitsWhatADatasetIsNotOf_AndNamesTheRates(t *testing.T) {
 	eur, _ := ToEuros(a, eurUSD("2022-01-03", "1.1355"))
 	if text := string(eur.Encode()); !strings.Contains(text, `"fx": "ecb"`) || !strings.Contains(text, `"asset": "apple"`) {
 		t.Errorf("converted:\n%s", text)
+	}
+}
+
+// index is INSEE's monthly index: month, value pairs.
+func index(pairs ...string) []store.Rate {
+	var out []store.Rate
+	for i := 0; i+1 < len(pairs); i += 2 {
+		out = append(out, store.Rate{Date: day(pairs[i] + "-01"), Rate: pairs[i+1]})
+	}
+	return out
+}
+
+func TestCash_TheSameEurosAtEachMonthEnd(t *testing.T) {
+	d, err := Cash("ds.cash", 1000000, "1month", day("2015-12-31"), day("2016-02-15"), day("2026-10-28"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.Source != "cash" || d.Currency != "EUR" || fmt.Sprint(d.Points) != fmt.Sprint([]Point{
+		{day("2015-12-31"), "10000"}, {day("2016-01-31"), "10000"}, {day("2016-02-15"), "10000"},
+	}) {
+		t.Errorf("cash: %+v", d)
+	}
+	if _, err := Cash("ds.cash", 0, "1month", day("2015-12-31"), day("2016-02-15"), day("2026-10-28")); err == nil {
+		t.Error("no deposit")
+	}
+	if _, err := Cash("ds.cash", 100, "1month", day("2016-02-15"), day("2015-12-31"), day("2026-10-28")); err == nil {
+		t.Error("backwards")
+	}
+}
+
+func TestInEurosOf_EachMonthEndAtItsIndex_OverTheFirstMonths(t *testing.T) {
+	cash, _ := Cash("ds.cash", 1000000, "1month", day("2015-12-31"), day("2016-02-29"), day("2026-10-28"))
+	d, err := InEurosOf(cash, index("2015-11", "82.5", "2015-12", "82.71", "2016-01", "81.92", "2016-02", "82.13"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 10 000 × 82.71 / 81.92 and / 82.13: prices fell, the notes bought more.
+	if d.Source != "cash" || d.Prices != "insee" || fmt.Sprint(d.Points) != fmt.Sprint([]Point{
+		{day("2015-12-31"), "10000"}, {day("2016-01-31"), "10096.435547"}, {day("2016-02-29"), "10070.619749"},
+	}) {
+		t.Errorf("restated: %+v", d)
+	}
+	if text := string(d.Encode()); !strings.Contains(text, `"prices": "insee"`) {
+		t.Errorf("encoded:\n%s", text)
+	}
+}
+
+func TestInEurosOf_Refuses(t *testing.T) {
+	cash, _ := Cash("ds.cash", 1000000, "1month", day("2015-12-31"), day("2016-02-29"), day("2026-10-28"))
+	weekly, _ := Cash("ds.cash", 1000000, "1week", day("2015-12-31"), day("2016-01-29"), day("2026-10-28"))
+	a, _ := Freeze(spec("1month", "2022-01-03", "2022-01-31"), bars("2022-01-31", "174"), day("2026-10-11"))
+	for name, c := range map[string]struct {
+		d     Dataset
+		index []store.Rate
+		want  string
+	}{
+		"a month without its index": {cash, index("2015-12", "82.71", "2016-01", "81.92"), "no INSEE index for 2016-02"},
+		"by the week":               {weekly, index("2015-12", "82.71"), "only a monthly series"},
+		"in dollars":                {a, index("2022-01", "90"), "only euros"},
+		"not a number":              {cash, index("2015-12", "x", "2016-01", "81.92", "2016-02", "82.13"), `"x"`},
+	} {
+		if _, err := InEurosOf(c.d, c.index); err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%s: %v, want %q", name, err, c.want)
+		}
 	}
 }

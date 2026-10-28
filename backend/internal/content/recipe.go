@@ -24,9 +24,14 @@ type Recipe struct {
 	Currency string `json:"currency,omitempty"`
 	// FX "USD" is what one dollar was worth in euros.
 	FX string `json:"fx,omitempty"`
-	// Livret is a Livret A holding of Deposit euros put in on From.
-	Livret   bool   `json:"livret,omitempty"`
-	Deposit  int64  `json:"deposit,omitempty"`
+	// Livret is a Livret A holding of Deposit euros put in on From; Cash, Deposit
+	// euros kept as notes.
+	Livret  bool  `json:"livret,omitempty"`
+	Cash    bool  `json:"cash,omitempty"`
+	Deposit int64 `json:"deposit,omitempty"`
+	// CPI restates a Livret or cash in euros of From's month, at INSEE consumer
+	// prices: what it buys.
+	CPI      bool   `json:"cpi,omitempty"`
 	Interval string `json:"interval"`
 	From     string `json:"from"`
 	To       string `json:"to"`
@@ -41,13 +46,13 @@ func (r Recipe) Problem() string {
 		add("id is empty")
 	}
 	kinds := 0
-	for _, set := range []bool{r.Asset != "", r.FX != "", r.Livret} {
+	for _, set := range []bool{r.Asset != "", r.FX != "", r.Livret, r.Cash} {
 		if set {
 			kinds++
 		}
 	}
 	if kinds != 1 {
-		add("one of asset, fx and livret")
+		add("one of asset, fx, livret and cash")
 	}
 	switch {
 	case r.Currency != "" && r.Asset == "":
@@ -58,11 +63,18 @@ func (r Recipe) Problem() string {
 	if r.FX != "" && r.FX != "USD" {
 		add("fx: only USD")
 	}
+	held := r.Livret || r.Cash
 	switch {
-	case r.Livret && r.Deposit <= 0:
+	case held && r.Deposit <= 0:
 		add("deposit is not positive")
-	case !r.Livret && r.Deposit != 0:
-		add("deposit goes with livret")
+	case !held && r.Deposit != 0:
+		add("deposit goes with livret or cash")
+	}
+	switch {
+	case r.CPI && !held:
+		add("cpi goes with cash or livret")
+	case r.CPI && r.Interval != "1month":
+		add("cpi: only 1month, as INSEE's index")
 	}
 	if !slices.Contains(Intervals, r.Interval) {
 		add("interval %q is unknown", r.Interval)

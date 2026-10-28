@@ -80,6 +80,21 @@ func TestASyntheticLivretOnlyGrows(t *testing.T) {
 	}
 }
 
+func TestSyntheticCash_FlatOrFallingAtPrices(t *testing.T) {
+	r := Recipe{ID: "ds.c", Cash: true, Deposit: 10000, Interval: "1month", From: "2016-01-01", To: "2016-12-31"}
+	flat, _ := Synthetic(r, store.Asset{}, day("2026-10-27"))
+	r.CPI = true
+	prices, _ := Synthetic(r, store.Asset{}, day("2026-10-27"))
+	if flat.Prices != "" || prices.Prices != "insee" || prices.Source != "synthetic" {
+		t.Errorf("provenance: %+v %+v", flat, prices)
+	}
+	for i, p := range flat.Points {
+		if p.Value != "10000" || (i > 0 && rat(prices.Points[i].Value).Cmp(rat(prices.Points[i-1].Value)) >= 0) {
+			t.Fatalf("month %d: %v, %v", i, p, prices.Points[i])
+		}
+	}
+}
+
 func TestSyntheticRefuses(t *testing.T) {
 	for name, c := range map[string]struct {
 		recipe Recipe
