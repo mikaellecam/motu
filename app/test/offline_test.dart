@@ -86,7 +86,7 @@ void main() {
     );
     await c.read(walletRepositoryProvider).ensureLiveWallet(wall.now());
     c.read(liveCatchUpProvider.notifier).run().ignore();
-    c.read(missionTrackerProvider);
+    startMissionTracker(c);
     return (c, buildRouter());
   }
 

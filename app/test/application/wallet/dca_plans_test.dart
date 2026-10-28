@@ -312,7 +312,7 @@ void main() {
   });
 
   test('the mission completes once a plan is active', () async {
-    container.listen(missionTrackerProvider, (_, _) {});
+    startMissionTracker(container);
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(await db.learningDao.progress(), isEmpty);
 

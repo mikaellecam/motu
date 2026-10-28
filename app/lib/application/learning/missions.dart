@@ -61,6 +61,12 @@ void missionTracker(Ref ref) {
   }, fireImmediately: true);
 }
 
+/// Starts [missionTrackerProvider] for the life of [container]. A listener
+/// keeps it running: read alone, Riverpod pauses it and its `ref.listen`,
+/// and no mission is ever saved (M12-8).
+void startMissionTracker(ProviderContainer container) =>
+    container.listen(missionTrackerProvider, (_, _) {});
+
 /// A mission node and whether it is done.
 final class MissionView {
   const MissionView({
