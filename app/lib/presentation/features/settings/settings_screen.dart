@@ -10,6 +10,7 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../widgets/section_title.dart';
 
@@ -23,7 +24,11 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final view = ref.watch(settingsViewProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settings_title)),
+      appBar: AppBar(
+        leading: ChunkyBackButton.leadingOf(context),
+        leadingWidth: ChunkyBackButton.width,
+        title: Text(l10n.settings_title),
+      ),
       body: switch (view) {
         AsyncValue(:final value?) => _Settings(value),
         AsyncValue(:final error?) => Center(
@@ -147,21 +152,23 @@ class _Settings extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.refresh),
+                ChunkyButton(
+                  label: l10n.settings_refresh,
+                  icon: Icons.refresh,
+                  kind: ChunkyButtonKind.secondary,
                   onPressed: () async {
                     await actions.refreshNow();
                     tell(l10n.settings_refreshed);
                   },
-                  label: Text(l10n.settings_refresh),
                 ),
                 const SizedBox(height: AppSpace.x2),
-                OutlinedButton(
+                ChunkyButton(
+                  label: l10n.settings_clear,
+                  kind: ChunkyButtonKind.secondary,
                   onPressed: () async {
                     await actions.clearCache();
                     tell(l10n.settings_cleared);
                   },
-                  child: Text(l10n.settings_clear),
                 ),
               ],
             ),
@@ -190,16 +197,13 @@ class _Settings extends ConsumerWidget {
           ),
         ]),
         const SizedBox(height: AppSpace.x4),
-        // The one setting that loses something: an alert border, a warning
-        // icon and its own words, never colour alone.
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.alertText,
-            side: const BorderSide(color: AppColors.alertText, width: 1.5),
-          ),
-          icon: const Icon(Icons.warning_amber_rounded),
+        // The one setting that loses something: a warning icon and its own
+        // words, never colour alone.
+        ChunkyButton(
+          label: l10n.settings_reset,
+          icon: Icons.warning_amber_rounded,
+          kind: ChunkyButtonKind.alert,
           onPressed: () => _reset(context, ref, formats.money(v.startingCash)),
-          label: Text(l10n.settings_reset),
         ),
         const SizedBox(height: AppSpace.x2),
         Text(l10n.settings_reset_note(euros(v.startingCash)), style: muted),
@@ -245,10 +249,11 @@ class _Settings extends ConsumerWidget {
             onPressed: () => Navigator.pop(context, false),
             child: Text(material.cancelButtonLabel),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.alertText),
+          ChunkyButton(
+            label: l10n.settings_reset_confirm,
+            icon: Icons.warning_amber_rounded,
+            kind: ChunkyButtonKind.alert,
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.settings_reset_confirm),
           ),
         ],
       ),

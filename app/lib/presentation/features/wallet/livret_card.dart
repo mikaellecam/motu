@@ -8,6 +8,7 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../widgets/sign_color.dart';
 
@@ -79,18 +80,20 @@ class LivretCard extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
+                    child: ChunkyButton(
+                      label: l10n.livret_deposit,
+                      kind: ChunkyButtonKind.secondary,
                       onPressed: () => move(deposit: true),
-                      child: Text(l10n.livret_deposit),
                     ),
                   ),
                   const SizedBox(width: AppSpace.x2),
                   Expanded(
-                    child: OutlinedButton(
+                    child: ChunkyButton(
+                      label: l10n.livret_withdraw,
+                      kind: ChunkyButtonKind.secondary,
                       onPressed: line.balance.isPositive
                           ? () => move(deposit: false)
                           : null,
-                      child: Text(l10n.livret_withdraw),
                     ),
                   ),
                 ],
@@ -230,9 +233,9 @@ class LivretSheet extends ConsumerWidget {
             style: text.bodySmall?.copyWith(color: AppColors.muted),
           ),
           const SizedBox(height: AppSpace.x3),
-          FilledButton(
+          ChunkyButton(
+            label: deposit ? l10n.livret_deposit : l10n.livret_withdraw,
             onPressed: submit,
-            child: Text(deposit ? l10n.livret_deposit : l10n.livret_withdraw),
           ),
         ],
       ),

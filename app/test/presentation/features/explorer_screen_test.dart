@@ -9,6 +9,7 @@ import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -134,11 +135,11 @@ void main() {
     expect(tops, orderedEquals([...tops]..sort()));
 
     // Filters and search narrow both groups; one left empty is not shown.
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Actions'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'Actions'));
     await tester.pumpAndSettle();
     expect(inList('ETF'), findsNothing);
     expect(inList('Actions'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Tout'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'Tout'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'monde');
     await tester.pump();
@@ -149,8 +150,16 @@ void main() {
 
   testWidgets('filter chips are pills', (tester) async {
     await show(tester, catalogue);
-    for (final chip in tester.widgetList<ChoiceChip>(find.byType(ChoiceChip))) {
-      expect(chip.shape, isA<StadiumBorder>());
+    final faces = find.descendant(
+      of: find.byType(ChunkyChip),
+      matching: find.byType(DecoratedBox),
+    );
+    expect(faces, findsNWidgets(4));
+    for (final face in faces.evaluate()) {
+      final decoration = (face.widget as DecoratedBox).decoration;
+      final radius =
+          (decoration as BoxDecoration).borderRadius! as BorderRadius;
+      expect(radius.topLeft.x * 2, face.size!.height);
     }
     await unmount(tester);
   });
@@ -173,12 +182,12 @@ void main() {
 
   testWidgets('filters, and favorites that stick', (tester) async {
     await show(tester, catalogue);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'ETF'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'ETF'));
     await tester.pumpAndSettle();
     expect(find.text('ETF Monde'), findsOneWidget);
     expect(find.text('Apple'), findsNothing);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Favoris'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'Favoris'));
     await tester.pumpAndSettle();
     expect(
       find.text(
@@ -187,7 +196,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Tout'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'Tout'));
     await tester.pumpAndSettle();
     final star = find.descendant(
       of: find.ancestor(of: find.text('Apple'), matching: find.byType(InkWell)),
@@ -200,7 +209,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byTooltip('Retirer des favoris'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Favoris'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'Favoris'));
     await tester.pumpAndSettle();
     expect(find.text('Apple'), findsOneWidget);
     expect(find.text('Nvidia'), findsNothing);

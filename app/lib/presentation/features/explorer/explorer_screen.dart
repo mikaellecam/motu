@@ -9,6 +9,7 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../domain/market/asset.dart';
 import '../../widgets/asset_avatar.dart';
 import '../../widgets/cache_status_banner.dart';
@@ -50,7 +51,11 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
     final favorites = ref.watch(favoritesProvider).value ?? const {};
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tab_explore)),
+      appBar: AppBar(
+        leading: ChunkyBackButton.leadingOf(context),
+        leadingWidth: ChunkyBackButton.width,
+        title: Text(l10n.tab_explore),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -65,36 +70,13 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpace.screenPadding),
-            child: TextField(
+            child: ChunkySearchField(
               controller: _search,
+              hint: l10n.explorer_search_hint,
               onChanged: (_) => setState(() {}),
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: l10n.explorer_search_hint,
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _search.text.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: MaterialLocalizations.of(context)
-                            .deleteButtonTooltip,
-                        icon: const Icon(Icons.close),
-                        onPressed: () => setState(_search.clear),
-                      ),
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppShape.flatButtonRadius,
-                  ),
-                  borderSide: const BorderSide(color: AppColors.line),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppShape.flatButtonRadius,
-                  ),
-                  borderSide: const BorderSide(color: AppColors.line),
-                ),
-              ),
+              onClear: _search.text.isEmpty
+                  ? null
+                  : () => setState(_search.clear),
             ),
           ),
           SingleChildScrollView(
@@ -112,12 +94,10 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
                 ])
                   Padding(
                     padding: const EdgeInsets.only(right: AppSpace.x2),
-                    child: ChoiceChip(
-                      shape: const StadiumBorder(),
-                      label: Text(label),
+                    child: ChunkyChip(
+                      label: label,
                       selected: _filter == filter,
-                      showCheckmark: false,
-                      onSelected: (_) => setState(() => _filter = filter),
+                      onTap: () => setState(() => _filter = filter),
                     ),
                   ),
               ],

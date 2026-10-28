@@ -16,9 +16,14 @@ void main() {
     await pumpApp(tester, const GalleryScreen());
 
     expect(find.byType(ChunkyCard), findsOneWidget);
-    expect(find.byType(ChunkyButton), findsNWidgets(3));
-    expect(find.byType(FilledButton), findsNWidgets(2));
-    expect(find.byType(OutlinedButton), findsWidgets);
+    // Five, plus each ErrorView's « Réessayer ».
+    expect(find.byType(ChunkyButton), findsNWidgets(5 + 6));
+    expect(find.byType(ChunkySegmented<int>), findsOneWidget);
+    expect(find.byType(ChunkyChip), findsNWidgets(2));
+    expect(find.byType(ChunkySearchField), findsOneWidget);
+    // Every control is chunky (BRIEF §10.1); a flat card keeps its links.
+    expect(find.byType(FilledButton), findsNothing);
+    expect(find.byType(OutlinedButton), findsNothing);
     expect(find.byType(TextButton), findsWidgets);
     expect(find.byType(AsyncSkeleton), findsOneWidget);
     expect(find.byType(StaleBanner), findsNWidgets(2));

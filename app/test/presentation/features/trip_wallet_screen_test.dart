@@ -290,7 +290,7 @@ void main() {
 
   testWidgets('the automatic stops, from the header', (tester) async {
     await show(tester, trip());
-    await tester.tap(find.byTooltip('Arrêts automatiques'));
+    await tester.tap(find.bySemanticsLabel('Arrêts automatiques'));
     await tester.pumpAndSettle();
     expect(
       find.text('Un versement mensuel arrive'),
@@ -407,7 +407,7 @@ void main() {
     expect(find.text('Voyage terminé le 1er octobre 2008.'), findsOneWidget);
     expect(find.text('+1 jour'), findsNothing);
     expect(find.text('Investir'), findsNothing);
-    expect(find.byTooltip('Arrêts automatiques'), findsNothing);
+    expect(find.bySemanticsLabel('Arrêts automatiques'), findsNothing);
     expect(runner.steps, isEmpty);
 
     await tester.tap(find.text('Voir le bilan'));

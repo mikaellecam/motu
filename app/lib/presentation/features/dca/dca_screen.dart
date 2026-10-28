@@ -59,7 +59,11 @@ class _DcaScreenState extends ConsumerState<DcaScreen> {
     _sync(_amount, form.amount);
     _sync(_date, form.date);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.dca_title)),
+      appBar: AppBar(
+        leading: ChunkyBackButton.leadingOf(context),
+        leadingWidth: ChunkyBackButton.width,
+        title: Text(l10n.dca_title),
+      ),
       body: switch (view) {
         AsyncValue(:final value?) => ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
@@ -226,10 +230,10 @@ class _Form extends ConsumerWidget {
               spacing: AppSpace.x2,
               children: [
                 for (final years in dcaYears)
-                  ChoiceChip(
-                    label: Text(l10n.dca_years(years)),
+                  ChunkyChip(
+                    label: l10n.dca_years(years),
                     selected: view.years == years,
-                    onSelected: (_) => actions.setYears(years),
+                    onTap: () => actions.setYears(years),
                   ),
               ],
             ),
@@ -247,9 +251,9 @@ class _Form extends ConsumerWidget {
                 child: Text(note, style: style),
               ),
             const SizedBox(height: AppSpace.x4),
-            FilledButton(
+            ChunkyButton(
+              label: l10n.dca_simulate,
               onPressed: () => actions.simulate(view.params),
-              child: Text(l10n.dca_simulate),
             ),
           ],
         ),
@@ -487,9 +491,9 @@ class _ResultCard extends ConsumerWidget {
               if (term != null)
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: ActionChip(
-                    label: Text(term.of(language)),
-                    onPressed: () => showTermSheet(context, _dcaTerm),
+                  child: ChunkyChip(
+                    label: term.of(language),
+                    onTap: () => showTermSheet(context, _dcaTerm),
                   ),
                 ),
             ],

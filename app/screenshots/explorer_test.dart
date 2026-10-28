@@ -2,6 +2,7 @@ import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,7 +20,7 @@ void main() {
     const ExplorerScreen(),
     overrides: overrides,
     act: (tester) async {
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Actions'));
+      await tester.tap(find.widgetWithText(ChunkyChip, 'Actions'));
       await tester.pump();
       await tester.enterText(find.byType(TextField), 'hermes');
       await tester.pump();

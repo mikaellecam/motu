@@ -24,6 +24,7 @@ import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -251,10 +252,10 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.widgetWithText(FilterChip, 'ETF Monde'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'ETF Monde'));
     await tester.pumpAndSettle();
     expect(find.text('ETF Monde'), findsNWidgets(2), reason: 'chip + legend');
-    await tester.tap(find.widgetWithText(FilterChip, 'ETF Monde'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'ETF Monde'));
     await tester.pumpAndSettle();
     expect(find.text('ETF Monde'), findsOneWidget);
 
@@ -356,7 +357,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(TextButton, 'Arrêter').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Arrêter'));
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Arrêter'));
     await tester.pumpAndSettle();
     expect(planActions.stopped, ['live-2']);
   });

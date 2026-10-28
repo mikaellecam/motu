@@ -7,6 +7,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../domain/learning/glossary.dart';
 import 'term_sheet.dart';
 
@@ -30,10 +31,6 @@ class GlossaryScreen extends ConsumerWidget {
       padding: const EdgeInsets.only(top: AppSpace.x8),
       child: Text(text, style: muted, textAlign: TextAlign.center),
     );
-    final box = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppShape.flatButtonRadius),
-      borderSide: const BorderSide(color: AppColors.line),
-    );
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tab_glossary)),
@@ -51,31 +48,20 @@ class GlossaryScreen extends ConsumerWidget {
           ],
           // Its text comes from the search, so it survives being scrolled
           // out of the list and back.
-          TextFormField(
+          ChunkySearchField(
             initialValue: search.query,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search, color: AppColors.ink),
-              hintText: l10n.glossary_search,
-              filled: true,
-              fillColor: AppColors.surface,
-              border: box,
-              enabledBorder: box,
-            ),
+            hint: l10n.glossary_search,
             onChanged: actions.setQuery,
           ),
           const SizedBox(height: AppSpace.x3),
-          SegmentedButton<GlossaryFilter>(
-            showSelectedIcon: false,
+          ChunkySegmented(
             segments: [
-              for (final (filter, label) in [
-                (GlossaryFilter.all, l10n.glossary_filter_all),
-                (GlossaryFilter.discovered, l10n.glossary_filter_discovered),
-                (GlossaryFilter.toDiscover, l10n.glossary_filter_to_discover),
-              ])
-                ButtonSegment(value: filter, label: Text(label)),
+              (GlossaryFilter.all, l10n.glossary_filter_all),
+              (GlossaryFilter.discovered, l10n.glossary_filter_discovered),
+              (GlossaryFilter.toDiscover, l10n.glossary_filter_to_discover),
             ],
-            selected: {search.filter},
-            onSelectionChanged: (selected) => actions.setFilter(selected.first),
+            selected: search.filter,
+            onChanged: actions.setFilter,
           ),
           ...switch (index) {
             AsyncValue(:final value?) when value.total == 0 => [

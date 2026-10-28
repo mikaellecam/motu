@@ -12,6 +12,7 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/market/market_calendar.dart';
@@ -44,6 +45,8 @@ class AssetScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: ChunkyBackButton.leadingOf(context),
+        leadingWidth: ChunkyBackButton.width,
         title: overview == null ? null : Text(overview.asset.name),
       ),
       bottomNavigationBar: overview != null && overview.tradable
@@ -211,19 +214,15 @@ class _ChartAndWhyState extends ConsumerState<_ChartAndWhy> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SegmentedButton<AssetPeriod>(
-                  showSelectedIcon: false,
+                ChunkySegmented(
                   segments: [
-                    for (final (period, label) in [
-                      (AssetPeriod.week, l10n.wallet_period_week),
-                      (AssetPeriod.month, l10n.wallet_period_month),
-                      (AssetPeriod.year, l10n.wallet_period_year),
-                      (AssetPeriod.fiveYears, l10n.asset_period_five_years),
-                    ])
-                      ButtonSegment(value: period, label: Text(label)),
+                    (AssetPeriod.week, l10n.wallet_period_week),
+                    (AssetPeriod.month, l10n.wallet_period_month),
+                    (AssetPeriod.year, l10n.wallet_period_year),
+                    (AssetPeriod.fiveYears, l10n.asset_period_five_years),
                   ],
-                  selected: {_period},
-                  onSelectionChanged: (s) => setState(() => _period = s.single),
+                  selected: _period,
+                  onChanged: (period) => setState(() => _period = period),
                 ),
                 const SizedBox(height: AppSpace.x4),
                 SizedBox(
@@ -263,11 +262,10 @@ class _ChartAndWhyState extends ConsumerState<_ChartAndWhy> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(l10n.wallet_compare, style: text.bodyMedium),
-                    FilterChip(
-                      label: Text(l10n.wallet_benchmark_world),
+                    ChunkyChip(
+                      label: l10n.wallet_benchmark_world,
                       selected: _benchmark,
-                      showCheckmark: false,
-                      onSelected: (on) => setState(() => _benchmark = on),
+                      onTap: () => setState(() => _benchmark = !_benchmark),
                     ),
                   ],
                 ),
@@ -776,31 +774,33 @@ class _TradeBar extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: FilledButton(
+                  child: ChunkyButton(
+                    label: l10n.asset_buy,
                     onPressed: () => _trade(context, Side.buy),
-                    child: Text(l10n.asset_buy),
                   ),
                 ),
                 if (o.position != null) ...[
                   const SizedBox(width: AppSpace.x3),
                   Expanded(
-                    child: OutlinedButton(
+                    child: ChunkyButton(
+                      label: l10n.asset_sell,
+                      kind: ChunkyButtonKind.secondary,
                       onPressed: () => _trade(context, Side.sell),
-                      child: Text(l10n.asset_sell),
                     ),
                   ),
                 ],
               ],
             ),
             const SizedBox(height: AppSpace.x2),
-            OutlinedButton.icon(
+            ChunkyButton(
+              label: l10n.asset_plan,
+              icon: Icons.event_repeat,
+              kind: ChunkyButtonKind.secondary,
               onPressed: () => showPlanSheet(
                 context,
                 assetId: o.asset.id,
                 walletId: o.walletId,
               ),
-              icon: const Icon(Icons.event_repeat),
-              label: Text(l10n.asset_plan),
             ),
           ],
         ),

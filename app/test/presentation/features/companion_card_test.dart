@@ -13,6 +13,7 @@ import 'package:finance_companion/core/l10n/app_localizations.dart';
 import 'package:finance_companion/core/l10n/formats.dart';
 import 'package:finance_companion/core/theme/app_theme.dart';
 import 'package:finance_companion/presentation/features/companion/companion_card.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -125,8 +126,8 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.widgetWithText(ActionChip, 'Pire baisse'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'Volatilité'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyChip, 'Pire baisse'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyChip, 'Volatilité'), findsOneWidget);
 
     await tester.tap(find.text('Revoir la leçon$nnbsp: Apple ou ETF Monde'));
     await tester.pumpAndSettle();

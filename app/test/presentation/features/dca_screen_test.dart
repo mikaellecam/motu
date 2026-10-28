@@ -19,6 +19,7 @@ import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/dca/dca_screen.dart';
 import 'package:finance_companion/presentation/features/dca/plan_sheet.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -182,10 +183,10 @@ void main() {
     expect(find.text("Et si j'avais investi…"), findsOneWidget);
     // The world ETF by default.
     expect(find.text('ETF Monde'), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, '10 ans'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyChip, '10 ans'), findsOneWidget);
     expect(
       tester
-          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '10 ans'))
+          .widget<ChunkyChip>(find.widgetWithText(ChunkyChip, '10 ans'))
           .selected,
       isTrue,
     );
@@ -241,7 +242,7 @@ void main() {
       ('apple', 'live', eur('100'), DcaFrequency.monthly),
     );
     expect(
-      find.widgetWithText(FilledButton, 'Investir 100,00$nbsp€ chaque mois'),
+      find.widgetWithText(ChunkyButton, 'Investir 100,00$nbsp€ chaque mois'),
       findsOneWidget,
     );
     await unmount(tester);

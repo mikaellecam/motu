@@ -24,6 +24,7 @@ import 'package:finance_companion/presentation/features/asset/stability_card.dar
 import 'package:finance_companion/presentation/features/dca/plan_sheet.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -228,7 +229,7 @@ void main() {
       "Cours d'Apple sur 1 an$nnbsp: de 100,00$nbsp\$ à 150,00$nbsp\$.",
     );
     expect(find.text('ETF Monde'), findsOneWidget, reason: 'the chip only');
-    await tester.tap(find.widgetWithText(FilterChip, 'ETF Monde'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'ETF Monde'));
     await tester.pumpAndSettle();
     expect(find.text('ETF Monde'), findsNWidgets(2));
 
@@ -289,13 +290,13 @@ void main() {
     tester,
   ) async {
     await show(tester, overview());
-    expect(find.widgetWithText(FilledButton, 'Acheter'), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Vendre'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyButton, 'Acheter'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyButton, 'Vendre'), findsOneWidget);
   });
 
   testWidgets('no position: « Acheter » alone', (tester) async {
     await show(tester, overview(held: false));
-    expect(find.widgetWithText(FilledButton, 'Acheter'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyButton, 'Acheter'), findsOneWidget);
     expect(find.text('Vendre'), findsNothing);
   });
 
@@ -336,7 +337,7 @@ void main() {
 
   testWidgets('« Acheter » opens the order sheet', (tester) async {
     await show(tester, overview());
-    await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     final sheet = tester.widget<OrderSheet>(find.byType(OrderSheet));
@@ -350,7 +351,7 @@ void main() {
     tester,
   ) async {
     await show(tester, overview());
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Vendre'));
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Vendre'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     Navigator.of(tester.element(find.byType(OrderSheet))).pop((
@@ -368,7 +369,7 @@ void main() {
     tester,
   ) async {
     await show(tester, overview());
-    await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     Navigator.of(tester.element(find.byType(OrderSheet))).pop((

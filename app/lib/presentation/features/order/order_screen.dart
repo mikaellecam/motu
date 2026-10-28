@@ -7,6 +7,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
 import '../../../domain/wallet/order.dart';
@@ -26,7 +27,11 @@ class OrderScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(orderTrackerProvider(orderId));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.order_screen_title)),
+      appBar: AppBar(
+        leading: ChunkyBackButton.leadingOf(context),
+        leadingWidth: ChunkyBackButton.width,
+        title: Text(l10n.order_screen_title),
+      ),
       body: switch (state) {
         AsyncValue(:final value?) => ListView(
           padding: const EdgeInsets.all(AppSpace.screenPadding),
@@ -48,9 +53,10 @@ class OrderScreen extends ConsumerWidget {
             ),
             if (value.detail.status == OrderStatus.pending) ...[
               const SizedBox(height: AppSpace.x4),
-              OutlinedButton(
+              ChunkyButton(
+                label: l10n.order_cancel,
+                kind: ChunkyButtonKind.secondary,
                 onPressed: () => _cancel(context, ref),
-                child: Text(l10n.order_cancel),
               ),
             ],
           ],
@@ -82,9 +88,9 @@ class OrderScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(context, false),
             child: Text(l10n.order_cancel_keep),
           ),
-          FilledButton(
+          ChunkyButton(
+            label: l10n.order_cancel,
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.order_cancel),
           ),
         ],
       ),

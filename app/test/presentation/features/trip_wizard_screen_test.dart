@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 
 import '../../fakes/fake_backend.dart';
 
@@ -275,7 +276,7 @@ void main() {
       find.text('400$nbsp€ sur le Livret A'),
       findsOneWidget,
     ); // 20 % of 2 000 €
-    await tester.tap(find.widgetWithText(ChoiceChip, '30$nnbsp%'));
+    await tester.tap(find.widgetWithText(ChunkyChip, '30$nnbsp%'));
     await tester.pumpAndSettle();
     expect(find.text('600$nbsp€ sur le Livret A'), findsOneWidget);
   });
