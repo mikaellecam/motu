@@ -1,0 +1,19 @@
+{
+  "id": "mensualite",
+  "status": "draft",
+  "title": {
+    "fr": "Mensualité",
+    "en": "Monthly payment"
+  },
+  "short": {
+    "fr": "Ce qu'on rembourse chaque mois.",
+    "en": "What is paid back each month."
+  },
+  "body": {
+    "fr": "La mensualité est la somme versée chaque mois pour rembourser un crédit. Elle mêle une part de la somme empruntée et les intérêts du mois : au début, les intérêts y pèsent le plus, puis la part remboursée grandit.",
+    "en": "The monthly payment is the sum paid each month to pay back a loan. It mixes part of the amount borrowed and the month's interest: at first, interest weighs the most, then the part paid back grows."
+  },
+  "related": [
+    "taeg"
+  ]
+}

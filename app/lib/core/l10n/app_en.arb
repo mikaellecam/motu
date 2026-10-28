@@ -364,6 +364,7 @@
   "node_mark_wrong": "your answer",
   "node_invested": "With {amount} put in at the start.",
   "node_base_100": "Base 100 at the start.",
+  "node_provenance_insee": "Source: Insee, monthly consumer prices, {period}, in euros of {month}.",
   "node_provenance": "Real prices, {interval, select, daily{daily closes} weekly{weekly closes} monthly{monthly closes} other{closes}}, {period}, {currency, select, USD{in dollars} EUR{in euros} other{in {currency}}}.",
   "node_today": "And today?",
   "node_today_caption": "Current prices, from {from} to {to}.",

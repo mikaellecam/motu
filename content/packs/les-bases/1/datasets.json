@@ -1,0 +1,7 @@
+[
+  {"id":"ds.acwi-eur-2020q1-w","asset":"world","currency":"EUR","interval":"1week","from":"2020-01-01","to":"2020-03-31"},
+  {"id":"ds.cash-2016-m","cash":true,"deposit":10000,"interval":"1month","from":"2015-12-31","to":"2025-12-31"},
+  {"id":"ds.cash-real-2016-m","cash":true,"deposit":10000,"cpi":true,"interval":"1month","from":"2015-12-31","to":"2025-12-31"},
+  {"id":"ds.livret-a-2022-m","livret":true,"deposit":10000,"interval":"1month","from":"2021-12-31","to":"2024-12-31"},
+  {"id":"ds.livret-a-real-2022-m","livret":true,"deposit":10000,"cpi":true,"interval":"1month","from":"2021-12-31","to":"2024-12-31"}
+]

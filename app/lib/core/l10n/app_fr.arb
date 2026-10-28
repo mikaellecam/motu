@@ -1204,6 +1204,17 @@
     }
   },
   "node_base_100": "Base 100 au d\u00e9part.",
+  "node_provenance_insee": "Source\u202f: Insee, prix \u00e0 la consommation mensuels, {period}, en euros de {month}.",
+  "@node_provenance_insee": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "node_provenance": "Cours r\u00e9els, {interval, select, daily{cl\u00f4tures quotidiennes} weekly{cl\u00f4tures hebdomadaires} monthly{cl\u00f4tures mensuelles} other{cl\u00f4tures}}, {period}, {currency, select, USD{en dollars} EUR{en euros} other{en {currency}}}.",
   "@node_provenance": {
     "placeholders": {

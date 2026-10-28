@@ -1,0 +1,20 @@
+{
+  "id": "credit-renouvelable",
+  "status": "draft",
+  "title": {
+    "fr": "Crédit renouvelable",
+    "en": "Revolving credit"
+  },
+  "short": {
+    "fr": "Une réserve d'argent qui se reconstitue, à un taux élevé.",
+    "en": "A reserve of money that refills, at a high rate."
+  },
+  "body": {
+    "fr": "Un crédit renouvelable met une réserve d'argent à disposition : ce qui est remboursé peut être emprunté de nouveau. Souvent proposé en magasin ou avec une carte, il coûte cher : les crédits de 3 000 € ou moins, souvent de ce type, coûtaient en moyenne près de 18 % par an au 3e trimestre 2026 (Banque de France).",
+    "en": "Revolving credit makes a reserve of money available: what is paid back can be borrowed again. Often offered in shops or with a card, it's expensive: loans of €3,000 or less, often of this kind, cost almost 18% a year on average in the third quarter of 2026 (Banque de France)."
+  },
+  "related": [
+    "taeg",
+    "mensualite"
+  ]
+}

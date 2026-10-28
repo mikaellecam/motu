@@ -121,6 +121,17 @@ void main() {
     expect(p.nodes.last.covers, isNull);
   });
 
+  test('a link to a term another island holds decodes (M12-1)', () {
+    final j = jsonDecode(pack()) as Map<String, dynamic>;
+    j['nodes'][1]['glossary'] = ['inflation'];
+    j['glossary'][1]['related'] = ['livret-a'];
+    final p = decodePack(jsonEncode(j));
+    final id = j['nodes'][1]['id'];
+    expect(p.nodes.firstWhere((n) => n.id == id).glossary, ['inflation']);
+    final term = j['glossary'][1]['id'];
+    expect(p.glossary[term]!.related, ['livret-a']);
+  });
+
   group('a corrupt pack is refused', () {
     for (final (what, edit) in <(String, void Function(Map<String, dynamic>))>[
       ('a missing locale', (j) => (j['island']['title'] as Map).remove('en')),
@@ -132,11 +143,6 @@ void main() {
         (j) => (j['island']['nodes'] as List).add('ae.three'),
       ),
       ('an unknown dataset', (j) => j['nodes'][1]['datasets'] = ['ds.nope']),
-      ('an unknown term', (j) => j['nodes'][1]['glossary'] = ['nope']),
-      (
-        'an unknown related term',
-        (j) => j['glossary'][1]['related'] = ['nope'],
-      ),
       (
         'a malformed point',
         (j) => j['datasets'][0]['points'] = [

@@ -1,0 +1,20 @@
+{
+  "id": "pouvoir-d-achat",
+  "status": "draft",
+  "title": {
+    "fr": "Pouvoir d'achat",
+    "en": "Purchasing power"
+  },
+  "short": {
+    "fr": "Ce qu'une somme permet d'acheter.",
+    "en": "What a sum of money can buy."
+  },
+  "body": {
+    "fr": "Le pouvoir d'achat d'une somme, c'est ce qu'elle permet d'acheter. Quand les prix montent, la même somme achète moins : elle perd du pouvoir d'achat, même si son montant en euros ne bouge pas.\n\nPour le garder, l'argent doit rapporter au moins autant que la hausse des prix, l'{{inflation|inflation}}.",
+    "en": "A sum's purchasing power is what it can buy. When prices rise, the same sum buys less: it loses purchasing power, even if its amount in euros doesn't move.\n\nTo keep it, money has to earn at least as much as prices rise, {{inflation|inflation}}."
+  },
+  "related": [
+    "inflation",
+    "livret-a"
+  ]
+}

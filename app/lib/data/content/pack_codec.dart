@@ -47,19 +47,10 @@ ContentPack decodePack(String source) {
         throw FormatException('${node.id} draws an unknown dataset: $id');
       }
     }
-    for (final id in node.glossary) {
-      if (!glossary.containsKey(id)) {
-        throw FormatException('${node.id} links an unknown term: $id');
-      }
-    }
   }
-  for (final term in glossary.values) {
-    for (final id in term.related) {
-      if (!glossary.containsKey(id)) {
-        throw FormatException('${term.id} relates to an unknown term: $id');
-      }
-    }
-  }
+  // A lesson or a term may link a term another island holds (M12-1): links
+  // are checked across every pack (`contentcheck`), and one left unresolved
+  // shows as plain text.
 
   return ContentPack(
     id: _string(island['id'], 'island id'),
@@ -133,6 +124,10 @@ Dataset _dataset(Map<String, Object?> json) {
         ? json['adjusted']! as bool
         : throw FormatException('$id: adjusted is not a boolean'),
     currency: _string(json['currency'], '$id currency'),
+    prices: switch (json['prices']) {
+      null => null,
+      final Object p => _string(p, '$id prices'),
+    },
     interval: _string(json['interval'], '$id interval'),
     frozenAt: _date(json['frozen_at'], '$id frozen_at'),
     points: [
