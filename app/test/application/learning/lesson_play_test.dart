@@ -9,6 +9,9 @@ import 'package:finance_companion/data/local/database.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:finance_companion/data/remote/backend_api.dart';
+import 'package:finance_companion/data/repositories/market_repository.dart';
+
 import '../../fakes/fake_backend.dart';
 import '../../fakes/more_lessons.dart';
 
@@ -106,6 +109,67 @@ void main() {
         'livret',
       );
     });
+  });
+
+  test(
+    'a Livret item ranks at the rate of the day, offline too (M12-4)',
+    () async {
+      final wall = WallClock(DateTime.utc(2026, 10, 11, 9));
+      final backend = FakeBackend();
+      final market = MarketRepository(
+        db,
+        BackendApi('http://t', adapter: backend),
+        wallClock: wall,
+      );
+      final pack = morePackJson().replaceFirst(
+        '"id":"livret","label":{"fr":"Livret A","en":"Livret A"},"value":0',
+        '"id":"livret","label":{"fr":"Livret A","en":"Livret A"},"livret":true',
+      );
+      ProviderContainer container() => ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          liveClockProvider.overrideWithValue(wall),
+          marketRepositoryProvider.overrideWithValue(market),
+          contentPackProvider(actionsEtfIsland)
+              .overrideWith((ref) async => decodePack(pack)),
+        ],
+      );
+      final online = container();
+      addTearDown(online.dispose);
+      // The fake backend's Livret: 1,7 % since 1 August 2026.
+      expect(
+        (await online.read(sortViewProvider('ae.ladder').future))
+            .values['livret'],
+        d('0.017'),
+      );
+      backend.offline = true;
+      final offline = container();
+      addTearDown(offline.dispose);
+      expect(
+        (await offline.read(sortViewProvider('ae.ladder').future))
+            .values['livret'],
+        d('0.017'),
+        reason: 'the cached history',
+      );
+    },
+  );
+
+  test('a quiz plays as a checkpoint does (M12-4)', () async {
+    final container = ProviderContainer(
+      retry: (_, _) => null,
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+        contentPackProvider(actionsEtfIsland).overrideWith(
+          (ref) async => decodePack(
+            morePackJson().replaceFirst('"type":"checkpoint"', '"type":"quiz"'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final view = await container.read(checkpointViewProvider('ae.quiz').future);
+    expect(view.checkpoint.questions, hasLength(2));
   });
 
   group('build_puzzle', () {

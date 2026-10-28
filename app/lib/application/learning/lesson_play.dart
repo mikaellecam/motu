@@ -9,6 +9,7 @@ import '../../domain/learning/decision.dart';
 import '../../domain/learning/node.dart';
 import '../../domain/learning/puzzle.dart';
 import '../../domain/learning/sort.dart';
+import '../../domain/livret/livret_interest.dart';
 import '../providers.dart';
 import 'node_player.dart';
 
@@ -18,11 +19,14 @@ part 'lesson_play.g.dart';
 /// nodes (BRIEF §4.3). Each saves the node as done in `node_progress` the
 /// way its type completes.
 
-/// The lesson [nodeId] of any island ([lessonOf]), when it is of [type].
+/// The lesson [nodeId] of any island ([lessonOf]), when it is of [type] (or
+/// [or]: a quiz plays as a checkpoint).
 Future<({NodeContent node, ContentPack pack, Map<String, Localized> terms})>
-_node(Ref ref, String nodeId, NodeType type) async {
+_node(Ref ref, String nodeId, NodeType type, {NodeType? or}) async {
   final lesson = await lessonOf(ref, nodeId);
-  if (lesson.node.type != type) throw const NotFoundFailure();
+  if (lesson.node.type != type && lesson.node.type != or) {
+    throw const NotFoundFailure();
+  }
   return lesson;
 }
 
@@ -147,14 +151,22 @@ final class SortView {
 
 @riverpod
 Future<SortView> sortView(Ref ref, String nodeId) async {
+  final now = ref.watch(liveClockProvider).now();
   final (:node, :pack, :terms) = await _node(ref, nodeId, NodeType.sort);
   final sort = playable(() => decodeSort(node, pack));
+  // The Livret A's rate of the day, from the history the app caches (§4.11).
+  final livret = sort.items.any((i) => i.livret)
+      ? rateAt(
+          now,
+          (await ref.read(marketRepositoryProvider).livret(asOf: now)).rates,
+        )
+      : null;
   final values = <String, Decimal>{};
   for (final item in sort.items) {
     final value = itemValue(item, switch (item.dataset) {
       null => null,
       final d => pack.datasets[d]!.points,
-    });
+    }, livret);
     // Too short a history to rank: the pack's fault.
     if (value == null) throw const ServerFailure();
     values[item.id] = value;
@@ -364,7 +376,12 @@ final class CheckpointView {
 
 @riverpod
 Future<CheckpointView> checkpointView(Ref ref, String nodeId) async {
-  final (:node, :pack, :terms) = await _node(ref, nodeId, NodeType.checkpoint);
+  final (:node, :pack, :terms) = await _node(
+    ref,
+    nodeId,
+    NodeType.checkpoint,
+    or: NodeType.quiz,
+  );
   return CheckpointView(
     node: node,
     checkpoint: playable(() => decodeCheckpoint(node, pack)),

@@ -25,7 +25,7 @@ void main() {
           decodeSort(node, pack);
         case NodeType.buildPuzzle:
           decodePuzzle(node, pack);
-        case NodeType.checkpoint:
+        case NodeType.checkpoint || NodeType.quiz:
           decodeCheckpoint(node, pack);
         case NodeType.mission:
           decodeMission(node, pack);

@@ -172,6 +172,7 @@ Node types (each a widget + a pure evaluator):
 | `build_puzzle` | Pick assets/weights to satisfy constraints (e.g. volatility < X, ≥ 3 regions) | Constraints satisfied (validated by domain calcs) |
 | `mission` | Do something in the sandbox (e.g. "own an ETF") | Detected automatically from wallet state |
 | `checkpoint` | 4–6 quiz questions | ≥ 1 attempt finished |
+| `quiz` | A checkpoint's questions inside an island, under its own name (M12-4) | ≥ 1 attempt finished |
 
 Player (decided 2026-10-24, artboard `Reveal-A` of the art direction canvas): a world screen on the sea, a
 chunky ✕ and the island's lessons as pills on top (each done in `progress`, this one in `primary`). Each node
@@ -271,18 +272,21 @@ Type payloads (M6-3; the player refuses a pack that breaks them):
   after it, the whole curve draws itself and each choice shows what `invested` became by the end: the kept
   share follows the market, the rest stays as cash.
 - `sort` (M6-4): `prompt`, `scale {low, high}` (what the top and the bottom of the list mean),
-  `items[{id, label, dataset | value}]` (two or more; a daily dataset ranks by its annualised volatility, §7.7,
-  a fixed `value` such as the Livret's 0 as is), `explanation`. Done once the user validates the order; then
+  `items[{id, label, dataset | value | livret}]` (two or more; a daily dataset ranks by its annualised
+  volatility, §7.7, a fixed `value` such as the Livret's 0 as is, `"livret": true` at the Livret A's rate of
+  the day from the cached history, M12-4), `explanation`. Done once the user validates the order; then
   « {n} sur {total} à la bonne place » and the real order with each value.
 - `build_puzzle` (M6-4): `prompt`, `assets[{dataset, label, region}]` (daily datasets), `rules {max_volatility,
   min_assets?, min_regions?}`, `step` (the weight step, dividing 100 %), `explanation`. The portfolio's
   volatility (rebalanced daily, over the days every weighted asset has; below 100 % the rest is cash) and each
   rule are checked live by domain calculations; « Valider » once they all hold.
 - `checkpoint` (M6-4): `questions[{question, choices[{id, label}], answer, explanation?}]` (4–6 in content),
-  one at a time; done at the end whatever the score.
+  one at a time; done at the end whatever the score. A `quiz` (M12-4) takes the same payload and plays the
+  same way, named « Quiz » with its own icon; it counts as no checkpoint for the levels (§4.15).
 - `mission` (M6-5): `goal` (what to do), `go` (`explorer` | `wallet`: where the button leads). It completes by
-  itself, never by a button: while the app runs, the live wallet's holdings and the DCA plans are watched and
-  each mission they satisfy is saved as done.
+  itself, never by a button: while the app runs, the live wallet's holdings, the DCA plans and the live
+  wallet's Livret A (more put in than taken out: Les bases' « Range ton matelas », M12-4) are watched and each
+  mission they satisfy is saved as done.
 - A played lesson ends on « Continuer », preceded by « Rejoue-le toi-même » when it has a `bridge`: the trip
   wizard on step 1 at the bridge's date and difficulty (`/wallets/new?step=1&date=…&difficulty=…&from=<node>`).
 - Completion is saved in `node_progress` (status, attempts, last answer, first completion kept).

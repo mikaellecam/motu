@@ -77,7 +77,8 @@ class NodeScreen extends ConsumerWidget {
                     NodeType.decision => DecisionPlayer(nodeId: nodeId),
                     NodeType.sort => SortPlayer(nodeId: nodeId),
                     NodeType.buildPuzzle => PuzzlePlayer(nodeId: nodeId),
-                    NodeType.checkpoint => CheckpointPlayer(nodeId: nodeId),
+                    NodeType.checkpoint ||
+                    NodeType.quiz => CheckpointPlayer(nodeId: nodeId),
                     NodeType.mission => MissionPlayer(nodeId: nodeId),
                   },
                 ),
@@ -192,6 +193,7 @@ String nodeTypeName(AppLocalizations l10n, NodeType type) => switch (type) {
   NodeType.buildPuzzle => l10n.node_type_build_puzzle,
   NodeType.mission => l10n.node_type_mission,
   NodeType.checkpoint => l10n.node_type_checkpoint,
+  NodeType.quiz => l10n.node_type_quiz,
 };
 
 /// Back where the lesson was opened from, or the map.

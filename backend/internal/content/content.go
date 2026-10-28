@@ -319,7 +319,7 @@ func (c *checker) island(f *file, ref Ref, nodes []file) []object {
 
 // The app's node types and trip difficulties (app/lib/domain).
 var (
-	nodeTypes    = []string{"predict_reveal", "toy", "decision", "sort", "build_puzzle", "mission", "checkpoint"}
+	nodeTypes    = []string{"predict_reveal", "toy", "decision", "sort", "build_puzzle", "mission", "checkpoint", "quiz"}
 	difficulties = []string{"decouverte", "realiste", "serre", "sur-mesure"}
 )
 

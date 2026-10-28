@@ -28,18 +28,34 @@ final class SortNode {
 /// An item: the volatility of its daily [dataset], or a fixed [value] (a
 /// Livret moves by no price: 0).
 final class SortItem {
-  const SortItem(this.id, this.label, {this.dataset, this.value});
+  const SortItem(
+    this.id,
+    this.label, {
+    this.dataset,
+    this.value,
+    this.livret = false,
+  });
   final String id;
   final Localized label;
   final String? dataset;
   final Decimal? value;
+
+  /// The Livret A at the rate of the day (M12-4), never a number in the pack.
+  final bool livret;
 }
 
-/// The item's real value: its fixed one, or the annualised volatility of
-/// [points] (BRIEF §7.7); null when too short a history.
-Decimal? itemValue(SortItem item, [List<(DateTime, Decimal)>? points]) =>
+/// The item's real value: its fixed one, the Livret A's [livretRate], or the
+/// annualised volatility of [points] (BRIEF §7.7); null when too short a
+/// history, or no rate.
+Decimal? itemValue(
+  SortItem item, [
+  List<(DateTime, Decimal)>? points,
+  Decimal? livretRate,
+]) =>
     item.value ??
-    (points == null
+    (item.livret
+        ? livretRate
+        : points == null
         ? null
         : annualisedVolatility([for (final (_, close) in points) close]));
 

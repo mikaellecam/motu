@@ -196,6 +196,23 @@ void main() {
       );
     });
 
+    test('an item at the Livret A rate of the day (M12-4)', () {
+      final n = sort();
+      list(n, 'items')[0] = {
+        'id': 'livret',
+        'label': text('Livret A'),
+        'livret': true,
+      };
+      final item = decoded(n, decodeSort).items.first;
+      expect((item.livret, item.value, item.dataset), (true, null, null));
+    });
+
+    refused(
+      'a Livret item with a value too',
+      sort,
+      (n) => (list(n, 'items')[0]! as Map)['livret'] = true,
+      decodeSort,
+    );
     refused(
       'an item with both a dataset and a value',
       sort,

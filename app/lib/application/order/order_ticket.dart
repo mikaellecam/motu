@@ -486,6 +486,7 @@ class OrderTicket extends _$OrderTicket {
       (
         liveAssets: {...facts.liveAssets, assetId},
         activePlan: facts.activePlan,
+        livret: facts.livret,
       ),
       ref.read(marketRepositoryProvider),
       asOf: ref.read(liveClockProvider).now(),

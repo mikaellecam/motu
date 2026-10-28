@@ -583,11 +583,16 @@ class WalletRepository {
     ],
   );
 
-  /// What the missions look at (BRIEF §4.3), then every change of fills or
-  /// plans: the assets the live wallet holds, and whether any wallet runs a
-  /// DCA plan.
-  Stream<({Set<String> liveAssets, bool activePlan})> watchMissionFacts() => _db
-      .customSelect('SELECT 1', readsFrom: {_db.fills, _db.dcaPlans})
+  /// What the missions look at (BRIEF §4.3), then every change of fills,
+  /// plans or cash: the assets the live wallet holds, whether any wallet runs
+  /// a DCA plan, and whether more went into the live wallet's Livret A than
+  /// came out (M12-4).
+  Stream<({Set<String> liveAssets, bool activePlan, bool livret})>
+  watchMissionFacts() => _db
+      .customSelect(
+        'SELECT 1',
+        readsFrom: {_db.fills, _db.dcaPlans, _db.cashLedger},
+      )
       .watch()
       .asyncMap(
         (_) async => (
@@ -599,6 +604,15 @@ class WalletRepository {
               if (p.isOpen) p.assetId,
           },
           activePlan: await _db.walletDao.anyActivePlan(),
+          // A transfer into the Livret takes cash out: a negative amount.
+          livret:
+              [
+                for (final e in await _db.walletDao.ledger(liveWalletId))
+                  if (e.kind == LedgerKind.livretIn ||
+                      e.kind == LedgerKind.livretOut)
+                    -e.amountCents,
+              ].fold(0, (sum, cents) => sum + cents) >
+              0,
         ),
       );
 

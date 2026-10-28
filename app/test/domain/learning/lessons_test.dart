@@ -118,6 +118,16 @@ void main() {
         isNull,
         reason: 'too short a history',
       );
+      // The Livret A at the rate of the day (M12-4).
+      expect(
+        itemValue(
+          const SortItem('livret', _l, livret: true),
+          null,
+          Decimal.parse('0.017'),
+        ),
+        Decimal.parse('0.017'),
+      );
+      expect(itemValue(const SortItem('livret', _l, livret: true)), isNull);
     });
   });
 

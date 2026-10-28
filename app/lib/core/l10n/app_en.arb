@@ -405,6 +405,7 @@
   "node_type_build_puzzle": "Build",
   "node_type_mission": "Mission",
   "node_type_checkpoint": "Checkpoint",
+  "node_type_quiz": "Quiz",
   "decision_question": "What do you do?",
   "decision_after": "What happened next",
   "decision_outcomes": "{amount} on {start}, by {end}:",

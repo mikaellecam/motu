@@ -172,12 +172,12 @@ func TestThePathAndTheNodeFiles(t *testing.T) {
 }
 
 func TestNodes(t *testing.T) {
-	expectProblem(t, map[string]string{"nodes/ae.march.json": `{"id": "ae.march", "type": "quiz", "status": "done",
+	expectProblem(t, map[string]string{"nodes/ae.march.json": `{"id": "ae.march", "type": "riddle", "status": "done",
 		"title": {"fr": "Mars", "en": ""},
 		"glossary": ["nope"], "datasets": ["ds.nope"],
 		"bridge": {"date": "2020-02-30", "difficulty": "facile"},
 		"covers": {"from": "2021-01-01", "to": "2020-01-01"}}`},
-		`nodes/ae.march.json: type "quiz" is unknown`,
+		`nodes/ae.march.json: type "riddle" is unknown`,
 		`nodes/ae.march.json: status "done" is unknown`,
 		`nodes/ae.march.json: title: "en" is empty`,
 		`nodes/ae.march.json: glossary: "nope" is not a term of the pack`,

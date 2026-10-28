@@ -613,11 +613,27 @@ void main() {
     });
   });
 
+  test('mission facts: money on the live wallet\'s Livret A (M12-4)', () async {
+    await repo.ensureLiveWallet(DateTime.utc(2026, 10, 11));
+    Future<bool> livret() async =>
+        (await repo.watchMissionFacts().first).livret;
+    expect(await livret(), isFalse);
+    // A trip's Livret does not count.
+    await repo.moveToLivret('covid', day(2, 20), eur('100'));
+    expect(await livret(), isFalse);
+    await repo.moveToLivret('live', DateTime.utc(2026, 10, 12), eur('100'));
+    expect(await livret(), isTrue);
+    // Taken out again: nothing left on it.
+    await repo.moveToLivret('live', DateTime.utc(2026, 10, 13), eur('-100'));
+    expect(await livret(), isFalse);
+  });
+
   test(
     'mission facts: the live wallet\'s holdings and any active plan',
     () async {
       await repo.ensureLiveWallet(DateTime.utc(2026, 10, 11));
-      final facts = <({Set<String> liveAssets, bool activePlan})>[];
+      final facts =
+          <({Set<String> liveAssets, bool activePlan, bool livret})>[];
       final sub = repo.watchMissionFacts().listen(facts.add);
       addTearDown(sub.cancel);
       Future<void> settle() =>
