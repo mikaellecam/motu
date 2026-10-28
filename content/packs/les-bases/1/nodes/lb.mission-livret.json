@@ -1,0 +1,18 @@
+{
+  "id": "lb.mission-livret",
+  "type": "mission",
+  "status": "draft",
+  "title": {
+    "fr": "Range ton matelas",
+    "en": "Put your cushion away"
+  },
+  "glossary": [
+    "livret-a",
+    "matelas-de-securite"
+  ],
+  "goal": {
+    "fr": "Verse de l'argent sur le Livret A de ton portefeuille : c'est là que vit un {{matelas-de-securite|matelas de sécurité}}.",
+    "en": "Put some money on your portfolio's Livret A: that's where a {{matelas-de-securite|safety cushion}} lives."
+  },
+  "go": "wallet"
+}

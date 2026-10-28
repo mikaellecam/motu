@@ -1,0 +1,57 @@
+{
+  "id": "lb.safety-cushion",
+  "type": "toy",
+  "status": "draft",
+  "title": {
+    "fr": "Ton matelas de sécurité",
+    "en": "Your safety cushion"
+  },
+  "glossary": [
+    "matelas-de-securite",
+    "livret-a"
+  ],
+  "formula": "cushion",
+  "intro": {
+    "fr": "Un matelas de sécurité, ce sont quelques mois de dépenses mis de côté pour les imprévus. Bouge les curseurs : combien de temps pour le remplir ?",
+    "en": "A safety cushion is a few months of spending put aside for the unexpected. Move the sliders: how long does it take to fill?"
+  },
+  "controls": [
+    {
+      "id": "spending",
+      "label": {
+        "fr": "Tes dépenses du mois",
+        "en": "Your monthly spending"
+      },
+      "min": 500,
+      "max": 3000,
+      "step": 100,
+      "default": 1500
+    },
+    {
+      "id": "months",
+      "label": {
+        "fr": "Mois de réserve",
+        "en": "Months set aside"
+      },
+      "min": 3,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "id": "saving",
+      "label": {
+        "fr": "Mis de côté chaque mois",
+        "en": "Put aside each month"
+      },
+      "min": 50,
+      "max": 500,
+      "step": 50,
+      "default": 200
+    }
+  ],
+  "explanation": {
+    "fr": "On l'évalue souvent à trois à six mois de dépenses. Sur un {{livret-a|Livret A}}, il reste disponible tout de suite et ne peut pas baisser : c'est le {{matelas-de-securite|matelas de sécurité}}.",
+    "en": "It's often put at three to six months of spending. On a {{livret-a|Livret A}}, it stays available at once and can't fall: that's the {{matelas-de-securite|safety cushion}}."
+  }
+}

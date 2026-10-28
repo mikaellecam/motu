@@ -1,0 +1,19 @@
+{
+  "id": "les-bases",
+  "version": 1,
+  "title": {
+    "fr": "Les bases",
+    "en": "Foundations"
+  },
+  "nodes": [
+    "lb.safety-cushion",
+    "lb.cash-inflation",
+    "lb.livret-inflation",
+    "lb.mission-livret",
+    "lb.cushion-2020",
+    "lb.loan-cost",
+    "lb.save-or-repay",
+    "lb.spot-the-scam",
+    "lb.checkpoint-1"
+  ]
+}

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:finance_companion/application/learning/content.dart';
@@ -84,106 +83,61 @@ void main() {
     overrides: overrides,
   );
 
-  // Les bases' toys (M12-3), on the canvas's draft copy, beside the
-  // bundled pack (its glossary).
-  Map<String, String> t(String fr, String en) => {'fr': fr, 'en': en};
-  Map<String, Object> slider(
-    String id,
-    String fr,
-    num min,
-    num max,
-    num step,
-    num start,
-  ) => {
-    'id': id,
-    'label': t(fr, fr),
-    'min': min,
-    'max': max,
-    'step': step,
-    'default': start,
-  };
-  final bases = decodePack(
-    jsonEncode({
-      'island': {
-        'id': 'les-bases',
-        'version': 1,
-        'title': t('Les bases', 'Foundations'),
-        'nodes': ['lb.safety-cushion', 'lb.loan-cost'],
-      },
-      'nodes': [
-        {
-          'id': 'lb.safety-cushion',
-          'type': 'toy',
-          'status': 'draft',
-          'title': t('Ton matelas de sécurité', 'Your safety cushion'),
-          'formula': 'cushion',
-          'intro': t(
-            'Un matelas de sécurité, ce sont quelques mois de dépenses mis de '
-                'côté pour les imprévus. Bouge les curseurs : combien de '
-                'temps pour le remplir ?',
-            'A safety cushion is a few months of spending put aside for the '
-                'unexpected. Move the sliders: how long does it take to fill?',
-          ),
-          'explanation': t(
-            "On l'évalue souvent à trois à six mois de dépenses. Sur un "
-                '{{livret-a|Livret A}}, il reste disponible tout de suite et ne '
-                'peut pas baisser : c\'est le {{matelas-de-securite|matelas de '
-                'sécurité}}.',
-            'It is often put at three to six months of spending. On a '
-                '{{livret-a|Livret A}}, it stays available at once and cannot '
-                'fall: that is the {{matelas-de-securite|safety cushion}}.',
-          ),
-          'controls': [
-            slider('spending', 'Tes dépenses du mois', 500, 3000, 100, 1500),
-            slider('months', 'Mois de réserve', 3, 6, 1, 3),
-            slider('saving', 'Mis de côté chaque mois', 50, 500, 50, 200),
-          ],
-        },
-        {
-          'id': 'lb.loan-cost',
-          'type': 'toy',
-          'status': 'draft',
-          'title': t("Le vrai prix d'un crédit", 'What a loan really costs'),
-          'formula': 'loan',
-          'intro': t(
-            'Tu empruntes une somme et tu la rends chaque mois, avec des '
-                'intérêts. Bouge les curseurs et regarde ce que le crédit '
-                'coûte.',
-            'You borrow a sum and pay it back each month, with interest. '
-                'Move the sliders and see what the loan costs.',
-          ),
-          'explanation': t(
-            'Plus le taux est haut et la durée longue, plus le crédit coûte '
-                'cher : ce que tu paies en plus, ce sont les intérêts.',
-            'The higher the rate and the longer the loan, the more it costs: '
-                'what you pay on top is the interest.',
-          ),
-          'controls': [
-            slider('amount', 'Somme empruntée', 500, 10000, 100, 3000),
-            slider('months', 'Durée', 6, 60, 6, 36),
-            slider('rate', 'Taux par an', 0.01, 0.22, 0.005, 0.2),
-          ],
-        },
-      ],
-      'datasets': <Object>[],
-      'glossary': <Object>[],
-    }),
+  // Les bases' lessons from the bundled pack (M12-5).
+  final lesBases = decodePack(
+    File('assets/packs/les-bases.json').readAsStringSync(),
   );
-  final withBases = [
+  final withLesBases = [
     ...overrides,
-    contentPacksProvider.overrideWith((ref) async => [pack, bases]),
+    contentPacksProvider.overrideWith((ref) async => [pack, lesBases]),
   ];
+  Future<void> answer(WidgetTester tester, String choice) async {
+    await tester.tap(find.text(choice));
+    await tester.pump();
+    await tester.tap(find.text('Valider'));
+    await tester.pumpAndSettle();
+  }
+
   screenshot(
     'm12-3-cushion-toy',
     const NodeScreen(nodeId: 'lb.safety-cushion'),
     size: const Size(390, 1150),
-    overrides: withBases,
+    overrides: withLesBases,
   );
   screenshot(
     'm12-3-loan-toy',
     const NodeScreen(nodeId: 'lb.loan-cost'),
     size: const Size(390, 1150),
-    overrides: withBases,
+    overrides: withLesBases,
+  );
+
+  screenshot(
+    'm12-5-cash-inflation',
+    const NodeScreen(nodeId: 'lb.cash-inflation'),
+    size: const Size(390, 1100),
+    overrides: withLesBases,
+    act: (tester) => answer(tester, 'Moins'),
+  );
+  screenshot(
+    'm12-5-livret-inflation',
+    const NodeScreen(nodeId: 'lb.livret-inflation'),
+    size: const Size(390, 1200),
+    overrides: withLesBases,
+    act: (tester) => answer(tester, "Non, il a perdu du pouvoir d'achat"),
+  );
+  screenshot(
+    'm12-5-cushion-2020',
+    const NodeScreen(nodeId: 'lb.cushion-2020'),
+    size: const Size(390, 1500),
+    overrides: withLesBases,
+    act: (tester) => answer(tester, 'Tout placer'),
+  );
+  screenshot(
+    'm12-5-spot-the-scam',
+    const NodeScreen(nodeId: 'lb.spot-the-scam'),
+    size: const Size(390, 900),
+    overrides: withLesBases,
+    act: (tester) => answer(tester, "C'est une arnaque"),
   );
 
   screenshot(

@@ -61,11 +61,21 @@ final class LessonCurve {
 /// Where frozen curves come from (BRIEF §4.3: « Cours réels, clôtures hebdo,
 /// 2022, en dollars »).
 final class Provenance {
-  const Provenance(this.interval, this.from, this.to, this.currency);
+  const Provenance(
+    this.interval,
+    this.from,
+    this.to,
+    this.currency, {
+    this.prices,
+  });
   final String interval;
   final DateTime from;
   final DateTime to;
   final String currency;
+
+  /// `insee` when a curve is restated at consumer prices (ADR-008): the line
+  /// credits them instead of real closes.
+  final String? prices;
 }
 
 /// A `predict_reveal` node ready to play.
@@ -131,6 +141,7 @@ Future<RevealView> revealView(Ref ref, String nodeId) async {
       first.points.first.$1,
       first.points.last.$1,
       first.currency,
+      prices: [for (final d in datasets) ?d.prices].firstOrNull,
     ),
     assets: [for (final d in datasets) d.asset],
     terms: terms,

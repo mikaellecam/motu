@@ -1,0 +1,66 @@
+{
+  "id": "lb.cash-inflation",
+  "type": "predict_reveal",
+  "status": "draft",
+  "title": {
+    "fr": "10 000 € sous le matelas",
+    "en": "€10,000 under the mattress"
+  },
+  "datasets": [
+    "ds.cash-2016-m",
+    "ds.cash-real-2016-m"
+  ],
+  "glossary": [
+    "inflation",
+    "pouvoir-d-achat"
+  ],
+  "question": {
+    "fr": "Fin 2015, tu gardes 10 000 € en billets. Fin 2025, que permettent-ils d'acheter ?",
+    "en": "At the end of 2015, you keep €10,000 in notes. By the end of 2025, what can they buy?"
+  },
+  "choices": [
+    {
+      "id": "same",
+      "label": {
+        "fr": "Autant qu'en 2015",
+        "en": "As much as in 2015"
+      }
+    },
+    {
+      "id": "less",
+      "label": {
+        "fr": "Moins",
+        "en": "Less"
+      }
+    },
+    {
+      "id": "more",
+      "label": {
+        "fr": "Plus",
+        "en": "More"
+      }
+    }
+  ],
+  "answer": "less",
+  "series": [
+    {
+      "dataset": "ds.cash-2016-m",
+      "label": {
+        "fr": "10 000 € en billets",
+        "en": "€10,000 in notes"
+      }
+    },
+    {
+      "dataset": "ds.cash-real-2016-m",
+      "label": {
+        "fr": "Ce qu'ils achètent",
+        "en": "What they buy"
+      }
+    }
+  ],
+  "invested": 10000,
+  "explanation": {
+    "fr": "Les billets n'ont pas bougé, mais les prix ont monté de près de 21 % en dix ans : fin 2025, tes 10 000 € n'achetaient plus que ce que 8 275 € achetaient fin 2015. C'est l'{{inflation|inflation}}. Pour garder son {{pouvoir-d-achat|pouvoir d'achat}}, l'argent doit rapporter au moins autant que la hausse des prix.",
+    "en": "The notes didn't change, but prices rose by almost 21% in ten years: at the end of 2025, your €10,000 bought only what €8,275 bought at the end of 2015. That's {{inflation|inflation}}. To keep its {{pouvoir-d-achat|purchasing power}}, money has to earn at least as much as prices rise."
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "id": "lb.cushion-2020",
+  "type": "decision",
+  "status": "draft",
+  "title": {
+    "fr": "Février 2020 : et ton matelas ?",
+    "en": "February 2020: and your cushion?"
+  },
+  "datasets": [
+    "ds.acwi-eur-2020q1-w"
+  ],
+  "glossary": [
+    "matelas-de-securite",
+    "horizon-de-placement"
+  ],
+  "bridge": {
+    "date": "2020-02-18"
+  },
+  "context": {
+    "fr": "Vendredi 21 février 2020. Les Bourses sont tout près de leur record. Tu as 4 500 € de côté sur un Livret A, trois mois de dépenses. Un ami te dit qu'ils rapporteraient plus placés sur un ETF Monde.",
+    "en": "Friday 21 February 2020. Stock markets are close to their record. You have €4,500 put aside on a Livret A, three months of spending. A friend tells you it would earn more in a world ETF."
+  },
+  "moment": "2020-02-21",
+  "series": {
+    "dataset": "ds.acwi-eur-2020q1-w",
+    "label": {
+      "fr": "ETF Monde, en euros",
+      "en": "World ETF, in euros"
+    }
+  },
+  "invested": 4500,
+  "choices": [
+    {
+      "id": "keep",
+      "label": {
+        "fr": "Tout garder de côté",
+        "en": "Keep it all aside"
+      },
+      "upside": {
+        "fr": "Le jour où tu en as besoin, tout est là.",
+        "en": "The day you need it, it's all there."
+      },
+      "downside": {
+        "fr": "Si les marchés montent, tu n'en profites pas.",
+        "en": "If markets rise, you don't get any of it."
+      },
+      "kept": 0
+    },
+    {
+      "id": "half",
+      "label": {
+        "fr": "En placer la moitié",
+        "en": "Invest half"
+      },
+      "upside": {
+        "fr": "Si les marchés montent, tu en profites à moitié.",
+        "en": "If markets rise, you get half of it."
+      },
+      "downside": {
+        "fr": "Si les marchés chutent, la moitié de ton matelas chute avec eux.",
+        "en": "If markets fall, half your cushion falls with them."
+      },
+      "kept": 0.5
+    },
+    {
+      "id": "all",
+      "label": {
+        "fr": "Tout placer",
+        "en": "Invest it all"
+      },
+      "upside": {
+        "fr": "Si les marchés montent, tu en profites en entier.",
+        "en": "If markets rise, you get all of it."
+      },
+      "downside": {
+        "fr": "Si les marchés chutent, ton matelas chute avec eux.",
+        "en": "If markets fall, your cushion falls with them."
+      },
+      "kept": 1
+    }
+  ],
+  "explanation": {
+    "fr": "En quatre semaines, le Covid a fait chuter l'ETF Monde de 31 %. Fin mars, tout placé, ton matelas ne valait plus que 3 454 € : 23 % de moins, au moment où beaucoup perdaient des revenus. Les marchés se sont redressés dans les mois qui ont suivi, mais une panne ou une baisse de revenus n'attend pas. Un {{matelas-de-securite|matelas de sécurité}} reste là où il ne peut pas baisser ; ce qui s'investit, c'est l'argent dont on n'aura pas besoin avant longtemps : c'est l'{{horizon-de-placement|horizon de placement}}.",
+    "en": "In four weeks, Covid knocked the world ETF down 31%. At the end of March, all invested, your cushion was worth only €3,454: 23% less, just when many people were losing income. Markets recovered in the months that followed, but a breakdown or a drop in income doesn't wait. A {{matelas-de-securite|safety cushion}} stays where it can't fall; what gets invested is money that won't be needed for a long time: that's the {{horizon-de-placement|investment horizon}}."
+  }
+}

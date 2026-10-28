@@ -1,0 +1,20 @@
+{
+  "id": "taeg",
+  "status": "draft",
+  "title": {
+    "fr": "TAEG",
+    "en": "APR (TAEG)"
+  },
+  "short": {
+    "fr": "Le coût total d'un crédit, en % par an.",
+    "en": "A loan's total cost, as a % a year."
+  },
+  "body": {
+    "fr": "Le taux annuel effectif global (TAEG) dit ce que coûte un crédit chaque année, intérêts et frais obligatoires compris : frais de dossier, assurance quand elle est exigée. C'est le chiffre qui permet de comparer deux offres, et la loi oblige à l'afficher.",
+    "en": "The annual percentage rate (TAEG in France) says what a loan costs each year, interest and compulsory fees included: arrangement fees, insurance when it's required. It's the figure that compares two offers, and the law requires it to be shown."
+  },
+  "related": [
+    "mensualite",
+    "credit-renouvelable"
+  ]
+}

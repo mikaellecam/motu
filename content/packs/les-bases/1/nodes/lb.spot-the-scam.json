@@ -1,0 +1,146 @@
+{
+  "id": "lb.spot-the-scam",
+  "type": "quiz",
+  "status": "draft",
+  "title": {
+    "fr": "Repère l'arnaque",
+    "en": "Spot the scam"
+  },
+  "questions": [
+    {
+      "question": {
+        "fr": "Un site te promet 10 % par mois, « garantis ».",
+        "en": "A site promises you 10% a month, \"guaranteed\"."
+      },
+      "choices": [
+        {
+          "id": "scam",
+          "label": {
+            "fr": "C'est une arnaque",
+            "en": "It's a scam"
+          }
+        },
+        {
+          "id": "deal",
+          "label": {
+            "fr": "C'est une belle occasion",
+            "en": "It's a great opportunity"
+          }
+        }
+      ],
+      "answer": "scam",
+      "explanation": {
+        "fr": "Aucun placement ne garantit un tel rendement : plus il promet, plus il est risqué, et « garanti » ne va jamais avec 10 % par mois.",
+        "en": "No investment guarantees such a return: the more it promises, the riskier it is, and \"guaranteed\" never goes with 10% a month."
+      }
+    },
+    {
+      "question": {
+        "fr": "Sur un réseau social, un « coach » propose de gérer ton argent si tu le lui envoies.",
+        "en": "On social media, a \"coach\" offers to manage your money if you send it over."
+      },
+      "choices": [
+        {
+          "id": "wary",
+          "label": {
+            "fr": "Je me méfie",
+            "en": "I'm wary"
+          }
+        },
+        {
+          "id": "trust",
+          "label": {
+            "fr": "Il a l'air de réussir, j'y vais",
+            "en": "They look successful, I go for it"
+          }
+        }
+      ],
+      "answer": "wary",
+      "explanation": {
+        "fr": "Gérer l'argent des autres demande une autorisation. Les escrocs affichent une vie de luxe pour inspirer confiance.",
+        "en": "Managing other people's money takes an authorisation. Fraudsters show off a life of luxury to win trust."
+      }
+    },
+    {
+      "question": {
+        "fr": "L'offre n'est valable que ce soir : il faut décider vite.",
+        "en": "The offer is only valid tonight: you have to decide fast."
+      },
+      "choices": [
+        {
+          "id": "pressure",
+          "label": {
+            "fr": "Une pression pour m'empêcher de vérifier",
+            "en": "Pressure to stop me checking"
+          }
+        },
+        {
+          "id": "chance",
+          "label": {
+            "fr": "Une vraie chance à saisir",
+            "en": "A real chance to grab"
+          }
+        }
+      ],
+      "answer": "pressure",
+      "explanation": {
+        "fr": "Presser, c'est empêcher de vérifier. Un vrai placement sera encore là demain.",
+        "en": "Rushing you stops you checking. A real investment will still be there tomorrow."
+      }
+    },
+    {
+      "question": {
+        "fr": "Quelqu'un qui se présente comme ta banque te demande le code reçu par SMS.",
+        "en": "Someone saying they're your bank asks for the code you received by text."
+      },
+      "choices": [
+        {
+          "id": "never",
+          "label": {
+            "fr": "Je ne le donne jamais",
+            "en": "I never give it"
+          }
+        },
+        {
+          "id": "give",
+          "label": {
+            "fr": "Je le donne, c'est ma banque",
+            "en": "I give it, it's my bank"
+          }
+        }
+      ],
+      "answer": "never",
+      "explanation": {
+        "fr": "Ta banque ne te demande jamais ce code : il sert à valider une opération, souvent celle que l'escroc est en train de faire.",
+        "en": "Your bank never asks for that code: it validates a transaction, often the one the fraudster is making."
+      }
+    },
+    {
+      "question": {
+        "fr": "Comment vérifier qu'une plateforme a le droit de te proposer un placement ?",
+        "en": "How do you check that a platform may offer you an investment?"
+      },
+      "choices": [
+        {
+          "id": "lists",
+          "label": {
+            "fr": "Les listes noires de l'AMF et le registre de l'Orias",
+            "en": "The AMF's blacklists and the Orias register"
+          }
+        },
+        {
+          "id": "reviews",
+          "label": {
+            "fr": "Les avis sur son propre site",
+            "en": "The reviews on its own site"
+          }
+        }
+      ],
+      "answer": "lists",
+      "explanation": {
+        "fr": "L'Autorité des marchés financiers publie des listes noires de sites frauduleux, et un intermédiaire autorisé est inscrit au registre de l'Orias. Les avis d'un site, eux, peuvent être faux.",
+        "en": "France's financial markets authority, the AMF, publishes blacklists of fraudulent sites, and an authorised intermediary is listed in the Orias register. A site's own reviews can be fake."
+      }
+    }
+  ]
+}

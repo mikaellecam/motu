@@ -204,6 +204,25 @@ V1 island "Actions & ETF" (order matters, ids stable):
 | 11 | `ae.mission-dca` | mission | Mets en place un DCA | Any wallet has an active DCA plan |
 | 12 | `ae.checkpoint-1` | checkpoint | Point d'étape | Quiz over nodes 1–11 |
 
+Island « Les bases » / "Foundations" (M12-5; lessons validated by the user on 2026-10-28, canvas « Les bases »
+https://claude.ai/artifact/6KCPReca6i3jW8pA4CCfmU; its copy is `draft` until validated):
+
+| # | id | Type | Title (fr) | Data |
+|---|---|---|---|---|
+| 1 | `lb.safety-cushion` | toy | Ton matelas de sécurité | Formula `cushion` |
+| 2 | `lb.cash-inflation` | predict_reveal | 10 000 € sous le matelas | 10 000 € in notes from the end of 2015 to the end of 2025, monthly, and what they buy at INSEE's prices (ADR-008) |
+| 3 | `lb.livret-inflation` | predict_reveal | Le Livret A face à l'inflation | 10 000 € on a Livret A from the end of 2021 to the end of 2024: in euros, and at INSEE's prices |
+| 4 | `lb.mission-livret` | mission | Range ton matelas | The live wallet's Livret A holds money |
+| 5 | `lb.cushion-2020` | decision | Février 2020 : et ton matelas ? | 4 500 € on 21 February 2020; the world ETF in euros, weekly, to 31 March 2020; bridge → trip 2020-02-18 |
+| 6 | `lb.loan-cost` | toy | Le vrai prix d'un crédit | Formula `loan` |
+| 7 | `lb.save-or-repay` | sort | Ce que rapporte l'épargne, ce que coûte une dette | The Livret A of the day; the Banque de France's average rates of Q3 2026: loans of 3 000 € or less 17.70 %, personal loans over 6 000 € 6.42 %, home loans of 20 years or more 4.05 % |
+| 8 | `lb.spot-the-scam` | quiz | Repère l'arnaque | Five situations |
+| 9 | `lb.checkpoint-1` | checkpoint | Point d'étape | Quiz over nodes 1–8 |
+
+A curve restated at INSEE's prices credits them: « Source : Insee, prix à la consommation mensuels, {période},
+en euros de {mois} ». A lesson or a term of Les bases links Actions & ETF's terms (« inflation », « Livret A »,
+« matelas de sécurité », M12-1).
+
 Island path (`/island/:islandId`): the nodes in order, each done (✓, replayable), current (the node the
 next-step card points to), open or locked, with « {done} sur {total} terminées » on top. Decided 2026-10-11:
 nodes skipped at onboarding stay open; a pending mission does not lock what follows (the lessons after it

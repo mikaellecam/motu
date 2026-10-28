@@ -1,0 +1,66 @@
+{
+  "id": "lb.save-or-repay",
+  "type": "sort",
+  "status": "draft",
+  "title": {
+    "fr": "Ce que rapporte l'épargne, ce que coûte une dette",
+    "en": "What saving earns, what debt costs"
+  },
+  "glossary": [
+    "credit-renouvelable",
+    "taeg",
+    "livret-a"
+  ],
+  "prompt": {
+    "fr": "Range du taux le plus bas au plus haut : ce que rapporte l'épargne, ce que coûte une dette.",
+    "en": "Rank from the lowest rate to the highest: what saving earns, what a debt costs."
+  },
+  "scale": {
+    "low": {
+      "fr": "Le taux le plus bas",
+      "en": "The lowest rate"
+    },
+    "high": {
+      "fr": "Le taux le plus haut",
+      "en": "The highest rate"
+    }
+  },
+  "items": [
+    {
+      "id": "small",
+      "label": {
+        "fr": "Un petit crédit, 3 000 € ou moins",
+        "en": "A small loan, €3,000 or less"
+      },
+      "value": 0.177
+    },
+    {
+      "id": "livret",
+      "label": {
+        "fr": "Le Livret A",
+        "en": "The Livret A"
+      },
+      "livret": true
+    },
+    {
+      "id": "home",
+      "label": {
+        "fr": "Un crédit immobilier sur 20 ans ou plus",
+        "en": "A home loan over 20 years or more"
+      },
+      "value": 0.0405
+    },
+    {
+      "id": "personal",
+      "label": {
+        "fr": "Un prêt personnel de plus de 6 000 €",
+        "en": "A personal loan over €6,000"
+      },
+      "value": 0.0642
+    }
+  ],
+  "explanation": {
+    "fr": "Taux moyens publiés par la Banque de France pour le 3e trimestre 2026, et le Livret A du jour. Un petit crédit, souvent {{credit-renouvelable|renouvelable}}, coûtait en moyenne près de 18 % par an, dix fois ce que rapporte le {{livret-a|Livret A}}. Une dette chère coûte plus que l'épargne ne rapporte : rembourser une dette à 18 %, c'est comme gagner 18 % sans risque.",
+    "en": "Average rates published by the Banque de France for the third quarter of 2026, and today's Livret A. A small loan, often {{credit-renouvelable|revolving}}, cost almost 18% a year on average, ten times what the {{livret-a|Livret A}} earns. An expensive debt costs more than saving earns: paying back a debt at 18% is like earning 18% with no risk."
+  }
+}

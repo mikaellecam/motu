@@ -1,0 +1,151 @@
+{
+  "id": "lb.checkpoint-1",
+  "type": "checkpoint",
+  "status": "draft",
+  "title": {
+    "fr": "Point d'étape",
+    "en": "Checkpoint"
+  },
+  "glossary": [
+    "matelas-de-securite",
+    "inflation",
+    "rendement"
+  ],
+  "questions": [
+    {
+      "question": {
+        "fr": "Un matelas de sécurité, c'est souvent…",
+        "en": "A safety cushion is often…"
+      },
+      "choices": [
+        {
+          "id": "months",
+          "label": {
+            "fr": "Trois à six mois de dépenses, disponibles tout de suite",
+            "en": "Three to six months of spending, available at once"
+          }
+        },
+        {
+          "id": "year",
+          "label": {
+            "fr": "Une année de salaire placée en Bourse",
+            "en": "A year's salary on the stock market"
+          }
+        }
+      ],
+      "answer": "months",
+      "explanation": {
+        "fr": "Pour les imprévus, sur un {{livret-a|Livret A}} par exemple, là où il ne peut pas baisser.",
+        "en": "For the unexpected, on a {{livret-a|Livret A}} for example, where it can't fall."
+      }
+    },
+    {
+      "question": {
+        "fr": "Les prix montent de 2 % par an et ton argent dort en billets. Ton pouvoir d'achat…",
+        "en": "Prices rise 2% a year and your money sits in notes. Your purchasing power…"
+      },
+      "choices": [
+        {
+          "id": "falls",
+          "label": {
+            "fr": "Baisse",
+            "en": "Falls"
+          }
+        },
+        {
+          "id": "same",
+          "label": {
+            "fr": "Reste le même",
+            "en": "Stays the same"
+          }
+        }
+      ],
+      "answer": "falls",
+      "explanation": {
+        "fr": "Les billets ne changent pas, mais ils achètent un peu moins chaque année : c'est l'{{inflation|inflation}}.",
+        "en": "The notes don't change, but they buy a little less each year: that's {{inflation|inflation}}."
+      }
+    },
+    {
+      "question": {
+        "fr": "Le taux du Livret A…",
+        "en": "The Livret A's rate…"
+      },
+      "choices": [
+        {
+          "id": "follows",
+          "label": {
+            "fr": "Est revu deux fois par an et suit les prix avec retard",
+            "en": "Is reset twice a year and follows prices with a delay"
+          }
+        },
+        {
+          "id": "fixed",
+          "label": {
+            "fr": "Est fixé une fois pour toutes",
+            "en": "Is set once and for all"
+          }
+        }
+      ],
+      "answer": "follows",
+      "explanation": {
+        "fr": "En 2022, il est resté sous l'inflation ; il a rattrapé une partie de l'écart en 2024.",
+        "en": "In 2022, it stayed below inflation; it made up part of the gap in 2024."
+      }
+    },
+    {
+      "question": {
+        "fr": "Lequel coûtait le plus cher en moyenne en 2026 ?",
+        "en": "Which cost the most on average in 2026?"
+      },
+      "choices": [
+        {
+          "id": "small",
+          "label": {
+            "fr": "Un petit crédit de 3 000 € ou moins",
+            "en": "A small loan of €3,000 or less"
+          }
+        },
+        {
+          "id": "home",
+          "label": {
+            "fr": "Un crédit immobilier sur 20 ans",
+            "en": "A 20-year home loan"
+          }
+        }
+      ],
+      "answer": "small",
+      "explanation": {
+        "fr": "Près de 18 % par an, contre 4 % pour un crédit immobilier sur 20 ans ou plus (Banque de France, 3e trimestre 2026).",
+        "en": "Almost 18% a year, against 4% for a home loan over 20 years or more (Banque de France, third quarter of 2026)."
+      }
+    },
+    {
+      "question": {
+        "fr": "On te promet un rendement élevé sans aucun risque.",
+        "en": "You're promised a high return with no risk at all."
+      },
+      "choices": [
+        {
+          "id": "wary",
+          "label": {
+            "fr": "Méfiance : rendement et risque vont ensemble",
+            "en": "Be wary: return and risk go together"
+          }
+        },
+        {
+          "id": "grab",
+          "label": {
+            "fr": "Une chance à saisir",
+            "en": "A chance to grab"
+          }
+        }
+      ],
+      "answer": "wary",
+      "explanation": {
+        "fr": "Un {{rendement|rendement}} élevé va toujours avec un risque de perte : « sans risque » est le signe d'une arnaque.",
+        "en": "A high {{rendement|return}} always comes with a risk of loss: \"no risk\" is the sign of a scam."
+      }
+    }
+  ]
+}

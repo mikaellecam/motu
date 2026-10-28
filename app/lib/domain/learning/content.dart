@@ -80,10 +80,15 @@ final class Dataset {
     required this.frozenAt,
     required this.points,
     this.asset,
+    this.prices,
   });
 
   final String id;
   final String source;
+
+  /// The index the values are restated with in euros of the first month
+  /// (`insee`, ADR-008); null when they are in euros of their day.
+  final String? prices;
 
   /// The catalogue asset the prices are of; null when not an asset (a rate).
   final String? asset;

@@ -126,7 +126,12 @@ class PredictRevealPlayer extends ConsumerWidget {
     final period = p.from.year == p.to.year
         ? '${p.from.year}'
         : '${p.from.year}–${p.to.year}';
-    return AppLocalizations.of(context).node_provenance(
+    final l10n = AppLocalizations.of(context);
+    if (p.prices == 'insee') {
+      final formats = Formats(Localizations.localeOf(context).languageCode);
+      return l10n.node_provenance_insee(period, formats.month(p.from));
+    }
+    return l10n.node_provenance(
       switch (p.interval) {
         '1day' => 'daily',
         '1week' => 'weekly',
