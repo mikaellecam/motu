@@ -156,10 +156,9 @@ class _TermSheetState extends ConsumerState<TermSheet> {
               runSpacing: AppSpace.x2,
               children: [
                 for (final t in value.related)
-                  ActionChip(
-                    shape: const StadiumBorder(),
-                    label: Text(t.title.of(language)),
-                    onPressed: () => _open(t.id),
+                  ChunkyChip(
+                    label: t.title.of(language),
+                    onTap: () => _open(t.id),
                   ),
               ],
             ),

@@ -103,7 +103,8 @@ class _StopsSheetState extends ConsumerState<_StopsSheet> {
                 (on) => _contribution = on,
               ),
             const SizedBox(height: AppSpace.x4),
-            FilledButton(
+            ChunkyButton(
+              label: l10n.stops_save,
               onPressed: () async {
                 await ref
                     .read(stopActionsProvider(widget.walletId).notifier)
@@ -117,7 +118,6 @@ class _StopsSheetState extends ConsumerState<_StopsSheet> {
                     );
                 if (context.mounted) Navigator.of(context).pop();
               },
-              child: Text(l10n.stops_save),
             ),
           ],
         ),
@@ -283,9 +283,9 @@ class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
             Row(
               children: [
                 Expanded(child: Text(l10n.trip_forward, style: AppText.title)),
-                IconButton(
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                  icon: const Icon(Icons.close),
+                ChunkyIconButton(
+                  icon: Icons.close,
+                  label: MaterialLocalizations.of(context).closeButtonTooltip,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -303,17 +303,15 @@ class _ForwardSheetState extends ConsumerState<_ForwardSheet> {
                   (l10n.forward_months(3), months(3)),
                   (l10n.forward_year, months(12)),
                 ])
-                  ChoiceChip(
-                    label: Text(label),
+                  ChunkyChip(
+                    label: label,
                     selected: !_custom && _preset == day,
-                    showCheckmark: false,
-                    onSelected: (_) => _pick(day),
+                    onTap: () => _pick(day),
                   ),
-                ChoiceChip(
-                  label: Text(l10n.wizard_custom),
+                ChunkyChip(
+                  label: l10n.wizard_custom,
                   selected: _custom,
-                  showCheckmark: false,
-                  onSelected: (_) {
+                  onTap: () {
                     setState(() => _custom = true);
                     _dateFocus.requestFocus();
                   },

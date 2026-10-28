@@ -7,6 +7,7 @@ import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/wallet/livret_card.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,9 +75,7 @@ void main() {
     );
     expect(
       tester
-          .widget<OutlinedButton>(
-            find.widgetWithText(OutlinedButton, 'Retirer'),
-          )
+          .widget<ChunkyButton>(find.widgetWithText(ChunkyButton, 'Retirer'))
           .onPressed,
       isNotNull,
     );
@@ -86,9 +85,7 @@ void main() {
     await show(tester, line());
     expect(
       tester
-          .widget<OutlinedButton>(
-            find.widgetWithText(OutlinedButton, 'Retirer'),
-          )
+          .widget<ChunkyButton>(find.widgetWithText(ChunkyButton, 'Retirer'))
           .onPressed,
       isNull,
     );
@@ -96,14 +93,14 @@ void main() {
 
   testWidgets('a finished trip only shows its Livret', (tester) async {
     await show(tester, line(balance: '1000'), canMove: false);
-    expect(find.byType(OutlinedButton), findsNothing);
+    expect(find.byType(ChunkyButton), findsNothing);
   });
 
   testWidgets('« Verser »: the bounds in words, then the deposit booked', (
     tester,
   ) async {
     await show(tester, line());
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Verser'));
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Verser'));
     await tester.pumpAndSettle();
     expect(find.text('Verser sur le Livret A'), findsOneWidget);
     expect(
@@ -126,7 +123,13 @@ void main() {
 
     await tester.enterText(find.byType(TextField), '1000');
     await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Verser'));
+    // The sheet's « Verser », over the card's.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.widgetWithText(ChunkyButton, 'Verser'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Verser sur le Livret A'), findsNothing);
     expect(

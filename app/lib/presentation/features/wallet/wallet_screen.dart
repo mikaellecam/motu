@@ -74,9 +74,9 @@ class WalletScreen extends ConsumerWidget {
             const SizedBox(height: AppSpace.x4),
             // A finished trip no longer trades.
             if (o.status != WalletStatus.finished) ...[
-              FilledButton(
+              ChunkyButton(
+                label: l10n.wallet_invest,
                 onPressed: () => context.go('/explore?wallet=${o.id}'),
-                child: Text(l10n.wallet_invest),
               ),
               const SizedBox(height: AppSpace.x4),
             ],
@@ -138,6 +138,8 @@ class WalletScreen extends ConsumerWidget {
     }
     return Scaffold(
       appBar: AppBar(
+        leading: ChunkyBackButton.leadingOf(context),
+        leadingWidth: ChunkyBackButton.width,
         title: overview == null ? null : Text(l10n.wallet_live_name),
       ),
       body: content,
@@ -277,20 +279,16 @@ class _ChartCardState extends ConsumerState<_ChartCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SegmentedButton<ChartPeriod>(
-              showSelectedIcon: false,
+            ChunkySegmented(
               segments: [
-                for (final (period, label) in [
-                  (ChartPeriod.week, l10n.wallet_period_week),
-                  (ChartPeriod.month, l10n.wallet_period_month),
-                  (ChartPeriod.quarter, l10n.wallet_period_quarter),
-                  (ChartPeriod.year, l10n.wallet_period_year),
-                  (ChartPeriod.all, l10n.wallet_period_all),
-                ])
-                  ButtonSegment(value: period, label: Text(label)),
+                (ChartPeriod.week, l10n.wallet_period_week),
+                (ChartPeriod.month, l10n.wallet_period_month),
+                (ChartPeriod.quarter, l10n.wallet_period_quarter),
+                (ChartPeriod.year, l10n.wallet_period_year),
+                (ChartPeriod.all, l10n.wallet_period_all),
               ],
-              selected: {_period},
-              onSelectionChanged: (s) => setState(() => _period = s.single),
+              selected: _period,
+              onChanged: (period) => setState(() => _period = period),
             ),
             const SizedBox(height: AppSpace.x4),
             SizedBox(
@@ -329,12 +327,14 @@ class _ChartCardState extends ConsumerState<_ChartCard> {
                   (Benchmark.world, l10n.wallet_benchmark_world),
                   (Benchmark.livret, l10n.wallet_benchmark_livret),
                 ])
-                  FilterChip(
-                    label: Text(label),
+                  ChunkyChip(
+                    label: label,
                     selected: _benchmark == benchmark,
-                    showCheckmark: false,
-                    onSelected: (on) =>
-                        setState(() => _benchmark = on ? benchmark : null),
+                    onTap: () => setState(
+                      () => _benchmark = _benchmark == benchmark
+                          ? null
+                          : benchmark,
+                    ),
                   ),
               ],
             ),
@@ -602,9 +602,9 @@ class _PlansCard extends ConsumerWidget {
             onPressed: () => Navigator.pop(context, false),
             child: Text(l10n.wallet_plan_stop_keep),
           ),
-          FilledButton(
+          ChunkyButton(
+            label: l10n.wallet_plan_stop,
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.wallet_plan_stop),
           ),
         ],
       ),
@@ -808,14 +808,17 @@ class _TripHeader extends StatelessWidget {
       },
       actions: [
         if (o.status != WalletStatus.finished)
-          IconButton(
-            tooltip: l10n.trip_stops,
-            icon: const Icon(Icons.tune, color: AppColors.ink),
-            onPressed: () => showStopsSheet(
-              context,
-              walletId: o.id,
-              current: o.stops,
-              contribution: o.monthlyContribution,
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpace.x2),
+            child: ChunkyIconButton(
+              icon: Icons.tune,
+              label: l10n.trip_stops,
+              onPressed: () => showStopsSheet(
+                context,
+                walletId: o.id,
+                current: o.stops,
+                contribution: o.monthlyContribution,
+              ),
             ),
           ),
       ],
@@ -1005,9 +1008,9 @@ class _TimeControls extends ConsumerWidget {
             onPressed: () => Navigator.pop(context, false),
             child: Text(material.cancelButtonLabel),
           ),
-          FilledButton(
+          ChunkyButton(
+            label: l10n.trip_finish_confirm,
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.trip_finish_confirm),
           ),
         ],
       ),

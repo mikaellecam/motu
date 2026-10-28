@@ -634,16 +634,13 @@ class _DifficultyStep extends ConsumerWidget {
                     spacing: AppSpace.x2,
                     children: [
                       for (final share in cushionShares)
-                        ChoiceChip(
-                          label: Text(
-                            formats.percent(
-                              Decimal.fromInt(share).shift(-2),
-                              decimals: 0,
-                            ),
+                        ChunkyChip(
+                          label: formats.percent(
+                            Decimal.fromInt(share).shift(-2),
+                            decimals: 0,
                           ),
                           selected: percent == share,
-                          showCheckmark: false,
-                          onSelected: (_) => wizard.setCushion(share),
+                          onTap: () => wizard.setCushion(share),
                         ),
                     ],
                   ),

@@ -13,6 +13,7 @@ import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/glossary/glossary_screen.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/widgets/term_text.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -159,10 +160,10 @@ void main() {
     expect(find.text('En savoir plus'), findsNothing);
     expect(find.text('Ce que ça change pour toi'), findsOneWidget);
     expect(find.text('Ce que ETF change pour toi.'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'Diversification'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyChip, 'Diversification'), findsOneWidget);
 
     // A related term replaces this sheet.
-    await tester.tap(find.widgetWithText(ActionChip, 'Indice'));
+    await tester.tap(find.widgetWithText(ChunkyChip, 'Indice'));
     await tester.pumpAndSettle();
     expect(glossary.opened, ['etf', 'indice']);
     expect(inSheet(find.text('Indice, en une ligne.')), findsOneWidget);

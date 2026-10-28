@@ -35,6 +35,9 @@ abstract final class AppText {
   /// trip's time steps).
   static final titleXSmall = _baloo(16);
 
+  /// The tab bar's labels.
+  static final tabLabel = _baloo(14);
+
   static final body = _figtree(16, 400);
   static final bodyStrong = _figtree(16, 600);
   static final label = _figtree(14, 600);
@@ -102,11 +105,32 @@ ThemeData appTheme() {
       surfaceTintColor: AppColors.page,
       scrolledUnderElevation: 0,
     ),
-    // The selected tab is a place, not progress: neutral tokens only.
-    navigationBarTheme: const NavigationBarThemeData(
+    // The selected tab is a place, not progress: neutral tokens only, its
+    // pill outlined in ink like every control (BRIEF §10.1).
+    navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.line,
+      indicatorShape: const StadiumBorder(
+        side: BorderSide(
+          color: AppColors.ink,
+          width: AppShape.chunkySmallBorder,
+        ),
+      ),
       surfaceTintColor: AppColors.surface,
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => AppText.tabLabel.copyWith(
+          color: states.contains(WidgetState.selected)
+              ? AppColors.ink
+              : AppColors.muted,
+        ),
+      ),
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(
+          color: states.contains(WidgetState.selected)
+              ? AppColors.ink
+              : AppColors.muted,
+        ),
+      ),
     ),
     cardTheme: const CardThemeData(
       color: AppColors.surface,

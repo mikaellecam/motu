@@ -124,6 +124,10 @@ enum ChunkyButtonKind {
 
   /// A second way on, beside or under the primary one.
   secondary,
+
+  /// The one action that loses something (resetting the live wallet): its
+  /// words in `alertText` beside a warning icon, never colour alone.
+  alert,
 }
 
 /// Toy-block button: pressing pushes it down onto its shadow.
@@ -159,6 +163,7 @@ class ChunkyButton extends StatelessWidget {
       ChunkyButtonKind.primary => (AppColors.primary, AppColors.surface),
       ChunkyButtonKind.progress => (AppColors.progress, AppColors.ink),
       ChunkyButtonKind.secondary => (AppColors.surface, AppColors.ink),
+      ChunkyButtonKind.alert => (AppColors.surface, AppColors.alertText),
     };
     final title = Text(
       label,
@@ -383,6 +388,267 @@ class ChunkyIconButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Back, on a screen's bar: every pushed screen has one, the money screens'
+/// too (BRIEF §10.1).
+class ChunkyBackButton extends StatelessWidget {
+  const ChunkyBackButton({super.key});
+
+  /// The bar's leading slot it needs.
+  static const width =
+      AppSpace.screenPadding + ChunkyIconButton.size + AppSpace.x2;
+
+  /// The button, or null where there is nowhere to go back to (a tab's
+  /// root), so the title keeps its place at the edge.
+  static Widget? leadingOf(BuildContext context) =>
+      (ModalRoute.of(context)?.impliesAppBarDismissal ?? false)
+      ? const ChunkyBackButton()
+      : null;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: AppSpace.screenPadding),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: ChunkyIconButton(
+        icon: Icons.chevron_left,
+        label: MaterialLocalizations.of(context).backButtonTooltip,
+        onPressed: () => Navigator.maybePop(context),
+      ),
+    ),
+  );
+}
+
+/// One choice among a few, as a toy block: a chart's period, an order's type,
+/// the glossary's filter. The selected segment sits in the neutral `line`,
+/// outlined in ink (BRIEF §10.2). The segments share the width, or with
+/// [compact] each takes its label's (the order sheet's € / Parts).
+class ChunkySegmented<T> extends StatelessWidget {
+  const ChunkySegmented({
+    super.key,
+    required this.segments,
+    required this.selected,
+    required this.onChanged,
+    this.compact = false,
+  });
+
+  final List<(T, String)> segments;
+  final T selected;
+  final ValueChanged<T> onChanged;
+  final bool compact;
+
+  /// Between the block's border and a segment's pill; part of the segment's
+  /// touch target, so it reaches the minimum.
+  static const _inset = AppShape.chunkyBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget segment(T value, String label) {
+      final on = value == selected;
+      return MergeSemantics(
+        child: Semantics(
+          button: true,
+          selected: on,
+          inMutuallyExclusiveGroup: true,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => onChanged(value),
+            child: Padding(
+              padding: const EdgeInsets.all(_inset),
+              child: Container(
+                constraints: const BoxConstraints(
+                  minWidth: AppSpace.minTarget - 2 * _inset,
+                ),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpace.x2),
+                decoration: on
+                    ? BoxDecoration(
+                        color: AppColors.line,
+                        borderRadius: BorderRadius.circular(
+                          AppShape.chunkyButtonRadius - 2 * _inset,
+                        ),
+                        border: Border.all(color: AppColors.ink, width: 2),
+                      )
+                    : null,
+                child: Text(
+                  label,
+                  style: AppText.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: AppSpace.minTarget + 2 * AppShape.chunkyBorder,
+      margin: const EdgeInsets.only(bottom: AppShape.chunkyButtonShadow),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppShape.chunkyButtonRadius),
+        ),
+        border: Border.fromBorderSide(
+          BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.ink,
+            offset: Offset(0, AppShape.chunkyButtonShadow),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
+        children: [
+          for (final (value, label) in segments)
+            compact
+                ? segment(value, label)
+                : Expanded(child: segment(value, label)),
+        ],
+      ),
+    );
+  }
+}
+
+/// A chip as a toy block: a filter that is on or off, or a shortcut
+/// (« 500 € », a notion to open). On sits in the neutral `line` (BRIEF
+/// §10.2).
+class ChunkyChip extends StatelessWidget {
+  const ChunkyChip({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.selected,
+  });
+
+  final String label;
+
+  /// Null disables the chip.
+  final VoidCallback? onTap;
+
+  /// Null for a shortcut: it is pressed, never on.
+  final bool? selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        selected: selected,
+        child: ChunkyPress(
+          depth: AppShape.chunkySmallShadow,
+          onTap: onTap,
+          builder: (pressed) {
+            // A disabled chip lies flat.
+            final sink = enabled ? pressed : AppShape.chunkySmallShadow;
+            return Container(
+              constraints: const BoxConstraints(
+                minHeight: AppSpace.minTarget,
+                minWidth: AppSpace.minTarget,
+              ),
+              margin: EdgeInsets.only(
+                top: sink,
+                bottom: AppShape.chunkySmallShadow - sink,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.x4),
+              decoration: BoxDecoration(
+                color: selected == true || !enabled
+                    ? AppColors.line
+                    : AppColors.surface,
+                borderRadius: BorderRadius.circular(AppSpace.minTarget / 2),
+                border: Border.all(
+                  color: AppColors.ink,
+                  width: AppShape.chunkySmallBorder,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.ink,
+                    offset: Offset(0, AppShape.chunkySmallShadow - sink),
+                  ),
+                ],
+              ),
+              child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: Text(
+                  label,
+                  style: AppText.label.copyWith(
+                    color: enabled ? AppColors.ink : AppColors.muted,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// A search box as a toy block (Explore, the glossary). [onClear], when
+/// given, shows a clear button at its end.
+class ChunkySearchField extends StatelessWidget {
+  const ChunkySearchField({
+    super.key,
+    required this.hint,
+    required this.onChanged,
+    this.controller,
+    this.initialValue,
+    this.onClear,
+  });
+
+  final String hint;
+  final ValueChanged<String> onChanged;
+  final TextEditingController? controller;
+  final String? initialValue;
+  final VoidCallback? onClear;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: AppShape.chunkyButtonShadow),
+    decoration: const BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.all(
+        Radius.circular(AppShape.chunkyButtonRadius),
+      ),
+      border: Border.fromBorderSide(
+        BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.ink,
+          offset: Offset(0, AppShape.chunkyButtonShadow),
+        ),
+      ],
+    ),
+    child: TextFormField(
+      controller: controller,
+      initialValue: initialValue,
+      onChanged: onChanged,
+      textInputAction: TextInputAction.search,
+      style: AppText.body,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: const Icon(Icons.search, color: AppColors.ink),
+        suffixIcon: onClear == null
+            ? null
+            : IconButton(
+                tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
+                icon: const Icon(Icons.close, color: AppColors.ink),
+                onPressed: onClear,
+              ),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
+      ),
+    ),
+  );
 }
 
 /// A world screen's progress: one segment per step, the ones reached filled.

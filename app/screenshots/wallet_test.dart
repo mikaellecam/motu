@@ -18,6 +18,7 @@ import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -286,7 +287,7 @@ void main() {
     act: (tester) async {
       await tester.tap(find.text('3M'));
       await tester.pump();
-      await tester.tap(find.widgetWithText(FilterChip, 'ETF Monde'));
+      await tester.tap(find.widgetWithText(ChunkyChip, 'ETF Monde'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await tester.drag(find.byType(ListView), const Offset(0, -330));
@@ -303,7 +304,7 @@ void main() {
   ];
   Future<void> toLivret(WidgetTester tester) async {
     await tester.dragUntilVisible(
-      find.widgetWithText(OutlinedButton, 'Verser'),
+      find.widgetWithText(ChunkyButton, 'Verser'),
       find.byType(ListView),
       const Offset(0, -300),
     );
@@ -324,7 +325,7 @@ void main() {
     overrides: onLivret,
     act: (tester) async {
       await toLivret(tester);
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Verser'));
+      await tester.tap(find.widgetWithText(ChunkyButton, 'Verser'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await tester.enterText(find.byType(TextField), '25000');

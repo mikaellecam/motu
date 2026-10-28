@@ -10,6 +10,7 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/widgets/chunky.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/wallet/dca.dart';
 import '../../widgets/asset_avatar.dart';
@@ -179,10 +180,9 @@ class _PlanSheetState extends ConsumerState<PlanSheet> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    tooltip: MaterialLocalizations.of(context)
-                        .closeButtonTooltip,
-                    icon: const Icon(Icons.close),
+                  ChunkyIconButton(
+                    icon: Icons.close,
+                    label: MaterialLocalizations.of(context).closeButtonTooltip,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -214,36 +214,26 @@ class _PlanSheetState extends ConsumerState<PlanSheet> {
                 runSpacing: AppSpace.x2,
                 children: [
                   for (final euros in planQuickAmounts)
-                    ActionChip(
-                      label: Text(
-                        formats.amount(
-                          Decimal.fromInt(euros),
-                          Currency.eur,
-                          decimals: 0,
-                        ),
+                    ChunkyChip(
+                      label: formats.amount(
+                        Decimal.fromInt(euros),
+                        Currency.eur,
+                        decimals: 0,
                       ),
-                      onPressed: () => actions.quick(euros),
+                      onTap: () => actions.quick(euros),
                     ),
                 ],
               ),
               const SizedBox(height: AppSpace.x4),
               Text(l10n.dca_frequency, style: section),
               const SizedBox(height: AppSpace.x2),
-              SegmentedButton<DcaFrequency>(
-                showSelectedIcon: false,
+              ChunkySegmented(
                 segments: [
-                  ButtonSegment(
-                    value: DcaFrequency.monthly,
-                    label: Text(l10n.dca_monthly),
-                  ),
-                  ButtonSegment(
-                    value: DcaFrequency.weekly,
-                    label: Text(l10n.dca_weekly),
-                  ),
+                  (DcaFrequency.monthly, l10n.dca_monthly),
+                  (DcaFrequency.weekly, l10n.dca_weekly),
                 ],
-                selected: {s.form.frequency},
-                onSelectionChanged: (selected) =>
-                    actions.setFrequency(selected.first),
+                selected: s.form.frequency,
+                onChanged: actions.setFrequency,
               ),
               const SizedBox(height: AppSpace.x4),
               Card(
@@ -307,15 +297,15 @@ class _PlanSheetState extends ConsumerState<PlanSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                FilledButton(
-                  onPressed: s.canSubmit || (!s.showErrors && !c.finished)
-                      ? _submit
-                      : null,
-                  child: Text(switch (s.amount) {
+                ChunkyButton(
+                  label: switch (s.amount) {
                     final amount? when s.errors.isEmpty =>
                       l10n.plan_submit_amount(formats.money(amount), frequency),
                     _ => l10n.plan_submit(frequency),
-                  }),
+                  },
+                  onPressed: s.canSubmit || (!s.showErrors && !c.finished)
+                      ? _submit
+                      : null,
                 ),
                 const SizedBox(height: AppSpace.x2),
                 Text(

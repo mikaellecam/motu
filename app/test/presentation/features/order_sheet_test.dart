@@ -17,6 +17,7 @@ import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/glossary/term_sheet.dart';
 import 'package:finance_companion/presentation/features/order/order_sheet.dart';
 import 'package:finance_companion/presentation/widgets/term_text.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -222,7 +223,7 @@ void main() {
 
     // The button names what it buys.
     await tester.tap(
-      find.widgetWithText(FilledButton, 'Acheter pour 8${nnbsp}717,94$nbsp€'),
+      find.widgetWithText(ChunkyButton, 'Acheter pour 8${nnbsp}717,94$nbsp€'),
     );
     await tester.pumpAndSettle();
     expect(ticket.placed.single.size, isA<AmountSize>());
@@ -249,7 +250,7 @@ void main() {
   ) async {
     await show(tester);
     // Valider first: every problem shows.
-    await tester.tap(find.widgetWithText(FilledButton, 'Acheter'));
+    await tester.tap(find.widgetWithText(ChunkyButton, 'Acheter'));
     await tester.pumpAndSettle();
     expect(find.text('Saisis un montant supérieur à zéro.'), findsOneWidget);
     expect(ticket.placed, isEmpty);
@@ -286,7 +287,7 @@ void main() {
 
     await tester.tap(
       find.descendant(
-        of: find.byType(SegmentedButton<SizeMode>),
+        of: find.byType(ChunkySegmented<SizeMode>),
         matching: find.text('Parts'),
       ),
     );
@@ -355,7 +356,7 @@ void main() {
       expect(find.widgetWithText(TextField, 'Pour voir'), findsOneWidget);
     }
     await tester.tap(
-      find.widgetWithText(FilledButton, 'Acheter pour 500,00$nbsp€'),
+      find.widgetWithText(ChunkyButton, 'Acheter pour 500,00$nbsp€'),
     );
     await tester.pumpAndSettle();
     expect(

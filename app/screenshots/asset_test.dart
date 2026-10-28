@@ -16,6 +16,7 @@ import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/asset/stability_card.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -173,7 +174,7 @@ void main() {
     act: (tester) async {
       await tester.tap(find.text('5A'));
       await tester.pump();
-      await tester.tap(find.widgetWithText(FilterChip, 'ETF Monde'));
+      await tester.tap(find.widgetWithText(ChunkyChip, 'ETF Monde'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
     },

@@ -234,6 +234,10 @@ abstract final class AppShape {
   static const chunkyButtonRadius = 16.0;
   static const chunkyButtonShadow = 4.0;
 
+  /// Lighter blocks: chips, a segment's selected pill, the selected tab.
+  static const chunkySmallBorder = 2.5;
+  static const chunkySmallShadow = 3.0;
+
   /// Flat ("your money"): 1 px line border, no shadow.
   static const flatBorder = 1.0;
   static const flatCardRadius = 18.0;

@@ -9,6 +9,7 @@ import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/wallet/trip_summary.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/trip/summary_screen.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -122,7 +123,7 @@ void main() {
     expect(find.text('−16,83$nnbsp%'), findsOneWidget);
     expect(colorOf(tester, '−16,83$nnbsp%'), AppColors.loss);
 
-    expect(find.widgetWithText(ActionChip, 'Pire baisse'), findsOneWidget);
+    expect(find.widgetWithText(ChunkyChip, 'Pire baisse'), findsOneWidget);
     expect(
       find.text('Aucune décision notée pendant ce voyage.'),
       findsOneWidget,

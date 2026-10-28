@@ -199,10 +199,9 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    tooltip: MaterialLocalizations.of(context)
-                        .closeButtonTooltip,
-                    icon: const Icon(Icons.close),
+                  ChunkyIconButton(
+                    icon: Icons.close,
+                    label: MaterialLocalizations.of(context).closeButtonTooltip,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -210,24 +209,14 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
               const SizedBox(height: AppSpace.x4),
               Text(l10n.order_type_label, style: section),
               const SizedBox(height: AppSpace.x2),
-              SegmentedButton<OrderType>(
-                showSelectedIcon: false,
+              ChunkySegmented(
                 segments: [
-                  ButtonSegment(
-                    value: OrderType.market,
-                    label: Text(l10n.order_type_market),
-                  ),
-                  ButtonSegment(
-                    value: OrderType.limit,
-                    label: Text(l10n.order_type_limit),
-                  ),
-                  ButtonSegment(
-                    value: OrderType.stop,
-                    label: Text(l10n.order_type_stop),
-                  ),
+                  (OrderType.market, l10n.order_type_market),
+                  (OrderType.limit, l10n.order_type_limit),
+                  (OrderType.stop, l10n.order_type_stop),
                 ],
-                selected: {form.type},
-                onSelectionChanged: (selected) => _setType(selected.first),
+                selected: form.type,
+                onChanged: _setType,
               ),
               const SizedBox(height: AppSpace.x4),
               Row(
@@ -240,21 +229,14 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
                       style: section,
                     ),
                   ),
-                  SegmentedButton<SizeMode>(
-                    showSelectedIcon: false,
+                  ChunkySegmented(
+                    compact: true,
                     segments: [
-                      ButtonSegment(
-                        value: SizeMode.amount,
-                        label: Text(l10n.order_mode_amount_short),
-                      ),
-                      ButtonSegment(
-                        value: SizeMode.quantity,
-                        label: Text(l10n.order_mode_quantity_short),
-                      ),
+                      (SizeMode.amount, l10n.order_mode_amount_short),
+                      (SizeMode.quantity, l10n.order_mode_quantity_short),
                     ],
-                    selected: {form.mode},
-                    onSelectionChanged: (selected) =>
-                        actions.setMode(selected.first),
+                    selected: form.mode,
+                    onChanged: actions.setMode,
                   ),
                 ],
               ),
@@ -289,8 +271,8 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
                 runSpacing: AppSpace.x2,
                 children: [
                   for (final choice in quickChoices(form.side, form.mode))
-                    ActionChip(
-                      label: Text(switch (choice) {
+                    ChunkyChip(
+                      label: switch (choice) {
                         QuickAmount(:final euros) => formats.amount(
                           Decimal.fromInt(euros),
                           Currency.eur,
@@ -302,8 +284,8 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
                         ),
                         QuickHalf() => l10n.order_quick_half,
                         QuickAll() => l10n.order_quick_all,
-                      }),
-                      onPressed: () => actions.quick(choice),
+                      },
+                      onTap: () => actions.quick(choice),
                     ),
                 ],
               ),
@@ -478,17 +460,17 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                FilledButton(
-                  onPressed: s.canSubmit || (!s.showErrors && !c.finished)
-                      ? () => _submit(s)
-                      : null,
-                  child: Text(switch (s.estimate) {
+                ChunkyButton(
+                  label: switch (s.estimate) {
                     final e? when amountMode =>
                       (buy ? l10n.order_buy_for : l10n.order_sell_for)(
                         formats.money(e.notional),
                       ),
                     _ => buy ? l10n.asset_buy : l10n.asset_sell,
-                  }),
+                  },
+                  onPressed: s.canSubmit || (!s.showErrors && !c.finished)
+                      ? () => _submit(s)
+                      : null,
                 ),
                 const SizedBox(height: AppSpace.x2),
                 Text(

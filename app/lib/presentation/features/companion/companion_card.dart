@@ -62,9 +62,9 @@ class CompanionCard extends ConsumerWidget {
             children: [
               for (final term in moment.rule.glossary)
                 if (names?.terms[term] case final title?)
-                  ActionChip(
-                    label: Text(title.of(language)),
-                    onPressed: () => showTermSheet(context, term),
+                  ChunkyChip(
+                    label: title.of(language),
+                    onTap: () => showTermSheet(context, term),
                   ),
             ],
           ),

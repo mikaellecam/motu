@@ -451,7 +451,7 @@ per purchase (> 0, ≤ 100 000 €, above the fixed fee: `validateDcaAmount`) an
 « Le mettre en place » (§4.10), in a flat sheet like the order sheet's: the asset with « Versement programmé »,
 a line on what DCA does, « Montant par achat » as the boxed headline with 50 / 100 / 200 € chips and its errors
 under it, « Fréquence », then a card « Premier achat : le {date} » with the schedule that follows and what a
-short day does, and the flat button « Investir 100,00 € chaque mois » over « Argent fictif. Aucune transaction
+short day does, and the button « Investir 100,00 € chaque mois » over « Argent fictif. Aucune transaction
 réelle. ». Saved, it says « Versement programmé : premier achat le {date}. » with « Mon portefeuille ».
 - *First purchase* (`firstPurchaseDay`): the first session of the asset's exchange after the wallet's day that
   opens after the plan is set up: by the real time for the live wallet and a trip at today, after the trip's
@@ -549,9 +549,10 @@ Sheet (decided 2026-10-24, artboards `Order-A` and `OrderError-A` of the art dir
 §10.1): the title with a ✕; « Type d'ordre »; the amount or quantity as the headline, a large boxed figure
 with what is available under it and a compact € / Parts toggle beside its label; round quick chips
 (« 500 € »); the summary; the coach in a chunky card « Avant de valider ». A validation error turns the box
-`alertText` and shows under it with a warning icon; the button then waits. The flat main button stays at the
+`alertText` and shows under it with a warning icon; the button then waits. The main button stays at the
 bottom of the sheet whatever scrolls above it, names the amount (« Acheter pour 500,00 € »), over « Argent
-fictif. Aucune transaction réelle. » No lock on limit and stop (soft gate below).
+fictif. Aucune transaction réelle. » No lock on limit and stop (soft gate below). Its controls are chunky,
+as on every screen (M11-1, §10.1).
 
 **Soft gate:** limit and stop are visible from day one. The first time a user selects one, the glossary
 sheet for that order type opens; after it is closed the type works normally. No hard locks in the sandbox.
@@ -1106,7 +1107,15 @@ data, no key).
 - **Money ("flat")**: wallet, asset page, order sheet, explorer, settings, charts. White cards, 1 px line
   border, no offset shadow, radius 14–18. Numbers in Figtree with tabular figures.
 
-Rule: chunky = the game is talking to you; flat = your money.
+Rule: chunky = the game is talking to you, or what you touch; flat = the figures of your money.
+Controls are chunky on every screen (decided 2026-10-28, M11-1, the canvas « The world on every tab »): buttons
+(`ChunkyButton`: primary, secondary, progress, and alert for the one action that loses something), segmented
+controls (`ChunkySegmented`), chips, filters and shortcuts alike (`ChunkyChip`, 44 high, 2.5 px border, 3 px
+shadow), search fields (`ChunkySearchField`), back and close (`ChunkyIconButton`; `ChunkyBackButton` on a
+pushed screen's bar) and the tab bar (a 3 px ink top edge, the selected tab's pill outlined in ink). A selected
+segment or chip keeps the neutral `line` fill (§10.2). The cards holding figures, the charts and the lessons'
+curves stay as they are. Text links (`TextButton`), switches, sliders and form fields other than search keep
+their Material look.
 Shared by the money screens (decided 2026-10-24, M9-22, from the artboards `Portfolio-A` and `Asset-A`):
 section titles in Baloo above their flat cards (`SectionTitle`), not inside them; a stock's avatar shows its
 company's logo (M9-29, §10.2), an ETF's (or a stock's whose logo is missing) two letters from its name (`assetInitials`: the initials of two words, « ETF » left out, or a word's first two

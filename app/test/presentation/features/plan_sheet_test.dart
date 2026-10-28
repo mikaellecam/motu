@@ -6,6 +6,7 @@ import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/wallet/dca.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/dca/plan_sheet.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,7 +85,7 @@ Future<void> show(
   await tester.pumpAndSettle();
 }
 
-Finder button(String label) => find.widgetWithText(FilledButton, label);
+Finder button(String label) => find.widgetWithText(ChunkyButton, label);
 
 void main() {
   testWidgets('the amount, the frequency, the first purchase', (tester) async {
@@ -114,7 +115,7 @@ void main() {
     expect(button('Investir chaque mois'), findsOneWidget);
     expect(find.text('Argent fictif. Aucune transaction réelle.'), findsOne);
 
-    await tester.tap(find.widgetWithText(ActionChip, '100$nbsp€'));
+    await tester.tap(find.widgetWithText(ChunkyChip, '100$nbsp€'));
     await tester.pump();
     expect(find.widgetWithText(TextField, '100'), findsOneWidget);
     expect(button('Investir 100,00$nbsp€ chaque mois'), findsOneWidget);
@@ -153,7 +154,7 @@ void main() {
     expect(find.text('Saisis un montant supérieur à zéro.'), findsOneWidget);
     expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
     expect(
-      tester.widget<FilledButton>(button('Investir chaque mois')).onPressed,
+      tester.widget<ChunkyButton>(button('Investir chaque mois')).onPressed,
       isNull,
     );
 
@@ -179,7 +180,7 @@ void main() {
 
   testWidgets('closing sets nothing up', (tester) async {
     await show(tester);
-    await tester.tap(find.byTooltip('Fermer'));
+    await tester.tap(find.bySemanticsLabel('Fermer'));
     await tester.pumpAndSettle();
     expect(find.byType(PlanSheet), findsNothing);
     expect(find.byType(SnackBar), findsNothing);

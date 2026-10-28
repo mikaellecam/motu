@@ -4,6 +4,7 @@ import '../failure.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/formats.dart';
 import '../theme/tokens.dart';
+import 'chunky.dart';
 
 /// Loading placeholder: [lines] bars that pulse until data arrives. Shown
 /// only on first load; a refresh keeps the previous data on screen instead.
@@ -117,9 +118,10 @@ class ErrorView extends StatelessWidget {
           ),
           if (onRetry != null) ...[
             const SizedBox(height: AppSpace.x4),
-            OutlinedButton(
+            ChunkyButton(
+              label: AppLocalizations.of(context).common_retry,
+              kind: ChunkyButtonKind.secondary,
               onPressed: onRetry,
-              child: Text(AppLocalizations.of(context).common_retry),
             ),
           ],
         ],

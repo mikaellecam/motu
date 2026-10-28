@@ -183,13 +183,9 @@ class TripSummaryScreen extends ConsumerWidget {
                           runSpacing: AppSpace.x2,
                           children: [
                             for (final term in s.terms)
-                              ActionChip(
-                                shape: const StadiumBorder(
-                                  side: BorderSide(color: AppColors.line),
-                                ),
-                                label: Text(term.title.of(language)),
-                                onPressed: () =>
-                                    showTermSheet(context, term.id),
+                              ChunkyChip(
+                                label: term.title.of(language),
+                                onTap: () => showTermSheet(context, term.id),
                               ),
                           ],
                         ),
