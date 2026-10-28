@@ -1481,7 +1481,7 @@
       }
     }
   },
-  "sort_truth": "L'ordre r\u00e9el, par volatilit\u00e9",
+  "sort_truth": "L'ordre r\u00e9el",
   "puzzle_weight_semantics": "Part de {asset}",
   "@puzzle_weight_semantics": {
     "placeholders": {
@@ -1560,6 +1560,7 @@
     }
   },
   "checkpoint_done": "Point d'\u00e9tape termin\u00e9.",
+  "quiz_done": "Quiz termin\u00e9.",
   "node_bridge": "Rejoue-le toi-m\u00eame",
   "mission_auto": "Elle se valide toute seule d\u00e8s que ton portefeuille la remplit.",
   "mission_done": "Mission accomplie",

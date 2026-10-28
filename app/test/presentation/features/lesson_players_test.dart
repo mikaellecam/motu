@@ -26,7 +26,11 @@ class _Fixed implements SimulationClock {
 
 late RecordingProfiles profiles;
 
-Future<void> show(WidgetTester tester, String nodeId) async {
+Future<void> show(
+  WidgetTester tester,
+  String nodeId, {
+  String quizType = 'checkpoint',
+}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 6000);
@@ -36,8 +40,9 @@ Future<void> show(WidgetTester tester, String nodeId) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        contentPackProvider(actionsEtfIsland)
-            .overrideWith((ref) async => decodePack(morePackJson())),
+        contentPackProvider(actionsEtfIsland).overrideWith(
+          (ref) async => decodePack(morePackJson(quizType: quizType)),
+        ),
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => decodePack(emptyBasesJson())),
         profileRepositoryProvider.overrideWithValue(profiles),
@@ -115,7 +120,8 @@ void main() {
     await tap(tester, 'Valider');
     expect(profiles.completed.single.$1, 'ae.ladder');
     expect(find.text('3 sur 3 à la bonne place'), findsOneWidget);
-    expect(find.text("L'ordre réel, par volatilité"), findsOneWidget);
+    // Each row shows its own figure, whatever the ranking is by (M12-11).
+    expect(find.text("L'ordre réel"), findsOneWidget);
     expect(find.text('0,00$nnbsp%'), findsOneWidget);
     expect(find.text('Continuer'), findsOneWidget);
   });
@@ -194,6 +200,19 @@ void main() {
     expect(find.text('1 sur 2'), findsOneWidget);
     expect(find.text("Point d'étape terminé."), findsOneWidget);
     expect(profiles.completed, [('ae.quiz', '1/2')]);
+  });
+
+  testWidgets('a quiz says so at its end (M12-11)', (tester) async {
+    await show(tester, 'ae.quiz', quizType: 'quiz');
+    await tap(tester, "Des milliers d'entreprises");
+    await tap(tester, 'Valider');
+    await tap(tester, 'Question suivante');
+    await tap(tester, 'Oui');
+    await tap(tester, 'Valider');
+    await tap(tester, 'Voir mon résultat');
+    expect(find.text('2 sur 2'), findsOneWidget);
+    expect(find.text('Quiz terminé.'), findsOneWidget);
+    expect(find.text("Point d'étape terminé."), findsNothing);
   });
 
   testWidgets('accessible, with text at 130 %', (tester) async {

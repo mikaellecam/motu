@@ -19,17 +19,17 @@
       },
       "choices": [
         {
-          "id": "months",
-          "label": {
-            "fr": "Trois à six mois de dépenses, disponibles tout de suite",
-            "en": "Three to six months of spending, available at once"
-          }
-        },
-        {
           "id": "year",
           "label": {
             "fr": "Une année de salaire placée en Bourse",
             "en": "A year's salary on the stock market"
+          }
+        },
+        {
+          "id": "months",
+          "label": {
+            "fr": "Trois à six mois de dépenses, disponibles tout de suite",
+            "en": "Three to six months of spending, available at once"
           }
         }
       ],
@@ -73,17 +73,17 @@
       },
       "choices": [
         {
-          "id": "follows",
-          "label": {
-            "fr": "Est revu deux fois par an et suit les prix avec retard",
-            "en": "Is reset twice a year and follows prices with a delay"
-          }
-        },
-        {
           "id": "fixed",
           "label": {
             "fr": "Est fixé une fois pour toutes",
             "en": "Is set once and for all"
+          }
+        },
+        {
+          "id": "follows",
+          "label": {
+            "fr": "Est revu deux fois par an et suit les prix avec retard",
+            "en": "Is reset twice a year and follows prices with a delay"
           }
         }
       ],
@@ -100,17 +100,17 @@
       },
       "choices": [
         {
-          "id": "small",
-          "label": {
-            "fr": "Un petit crédit de 3 000 € ou moins",
-            "en": "A small loan of €3,000 or less"
-          }
-        },
-        {
           "id": "home",
           "label": {
             "fr": "Un crédit immobilier sur 20 ans",
             "en": "A 20-year home loan"
+          }
+        },
+        {
+          "id": "small",
+          "label": {
+            "fr": "Un petit crédit de 3 000 € ou moins",
+            "en": "A small loan of €3,000 or less"
           }
         }
       ],

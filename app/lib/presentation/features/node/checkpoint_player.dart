@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
+import '../../../domain/learning/node.dart';
 import '../../widgets/term_text.dart';
 import 'node_screen.dart';
 
@@ -47,7 +48,9 @@ class CheckpointPlayer extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      l10n.checkpoint_done,
+                      view.node.type == NodeType.quiz
+                          ? l10n.quiz_done
+                          : l10n.checkpoint_done,
                       style: text.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
