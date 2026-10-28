@@ -363,11 +363,25 @@ void main() {
       });
     }
 
-    test('detectors exist for the three mission nodes', () {
+    test('money on the live wallet\'s Livret A (Les bases, M12-4)', () {
       expect(
-        missionDetectors.keys,
-        island.where((n) => n.type == NodeType.mission).map((n) => n.id),
+        completedMissions(
+          const MissionContext(
+            liveHoldings: [],
+            hasActiveDcaPlan: false,
+            hasLivretSavings: true,
+          ),
+        ),
+        {'lb.mission-livret'},
       );
+    });
+
+    test('detectors exist for the mission nodes', () {
+      expect(missionDetectors.keys, [
+        ...island.where((n) => n.type == NodeType.mission).map((n) => n.id),
+        // Les bases' (M12-4), until its pack is bundled (M12-5).
+        'lb.mission-livret',
+      ]);
     });
   });
 }

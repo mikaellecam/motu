@@ -4,13 +4,14 @@ import 'lesson_pack.dart';
 
 /// Les bases' two toys (M12-3): `lb.safety-cushion` (1 500 € a month, 3
 /// months, 200 € put aside, from nothing) and `lb.loan-cost` (3 000 € over 36
-/// months at 20 % a year). Its explanations link the lesson pack's term.
+/// months at 20 % a year), then `lb.spot-the-scam`, a quiz (M12-4). Its
+/// explanations link the lesson pack's term.
 String basesToysJson() => jsonEncode({
   'island': {
     'id': 'les-bases',
     'version': 1,
     'title': text('Les bases'),
-    'nodes': ['lb.safety-cushion', 'lb.loan-cost'],
+    'nodes': ['lb.safety-cushion', 'lb.loan-cost', 'lb.spot-the-scam'],
   },
   'nodes': [
     {
@@ -59,6 +60,22 @@ String basesToysJson() => jsonEncode({
             'step': step,
             'default': init,
           },
+      ],
+    },
+    {
+      'id': 'lb.spot-the-scam',
+      'type': 'quiz',
+      'title': text("Repère l'arnaque"),
+      'status': 'draft',
+      'questions': [
+        {
+          'question': text('Un placement « garanti » à 10 % par mois…'),
+          'choices': [
+            {'id': 'scam', 'label': text('Une arnaque')},
+            {'id': 'deal', 'label': text('Une bonne affaire')},
+          ],
+          'answer': 'scam',
+        },
       ],
     },
   ],

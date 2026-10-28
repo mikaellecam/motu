@@ -25,9 +25,9 @@ Stream<Set<String>> satisfiedMissions(Ref ref) {
 }
 
 /// The mission nodes [facts] satisfy: the assets of the live wallet's open
-/// positions, and whether a DCA plan runs.
+/// positions, whether a DCA plan runs, and the live wallet's Livret A.
 Future<Set<String>> missionsSatisfiedBy(
-  ({Set<String> liveAssets, bool activePlan}) facts,
+  ({Set<String> liveAssets, bool activePlan, bool livret}) facts,
   MarketRepository market, {
   required DateTime asOf,
 }) async {
@@ -36,6 +36,7 @@ Future<Set<String>> missionsSatisfiedBy(
     MissionContext(
       liveHoldings: [for (final id in facts.liveAssets) ?assets[id]],
       hasActiveDcaPlan: facts.activePlan,
+      hasLivretSavings: facts.livret,
     ),
   );
 }

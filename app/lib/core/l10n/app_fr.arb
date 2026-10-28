@@ -1419,6 +1419,7 @@
   "node_type_build_puzzle": "Construction",
   "node_type_mission": "Mission",
   "node_type_checkpoint": "Point d'\u00e9tape",
+  "node_type_quiz": "Quiz",
   "decision_question": "Que fais-tu\u202f?",
   "decision_after": "Ce qui s'est pass\u00e9 ensuite",
   "decision_outcomes": "{amount} au {start}, devenus au {end}\u202f:",

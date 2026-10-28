@@ -61,6 +61,7 @@ void main() {
       'livret_title',
       'map_island_progress',
       'node_type_mission',
+      'node_type_quiz',
       'order_coach_term',
       'order_quick_max',
       'order_row_detail',

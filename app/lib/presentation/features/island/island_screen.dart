@@ -488,6 +488,7 @@ IconData _typeIcon(NodeType type) => switch (type) {
   NodeType.buildPuzzle => Icons.extension_outlined,
   NodeType.mission => Icons.flag_outlined,
   NodeType.checkpoint => Icons.emoji_events_outlined,
+  NodeType.quiz => Icons.quiz_outlined,
 };
 
 /// The room the back button takes at the top of the screen.

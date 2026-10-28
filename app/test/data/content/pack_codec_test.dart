@@ -125,7 +125,7 @@ void main() {
     for (final (what, edit) in <(String, void Function(Map<String, dynamic>))>[
       ('a missing locale', (j) => (j['island']['title'] as Map).remove('en')),
       ('an empty text', (j) => j['nodes'][0]['title']['fr'] = ''),
-      ('an unknown node type', (j) => j['nodes'][0]['type'] = 'quiz'),
+      ('an unknown node type', (j) => j['nodes'][0]['type'] = 'riddle'),
       ('an unknown status', (j) => j['nodes'][0]['status'] = 'final'),
       (
         'an island node without content',

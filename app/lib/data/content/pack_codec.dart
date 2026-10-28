@@ -416,14 +416,17 @@ SortItem _sortItem(
   final id = _string(json['id'], '${node.id} item id');
   final dataset = json['dataset'];
   final value = json['value'];
-  if ((dataset == null) == (value == null)) {
-    throw FormatException('${node.id} $id: a dataset or a value');
+  final livret = json['livret'] == true;
+  if ([dataset != null, value != null, livret].where((set) => set).length !=
+      1) {
+    throw FormatException('${node.id} $id: a dataset, a value or the Livret');
   }
   return SortItem(
     id,
     _localized(json['label'], '${node.id} $id label'),
     dataset: dataset == null ? null : _daily(node, pack, dataset),
     value: value == null ? null : _decimal(value, '${node.id} $id value'),
+    livret: livret,
   );
 }
 

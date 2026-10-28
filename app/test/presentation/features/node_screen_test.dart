@@ -228,6 +228,21 @@ void main() {
     );
   });
 
+  testWidgets('quiz: a checkpoint\'s questions, under its own name', (
+    tester,
+  ) async {
+    await show(tester, 'lb.spot-the-scam');
+    expect(find.text("Repère l'arnaque"), findsOneWidget);
+    await tester.tap(find.text('Une arnaque'));
+    await tester.pump();
+    await tester.tap(find.text('Valider'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Voir mon résultat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Quiz'), findsOneWidget);
+    expect(profiles.completed.single.$1, 'lb.spot-the-scam');
+  });
+
   testWidgets('accessible, with text at 130 %', (tester) async {
     textAt(tester, 1.3);
     await show(tester, 'ae.apple');

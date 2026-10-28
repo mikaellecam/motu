@@ -6,7 +6,12 @@ enum NodeType {
   sort('sort'),
   buildPuzzle('build_puzzle'),
   mission('mission'),
-  checkpoint('checkpoint');
+  checkpoint('checkpoint'),
+
+  /// A checkpoint's questions under a name of their own, inside an island
+  /// (Les bases' « Repère l'arnaque », M12-4): it counts as no checkpoint for
+  /// the levels.
+  quiz('quiz');
 
   const NodeType(this.json);
   final String json;

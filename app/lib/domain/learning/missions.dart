@@ -1,17 +1,22 @@
 import '../market/asset.dart';
 import 'content.dart';
 
-/// What mission detectors look at: the live wallet's open positions, and
-/// whether any wallet runs a DCA plan.
+/// What mission detectors look at: the live wallet's open positions,
+/// whether any wallet runs a DCA plan, and whether the live wallet's Livret A
+/// holds money.
 final class MissionContext {
   const MissionContext({
     required this.liveHoldings,
     required this.hasActiveDcaPlan,
+    this.hasLivretSavings = false,
   });
 
   /// Assets of the live wallet's open positions.
   final List<Asset> liveHoldings;
   final bool hasActiveDcaPlan;
+
+  /// More put into the live wallet's Livret A than taken out.
+  final bool hasLivretSavings;
 }
 
 /// Mission nodes complete by themselves when the sandbox shows the behaviour
@@ -20,6 +25,7 @@ const missionDetectors = <String, bool Function(MissionContext)>{
   'ae.mission-first-etf': _ownsAnEtf,
   'ae.mission-three-regions': _threeRegions,
   'ae.mission-dca': _hasDcaPlan,
+  'lb.mission-livret': _savesOnLivret,
 };
 
 /// Ids of the mission nodes [context] satisfies.
@@ -37,6 +43,8 @@ bool _threeRegions(MissionContext c) =>
     {for (final a in c.liveHoldings) a.region}.length >= 3;
 
 bool _hasDcaPlan(MissionContext c) => c.hasActiveDcaPlan;
+
+bool _savesOnLivret(MissionContext c) => c.hasLivretSavings;
 
 /// A `mission` node (BRIEF §4.3): what to do in the sandbox, and where to
 /// go to do it. It completes by itself ([missionDetectors]).
