@@ -715,6 +715,9 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
   « Une seule entreprise : plus de potentiel, plus de secousses »), its rows in a flat card, sorted by name
   inside. Search and filters narrow both groups; a group with nothing left is not shown. Filter chips are
   pills; a long name wraps to a second line.
+- Each section title beside what it holds (decided 2026-10-28 by the user, M11-5: « it shows what each is »),
+  a 60×56 scene on `sea` in `MapPalette` (§10.2): ETF, four small buildings on one plot (a basket); Actions,
+  one tower with its flag (one company). Decorative: the title and its line say it.
 
 ### 4.10 DCA simulator
 

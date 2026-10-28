@@ -15,6 +15,7 @@ import '../../widgets/asset_avatar.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/risk_meter.dart';
 import '../../widgets/section_title.dart';
+import 'asset_kind_scene.dart';
 import '../../widgets/sign_color.dart';
 
 /// The catalogue: search, filters, favorites (BRIEF §4.9), the ETFs then
@@ -195,11 +196,13 @@ class _List extends ConsumerWidget {
                       AssetType.etf => SectionTitle(
                         l10n.explorer_filter_etfs,
                         line: l10n.explorer_etfs_line,
+                        leading: const AssetKindScene(AssetType.etf),
                         top: i == 0 ? AppSpace.x2 : AppSpace.x4,
                       ),
                       AssetType.stock => SectionTitle(
                         l10n.explorer_filter_stocks,
                         line: l10n.explorer_stocks_line,
+                        leading: const AssetKindScene(AssetType.stock),
                         top: i == 0 ? AppSpace.x2 : AppSpace.x4,
                       ),
                     },

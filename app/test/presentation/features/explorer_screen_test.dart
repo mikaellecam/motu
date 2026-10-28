@@ -8,6 +8,7 @@ import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/main.dart';
+import 'package:finance_companion/presentation/features/explorer/asset_kind_scene.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:flutter/material.dart';
@@ -133,6 +134,30 @@ void main() {
         tester.getTopLeft(inList(text)).dy,
     ];
     expect(tops, orderedEquals([...tops]..sort()));
+    // Each title beside what it holds, as a scene the words already say
+    // (M11-5): a basket of buildings, one tower.
+    for (final (type, title) in [
+      (AssetType.etf, 'ETF'),
+      (AssetType.stock, 'Actions'),
+    ]) {
+      final scene = find.byWidgetPredicate(
+        (w) => w is AssetKindScene && w.type == type,
+      );
+      expect(scene, findsOneWidget, reason: title);
+      expect(
+        tester.getCenter(scene).dy,
+        closeTo(
+          tester.getCenter(inList(title)).dy,
+          AssetKindScene.size.height / 2,
+        ),
+        reason: title,
+      );
+      expect(
+        find.descendant(of: scene, matching: find.byType(ExcludeSemantics)),
+        findsOneWidget,
+        reason: title,
+      );
+    }
 
     // Filters and search narrow both groups; one left empty is not shown.
     await tester.tap(find.widgetWithText(ChunkyChip, 'Actions'));
