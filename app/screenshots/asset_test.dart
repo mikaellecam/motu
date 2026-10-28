@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/asset/asset_page.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/market/price_bar.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
@@ -127,6 +129,22 @@ void main() {
   final overrides = [
     cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
     assetOverviewProvider.overrideWith((ref, args) async => o),
+    // Apple, second on the live wallet's island (M11-6).
+    walletIslandProvider.overrideWith(
+      (ref, args) async => [
+        IslandBuilding('world', height: Decimal.one, built: Decimal.one),
+        IslandBuilding(
+          'apple',
+          height: Decimal.parse('0.6'),
+          built: Decimal.one,
+        ),
+        IslandBuilding(
+          'asml',
+          height: Decimal.parse('0.4'),
+          built: Decimal.one,
+        ),
+      ],
+    ),
     assetChartProvider.overrideWith((ref, args) async {
       final (_, _, period, benchmark) = args;
       return assetChartFor(o, period, benchmark: benchmark);

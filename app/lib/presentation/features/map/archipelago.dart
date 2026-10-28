@@ -384,9 +384,26 @@ class ArchipelagoPainter extends CustomPainter {
     }
   }
 
-  void _building(BlockPen pen, IsoProjection p, int spot, DrawnBuilding b) {
-    if (b.height <= 0) return;
+  static void _building(
+    BlockPen pen,
+    IsoProjection p,
+    int spot,
+    DrawnBuilding b,
+  ) {
     final (cx, cy) = _spots[spot];
+    _buildingAt(pen, p, cx, cy, spot, b);
+  }
+
+  /// [b] centred on ([cx], [cy]), in [spot]'s colours, windows and flag.
+  static void _buildingAt(
+    BlockPen pen,
+    IsoProjection p,
+    double cx,
+    double cy,
+    int spot,
+    DrawnBuilding b,
+  ) {
+    if (b.height <= 0) return;
     final (x, y) = (cx - _footprint / 2, cy - _footprint / 2);
     final (shades, lit) = MapPalette.buildings[spot];
     final standing = b.height * b.built.clamp(0, 1);
@@ -717,7 +734,46 @@ class ArchipelagoPainter extends CustomPainter {
 }
 
 /// Fills shapes and outlines them, as the art direction draws its blocks.
-final class BlockPen {
+final
+/// One building alone, as it stands on Actions & ETF (BRIEF §4.8, M11-6):
+/// at the island's scale, in the colours, windows and flag of its place there
+/// ([rank], the largest 0), a pending buy's ghost included, on a plot of
+/// sand. The asset page's « Ta position ».
+class BuildingPortraitPainter
+    extends CustomPainter {
+  BuildingPortraitPainter(this.building, {required this.rank})
+    : assert(rank >= 0 && rank < 5, 'one of the island\'s five spots');
+
+  final DrawnBuilding building;
+  final int rank;
+
+  /// Room for the tallest building and its flag over its plot.
+  static const size = Size(92, 116);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final island = archipelago.firstWhere((i) => i.id == IslandId.actionsEtf);
+    // The plot's front corner just above the bottom edge.
+    final p = IsoProjection(
+      tile: island.tile,
+      unit: island.unit,
+      origin: Offset(
+        size.width / 2,
+        size.height - 4 - island.tile / 4 - 0.4 * island.unit,
+      ),
+    );
+    final pen = BlockPen(canvas, AppColors.ink, 1.3);
+    pen.block(boxFacets(p, -0.5, -0.5, 1, 1, 0.4, z: -0.4), MapPalette.dirt);
+    final spot = ArchipelagoPainter._spots.length - 1 - rank;
+    ArchipelagoPainter._buildingAt(pen, p, 0, 0, spot, building);
+  }
+
+  @override
+  bool shouldRepaint(BuildingPortraitPainter oldDelegate) =>
+      oldDelegate.building != building || oldDelegate.rank != rank;
+}
+
+class BlockPen {
   BlockPen(this.canvas, this.ink, double width)
     : _outline = Paint()
         ..color = ink

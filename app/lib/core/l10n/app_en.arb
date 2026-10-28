@@ -141,6 +141,7 @@
   "asset_why_currency": "The dollar",
   "asset_why_rest": "The rest, specific to {name}",
   "asset_position_title": "Your position",
+  "asset_position_building": "Your building",
   "asset_position_quantity": "Quantity",
   "asset_position_value": "Value",
   "asset_position_pnl": "Unrealised gain",

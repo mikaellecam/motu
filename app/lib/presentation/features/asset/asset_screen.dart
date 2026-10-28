@@ -12,6 +12,9 @@ import '../../../core/l10n/formats.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../map/living_island.dart';
+import '../map/archipelago.dart';
+import '../../../application/wallet/living_island.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../domain/market/asset.dart';
@@ -636,13 +639,23 @@ class _Essentials extends StatelessWidget {
   }
 }
 
-class _PositionCard extends StatelessWidget {
+/// What the wallet holds of it, beside its building as the island draws it
+/// (M11-6, option B of the « The world on every tab » canvas).
+class _PositionCard extends ConsumerWidget {
   const _PositionCard(this.o);
   final AssetOverview o;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    // Kept on the island even when it is not among the five largest.
+    final island =
+        ref.watch(walletIslandProvider(o.walletId, keep: o.asset.id)).value ??
+        const [];
+    final rank = island.indexWhere((b) => b.assetId == o.asset.id);
+    final building = rank >= 0 && rank < 5
+        ? drawnBuildings(island)[rank]
+        : null;
     final formats = _formats(context);
     final text = Theme.of(context).textTheme;
     final p = o.position!;
@@ -700,20 +713,56 @@ class _PositionCard extends StatelessWidget {
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(AppSpace.x3),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Row(
             children: [
-              row(l10n.asset_position_quantity, quantity),
-              row(
-                l10n.asset_position_value,
-                formats.amount(p.value, Currency.eur),
-              ),
-              row(l10n.asset_position_pnl, pnl, color: signColor(p.pnl)),
-              row(
-                l10n.asset_position_fx,
-                formats.amount(p.currencyEffect, Currency.eur, signed: true),
-                color: signColor(p.currencyEffect),
-                indent: true,
+              if (building != null) ...[
+                Column(
+                  children: [
+                    ExcludeSemantics(
+                      child: Container(
+                        width: BuildingPortraitPainter.size.width,
+                        height: BuildingPortraitPainter.size.height,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: AppColors.sea,
+                          borderRadius: BorderRadius.circular(AppSpace.x3),
+                        ),
+                        child: CustomPaint(
+                          painter: BuildingPortraitPainter(
+                            building,
+                            rank: rank,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpace.x1),
+                    Text(l10n.asset_position_building, style: AppText.label),
+                  ],
+                ),
+                const SizedBox(width: AppSpace.x3),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    row(l10n.asset_position_quantity, quantity),
+                    row(
+                      l10n.asset_position_value,
+                      formats.amount(p.value, Currency.eur),
+                    ),
+                    row(l10n.asset_position_pnl, pnl, color: signColor(p.pnl)),
+                    row(
+                      l10n.asset_position_fx,
+                      formats.amount(
+                        p.currencyEffect,
+                        Currency.eur,
+                        signed: true,
+                      ),
+                      color: signColor(p.currencyEffect),
+                      indent: true,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
