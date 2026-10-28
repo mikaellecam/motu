@@ -90,19 +90,19 @@ void main() {
     expect(find.text('1 notion découverte sur 6'), findsOneWidget);
     expect(
       tester
-          .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator))
-          .value,
+          .widget<FractionallySizedBox>(find.byType(FractionallySizedBox))
+          .widthFactor,
       1 / 6,
     );
     for (final letter in ['D', 'E', 'I', 'R', 'V']) {
       expect(find.text(letter), findsOneWidget, reason: letter);
     }
-    // One flat card per letter, a line between its rows: « Écart » and
-    // « ETF » share E's.
-    expect(find.byType(Card), findsNWidgets(5));
+    // The progress, then one chunky card per letter, a line between its
+    // rows: « Écart » and « ETF » share E's.
+    expect(find.byType(ChunkyCard), findsNWidgets(1 + 5));
     final e = find.ancestor(
       of: find.text('Écart'),
-      matching: find.byType(Card),
+      matching: find.byType(ChunkyCard),
     );
     expect(find.descendant(of: e, matching: find.text('ETF')), findsOneWidget);
     expect(
@@ -118,7 +118,7 @@ void main() {
     // risque de change, volatilité.
     expect(
       find.descendant(
-        of: find.byType(Card),
+        of: find.byType(ChunkyCard),
         matching: find.text('À découvrir'),
       ),
       findsNWidgets(4),
@@ -182,6 +182,9 @@ void main() {
 
   testWidgets('a live example on real data', (tester) async {
     await show(tester, const GlossaryScreen());
+    // The last letter, below the fold.
+    await tester.ensureVisible(find.text('Volatilité'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Volatilité'));
     await tester.pumpAndSettle();
     expect(find.text('Sur données réelles'), findsOneWidget);

@@ -13,8 +13,9 @@ import 'term_sheet.dart';
 
 /// The glossary tab (BRIEF §4.4, artboard Glossary-A): how many notions
 /// were discovered, search, « Toutes / Découvertes / À découvrir », the
-/// terms by letter in flat cards with where each stands; a term opens its
-/// sheet. One scroll, so the list keeps the room on a small phone.
+/// terms by letter with where each stands; a term opens its sheet. A
+/// collection of notions, not money, so a world screen: chunky cards (§10.1,
+/// M11-2). One scroll, so the list keeps the room on a small phone.
 class GlossaryScreen extends ConsumerWidget {
   const GlossaryScreen({super.key});
 
@@ -87,16 +88,25 @@ class GlossaryScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final (i, row) in rows.indexed) ...[
-                        if (i > 0) const Divider(height: 1),
-                        _TermRow(row),
-                      ],
-                    ],
+                ChunkyCard(
+                  padding: EdgeInsets.zero,
+                  // The rows' ink stays inside the card's rounded border.
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      AppShape.chunkyCardRadius - AppShape.chunkyBorder,
+                    ),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final (i, row) in rows.indexed) ...[
+                            if (i > 0) const Divider(height: 1),
+                            _TermRow(row),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -118,34 +128,45 @@ class GlossaryScreen extends ConsumerWidget {
   }
 }
 
-/// « n notions découvertes sur m » over a bar in the levels' yellow.
+/// « n notions découvertes sur m » in a chunky card, over a bar in the
+/// levels' yellow outlined in ink, like a lesson path's.
 class _Discovered extends StatelessWidget {
   const _Discovered({required this.discovered, required this.total});
   final int discovered;
   final int total;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        AppLocalizations.of(context).glossary_progress(discovered, total),
-        style: AppText.label.copyWith(color: AppColors.muted),
-      ),
-      const SizedBox(height: AppSpace.x2),
-      // The line above says it.
-      ExcludeSemantics(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpace.x2),
-          child: LinearProgressIndicator(
-            value: discovered / total,
-            minHeight: 10,
-            color: AppColors.progress,
-            backgroundColor: AppColors.line,
+  Widget build(BuildContext context) => ChunkyCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          AppLocalizations.of(context).glossary_progress(discovered, total),
+          style: AppText.titleSmall,
+        ),
+        const SizedBox(height: AppSpace.x3),
+        // The line above says it.
+        ExcludeSemantics(
+          child: Container(
+            height: 14,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(7),
+              border: Border.all(
+                color: AppColors.ink,
+                width: AppShape.chunkySmallBorder,
+              ),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: discovered / total,
+              child: const ColoredBox(color: AppColors.progress),
+            ),
           ),
         ),
-      ),
-    ],
+      ],
+    ),
   );
 }
 
@@ -184,7 +205,7 @@ class _TermRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: AppText.bodyStrong),
+                      Text(title, style: AppText.titleXSmall),
                       Text(
                         row.term.short.of(language),
                         style: AppText.caption.copyWith(color: AppColors.muted),
@@ -195,11 +216,12 @@ class _TermRow extends StatelessWidget {
                 const SizedBox(width: AppSpace.x3),
                 switch (row.status) {
                   TermStatus.discovered => Container(
-                    width: 26,
-                    height: 26,
-                    decoration: const BoxDecoration(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
                       color: AppColors.line,
                       shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.ink, width: 2),
                     ),
                     child: const Icon(
                       Icons.check,

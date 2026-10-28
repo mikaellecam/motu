@@ -326,6 +326,10 @@ Rules:
   chunky ✕; the one-line definition (`short`) first, the 2–3 paragraphs (`body`) behind « En savoir plus »,
   so the live example and « Tester en 30 secondes » stay within a short scroll; the live example in a chunky
   card, « Sur données réelles » over a Baloo headline; related terms as pills.
+- A world screen (decided 2026-10-28 by the user, M11-2, the canvas « The world on every tab »): the glossary is
+  a collection of notions, not money. « n notions découvertes sur m » in Baloo in a chunky card, its bar in
+  `progress` outlined in ink; each letter's terms in one chunky card, a `line` between rows, each name in Baloo;
+  the ✓ disc outlined in ink. Search and filters are the chunky controls (§10.1).
 - Live examples show their notion (decided 2026-10-24 by the user, M9-28): volatility draws each day's change
   (`dailyChanges`) as thin bars, the asset above the ETF Monde on one scale (an ordinary day's move, the rarer
   bigger ones reaching the row's edge); the worst drop marks its peak and trough on the year's line. Performance
@@ -1103,7 +1107,7 @@ data, no key).
 ### 10.1 Two component families
 
 - **World / companion ("chunky")**: map, island path, node player, wizard, companion cards, missions,
-  celebrations. White surfaces, 3 px ink border, offset shadow `0 4–6 px 0 ink`, radius 16–24, Baloo 2 titles.
+  celebrations, the glossary (M11-2). White surfaces, 3 px ink border, offset shadow `0 4–6 px 0 ink`, radius 16–24, Baloo 2 titles.
 - **Money ("flat")**: wallet, asset page, order sheet, explorer, settings, charts. White cards, 1 px line
   border, no offset shadow, radius 14–18. Numbers in Figtree with tabular figures.
 
