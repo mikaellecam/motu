@@ -273,12 +273,12 @@ final class ToyState {
   bool get returnIsPast => view.past?.rate == values['return'];
 
   ToyOutcome get outcome {
-    final years = value('years').toBigInt().toInt();
+    int whole(String control) => value(control).toBigInt().toInt();
     return switch (view.toy.formula) {
       ToyFormula.fees => FeesOutcome(
         feesToy(
           amount: value('amount'),
-          years: years,
+          years: whole('years'),
           yearlyReturn: value('return'),
           lowFee: value('fee_low'),
           highFee: value('fee_high'),
@@ -288,8 +288,22 @@ final class ToyState {
         compoundToy(
           amount: value('amount'),
           monthly: value('monthly'),
-          years: years,
+          years: whole('years'),
           yearlyReturn: value('return'),
+        ),
+      ),
+      ToyFormula.cushion => CushionOutcome(
+        cushionToy(
+          spending: value('spending'),
+          months: whole('months'),
+          saving: value('saving'),
+        ),
+      ),
+      ToyFormula.loan => LoanOutcome(
+        loanToy(
+          amount: value('amount'),
+          months: whole('months'),
+          yearlyRate: value('rate'),
         ),
       ),
     };
@@ -321,6 +335,16 @@ final class FeesOutcome extends ToyOutcome {
 final class CompoundOutcome extends ToyOutcome {
   const CompoundOutcome(this.result);
   final CompoundResult result;
+}
+
+final class CushionOutcome extends ToyOutcome {
+  const CushionOutcome(this.result);
+  final CushionResult result;
+}
+
+final class LoanOutcome extends ToyOutcome {
+  const LoanOutcome(this.result);
+  final LoanResult result;
 }
 
 @riverpod

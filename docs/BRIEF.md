@@ -258,7 +258,13 @@ Type payloads (M6-3; the player refuses a pack that breaks them):
   `explanation`, optional `return_from` `{dataset, label}`: the `return` slider starts at that dataset's
   average yearly return, shown as « ce qu'a fait {label} de {from} à {to} », and is called an assumption once
   moved (decided 2026-10-11). Fees: each year the money grows by the return, then the fee takes its share;
-  compound: each year what is there grows, then the year's twelve monthly amounts come in.
+  compound: each year what is there grows, then the year's twelve monthly amounts come in. `cushion`
+  (M12-3): `spending`, `months`, `saving`: the cushion is `months` of spending, filled from nothing by what is put
+  aside each month; the curve climbs to it, dashed, and says the month it is full, or that it never fills.
+  `loan`: `amount`, `months`, `rate` (a year): equal payments at the monthly rate `rate / 12` (a « taux
+  nominal »), each month's interest booked to the cent, the last payment settling what is left; it shows the
+  payment, what is repaid against the amount borrowed (dashed), the loan's cost and the month the amount is
+  back.
 - `decision` (M6-4): `context` (the moment as known then), `moment` (a day inside the curve), `series {dataset,
   label}`, `invested` (in the dataset's currency), `choices[{id, label, upside, downside, kept}]` (two or more;
   `kept` is the share left invested, 0 to 1), `explanation`. Before the choice the curve stops at the moment;

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fakes/bases_toys.dart';
 import '../../fakes/lesson_pack.dart';
 import '../../fakes/recording_profiles.dart';
 
@@ -47,6 +48,13 @@ Future<void> show(
       overrides: [
         contentPackProvider(actionsEtfIsland)
             .overrideWith((ref) async => decodePack(packJson())),
+        // Les bases' toys beside the lesson pack (M12-3).
+        contentPacksProvider.overrideWith(
+          (ref) async => [
+            await ref.watch(contentPackProvider(actionsEtfIsland).future),
+            decodePack(basesToysJson()),
+          ],
+        ),
         cacheStatusProvider.overrideWith((ref) => Stream.value(status)),
         profileRepositoryProvider.overrideWithValue(profiles),
         liveClockProvider.overrideWithValue(const _Fixed()),
@@ -178,6 +186,46 @@ void main() {
     expect(find.textContaining('Hypothèse$nnbsp:'), findsOneWidget);
     expect(find.text('Continuer'), findsOneWidget);
     expect(profiles.completed, [('ae.fees', null)]);
+  });
+
+  testWidgets('toy: the loan, its payment, what it costs, when it is back', (
+    tester,
+  ) async {
+    await show(tester, 'lb.loan-cost');
+    expect(find.byType(Slider), findsNWidgets(3));
+    expect(
+      find.textContaining('Le crédit coûte 1${nnbsp}013,68'),
+      findsOneWidget,
+    );
+    expect(find.text('Chaque mois'), findsOneWidget);
+    expect(find.textContaining('111,49'), findsOneWidget);
+    expect(find.textContaining('Au bout de 27 mois'), findsOneWidget);
+    expect(find.text('36 mois'), findsOneWidget);
+    expect(find.textContaining('Hypothèse'), findsNothing);
+
+    for (var i = 0; i < 3; i++) {
+      await tester.drag(find.byType(Slider).at(i), const Offset(-40, 0));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Continuer'), findsOneWidget);
+    expect(profiles.completed, [('lb.loan-cost', null)]);
+  });
+
+  testWidgets('toy: the cushion fills in so many months, or never', (
+    tester,
+  ) async {
+    await show(tester, 'lb.safety-cushion');
+    // 4 500 € at 200 € a month: 22,5, full in the 23rd.
+    expect(find.textContaining('est plein en 23 mois'), findsOneWidget);
+    expect(find.text('Ton matelas'), findsOneWidget);
+    await tester.drag(find.byType(Slider).at(2), const Offset(-2000, 0));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Sans rien mettre de côté chaque mois, le matelas ne se remplit pas.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('accessible, with text at 130 %', (tester) async {

@@ -225,6 +225,151 @@ void main() {
     });
   });
 
+  group('cushionToy', () {
+    test('months of spending, filled by what is put aside each month', () {
+      final result = cushionToy(
+        spending: d('1500'),
+        months: 3,
+        saving: d('400'),
+      );
+      expect(result.target, d('4500'));
+      // 4 500 / 400 = 11,25: full in the twelfth month, never above it.
+      expect(result.fullIn, 12);
+      expect(result.saved.length, 13);
+      expect(result.saved.first, Decimal.zero);
+      expect(result.saved[11], d('4400'));
+      expect(result.saved.last, d('4500'));
+    });
+
+    test('an exact fill', () {
+      final result = cushionToy(
+        spending: d('1000'),
+        months: 3,
+        saving: d('300'),
+      );
+      expect(result.fullIn, 10);
+      expect(result.saved.last, d('3000'));
+    });
+
+    test('nothing put aside: never full, a year drawn flat', () {
+      final result = cushionToy(
+        spending: d('1000'),
+        months: 6,
+        saving: Decimal.zero,
+      );
+      expect(result.fullIn, isNull);
+      expect(result.saved, List.filled(13, Decimal.zero));
+    });
+
+    test('no spending: a cushion of nothing, full at once', () {
+      final result = cushionToy(
+        spending: Decimal.zero,
+        months: 3,
+        saving: d('100'),
+      );
+      expect(result.target, Decimal.zero);
+      expect(result.fullIn, 0);
+      expect(result.saved, [Decimal.zero]);
+    });
+
+    test('negative inputs are refused', () {
+      expect(
+        () => cushionToy(spending: d('-1'), months: 3, saving: d('100')),
+        throwsArgumentError,
+      );
+      expect(
+        () => cushionToy(spending: d('1'), months: -1, saving: d('100')),
+        throwsArgumentError,
+      );
+      expect(
+        () => cushionToy(spending: d('1'), months: 3, saving: d('-100')),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('loanToy', () {
+    test('equal payments at the monthly rate, the last settles the rest', () {
+      final result = loanToy(
+        amount: d('3000'),
+        months: 36,
+        yearlyRate: d('0.20'),
+      );
+      expect(result.payment, d('111.49'));
+      expect(result.repaid.length, 37);
+      expect(result.repaid.first, Decimal.zero);
+      expect(result.repaid[35], d('111.49') * Decimal.fromInt(35));
+      expect(result.total, d('4013.68'));
+      expect(result.cost, d('1013.68'));
+      // 27 × 111,49 = 3 010,23: the 3 000 € are back in the 27th month.
+      expect(result.paidBackIn, 27);
+    });
+
+    test('a lower rate costs less', () {
+      final result = loanToy(
+        amount: d('3000'),
+        months: 36,
+        yearlyRate: d('0.05'),
+      );
+      expect(result.payment, d('89.91'));
+      expect(result.cost, d('236.83'));
+      expect(result.paidBackIn, 34);
+    });
+
+    test('at zero, exactly what was borrowed, the cents on the last', () {
+      final result = loanToy(
+        amount: d('1000'),
+        months: 3,
+        yearlyRate: Decimal.zero,
+      );
+      expect(result.payment, d('333.33'));
+      expect(result.repaid, [
+        Decimal.zero,
+        d('333.33'),
+        d('666.66'),
+        d('1000'),
+      ]);
+      expect(result.cost, Decimal.zero);
+      expect(result.paidBackIn, 3);
+    });
+
+    test('one month: the amount and a month of interest', () {
+      final result = loanToy(
+        amount: d('1000'),
+        months: 1,
+        yearlyRate: d('0.12'),
+      );
+      expect(result.total, d('1010'));
+      expect(result.paidBackIn, 1);
+    });
+
+    test('nothing borrowed costs nothing', () {
+      final result = loanToy(
+        amount: Decimal.zero,
+        months: 12,
+        yearlyRate: d('0.2'),
+      );
+      expect(result.payment, Decimal.zero);
+      expect(result.cost, Decimal.zero);
+      expect(result.paidBackIn, 0);
+    });
+
+    test('negative inputs or no month are refused', () {
+      expect(
+        () => loanToy(amount: d('-1'), months: 12, yearlyRate: d('0.1')),
+        throwsArgumentError,
+      );
+      expect(
+        () => loanToy(amount: d('1'), months: 0, yearlyRate: d('0.1')),
+        throwsArgumentError,
+      );
+      expect(
+        () => loanToy(amount: d('1'), months: 12, yearlyRate: d('-0.1')),
+        throwsArgumentError,
+      );
+    });
+  });
+
   test('a toy completes once every control was moved', () {
     const controls = ['amount', 'years', 'return'];
     expect(everyControlTouched(controls, {'amount', 'years'}), isFalse);
