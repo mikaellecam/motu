@@ -19,6 +19,7 @@ Future<void> show(
   WidgetTester tester,
   String nodeId, {
   Set<String> completed = const {},
+  String go = 'explorer',
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -29,7 +30,7 @@ Future<void> show(
     ProviderScope(
       overrides: [
         contentPackProvider(actionsEtfIsland)
-            .overrideWith((ref) async => decodePack(packJson())),
+            .overrideWith((ref) async => decodePack(packJson(missionGo: go))),
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => decodePack(emptyBasesJson())),
         completedNodesProvider.overrideWith((ref) => Stream.value(completed)),
@@ -49,6 +50,10 @@ Future<void> show(
               path: '/explore',
               builder: (_, s) =>
                   Text('explore ${s.uri.queryParameters['wallet']}'),
+            ),
+            GoRoute(
+              path: '/wallet/:walletId',
+              builder: (_, s) => Text('wallet ${s.pathParameters['walletId']}'),
             ),
             GoRoute(
               path: '/wallets/new',
@@ -77,6 +82,19 @@ void main() {
     await tester.tap(find.text("Ouvrir l'Explorer"));
     await tester.pumpAndSettle();
     expect(find.text('explore live'), findsOneWidget);
+  });
+
+  testWidgets('a portfolio mission opens it above, and back returns (M12-9)', (
+    tester,
+  ) async {
+    await show(tester, 'ae.mission', go: 'wallet');
+    await tester.tap(find.text('Voir mon portefeuille'));
+    await tester.pumpAndSettle();
+    expect(find.text('wallet live'), findsOneWidget);
+    // Android's back button.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Ton premier ETF'), findsOneWidget);
   });
 
   testWidgets('a mission done says so, then continues', (tester) async {
