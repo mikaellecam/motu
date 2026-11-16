@@ -170,11 +170,18 @@ Rules:
   - Actions & ETF after `lb.cushion-2020`, « Février 2020 : et ton matelas ? » (Les bases' lesson 5).
   - Recorded for later islands: Immobilier after `lb.loan-cost`; Trading after `lb.spot-the-scam` and
     `ae.checkpoint-1`; Crypto after `lb.spot-the-scam` and `ae.risk-ladder`.
-- Les bases grows with its lessons only, never with the wallet (M12-6, canvas « Les bases », board 3): from a
-  sand bank in its shape, each lesson done adds a piece (`lesBasesPieces`): 1 the house, 2 to 6 the
-  lighthouse's five courses in white and coral, 7 its gallery, 8 its lantern, 9 the light, gold, with two
-  beams. Its grass and three trees green as Actions & ETF's. Its pill is chunky with « {n}/9 »; its path
-  screen draws it as wide as Actions & ETF's. Built at once on the map (no easing yet).
+- Les bases is the mainland's port (decided 2026-11-16, M13-3; canvas « Motu — Lesson islands », page « Les bases »).
+  It is no island: the mainland's coast, inland only grass, a paved quayside with its railway, the sea wall in
+  courses, and its harbour. From the start an old wooden jetty and two rowboats; each lesson builds its part,
+  keyed by node id (`portParts`, `portBuilt`): 1 La digue (armour rocks either side of a crown wall), 2 L'échelle
+  de marée, 3 L'écluse, 4 L'entrepôt, 5 Le quai des ferries and its ferry, 6 La grue, its quay and the container
+  ship, 7 La capitainerie, 8 La vigie, 9 Le phare, lit at the breakwater's end with the checkpoint (names are
+  drafts). The sea lines leave the ferry quay round the lighthouse, one per island it opens (`portLines`):
+  Actions & ETF's once its lessons are open, each island to come's once the lessons it waits for are done (the
+  gates above, `islandRequires`). Whoever skips Les bases at onboarding finds the port built through its ferry
+  quay (decided 2026-11-16); its lessons keep their real state. The island path's header draws the port; the map
+  keeps M12-6's Les bases island (a sand bank, a house and a lighthouse growing a course a lesson) until M13-6
+  removes the map.
 - Two kinds of island, never mixed (decided 2026-11-16, M13-1). The map's islands are the same for everyone
   and change with their lessons only: no wallet building stands on them, on the map or over an island's path.
   A wallet's island (the live wallet's, every trip's) shows only in the money screens (the wallets list §4.7,

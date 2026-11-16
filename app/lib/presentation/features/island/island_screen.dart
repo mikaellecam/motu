@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../application/learning/content.dart';
 import '../../../application/learning/island_path.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
@@ -13,6 +14,7 @@ import '../../../core/widgets/chunky.dart';
 import '../../../domain/learning/node.dart';
 import '../../../domain/learning/path.dart';
 import '../map/archipelago.dart';
+import '../map/port.dart';
 import '../node/node_screen.dart';
 import 'islet_path.dart';
 
@@ -122,7 +124,10 @@ class _Path extends ConsumerWidget {
           height: island == null ? _backRoom : 240,
           child: Stack(
             children: [
-              if (island != null)
+              if (islandId == lesBasesIsland)
+                // Les bases is the mainland's port (M13-3).
+                const Positioned.fill(child: _Port())
+              else if (island != null)
                 Positioned.fill(
                   // Every island as wide as Actions & ETF's (M12-6).
                   child: Transform.scale(
@@ -138,9 +143,8 @@ class _Path extends ConsumerWidget {
                             if (n.state == NodeState.done) n.node.id,
                         },
                         ferry: path.open,
-                        // Grown by the lessons below it (M9-19, M12-6).
+                        // Grown by the lessons below it (M9-19).
                         grown: grown,
-                        grownBases: grown,
                       ),
                     ),
                   ),
@@ -518,4 +522,24 @@ class _Back extends StatelessWidget {
     label: MaterialLocalizations.of(context).backButtonTooltip,
     onPressed: () => Navigator.maybePop(context),
   );
+}
+
+/// Les bases' port over its path, as its lessons and the questionnaire built
+/// it (M13-3); the sea, bare, while it loads.
+class _Port extends ConsumerWidget {
+  const _Port();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final port = ref.watch(portViewProvider).value;
+    if (port == null) return const SizedBox.shrink();
+    return ExcludeSemantics(
+      child: CustomPaint(
+        painter: PortPainter(
+          built: portBuilt(port.completed, skipped: port.skipped),
+          lines: port.lines,
+        ),
+      ),
+    );
+  }
 }

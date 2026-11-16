@@ -312,6 +312,54 @@ abstract final class DistrictPalette {
   static const lamp = AppColors.progress;
 }
 
+/// Les bases' port on the mainland (M13-3): its quays and breakwater stone,
+/// its ships, its railway.
+abstract final class PortPalette {
+  static const quay = (
+    top: Color(0xFFDDD8CB),
+    left: Color(0xFF9C9488),
+    right: Color(0xFFB8B0A3),
+  );
+  static const rock = (
+    top: Color(0xFFC9CDD2),
+    left: Color(0xFF7E8691),
+    right: Color(0xFF9DA4AE),
+  );
+  static const rockLight = (
+    top: Color(0xFFE1E4E7),
+    left: Color(0xFF959DA7),
+    right: Color(0xFFB4BAC2),
+  );
+  static const cargoHull = (
+    top: Color(0xFFFF7D5C),
+    left: Color(0xFFA9402A),
+    right: Color(0xFFC94E33),
+  );
+  static const iron = (
+    top: Color(0xFF6B7690),
+    left: Color(0xFF2E3550),
+    right: Color(0xFF454E6B),
+  );
+  static const blueRoof = (
+    top: Color(0xFF5B82F2),
+    left: Color(0xFF3F63D1),
+    right: Color(0xFFDCE6FF),
+  );
+
+  /// The water a lock holds at its level, lighter than the sea.
+  static const lockWater = Color(0xFF6FC6DE);
+  static const fender = Color(0xFF2E3550);
+  static const loadingDoor = Color(0xFF5A3324);
+  static const rail = Color(0xFF6B7385);
+  static const sleeper = Color(0xFFB57B45);
+
+  /// The joints between a wall's stone courses, zoomed in.
+  static const course = Color(0x401D2340);
+
+  /// A sea line out of the harbour, dashed white.
+  static const seaLine = Color(0xE6FFFFFF);
+}
+
 /// 4-pt spacing scale and fixed sizes (BRIEF §10.4).
 abstract final class AppSpace {
   static const x1 = 4.0;

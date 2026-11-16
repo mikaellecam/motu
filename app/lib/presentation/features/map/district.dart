@@ -16,7 +16,7 @@ final class DistrictBuilding {
 
   final String nodeId;
   final double x, y;
-  final void Function(_Ink ink, double x, double y, {required bool grown})
+  final void Function(IsoInk ink, double x, double y, {required bool grown})
   _draw;
 }
 
@@ -70,7 +70,7 @@ void paintDistrict(
   required List<bool> grown,
   required bool ferry,
 }) {
-  final ink = _Ink(pen, p);
+  final ink = IsoInk(pen, p);
   _ground(ink, tiles);
   // Back to front: what stands further back is painted first.
   final things = <(double, VoidCallback)>[
@@ -88,9 +88,10 @@ void paintDistrict(
   }
 }
 
-/// A pen and a projection, with the shapes the district is built from.
-final class _Ink {
-  _Ink(this.pen, this.p);
+/// A pen and a projection, with the shapes the district and the port are
+/// built from.
+final class IsoInk {
+  IsoInk(this.pen, this.p);
 
   final BlockPen pen;
   final IsoProjection p;
@@ -248,7 +249,7 @@ Path _diamond(
 /// Tile by tile, back to front: a stone sea wall over the dirt where no tile
 /// stands in front, then the top: the promenade, or a street block (asphalt,
 /// sidewalk, its lot).
-void _ground(_Ink ink, List<String> rows) {
+void _ground(IsoInk ink, List<String> rows) {
   final p = ink.p, pen = ink.pen;
   final det = ink.detailed;
   bool land(int i, int j) =>
@@ -370,7 +371,7 @@ void _ground(_Ink ink, List<String> rows) {
 // ---------------------------------------------------------------- around
 
 /// Actions & ETF's ferry pier, on its mainland side, the ferry at its end.
-void _pier(_Ink ink, {required bool ferry}) {
+void _pier(IsoInk ink, {required bool ferry}) {
   for (final a in const [-0.8, -0.3]) {
     ink.box(a, 5.58, 0.06, 0.06, 0.5, DistrictPalette.wood, z: -0.55);
   }
@@ -405,7 +406,7 @@ void _pier(_Ink ink, {required bool ferry}) {
 
 /// The blocks that are no lesson's: a row of brownstones, a brick mid-rise
 /// and its water tower, a limestone mid-rise.
-void _filler(_Ink ink, double x, double y, int kind) {
+void _filler(IsoInk ink, double x, double y, int kind) {
   switch (kind % 3) {
     case 0:
       for (var k = 0; k < 3; k++) {
@@ -450,7 +451,7 @@ void _filler(_Ink ink, double x, double y, int kind) {
 
 double _grow(bool grown) => grown ? 1 : _plain;
 
-void _bank(_Ink ink, double x, double y, {required bool grown}) {
+void _bank(IsoInk ink, double x, double y, {required bool grown}) {
   const s = DistrictPalette.limestone;
   if (!grown) {
     ink
@@ -483,7 +484,7 @@ void _bank(_Ink ink, double x, double y, {required bool grown}) {
     ..gable(x, y, 0.7, 0.7, 0.24, s, z: 0.9);
 }
 
-void _tollBridge(_Ink ink, double x, double y, {required bool grown}) {
+void _tollBridge(IsoInk ink, double x, double y, {required bool grown}) {
   final p = ink.p;
   if (!grown) {
     // A plank footbridge on piles.
@@ -517,7 +518,7 @@ void _tollBridge(_Ink ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _store(_Ink ink, double x, double y, {required bool grown}) {
+void _store(IsoInk ink, double x, double y, {required bool grown}) {
   final top = ink.setbacks(
     x,
     y,
@@ -544,7 +545,7 @@ void _store(_Ink ink, double x, double y, {required bool grown}) {
   ink.box(x, y, 0.5, 0.06, 0.16, DistrictPalette.white, z: top);
 }
 
-void _loneTower(_Ink ink, double x, double y, {required bool grown}) {
+void _loneTower(IsoInk ink, double x, double y, {required bool grown}) {
   final top = ink.setbacks(
     x,
     y,
@@ -562,7 +563,7 @@ void _loneTower(_Ink ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _wharf(_Ink ink, double x, double y, {required bool grown}) {
+void _wharf(IsoInk ink, double x, double y, {required bool grown}) {
   final p = ink.p;
   for (final dx in grown ? const [0.6, 1.1, 1.5] : const [0.6]) {
     for (final dy in const [-0.18, 0.18]) {
@@ -579,7 +580,7 @@ void _wharf(_Ink ink, double x, double y, {required bool grown}) {
     ..gable(x + 0.95, y, 0.6, 0.34, 0.14, DistrictPalette.slate, z: 0.33);
 }
 
-void _fourTowers(_Ink ink, double x, double y, {required bool grown}) {
+void _fourTowers(IsoInk ink, double x, double y, {required bool grown}) {
   for (final (i, (s, h)) in [
     (MapPalette.buildings[3].$1, 0.7),
     (MapPalette.buildings[0].$1, 1.3),
@@ -597,7 +598,7 @@ void _fourTowers(_Ink ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _square(_Ink ink, double x, double y, {required bool grown}) {
+void _square(IsoInk ink, double x, double y, {required bool grown}) {
   final i = x.floor().toDouble(), j = y.floor().toDouble();
   ink.flat([
     ink.p.project(i + 0.1, j + 0.1),
@@ -616,7 +617,7 @@ void _square(_Ink ink, double x, double y, {required bool grown}) {
     ..box(x, y, 0.28, 0.28, 0.24, MapPalette.leaves, z: 1.23);
 }
 
-void _harbour(_Ink ink, double x, double y, {required bool grown}) {
+void _harbour(IsoInk ink, double x, double y, {required bool grown}) {
   final colours = [for (final (s, _) in MapPalette.buildings.take(3)) s];
   for (final (k, s) in colours.indexed) {
     if (!grown && k > 0) break;
@@ -637,7 +638,7 @@ void _harbour(_Ink ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _exchange(_Ink ink, double x, double y, {required bool grown}) {
+void _exchange(IsoInk ink, double x, double y, {required bool grown}) {
   final top = ink.setbacks(
     x,
     y,
@@ -668,7 +669,7 @@ void _exchange(_Ink ink, double x, double y, {required bool grown}) {
     ..box(x, y, 0.3, 0.3, 0.2, DistrictPalette.slate, z: top);
 }
 
-void _roofGarden(_Ink ink, double x, double y, {required bool grown}) {
+void _roofGarden(IsoInk ink, double x, double y, {required bool grown}) {
   final top = ink.setbacks(
     x,
     y,
@@ -684,7 +685,7 @@ void _roofGarden(_Ink ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _clockTower(_Ink ink, double x, double y, {required bool grown}) {
+void _clockTower(IsoInk ink, double x, double y, {required bool grown}) {
   final top = ink.setbacks(
     x,
     y,
@@ -708,7 +709,7 @@ void _clockTower(_Ink ink, double x, double y, {required bool grown}) {
   ink.pyramid(x, y, 0.46, 0.7, DistrictPalette.copper, z: top);
 }
 
-void _spire(_Ink ink, double x, double y, {required bool grown}) {
+void _spire(IsoInk ink, double x, double y, {required bool grown}) {
   final top = ink.setbacks(
     x,
     y,

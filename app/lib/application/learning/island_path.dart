@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/learning/content.dart';
 import '../../domain/learning/path.dart';
+import '../../domain/learning/profile_rules.dart';
 import '../providers.dart';
 import 'content.dart';
 
@@ -77,5 +78,32 @@ Future<IslandPathView> islandPath(Ref ref, String islandId) async {
               for (final n in p.nodes)
                 if (n.id == waiting) n.title,
           ].firstOrNull,
+  );
+}
+
+/// Les bases' port (M13-3): the lessons done, whether the questionnaire
+/// skipped Les bases (its port then stands through its ferry quay), and the
+/// sea lines open.
+final class PortView {
+  const PortView({
+    required this.completed,
+    required this.skipped,
+    required this.lines,
+  });
+  final Set<String> completed;
+  final bool skipped;
+  final Set<String> lines;
+}
+
+@riverpod
+Future<PortView> portView(Ref ref) async {
+  final completed = ref.watch(completedNodesProvider.future);
+  final actionsEtf = ref.watch(islandPathProvider(actionsEtfIsland).future);
+  final profile = await ref.watch(profileRepositoryProvider).load();
+  final done = await completed;
+  return PortView(
+    completed: done,
+    skipped: profile != null && skipsTheBasics(profile),
+    lines: portLines(done, actionsEtfOpen: (await actionsEtf).open),
   );
 }
