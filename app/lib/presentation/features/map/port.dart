@@ -27,18 +27,18 @@ final class PortPart {
   final double top;
 
   ({double x, double y, double z}) anchor({required bool built}) =>
-      (x: x, y: y, z: built ? top : 0.2);
+      (x: x, y: y, z: built ? top : 0);
   final void Function(IsoInk ink, double x, double y) _draw;
 }
 
 /// The nine, in the order of Les bases' lessons (BRIEF §4.3).
 const portParts = [
-  PortPart('lb.safety-cushion', 4.0, 3.5, _breakwater, top: 0.6),
-  PortPart('lb.cash-inflation', 3.0, 0.9, _tideGauge, top: 1.4),
-  PortPart('lb.livret-inflation', 0.9, 7.0, _lock, top: 0.5),
+  PortPart('lb.safety-cushion', 4.0, 3.5, _breakwater, top: 0.15),
+  PortPart('lb.cash-inflation', 3.0, 0.9, _tideGauge, top: 1.05),
+  PortPart('lb.livret-inflation', 0.9, 7.0, _lock, top: 0.05),
   PortPart('lb.mission-livret', -1.4, 4.3, _warehouse, top: 1.3),
   PortPart('lb.cushion-2020', 1.2, 1.5, _ferryQuay, top: 0.9),
-  PortPart('lb.loan-cost', 1.4, 4.2, _crane, top: 2.0),
+  PortPart('lb.loan-cost', 1.4, 4.2, _crane, top: 1.65),
   PortPart('lb.save-or-repay', -1.0, 1.6, _harbourOffice, top: 2.0),
   PortPart('lb.spot-the-scam', -0.9, -0.9, _watchtower, top: 2.2),
   PortPart('lb.checkpoint-1', 4.0, 0.0, _lighthouse, top: 4.8),
@@ -56,6 +56,10 @@ List<bool> portBuilt(Set<String> done, {required bool skipped}) => [
   for (final (i, part) in portParts.indexed)
     done.contains(part.nodeId) || (skipped && i < _skippedThrough),
 ];
+
+/// Whether the ferry quay stands (Les bases' fifth part): the sea lines leave
+/// from it, and the sea chart opens once one is open (M13-7).
+bool quayStands(List<bool> built) => built.length > 4 && built[4];
 
 /// The islands whose sea line leaves the harbour, in the order they are
 /// drawn from the harbour mouth out.
@@ -75,20 +79,27 @@ void paintPort(
   Size size, {
   required List<bool> built,
   required Set<String> lines,
+  Set<int> ghosts = const {},
 }) {
   final ink = IsoInk(pen, p);
+  final ghost = IsoInk(GhostPen(pen.canvas), p);
   _mainland(ink);
   final things = <(double, VoidCallback)>[..._oldJetty(ink)];
   for (final (i, part) in portParts.indexed) {
     if (i < built.length && built[i]) {
       things.add((part.x + part.y, () => part._draw(ink, part.x, part.y)));
+    } else if (ghosts.contains(i)) {
+      // Unlocked, not done: what it will build (M13-7).
+      things.add((part.x + part.y, () => part._draw(ghost, part.x, part.y)));
     }
   }
   things.sort((a, b) => a.$1.compareTo(b.$1));
   for (final (_, draw) in things) {
     draw();
   }
-  // From the ferry quay, round the lighthouse, out to the open sea.
+  // From the ferry quay, round the lighthouse, out to the open sea: none
+  // before the quay stands (M13-7).
+  if (!quayStands(built)) return;
   final from = p.project(2.4, 1.6), round = p.project(5.2, -0.4);
   for (final (k, island) in _lines.indexed) {
     if (!lines.contains(island)) continue;

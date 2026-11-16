@@ -37,8 +37,13 @@ final class IslandWorld {
 }
 
 /// Actions & ETF's district, 120 px a tile, its buildings at [grown] (0
-/// plain, 1 grown, eased between), its ferry at its pier when [ferry].
-IslandWorld districtWorld(List<double> grown, {required bool ferry}) {
+/// plain, 1 grown, eased between), the [ghosts] of those unlocked, not done
+/// (M13-7), its ferry at its pier when [ferry].
+IslandWorld districtWorld(
+  List<double> grown, {
+  required bool ferry,
+  Set<int> ghosts = const {},
+}) {
   const tile = 120.0, unit = tile * 18 / 34;
   // Room for the ferry left, the island's right corner, the spire's crown
   // above and the sea wall below.
@@ -54,11 +59,9 @@ IslandWorld districtWorld(List<double> grown, {required bool ferry}) {
     ferry: ferry ? p.project(-2.1, 5.58, 0.1) : null,
     anchors: [
       for (final (i, b) in districtBuildings.indexed)
-        if (b.anchor(i < grown.length ? grown[i] : 0) case (
-          :final x,
-          :final y,
-          :final z,
-        ))
+        // A ghost's marker on its top (M13-7).
+        if (b.anchor(ghosts.contains(i) ? 1 : (i < grown.length ? grown[i] : 0))
+            case (:final x, :final y, :final z))
           p.project(x, y, z),
     ],
     paint: (canvas, canvasSize) {
@@ -70,13 +73,19 @@ IslandWorld districtWorld(List<double> grown, {required bool ferry}) {
         tiles,
         grown: grown,
         ferry: ferry,
+        ghosts: ghosts,
       );
     },
   );
 }
 
-/// Les bases' port, 100 px a tile, its parts [built], its sea [lines] open.
-IslandWorld portWorld(List<bool> built, {required Set<String> lines}) {
+/// Les bases' port, 100 px a tile, its parts [built], the [ghosts] of those
+/// unlocked, not done (M13-7), its sea [lines] open.
+IslandWorld portWorld(
+  List<bool> built, {
+  required Set<String> lines,
+  Set<int> ghosts = const {},
+}) {
   const tile = 100.0, unit = tile * 14 / 30;
   const origin = Offset(tile / 2 * 13.6, 425);
   const size = Size(tile / 2 * 20.8, 870);
@@ -88,11 +97,10 @@ IslandWorld portWorld(List<bool> built, {required Set<String> lines}) {
     ferry: built.length > 4 && built[4] ? p.project(1.15, 2.3, 0.1) : null,
     anchors: [
       for (final (i, part) in portParts.indexed)
-        if (part.anchor(built: i < built.length && built[i]) case (
-          :final x,
-          :final y,
-          :final z,
-        ))
+        if (part.anchor(
+              built: (i < built.length && built[i]) || ghosts.contains(i),
+            )
+            case (:final x, :final y, :final z))
           p.project(x, y, z),
     ],
     paint: (canvas, canvasSize) {
@@ -104,6 +112,7 @@ IslandWorld portWorld(List<bool> built, {required Set<String> lines}) {
         canvasSize,
         built: built,
         lines: lines,
+        ghosts: ghosts,
       );
     },
   );
@@ -132,7 +141,8 @@ enum MarkerKind {
   /// The lesson to do: a gold pin that pulses.
   current,
 
-  /// Any other: a small white dot.
+  /// Another lesson unlocked (skipped at onboarding, after a pending
+  /// mission): a small white dot. A locked one has no marker (M13-7).
   later,
 }
 
@@ -168,7 +178,9 @@ class IslandScene extends StatefulWidget {
   final bool arriving;
 
   final IslandWorld world;
-  final List<Marker> markers;
+
+  /// Each lesson's marker; none for a locked one (M13-7).
+  final List<Marker?> markers;
   final ValueChanged<int> onMarker;
 
   /// The marker the view opens on.
@@ -223,7 +235,7 @@ class IslandSceneState extends State<IslandScene>
 
   /// The gold pin pulses while there is one, unless animations are off.
   void _syncPulse() {
-    final pin = widget.markers.any((m) => m.kind == MarkerKind.current);
+    final pin = widget.markers.any((m) => m?.kind == MarkerKind.current);
     if (!pin || MediaQuery.disableAnimationsOf(context)) {
       _pulse
         ..stop()
@@ -349,7 +361,8 @@ class IslandSceneState extends State<IslandScene>
                   ))
                     _ferry(ferry, onFerry),
                   for (final (i, m) in widget.markers.indexed)
-                    if (i < widget.world.anchors.length) _place(i, m),
+                    if (m != null && i < widget.world.anchors.length)
+                      _place(i, m),
                 ],
               ),
             ),

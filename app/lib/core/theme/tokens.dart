@@ -308,6 +308,11 @@ abstract final class DistrictPalette {
   static const glassWindow = Color(0xFFBCD0FF);
   static const darkWindow = Color(0xFF4A5670);
 
+  /// What a lesson unlocked but not done will build (M13-7): its edges and how
+  /// much of its colours show through.
+  static const ghostEdge = Color(0x731D2340);
+  static const ghostAlpha = 0.35;
+
   /// The lamps on the pier, and the band of the exchange tower.
   static const lamp = AppColors.progress;
 }

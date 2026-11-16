@@ -292,9 +292,13 @@ Layout: Actions & ETF's district (§4.2, M13-2) or Les bases' port (M13-3) fills
 100 px a tile), under a bar with the island's name, « {done} sur {total} terminées » (closed: « S'ouvre après
 « {leçon} » »), the « {done}/{total} » pill and the settings gear (a back button while the map pushes it).
 Drag pans it and pinch zooms it, within bounds: it never leaves the screen, zooming out stops when it fits whole,
-zooming in at full detail (the map's M12-12 rule does not apply here). One marker per lesson on its building's
-top (on its part's spot at the port, until built), the same size at any zoom, a 44 × 44 target: done, a navy disc
-with a check; the lesson to do, a gold pin whose ring pulses; any other, a small white dot. No number on the
+zooming in at full detail (the map's M12-12 rule does not apply here). One marker per lesson unlocked, the same
+size at any zoom, a 44 × 44 target: done, a navy disc with a check on its building; the lesson to do, a gold pin
+whose ring pulses; another open one (skipped at onboarding, after a pending mission), a small white dot. A locked
+lesson has no marker, and a marker never stands over nothing (decided 2026-11-17, M13-7): a lesson unlocked but
+not done shows the ghost of what it builds, see-through with faint edges (at the port its part on its empty spot;
+in the district its grown building over the plain one), the marker on the ghost's top. No sea line leaves the
+port before its ferry quay stands, and « Naviguer » (and the ferry) shows only once a line is open (M13-7). No number on the
 island. Screen readers hear « {n}. {titre}, {bâtiment}, {état} ». Under the scene, the selected lesson's card
 (the lesson to do by default): its number, « {bâtiment} · {état} », its title, its type, and « Commencer »,
 « Revoir » (done) or, locked, « S'ouvre après « {la leçon d'avant, ou celle qui ouvre l'île} » » disabled. A

@@ -4,6 +4,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/core/theme/tokens.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:finance_companion/presentation/features/map/iso.dart';
 import 'package:finance_companion/presentation/features/map/port.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,14 +104,21 @@ void main() {
       required double tile,
       required List<bool> built,
       Set<String> lines = const {},
+      Set<int> ghosts = const {},
     }) async {
       final size = Size(tile * 12, tile * 9);
       final recorder = ui.PictureRecorder();
-      PortPainter(
+      final p0 = IsoProjection(tile: tile, unit: tile * 14 / 30);
+      paintPort(
+        BlockPen(Canvas(recorder), AppColors.ink, 1.2),
+        p0.shifted(
+          Offset(size.width * 0.55, size.height * 0.2) - p0.project(1.4, 3.4),
+        ),
+        size,
         built: built,
         lines: lines,
-        tile: tile,
-      ).paint(Canvas(recorder), size);
+        ghosts: ghosts,
+      );
       final image = await recorder.endRecording().toImage(
         size.width.round(),
         size.height.round(),
@@ -132,12 +142,47 @@ void main() {
       });
     }
 
-    testWidgets('an open line leaves the harbour', (tester) async {
+    testWidgets('an open line leaves the harbour, from its ferry quay only '
+        '(M13-7)', (tester) async {
       await tester.runAsync(() async {
-        final none = await paint(tile: 30, built: []);
-        final one = await paint(tile: 30, built: [], lines: {actionsEtfIsland});
+        final quay = [for (var i = 0; i < 9; i++) i == 4];
+        final none = await paint(tile: 30, built: quay);
+        final one = await paint(
+          tile: 30,
+          built: quay,
+          lines: {actionsEtfIsland},
+        );
         expect(sameBytes(none, one), isFalse);
+        // No quay: no line, whatever is open.
+        final bare = await paint(tile: 30, built: []);
+        final noQuay = await paint(
+          tile: 30,
+          built: [],
+          lines: {actionsEtfIsland},
+        );
+        expect(sameBytes(bare, noQuay), isTrue);
       });
+    });
+
+    testWidgets('a part unlocked, not built, shows as its ghost (M13-7)', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        final bare = await paint(tile: 30, built: []);
+        final ghost = await paint(tile: 30, built: [], ghosts: {5});
+        final built = await paint(
+          tile: 30,
+          built: [for (var i = 0; i < 9; i++) i == 5],
+        );
+        expect(sameBytes(bare, ghost), isFalse);
+        expect(sameBytes(built, ghost), isFalse);
+      });
+    });
+
+    test('the quay stands with Les bases\' fifth part', () {
+      expect(quayStands(const []), isFalse);
+      expect(quayStands([for (var i = 0; i < 9; i++) i == 4]), isTrue);
+      expect(quayStands([for (var i = 0; i < 9; i++) i != 4]), isFalse);
     });
 
     test('repaints when what stands changes', () {
