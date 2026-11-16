@@ -16,9 +16,14 @@ final class IslandWorld {
     required this.anchors,
     required this.paint,
     required this.grown,
+    this.ferry,
   });
 
   final Size size;
+
+  /// Its ferry at its pier, once its line is open: touching it opens the sea
+  /// chart, and a crossing lands there (M13-5).
+  final Offset? ferry;
 
   /// How far each lesson's building or part stands, 0 to 1, in its lessons'
   /// order.
@@ -46,6 +51,7 @@ IslandWorld districtWorld(List<double> grown, {required bool ferry}) {
   return IslandWorld(
     size: size,
     grown: grown,
+    ferry: ferry ? p.project(-2.1, 5.58, 0.1) : null,
     anchors: [
       for (final (i, b) in districtBuildings.indexed)
         if (b.anchor(i < grown.length ? grown[i] : 0) case (
@@ -78,6 +84,8 @@ IslandWorld portWorld(List<bool> built, {required Set<String> lines}) {
   return IslandWorld(
     size: size,
     grown: [for (final b in built) b ? 1.0 : 0.0],
+    // Its ferry quay is Les bases' fifth part.
+    ferry: built.length > 4 && built[4] ? p.project(1.15, 2.3, 0.1) : null,
     anchors: [
       for (final (i, part) in portParts.indexed)
         if (part.anchor(built: i < built.length && built[i]) case (
@@ -148,7 +156,16 @@ class IslandScene extends StatefulWidget {
     required this.markers,
     required this.onMarker,
     this.focus,
+    this.onFerry,
+    this.arriving = false,
   });
+
+  /// Touching the ferry: the sea chart (M13-5).
+  final VoidCallback? onFerry;
+
+  /// Just landed from the sea: the view opens on the pier, then glides to
+  /// [focus].
+  final bool arriving;
 
   final IslandWorld world;
   final List<Marker> markers;
@@ -228,10 +245,13 @@ class IslandSceneState extends State<IslandScene>
 
   /// The view at [scale] with marker [index] where [IslandScene.framed]
   /// says, kept within bounds.
-  Matrix4 _framing(int index, double scale) {
+  Matrix4 _framing(int index, double scale) =>
+      _framingPoint(widget.world.anchors[index], scale);
+
+  Matrix4 _framingPoint(Offset worldPoint, double scale) {
     final viewport = _viewport!;
     final s = scale.clamp(_minScale, 1.0).toDouble();
-    final point = widget.world.anchors[index] + _offset;
+    final point = worldPoint + _offset;
     final target = IslandScene.framed.alongSize(viewport);
     final double x = (target.dx - point.dx * s).clamp(
       math.min(0.0, viewport.width - _canvas.width * s),
@@ -284,9 +304,18 @@ class IslandSceneState extends State<IslandScene>
           final first = _viewport == null;
           _viewport = viewport;
           if (first) {
-            _view.value = widget.focus == null
+            final pier = widget.world.ferry;
+            final focus = widget.focus;
+            _view.value = widget.arriving && pier != null
+                ? _framingPoint(pier, IslandScene.closeUp)
+                : focus == null
                 ? _framing(0, _minScale)
-                : _framing(widget.focus!, IslandScene.closeUp);
+                : _framing(focus, IslandScene.closeUp);
+            if (widget.arriving && pier != null && focus != null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) glideTo(focus);
+              });
+            }
           }
         }
         return Stack(
@@ -314,6 +343,11 @@ class IslandSceneState extends State<IslandScene>
               builder: (context, _) => Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
+                  if ((widget.world.ferry, widget.onFerry) case (
+                    final ferry?,
+                    final onFerry?,
+                  ))
+                    _ferry(ferry, onFerry),
                   for (final (i, m) in widget.markers.indexed)
                     if (i < widget.world.anchors.length) _place(i, m),
                 ],
@@ -322,6 +356,25 @@ class IslandSceneState extends State<IslandScene>
           ],
         );
       },
+    );
+  }
+
+  /// The ferry's touch target; the « Naviguer » button speaks for it.
+  Widget _ferry(Offset ferry, VoidCallback onTap) {
+    final at = MatrixUtils.transformPoint(_view.value, ferry + _offset);
+    const size = 64.0;
+    return Positioned(
+      left: at.dx - size / 2,
+      top: at.dy - size / 2,
+      width: size,
+      height: size,
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          key: const ValueKey('ferry'),
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+        ),
+      ),
     );
   }
 

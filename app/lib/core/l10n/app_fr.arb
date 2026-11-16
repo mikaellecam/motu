@@ -2705,5 +2705,43 @@
   "piece_lb_loan_cost": "La grue",
   "piece_lb_save_or_repay": "La capitainerie",
   "piece_lb_spot_the_scam": "La vigie",
-  "piece_lb_checkpoint_1": "Le phare"
+  "piece_lb_checkpoint_1": "Le phare",
+  "chart_title": "La carte marine",
+  "chart_hint": "Touche une \u00eele pour y aller.",
+  "chart_sail": "Naviguer",
+  "chart_close": "Fermer la carte",
+  "chart_here": "Tu es ici",
+  "chart_cartouche": "Archipel Motu",
+  "chart_scale": "5 milles",
+  "chart_port": "Le port",
+  "chart_board": "Embarquer",
+  "chart_home": "Rentrer au port",
+  "chart_you_are_there": "Tu y es",
+  "chart_next": "Ta prochaine le\u00e7on : {number} \u00b7 {title}",
+  "@chart_next": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "chart_all_done": "Toutes ses le\u00e7ons sont faites.",
+  "chart_soon": "Bient\u00f4t",
+  "chart_soon_line": "La ligne est ouverte. L'\u00eele n'est pas encore \u00e9crite.",
+  "chart_closed": "Ferm\u00e9e",
+  "chart_opens_after_two": "S'ouvre apr\u00e8s \u00ab {first} \u00bb et \u00ab {second} \u00bb",
+  "@chart_opens_after_two": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "chart_sailing": "Travers\u00e9e\u2026"
 }

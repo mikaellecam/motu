@@ -16,6 +16,7 @@ import '../map/district.dart';
 import '../map/port.dart';
 import '../node/node_screen.dart';
 import 'island_scene.dart';
+import 'sea_chart.dart';
 
 /// An island up close (BRIEF §4.3, M13-4): Actions & ETF's district or Les
 /// bases' port fills the screen, a marker on each lesson's building, the
@@ -23,9 +24,16 @@ import 'island_scene.dart';
 /// lesson done while away grows its building on the way back, then the view
 /// glides to the next lesson.
 class IslandScreen extends ConsumerWidget {
-  const IslandScreen({super.key, required this.islandId});
+  const IslandScreen({
+    super.key,
+    required this.islandId,
+    this.arriving = false,
+  });
 
   final String islandId;
+
+  /// Just landed from the sea chart (M13-5): the view opens on the pier.
+  final bool arriving;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +44,11 @@ class IslandScreen extends ConsumerWidget {
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: switch (state) {
-          AsyncValue(:final value?) => _Island(islandId: islandId, path: value),
+          AsyncValue(:final value?) => _Island(
+            islandId: islandId,
+            path: value,
+            arriving: arriving,
+          ),
           AsyncValue(:final error?) => SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,10 +79,15 @@ class IslandScreen extends ConsumerWidget {
 }
 
 class _Island extends ConsumerStatefulWidget {
-  const _Island({required this.islandId, required this.path});
+  const _Island({
+    required this.islandId,
+    required this.path,
+    required this.arriving,
+  });
 
   final String islandId;
   final IslandPathView path;
+  final bool arriving;
 
   @override
   ConsumerState<_Island> createState() => _IslandState();
@@ -168,6 +185,13 @@ class _IslandState extends ConsumerState<_Island>
     super.dispose();
   }
 
+  /// The sea chart; a crossing lands up close on the island boarded.
+  void _chart() => showSeaChart(
+    context,
+    here: widget.islandId,
+    onBoard: (to) => context.pushReplacement('/island/$to?arrive=1'),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -234,6 +258,8 @@ class _IslandState extends ConsumerState<_Island>
                       world: world,
                       markers: markers,
                       focus: current,
+                      arriving: widget.arriving,
+                      onFerry: _chart,
                       onMarker: (k) => setState(() => _picked = k),
                     );
                   },
@@ -242,13 +268,25 @@ class _IslandState extends ConsumerState<_Island>
               Positioned(
                 right: AppSpace.screenPadding,
                 top: AppSpace.x3,
-                child: ChunkyIconButton(
-                  icon: Icons.my_location,
-                  label: l10n.island_recentre,
-                  onPressed: () {
-                    setState(() => _picked = null);
-                    _scene.currentState?.glideTo(current ?? picked);
-                  },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    ChunkyButton(
+                      label: l10n.chart_sail,
+                      icon: Icons.sailing,
+                      kind: ChunkyButtonKind.secondary,
+                      onPressed: _chart,
+                    ),
+                    const SizedBox(height: AppSpace.x2),
+                    ChunkyIconButton(
+                      icon: Icons.my_location,
+                      label: l10n.island_recentre,
+                      onPressed: () {
+                        setState(() => _picked = null);
+                        _scene.currentState?.glideTo(current ?? picked);
+                      },
+                    ),
+                  ],
                 ),
               ),
               Positioned(

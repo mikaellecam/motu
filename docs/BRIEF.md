@@ -182,6 +182,19 @@ Rules:
   quay (decided 2026-11-16); its lessons keep their real state. The island path's header draws the port; the map
   keeps M12-6's Les bases island (a sand bank, a house and a lighthouse growing a course a lesson) until M13-6
   removes the map.
+- The sea chart (decided 2026-11-16, M13-5; canvas « Motu — Lesson islands », page « Naviguer »): from an island up
+  close (§4.3), « Naviguer » or touching the ferry opens a sheet with a navigator's chart drawn in code (paper, grid,
+  compass rose and rhumb lines, soundings, depth lines round each island, the mainland's coast and the port's
+  anchor), the four islands where the map has them. An open island in colour with « {done}/{total} », a closed one
+  hatched grey; the line from the port to an island open (`portLines`) in navy dashes, to a closed one in pale
+  dots; the port with « {done}/9 »; « Tu es ici » where the user is (`seaChart`, `chartStates`). Touching an island
+  selects it (a gold ring) and fills the card under the chart: its name, its progress and « Ta prochaine leçon :
+  {n} · {titre} » with « Embarquer » (« Rentrer au port » for the port, « Tu y es » where the user is); « Bientôt »
+  and « La ligne est ouverte. L'île n'est pas encore écrite. » for an island to come whose line is open; « Fermée »
+  and « S'ouvre après « … » (et « … ») » with the lessons it still waits for. « Embarquer » sails a boat along the
+  line (1,8 s), then the island opens up close from its pier (`/island/{id}?arrive=1`) and the view glides to the
+  lesson to do. With animations off, it lands at once. Screen readers hear each island and its state. Only
+  playable islands can be boarded.
 - Two kinds of island, never mixed (decided 2026-11-16, M13-1). The map's islands are the same for everyone
   and change with their lessons only: no wallet building stands on them, on the map or over an island's path.
   A wallet's island (the live wallet's, every trip's) shows only in the money screens (the wallets list §4.7,

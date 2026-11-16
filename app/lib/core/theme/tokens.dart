@@ -360,6 +360,26 @@ abstract final class PortPalette {
   static const seaLine = Color(0xE6FFFFFF);
 }
 
+/// The sea chart (M13-5): a navigator's chart on paper, its grid, its depth
+/// lines, the islands open in colour and the closed ones hatched grey.
+abstract final class ChartPalette {
+  static const paper = Color(0xFFF4ECD6);
+  static const grid = Color(0xFFD8C9A0);
+  static const rhumb = Color(0xFFCDBB8C);
+
+  /// The inner frame, the compass rose's ring and the land's hatching.
+  static const frame = Color(0xFFB6A57A);
+  static const depthLine = Color(0xFF8DB9CB);
+  static const land = Color(0xFFE6D6A8);
+  static const sounding = Color(0xFF7E8CA0);
+  static const open = Color(0xFFF3DD9A);
+  static const block = Color(0xFFC9B477);
+  static const closed = Color(0xFFE4E0D4);
+  static const closedHatch = Color(0xFFB9B6AC);
+  static const closedEdge = Color(0xFF7A8296);
+  static const closedLine = Color(0xFFB3A889);
+}
+
 /// 4-pt spacing scale and fixed sizes (BRIEF §10.4).
 abstract final class AppSpace {
   static const x1 = 4.0;
