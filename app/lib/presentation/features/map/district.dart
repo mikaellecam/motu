@@ -90,7 +90,9 @@ bool districtDetailed(IsoProjection p) => p.tile >= 60;
 
 /// Paints the district on [tiles] (as `IslandLayout.tiles`: `S` the
 /// promenade round it, any other land a block), each building [grown] from 0
-/// (plain) to 1 (as [districtGrown] says once its lesson is done)
+/// (plain) to 1 (as [districtGrown] says once its lesson is done), the
+/// [ghosts] (their lessons unlocked, not done) under the ghost of themselves
+/// grown
 /// gives it, its ferry pier on the mainland side, the ferry at its end when
 /// [ferry].
 void paintDistrict(
@@ -99,8 +101,10 @@ void paintDistrict(
   List<String> tiles, {
   required List<double> grown,
   required bool ferry,
+  Set<int> ghosts = const {},
 }) {
   final ink = IsoInk(pen, p);
+  final ghost = IsoInk(GhostPen(pen.canvas), p);
   _ground(ink, tiles);
   // Back to front: what stands further back is painted first.
   final things = <(double, VoidCallback)>[
@@ -110,12 +114,37 @@ void paintDistrict(
     for (final (i, b) in districtBuildings.indexed)
       (
         b.x + b.y,
-        () => b._draw(ink, b.x, b.y, t: i < grown.length ? grown[i] : 0),
+        () {
+          b._draw(ink, b.x, b.y, t: i < grown.length ? grown[i] : 0);
+          // Unlocked, not done: the ghost of it grown, over it (M13-7).
+          if (ghosts.contains(i)) b._draw(ghost, b.x, b.y, t: 1);
+        },
       ),
   ]..sort((a, b) => a.$1.compareTo(b.$1));
   for (final (_, draw) in things) {
     draw();
   }
+}
+
+/// Draws what a lesson unlocked but not done will build (M13-7): its colours
+/// see-through, its edges faint.
+final class GhostPen extends BlockPen {
+  GhostPen(Canvas canvas) : super(canvas, DistrictPalette.ghostEdge, 1.2);
+
+  @override
+  void fill(Path path, Color color) => canvas
+    ..drawPath(
+      path,
+      Paint()..color = color.withValues(alpha: DistrictPalette.ghostAlpha),
+    )
+    ..drawPath(
+      path,
+      Paint()
+        ..color = ink
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..strokeJoin = StrokeJoin.round,
+    );
 }
 
 /// A pen and a projection, with the shapes the district and the port are
@@ -158,8 +187,13 @@ final class IsoInk {
   }) => pen.block(roofFacets(p, cx - w / 2, cy - w / 2, w, w, h, z: z), s);
 
   /// Fills [points] flat, no outline.
-  void flat(List<Offset> points, Color c) =>
-      pen.canvas.drawPath(Path()..addPolygon(points, true), Paint()..color = c);
+  void flat(List<Offset> points, Color c) => pen.canvas.drawPath(
+    Path()..addPolygon(points, true),
+    Paint()
+      ..color = pen is GhostPen
+          ? c.withValues(alpha: DistrictPalette.ghostAlpha)
+          : c,
+  );
 
   /// A quad on the face x = [x] (facing right) or y = [y] (facing left).
   void pane(

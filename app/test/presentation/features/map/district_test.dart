@@ -58,6 +58,7 @@ void main() {
       required double tile,
       required List<double> grown,
       bool ferry = true,
+      Set<int> ghosts = const {},
     }) async {
       final size = Size(tile * 12, tile * 9);
       final recorder = ui.PictureRecorder();
@@ -73,6 +74,7 @@ void main() {
         tiles,
         grown: grown,
         ferry: ferry,
+        ghosts: ghosts,
       );
       final image = await recorder.endRecording().toImage(
         size.width.round(),
@@ -103,6 +105,24 @@ void main() {
         final docked = await paint(tile: 34, grown: [], ferry: true);
         final none = await paint(tile: 34, grown: [], ferry: false);
         expect(sameBytes(docked, none), isFalse);
+      });
+    });
+
+    testWidgets('a building unlocked, not done, under its grown ghost '
+        '(M13-7)', (tester) async {
+      await tester.runAsync(() async {
+        final plain = await paint(tile: 34, grown: List.filled(12, 0.0));
+        final ghost = await paint(
+          tile: 34,
+          grown: List.filled(12, 0.0),
+          ghosts: {11},
+        );
+        final grown = await paint(
+          tile: 34,
+          grown: [for (var i = 0; i < 12; i++) i == 11 ? 1.0 : 0.0],
+        );
+        expect(sameBytes(plain, ghost), isFalse);
+        expect(sameBytes(grown, ghost), isFalse);
       });
     });
 

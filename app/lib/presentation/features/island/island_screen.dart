@@ -231,10 +231,23 @@ class _IslandState extends ConsumerState<_Island>
     final path = widget.path;
     final done = _done(path);
     final current = _current;
-    final port = _port ? ref.watch(portViewProvider).value : null;
+    final port = ref.watch(portViewProvider).value;
+    // The sea opens with a first line, from the ferry quay (M13-7).
+    final sail = switch (port) {
+      final port? =>
+        port.lines.isNotEmpty &&
+            quayStands(portBuilt(port.completed, skipped: port.skipped)),
+      null => false,
+    };
+    // Unlocked, not done: their ghosts (M13-7).
+    final ghosts = {
+      for (var k = 0; k < _ids.length; k++)
+        if (_node(k)?.state case NodeState.current || NodeState.open) k,
+    };
     final markers = [
       for (var k = 0; k < _ids.length; k++)
-        if (_node(k) case final node?)
+        // No marker for a locked lesson (M13-7).
+        if (_node(k) case final node? when node.state != NodeState.locked)
           Marker(
             switch (node.state) {
               NodeState.done => MarkerKind.done,
@@ -249,7 +262,7 @@ class _IslandState extends ConsumerState<_Island>
             ),
           )
         else
-          const Marker(MarkerKind.later, ''),
+          null,
     ];
     final picked =
         _picked ??
@@ -283,15 +296,22 @@ class _IslandState extends ConsumerState<_Island>
                                 if (grown[k] > 0) id,
                             }, skipped: port?.skipped ?? false),
                             lines: port?.lines ?? const {},
+                            ghosts: ghosts,
                           )
-                        : districtWorld(grown, ferry: path.open);
+                        : districtWorld(
+                            grown,
+                            // Its ferry with its line from the port.
+                            ferry:
+                                sail && port!.lines.contains(actionsEtfIsland),
+                            ghosts: ghosts,
+                          );
                     return IslandScene(
                       key: _scene,
                       world: world,
                       markers: markers,
                       focus: current,
                       arriving: widget.arriving,
-                      onFerry: _chart,
+                      onFerry: sail ? _chart : null,
                       onMarker: (k) => setState(() => _picked = k),
                     );
                   },
@@ -303,13 +323,15 @@ class _IslandState extends ConsumerState<_Island>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    ChunkyButton(
-                      label: l10n.chart_sail,
-                      icon: Icons.sailing,
-                      kind: ChunkyButtonKind.secondary,
-                      onPressed: _chart,
-                    ),
-                    const SizedBox(height: AppSpace.x2),
+                    if (sail) ...[
+                      ChunkyButton(
+                        label: l10n.chart_sail,
+                        icon: Icons.sailing,
+                        kind: ChunkyButtonKind.secondary,
+                        onPressed: _chart,
+                      ),
+                      const SizedBox(height: AppSpace.x2),
+                    ],
                     ChunkyIconButton(
                       icon: Icons.my_location,
                       label: l10n.island_recentre,

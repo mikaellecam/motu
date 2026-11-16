@@ -26,7 +26,8 @@ import '../../helpers.dart';
 /// No profile; completions come from [complete], Les bases' fifth lesson
 /// always among them: Actions & ETF's lessons are open (M12-7).
 class StreamedProfiles extends Fake implements ProfileRepository {
-  StreamedProfiles(Set<String> done) : last = {...done, 'lb.cushion-2020'};
+  StreamedProfiles(Set<String> done, {bool fifth = true})
+    : last = {...done, if (fifth) 'lb.cushion-2020'};
 
   final completions = StreamController<Set<String>>.broadcast();
   Set<String> last;
@@ -79,6 +80,7 @@ Future<void> show(
   bool still = false,
   List<Override> extra = const [],
   NextStepView? next,
+  bool fifth = true,
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -91,7 +93,9 @@ Future<void> show(
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
   }
   final pack = islandId == actionsEtfIsland ? actionsEtf : lesBases;
-  profiles = StreamedProfiles({for (final n in pack.nodes.take(done)) n.id});
+  profiles = StreamedProfiles({
+    for (final n in pack.nodes.take(done)) n.id,
+  }, fifth: fifth);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -144,18 +148,17 @@ Finder markers() => find.bySemanticsLabel(RegExp(r'^\d+\. '));
 Rect sceneRect(WidgetTester tester) => tester.getRect(find.byType(IslandScene));
 
 void main() {
-  testWidgets('a marker per lesson, said by screen readers, 44 px each', (
-    tester,
-  ) async {
+  testWidgets('a marker per lesson unlocked, said by screen readers, 44 px '
+      'each; none for a locked one (M13-7)', (tester) async {
     await show(tester);
     expect(find.text('Actions & ETF'), findsOneWidget);
     expect(find.text('6 sur 12 terminées'), findsOneWidget);
     expect(find.text('6/12'), findsOneWidget);
-    expect(markers(), findsNWidgets(12));
+    // Six done and the one to do.
+    expect(markers(), findsNWidgets(7));
     for (final (n, title, piece, state) in [
       (1, r'Livret ou ETF.\?', 'La banque', 'terminée'),
       (7, 'Les intérêts composés', 'Le square', 'à toi de jouer'),
-      (12, "Point d'étape", "La flèche d'or", 'verrouillée'),
     ]) {
       final marker = find.bySemanticsLabel(
         RegExp('^$n\\. $title, $piece, $state\$'),
@@ -163,8 +166,15 @@ void main() {
       expect(marker, findsOneWidget, reason: '$n');
       expect(tester.getSize(marker), const Size(44, 44));
     }
-    // The six done grown, the others plain.
-    expect(world(tester).grown, [for (var i = 0; i < 12; i++) i < 6 ? 1 : 0]);
+    expect(find.bySemanticsLabel(RegExp(r'^12\. ')), findsNothing);
+    // The six done grown, the others plain; the seventh, unlocked, under
+    // its ghost, its marker on the ghost's top.
+    final w = world(tester);
+    expect(w.grown, [for (var i = 0; i < 12; i++) i < 6 ? 1 : 0]);
+    expect(
+      w.anchors[6],
+      districtWorld(List.filled(12, 1), ferry: true).anchors[6],
+    );
   });
 
   testWidgets('the card follows the marker touched', (tester) async {
@@ -177,9 +187,7 @@ void main() {
     expect(find.text('node ae.compound-toy'), findsOneWidget);
   });
 
-  testWidgets('a lesson done replays; a later one waits for the one before', (
-    tester,
-  ) async {
+  testWidgets('a lesson done replays', (tester) async {
     await show(tester);
     await tester.tap(find.bySemanticsLabel(RegExp(r'^1\. ')));
     await tester.pump();
@@ -187,16 +195,6 @@ void main() {
     await tester.tap(find.text('Revoir'));
     await settle(tester);
     expect(find.text('node ae.livret-vs-etf'), findsOneWidget);
-
-    await show(tester);
-    await tester.tap(find.bySemanticsLabel(RegExp(r'^12\. ')));
-    await tester.pump();
-    expect(find.text("La flèche d'or · verrouillée"), findsOneWidget);
-    final wait = find.textContaining('Mets en place un DCA');
-    expect(wait, findsOneWidget);
-    await tester.tap(wait, warnIfMissed: false);
-    await settle(tester);
-    expect(find.textContaining('node '), findsNothing);
   });
 
   testWidgets('pan and zoom stay within bounds', (tester) async {
@@ -273,7 +271,7 @@ void main() {
     await expectAccessible(tester);
   });
 
-  testWidgets('closed: every lesson later, the gate named (M12-7)', (
+  testWidgets('closed: no marker, the gate named (M12-7, M13-7)', (
     tester,
   ) async {
     tester.platformDispatcher.localesTestValue = [const Locale('fr')];
@@ -300,10 +298,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     // In the bar, and on the card's button.
     expect(find.textContaining('Février 2020'), findsNWidgets(2));
-    expect(
-      find.bySemanticsLabel(RegExp(r'^\d+\. .*verrouillée$')),
-      findsNWidgets(12),
-    );
+    // Every lesson locked: no marker at all (M13-7).
+    expect(markers(), findsNothing);
   });
 
   testWidgets('Les bases up close: its port, a marker per part (M13-3)', (
@@ -311,7 +307,8 @@ void main() {
   ) async {
     await show(tester, islandId: lesBasesIsland, done: 5);
     expect(find.text('Les bases'), findsOneWidget);
-    expect(markers(), findsNWidgets(9));
+    // Five done and the one to do (M13-7).
+    expect(markers(), findsNWidgets(6));
     expect(world(tester).grown, [for (var i = 0; i < 9; i++) i < 5 ? 1 : 0]);
     expect(find.text('La grue · à toi de jouer'), findsOneWidget);
   });
@@ -360,5 +357,23 @@ void main() {
       await settle(tester);
       expect(profiles.saved, lesBasesIsland);
     });
+  });
+
+  testWidgets('no sea before the ferry quay: no « Naviguer », no line, no '
+      'ferry; the first line opens them (M13-7)', (tester) async {
+    await show(tester, islandId: lesBasesIsland, done: 3, fifth: false);
+    expect(find.text('Naviguer'), findsNothing);
+    expect(find.byKey(const ValueKey('ferry')), findsNothing);
+    expect(
+      tester.widget<IslandScene>(find.byType(IslandScene)).onFerry,
+      isNull,
+    );
+
+    await show(tester, islandId: lesBasesIsland, done: 5);
+    expect(find.text('Naviguer'), findsOneWidget);
+    expect(
+      tester.widget<IslandScene>(find.byType(IslandScene)).onFerry,
+      isNotNull,
+    );
   });
 }
