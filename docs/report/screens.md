@@ -17,7 +17,7 @@ requirements (§11).
 | | | |
 |---|---|---|
 | <img src="../screenshots/m7-3-next-step.png" width="240"> | <img src="../screenshots/m7-1-map.png" width="240"> | <img src="../screenshots/m6-9-island-path.png" width="240"> |
-| The archipelago, painted in code (`CustomPainter`); the Actions & ETF island's buildings follow the live wallet (**coded animation**) and the next-step card names what to do | A first launch: no position yet, the island bare | An island's path: a **dynamic list** of lessons with their state |
+| The archipelago, painted in code (`CustomPainter`); each island grows with its lessons, and the next-step card names what to do | A first launch: the islands as the lessons left them | An island's path: a **dynamic list** of lessons with their state |
 | <img src="../screenshots/m6-3-predict-reveal.png" width="240"> | <img src="../screenshots/m7-4-reveal-drawing.png" width="240"> | <img src="../screenshots/m6-8-livret-vs-etf.png" width="240"> |
 | Predict, then reveal: Apple or the world ETF in 2022, on real data | The reveal's curves drawing themselves (**coded animation**) | « Livret or ETF? »: 10 000 € on each since 2015, real prices (**chart**) |
 | <img src="../screenshots/m6-3-toy.png" width="240"> | <img src="../screenshots/m6-8-compound-toy.png" width="240"> | <img src="../screenshots/m6-8-dollar-trap.png" width="240"> |
@@ -32,9 +32,9 @@ requirements (§11).
 | | | |
 |---|---|---|
 | <img src="../screenshots/m4-7-wallets.png" width="240"> | <img src="../screenshots/m4-2-wallet.png" width="240"> | <img src="../screenshots/m4-2-wallet-benchmark.png" width="240"> |
-| The wallets: live, the trips, the DCA simulator | The live wallet: value, gain since the start, **chart**, allocation, positions (**calculations**: valuation, P&L, weights) | Compared with the world ETF over 3 months (time-weighted return) |
+| The wallets: live, the trips, the DCA simulator | The live wallet: its island, whose buildings follow its positions (**coded animation**), value, gain since the start, **chart**, allocation, positions (**calculations**: valuation, P&L, weights) | Compared with the world ETF over 3 months (time-weighted return) |
 | <img src="../screenshots/m4-6-wallet-pending.png" width="240"> | <img src="../screenshots/m8-1-livret.png" width="240"> | <img src="../screenshots/m8-3-wallet-companion.png" width="240"> |
-| An order waiting for the market to open | The Livret A beside the investments (**calculation**: fortnightly interest) | A companion moment in the wallet |
+| An order waiting for the market to open: its building under construction (**coded animation**) | The Livret A beside the investments (**calculation**: fortnightly interest) | A companion moment in the wallet |
 
 ## Explore and the asset page
 
@@ -79,4 +79,4 @@ requirements (§11).
 | <img src="../screenshots/m9-2-map-en.png" width="240"> | <img src="../screenshots/m9-2-wallet-en.png" width="240"> | <img src="../screenshots/m9-2-lesson-en.png" width="240"> |
 | In English | | |
 
-Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m7-2-living-island`, `m8-1-livret-sheet`, `m8-3-moment-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).
+Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet`, `m8-3-moment-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).

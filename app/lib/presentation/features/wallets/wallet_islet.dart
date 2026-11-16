@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../application/learning/content.dart';
-import '../../../application/learning/island_path.dart';
 import '../../../application/wallet/living_island.dart';
 import '../../../core/theme/tokens.dart';
 import '../map/archipelago.dart';
@@ -29,7 +27,6 @@ class WalletIslet extends ConsumerWidget {
     final buildings = drawnBuildings(
       ref.watch(walletIslandProvider(walletId)).value ?? const [],
     );
-    final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
     return Semantics(
       image: true,
       label: label,
@@ -50,11 +47,6 @@ class WalletIslet extends ConsumerWidget {
                 only: archipelago.firstWhere(
                   (i) => i.id == IslandId.actionsEtf,
                 ),
-                grown: switch (path) {
-                  final path? when path.nodes.isNotEmpty =>
-                    path.done / path.nodes.length,
-                  _ => 1,
-                },
               ),
             ),
           ),

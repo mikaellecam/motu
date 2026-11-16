@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:drift/native.dart';
 import 'package:finance_companion/application/dca/dca_simulator.dart';
 import 'package:finance_companion/application/explorer/explorer.dart';
@@ -9,16 +10,19 @@ import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/settings/settings.dart';
 import 'package:finance_companion/application/trip/trip_summary.dart';
 import 'package:finance_companion/application/trip/trip_wizard.dart';
+import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/application/wallet/wallets_list.dart';
 import 'package:finance_companion/core/failure.dart';
 import 'package:finance_companion/data/local/database.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/asset/asset_screen.dart';
 import 'package:finance_companion/presentation/features/dca/dca_screen.dart';
 import 'package:finance_companion/presentation/features/explorer/explorer_screen.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:finance_companion/presentation/features/onboarding/onboarding_screen.dart';
 import 'package:finance_companion/presentation/features/order/order_done_screen.dart';
@@ -32,13 +36,18 @@ import 'package:finance_companion/presentation/features/wallet/wallet_screen.dar
 import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../fakes/quiet_map.dart';
 import '../../helpers.dart';
 
-Future<void> open(WidgetTester tester, String location) async {
+Future<void> open(
+  WidgetTester tester,
+  String location, {
+  List<Override> extra = const [],
+}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   final db = AppDatabase(NativeDatabase.memory());
@@ -80,6 +89,7 @@ Future<void> open(WidgetTester tester, String location) async {
               const GlossaryIndex([], discovered: 0, total: 0),
         ),
         ...quietMap,
+        ...extra,
         // Nothing behind the settings.
         settingsViewProvider.overrideWith(
           (ref) async => throw const NotFoundFailure(),
@@ -106,6 +116,29 @@ void main() {
     expect(bar.destinations, hasLength(4));
     expect(bar.selectedIndex, 0);
     expect(tester.getSize(find.byType(NavigationBar)).height, 80);
+  });
+
+  testWidgets('the map draws no wallet building, whatever the live wallet '
+      'holds (M13-1)', (tester) async {
+    await open(
+      tester,
+      '/',
+      extra: [
+        walletIslandProvider.overrideWith(
+          (ref, args) async => [
+            IslandBuilding('world', height: Decimal.one, built: Decimal.one),
+          ],
+        ),
+      ],
+    );
+    final painters = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<ArchipelagoPainter>();
+    expect(painters, isNotEmpty);
+    for (final p in painters) {
+      expect(p.buildings, isEmpty);
+    }
   });
 
   testWidgets('each tab is one tap away', (tester) async {

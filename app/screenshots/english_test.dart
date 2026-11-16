@@ -15,7 +15,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'companion_test.dart' as companion;
-import 'map_test.dart' as map;
 import 'screenshot.dart';
 import 'wallet_test.dart' as wallet;
 
@@ -61,7 +60,6 @@ void main() {
     '/',
     locale: 'en',
     overrides: [
-      map.island,
       currentUiLevelProvider.overrideWith((ref) async => 2),
       nextStepViewProvider.overrideWith(
         (ref) async => const NextStepView(

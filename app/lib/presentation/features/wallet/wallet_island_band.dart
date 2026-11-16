@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../application/learning/content.dart';
-import '../../../application/learning/island_path.dart';
 import '../../../application/wallet/living_island.dart';
 import '../../../application/wallet/wallet_overview.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../domain/market/asset.dart';
+import '../../../domain/wallet/island_buildings.dart';
 import '../../../domain/wallet/wallet.dart';
 import '../map/archipelago.dart';
 import '../map/iso.dart';
@@ -18,7 +17,9 @@ import '../map/living_island.dart';
 /// A wallet's island at the top of its screen (BRIEF §4.7, M11-4): its city
 /// on a panel of sea, zoomed in so that each building is a touch target that
 /// opens its asset. Before the first buy, the bare island and what it waits
-/// for. Still, like the wallet's islet (M11-3).
+/// for. Still, like the wallet's islet (M11-3), but for its buildings: they
+/// follow the wallet's positions in stages (BRIEF §10.5, M13-1). All grown:
+/// lessons never green a wallet's island.
 class WalletIslandBand extends ConsumerWidget {
   const WalletIslandBand(this.o, {super.key});
 
@@ -41,9 +42,10 @@ class WalletIslandBand extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final island = archipelago.firstWhere((i) => i.id == IslandId.actionsEtf);
-    final standing = ref.watch(walletIslandProvider(o.id)).value ?? const [];
+    // Null while loading: the island then stands at once, as it is.
+    final known = ref.watch(walletIslandProvider(o.id)).value;
+    final standing = known ?? const <IslandBuilding>[];
     final buildings = drawnBuildings(standing);
-    final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
     final assets = <String, Asset>{
       for (final p in o.positions) p.asset.id: p.asset,
       for (final (:asset, order: _, reserved: _) in o.pendingOrders)
@@ -84,15 +86,13 @@ class WalletIslandBand extends ConsumerWidget {
                           label: o.kind == WalletKind.live
                               ? l10n.wallets_islet_live
                               : l10n.wallets_islet_trip(o.name),
-                          child: CustomPaint(
-                            painter: ArchipelagoPainter(
-                              buildings: buildings,
-                              only: island,
-                              grown: switch (path) {
-                                final path? when path.nodes.isNotEmpty =>
-                                  path.done / path.nodes.length,
-                                _ => 1,
-                              },
+                          child: StagedIsland(
+                            buildings: known,
+                            builder: (context, frame) => CustomPaint(
+                              painter: ArchipelagoPainter(
+                                buildings: frame,
+                                only: island,
+                              ),
                             ),
                           ),
                         ),

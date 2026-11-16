@@ -6,7 +6,6 @@ import '../../data/repositories/profile_repository.dart';
 import '../../data/repositories/wallet_repository.dart';
 import '../learning/ui_level.dart';
 import '../providers.dart';
-import '../wallet/living_island.dart';
 import '../wallet/wallet_providers.dart';
 import '../wallet/wallets_list.dart';
 
@@ -123,9 +122,7 @@ class SettingsController extends _$SettingsController {
               settings.liveStartingCash ?? WalletRepository.defaultLiveCash,
         );
     _wallet();
-    ref
-      ..invalidate(walletsListProvider)
-      ..invalidate(livingIslandProvider);
+    ref.invalidate(walletsListProvider);
   }
 
   void _wallet() => ref

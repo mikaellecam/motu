@@ -152,15 +152,14 @@ Rules:
   art direction's island (all done). Nature comes first: a tree with the first lesson, all five by half the
   lessons (`grownTrees`); the grass turns green from the island's middle out, a share per lesson
   (`grownTiles`); every lesson done raises its landmark, a stone column capped in the levels' gold, at its
-  right end (`landmarkStands`). Its shape never changes, so the wallet's buildings always stand on land. On
+  right end (`landmarkStands`). Its shape never changes. On
   the map the change eases in over 1,4 s (at once with animations off, and at once when the lessons first
   load); the island path's header shows it too, and onboarding the sand bank the user starts from.
 - Les bases comes first and opens the other islands (decided 2026-10-28, M12-7): an island's lessons open
   once the lessons it waits for are done (`islandOpen`), or as soon as it has progress (installs from v1.0.0
   keep Actions & ETF), or when the questionnaire opens it (Q3, §4.1). Closed, its lessons are all locked; its
   pill shows a lock in place of its progress, screen readers hear « {île}, s'ouvre après « {leçon} » », and
-  its path's header says « S'ouvre après « {leçon} » ». The sandbox is never gated: Actions & ETF is still
-  drawn with the wallet's buildings. The gates (`islandRequires`, in the app since a published pack never
+  its path's header says « S'ouvre après « {leçon} » ». The sandbox is never gated. The gates (`islandRequires`, in the app since a published pack never
   changes, ADR-006; into `island.json` with Actions & ETF's next version):
   - Actions & ETF after `lb.cushion-2020`, « Février 2020 : et ton matelas ? » (Les bases' lesson 5).
   - Recorded for later islands: Immobilier after `lb.loan-cost`; Trading after `lb.spot-the-scam` and
@@ -170,8 +169,13 @@ Rules:
   lighthouse's five courses in white and coral, 7 its gallery, 8 its lantern, 9 the light, gold, with two
   beams. Its grass and three trees green as Actions & ETF's. Its pill is chunky with « {n}/9 »; its path
   screen draws it as wide as Actions & ETF's. Built at once on the map (no easing yet).
-- The Actions & ETF island reacts to the live wallet: building heights map to the 5 largest positions
-  (normalised), animated on change. Pending orders show as a building under construction (§10.5).
+- Two kinds of island, never mixed (decided 2026-11-16, M13-1). The map's islands are the same for everyone
+  and change with their lessons only: no wallet building stands on them, on the map or over an island's path.
+  A wallet's island (the live wallet's, every trip's) shows only in the money screens (the wallets list §4.7,
+  the wallet screen §4.7, after a buy §4.6, the trip summary §4.5); it changes with its own wallet only, drawn
+  in Actions & ETF's shape all grown (lessons never green it).
+- A wallet's island reacts to its wallet: building heights map to the 5 largest positions (normalised),
+  animated on change on the wallet screen. Pending orders show as a building under construction (§10.5).
   Built (M7-2, `islandBuildings`): an asset's size is its market value plus what its pending buys hold back
   (sells change nothing until they fill); the 5 largest stand in a row across the island, rising to the
   right, the largest last with a flag (M9-11), each as tall as its size against the largest's (1 to 4 height
@@ -249,8 +253,8 @@ nodes skipped at onboarding stay open; a pending mission does not lock what foll
 open, the mission completes whenever the wallet satisfies it); « Tout afficher dès maintenant » changes the
 UI level only, never the node order.
 Layout (decided 2026-10-23, « stepping islets », artboard `Path-E` of the art direction canvas
-https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5): on the sea, the island as the map paints it (its living
-buildings included), then a chunky header card (title, « {done} sur {total} terminées », progress bar). Each
+https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5): on the sea, the island as the map paints it (its lessons'
+growth, no wallet building, M13-1), then a chunky header card (title, « {done} sur {total} terminées », progress bar). Each
 node stands on an identical 2×2 block islet on the island art's iso grid, in a strict zig-zag one constant
 step apart; a round chunky bubble on it shows the node type's icon, filled by its state (done `progress`,
 current `primary` and larger with a white ring, open `surface`, locked grey stone), its title and « type ·
@@ -405,7 +409,7 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
 **Wallets list** (the Portefeuille tab; layout decided 2026-10-24, artboard `Wallets-A` of the art direction
 canvas, money family §10.1): « Mes portefeuilles », and under it « Un portefeuille d'aujourd'hui, et autant de
 voyages dans le temps que tu veux. » Each wallet is a flat row: its islet (decided 2026-10-28, M11-3: the
-wallet's buildings on Actions & ETF as the map draws them and as the lessons greened it, on a 68 px square of
+wallet's buildings on its island as the map draws them, all grown whatever the lessons (M13-1), on a 68 px square of
 `sea`, still; « Ton île » or « La ville du voyage {nom} » for screen readers), its name and a chip, a status line, and on the right its value over its change in %
 (signed; the amount when nothing was put in). The live wallet is « Aujourd'hui », chip « En direct », « Cours
 réels du jour ». A trip's chip is its difficulty; its status line reads « En cours, tu es le {date} » until it
@@ -587,8 +591,7 @@ decision, shown when the trip is opened). Offline, it waits. As in the live wall
 trip at today takes part from the first session that opened after it was placed: it carries the real time,
 not the trip's day. Trips that ended at the last day of the data before this rule stay ended.
 Summary layout (decided 2026-10-24, artboard `TripEnd-A` of the art direction canvas): a world screen on the
-sea under the Actions & ETF island with the city the trip built (its own positions, §4.2) and the greenery
-the lessons grew (M9-19). A chunky card « Fin du voyage « {nom} » » with the dates and the money paid in,
+sea under the trip's island with the city the trip built (its own positions, §4.2), all grown (M13-1). A chunky card « Fin du voyage « {nom} » » with the dates and the money paid in,
 then each outcome with its signed time-weighted return and value over a bar from zero (gain right, loss
 left, every bar on the widest return's scale). The journal and the terms met in a second chunky card. Then,
 decided by the user: « Rejouer avec une autre difficulté » (the trip wizard at its difficulty step, from the
@@ -652,13 +655,13 @@ On an early close (M9-37: usually 13:00 New York on 3 July, the day after Thanks
 served by the same calendar) the session ends then: `closeAt` and `isOpen` use that time, so a live market
 order sent after it waits for the next opening.
 
-Order lifecycle UI: sent → market opens → executed. The map shows a pending buy as a building under
-construction that completes on fill.
+Order lifecycle UI: sent → market opens → executed. The wallet's island shows a pending buy as a building under
+construction that completes on fill (§4.7, since M13-1: no longer on the map).
 
 **After a buy** (decided 2026-10-25, M9-34, artboard `OrderDone-A` of the art direction canvas): every buy,
 in the live wallet and in trips, opens a world screen on the sea instead of the message
 (`/wallet/:walletId/order/:orderId/done`, `orderDone`): the wallet's island (the live wallet's, or the trip's
-own city) with the order's building, under construction while the buy waits, built when it filled at once
+own city; all grown, M13-1) with the order's building, under construction while the buy waits, built when it filled at once
 (drawn even when the asset is not among the five largest: it takes the last place, M9-43);
 a chunky card with « Ordre programmé » / « Ordre exécuté », « Ton immeuble {actif} est en chantier » /
 « … est construit », one line saying why it waits and when it goes (the sheet's own copy) or at what price it
@@ -705,7 +708,8 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
   for the live wallet and every trip (under its header): a 250 px panel of `sea` with its city, zoomed ×1.75 on
   its buildings so that each one, as the map draws it (pending ghosts included), is a 44 px target that opens
   its asset (`/asset/{id}?wallet=`), its name for screen readers. Under it « Touche un immeuble pour ouvrir sa
-  ligne », or before the first buy « Ton île attend son premier immeuble ». Still: it changes at once.
+  ligne », or before the first buy « Ton île attend son premier immeuble ». Still (no pan, no zoom), all grown
+  whatever the lessons; since M13-1 its buildings follow the wallet in stages (§10.5), as the map's did.
 - Header: total value, change since start (amount and %; TWR when contributions exist), data timestamp
   (the oldest price on screen), two tiles "Investi" (market value of the positions now, so tiles + Livret
   add up to the total) / "Liquidités disponibles" (cash minus what pending buys hold back), primary button
@@ -1240,7 +1244,8 @@ French formatting: narrow no-break space before « : ? ! », thousands with narr
 ### 10.5 Animations
 
 Hand-coded (count for the school requirement):
-1. Map buildings grow/shrink with positions (`AnimationController` + `CustomPainter`).
+1. A wallet's island buildings grow/shrink with positions (`AnimationController` + `CustomPainter`), on the
+   wallet screen (`StagedIsland`; on the map until M13-1).
 2. Pending order: building under construction → completes on fill (staged controller). One 1,4 s controller,
    three intervals (`islandFrame`): heights 0–0.6, the built part rising into its ghost 0.3–0.9, a completed
    building's ghost fading 0.85–1. With animations turned off in the system, the island changes at once.
