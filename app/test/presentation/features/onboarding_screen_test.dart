@@ -80,7 +80,7 @@ void main() {
 
     await tester.tap(find.text('C\'est parti'));
     await tester.pumpAndSettle();
-    expect(find.byType(MapTab), findsOneWidget);
+    expect(find.byType(HomeTab), findsOneWidget);
   });
 
   testWidgets('accessible, with text at 130 %: the questions and the result', (

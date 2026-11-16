@@ -5,6 +5,7 @@ import 'package:finance_companion/application/explorer/explorer.dart';
 import 'package:finance_companion/application/learning/glossary.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/application/learning/node_player.dart';
+import 'package:finance_companion/application/learning/place.dart';
 import 'package:finance_companion/application/order/order_ticket.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/settings/settings.dart';
@@ -106,20 +107,25 @@ Future<void> open(
 }
 
 void main() {
-  testWidgets('the app opens on the map, under four tabs', (tester) async {
+  testWidgets('the app opens up close on where the way starts, under four '
+      'tabs; no level chip (M13-6)', (tester) async {
     await open(tester, '/');
-    expect(find.byType(MapTab), findsOneWidget);
-    expect(find.text('Ton archipel'), findsOneWidget);
-    expect(find.text('2 îles ouvertes sur 5'), findsOneWidget);
-    expect(find.text('Niveau 1'), findsOneWidget);
+    expect(find.byType(HomeTab), findsOneWidget);
+    expect(
+      tester.widget<IslandScreen>(find.byType(IslandScreen)).islandId,
+      'les-bases',
+    );
+    expect(find.text('Archipel'), findsOneWidget);
+    expect(find.textContaining('Niveau'), findsNothing);
+    expect(find.text('Ton archipel'), findsNothing);
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(4));
     expect(bar.selectedIndex, 0);
     expect(tester.getSize(find.byType(NavigationBar)).height, 80);
   });
 
-  testWidgets('the map draws no wallet building, whatever the live wallet '
-      'holds (M13-1)', (tester) async {
+  testWidgets('no island the app shows draws a wallet building, whatever the '
+      'live wallet holds (M13-1)', (tester) async {
     await open(
       tester,
       '/',
@@ -135,10 +141,23 @@ void main() {
         .widgetList<CustomPaint>(find.byType(CustomPaint))
         .map((p) => p.painter)
         .whereType<ArchipelagoPainter>();
-    expect(painters, isNotEmpty);
     for (final p in painters) {
       expect(p.buildings, isEmpty);
     }
+  });
+
+  testWidgets('the app reopens on the island the user was last on (M13-6)', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      '/',
+      extra: [placeProvider.overrideWith(_WasOnActionsEtf.new)],
+    );
+    expect(
+      tester.widget<IslandScreen>(find.byType(IslandScreen)).islandId,
+      'actions-etf',
+    );
   });
 
   testWidgets('each tab is one tap away', (tester) async {
@@ -147,7 +166,7 @@ void main() {
       ('Portefeuille', WalletsScreen),
       ('Explorer', ExplorerScreen),
       ('Glossaire', GlossaryTab),
-      ('Carte', MapTab),
+      ('Archipel', HomeTab),
     ]) {
       await tester.tap(
         find.descendant(
@@ -160,7 +179,7 @@ void main() {
     }
   });
 
-  testWidgets('settings open from the map header', (tester) async {
+  testWidgets('settings open from the island\'s bar', (tester) async {
     await open(tester, '/');
     final settings = find.byTooltip('Paramètres');
     expect(settings, findsOneWidget);
@@ -267,9 +286,9 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
-  testWidgets('an unknown location goes back to the map', (tester) async {
+  testWidgets('an unknown location goes back to the island', (tester) async {
     await open(tester, '/nowhere');
-    expect(find.byType(MapTab), findsOneWidget);
+    expect(find.byType(HomeTab), findsOneWidget);
   });
 
   testWidgets('a lesson bridge deep-links into the prefilled wizard', (
@@ -335,4 +354,10 @@ void main() {
     await open(tester, '/');
     await expectAccessible(tester);
   });
+}
+
+class _WasOnActionsEtf extends Place {
+  @override
+  Future<({String island, bool arriving})> build() async =>
+      (island: 'actions-etf', arriving: false);
 }

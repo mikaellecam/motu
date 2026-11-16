@@ -1,10 +1,13 @@
 import 'package:finance_companion/application/learning/content.dart';
+import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/island/sea_chart.dart';
+import 'package:finance_companion/presentation/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,8 +16,13 @@ import 'island_screen_test.dart'
     show StreamedProfiles, actionsEtf, lesBases, settle;
 
 /// The port up close after Les bases' first five lessons and six of Actions &
-/// ETF's, under the app's router for islands.
-Future<void> showPort(WidgetTester tester, {bool still = false}) async {
+/// ETF's, as the « Archipel » tab shows it (no place saved: where the way
+/// starts).
+Future<void> showPort(
+  WidgetTester tester, {
+  bool still = false,
+  List<Override> extra = const [],
+}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 2532);
@@ -37,18 +45,15 @@ Future<void> showPort(WidgetTester tester, {bool still = false}) async {
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => lesBases),
         profileRepositoryProvider.overrideWithValue(profiles),
+        // The lesson to do comes first (the next step has its own tests).
+        nextStepViewProvider.overrideWith((ref) async => null),
+        ...extra,
       ],
       child: MainApp(
         router: GoRouter(
-          initialLocation: '/island/les-bases',
           routes: [
-            GoRoute(
-              path: '/island/:id',
-              builder: (_, s) => IslandScreen(
-                islandId: s.pathParameters['id']!,
-                arriving: s.uri.queryParameters['arrive'] == '1',
-              ),
-            ),
+            // The « Archipel » tab: the island the user is on (M13-6).
+            GoRoute(path: '/', builder: (_, _) => const HomeTab()),
           ],
         ),
       ),

@@ -2,17 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../application/learning/place.dart';
 import '../../application/trip/trip_wizard.dart';
-import '../../application/learning/island_path.dart';
-import '../../application/learning/ui_level.dart';
 import '../../application/order/order_ticket.dart' show OrderDone;
-import '../../core/l10n/app_localizations.dart';
-import '../../domain/learning/path.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
-import '../features/map/archipelago.dart';
-import '../features/map/archipelago_map.dart';
-import '../features/map/next_step_card.dart';
 import '../features/asset/asset_screen.dart';
 import '../features/dca/dca_screen.dart';
 import '../features/explorer/explorer_screen.dart';
@@ -32,7 +25,7 @@ import '../shell/app_shell.dart';
 
 /// Routes of the app (BRIEF §3). The four tabs share a shell with the bottom
 /// bar; every flow (asset, order, wizard, node player…) opens full screen
-/// above it. Unknown locations go back to the map.
+/// above it. Unknown locations go back to the island the user is on.
 GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
   initialLocation: initialLocation,
   onException: (_, _, router) => router.go('/'),
@@ -41,7 +34,7 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       builder: (context, state, shell) => AppShell(shell: shell),
       branches: [
         StatefulShellBranch(
-          routes: [GoRoute(path: '/', builder: (_, _) => const MapTab())],
+          routes: [GoRoute(path: '/', builder: (_, _) => const HomeTab())],
         ),
         StatefulShellBranch(
           routes: [
@@ -127,102 +120,22 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
   ],
 );
 
-/// The map tab (BRIEF §3, §4.2): « Ton archipel », the islands opened and
-/// the level in the header, settings, and the next-step card at the bottom.
-class MapTab extends ConsumerWidget {
-  const MapTab({super.key});
+/// The « Archipel » tab (BRIEF §3, M13-6): the island the user was on last
+/// time, up close; the first time, where their way starts.
+class HomeTab extends ConsumerWidget {
+  const HomeTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final paths = {
-      for (final island in archipelago)
-        if (island.pack case final pack?)
-          island.id: ref.watch(islandPathProvider(pack)).value,
-    };
-    final level = ref.watch(currentUiLevelProvider).value;
-    final open = archipelago.where((i) => !i.locked).length;
-    return Scaffold(
-      // World screens sit on the sea (BRIEF §10.2).
-      backgroundColor: AppColors.sea,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: ArchipelagoMap(
-              lessonsDone: {
-                for (final path in paths.values)
-                  for (final n in path?.nodes ?? const <PathNode>[])
-                    if (n.state == NodeState.done) n.node.id,
-              },
-              progress: {
-                for (final MapEntry(key: id, value: path) in paths.entries)
-                  if (path != null && path.nodes.isNotEmpty)
-                    id: (done: path.done, total: path.nodes.length),
-              },
-              // A closed island names the lesson it waits for (M12-7).
-              opensAfter: {
-                for (final MapEntry(key: id, value: path) in paths.entries)
-                  if (path?.opensAfter case final lesson?)
-                    id: lesson.of(Localizations.localeOf(context).languageCode),
-              },
-              onOpen: (id) => context.push(
-                '/island/${archipelago.firstWhere((i) => i.id == id).pack}',
-              ),
-            ),
-          ),
-          const Positioned(
-            left: AppSpace.screenPadding,
-            right: AppSpace.screenPadding,
-            bottom: AppSpace.screenPadding,
-            child: NextStepCard(),
-          ),
-        ],
-      ),
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.map_title),
-            Text(
-              l10n.map_islands_open(open, archipelago.length),
-              style: AppText.caption.copyWith(color: AppColors.muted),
-            ),
-          ],
+  Widget build(BuildContext context, WidgetRef ref) =>
+      switch (ref.watch(placeProvider).value) {
+        (:final island, :final arriving) => IslandScreen(
+          // A crossing lands on a new island: its own state, from its pier.
+          key: ValueKey(island),
+          islandId: island,
+          arriving: arriving,
         ),
-        actions: [
-          if (level != null) _LevelChip(level),
-          IconButton(
-            tooltip: l10n.map_settings,
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push('/settings'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// « Niveau 2 » (BRIEF §4.15), in the level colour.
-class _LevelChip extends StatelessWidget {
-  const _LevelChip(this.level);
-  final int level;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppSpace.x3,
-      vertical: AppSpace.x1,
-    ),
-    decoration: BoxDecoration(
-      color: AppColors.progress,
-      borderRadius: BorderRadius.circular(AppShape.chunkyButtonRadius),
-      border: Border.all(color: AppColors.ink, width: 2),
-    ),
-    child: Text(
-      AppLocalizations.of(context).map_level(level),
-      style: AppText.label.copyWith(color: AppColors.ink),
-    ),
-  );
+        null => const Scaffold(backgroundColor: AppColors.sea),
+      };
 }
 
 class GlossaryTab extends StatelessWidget {

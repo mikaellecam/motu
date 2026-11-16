@@ -1,7 +1,8 @@
-/// Actions & ETF as far as the lessons have greened it (BRIEF §4.2): [tiles]
-/// (as `IslandLayout.tiles`) with only the share [grown] (0 to 1) of their
-/// grass green, the tiles nearest the island's middle first, the others
-/// sand. Its shape never changes, so the wallet's buildings stand on land.
+/// A wallet's island as far as [grown] (0 to 1) greens it: [tiles] (as
+/// `IslandLayout.tiles`) with only that share of their grass green, the
+/// tiles nearest the island's middle first, the others sand. Its shape never
+/// changes, so the wallet's buildings stand on land. Drawn all grown since
+/// M13-1.
 List<String> grownTiles(List<String> tiles, double grown) {
   final land = [
     for (var j = 0; j < tiles.length; j++)
@@ -41,11 +42,6 @@ List<String> grownTiles(List<String> tiles, double grown) {
 int grownTrees(int trees, double grown) =>
     // A hair under, so a share landing on a whole tree does not round up.
     (trees * (grown.clamp(0.0, 1.0) * 2).clamp(0.0, 1.0) - 1e-9).ceil();
-
-/// The pieces of Les bases built at [grown] (0 to 1), one a lesson of its
-/// nine (M12-6): 1 the house, 2 to 6 the lighthouse's courses, 7 its gallery,
-/// 8 its lantern, 9 its light.
-int lesBasesPieces(double grown) => (grown.clamp(0.0, 1.0) * 9).round();
 
 /// Every lesson done: the island's landmark stands.
 bool landmarkStands(double grown) => grown >= 1;

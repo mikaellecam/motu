@@ -3,17 +3,21 @@ import 'dart:io';
 
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
+import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/content.dart';
+import 'package:finance_companion/domain/learning/next_step.dart';
 import 'package:finance_companion/domain/learning/path.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_scene.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
+import 'package:finance_companion/presentation/features/map/next_step_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,6 +41,14 @@ class StreamedProfiles extends Fake implements ProfileRepository {
     last = {...last, ...ids};
     completions.add(last);
   }
+
+  /// Where the app opens (M13-6).
+  String? saved;
+
+  @override
+  Future<String?> place() async => saved;
+  @override
+  Future<void> setPlace(String island) async => saved = island;
 
   @override
   Future<Profile?> load() async => null;
@@ -65,6 +77,8 @@ Future<void> show(
   int done = 6,
   String islandId = actionsEtfIsland,
   bool still = false,
+  List<Override> extra = const [],
+  NextStepView? next,
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -86,6 +100,9 @@ Future<void> show(
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => lesBases),
         profileRepositoryProvider.overrideWithValue(profiles),
+        // The lesson to do comes first, unless [next] says otherwise.
+        nextStepViewProvider.overrideWith((ref) async => next),
+        ...extra,
       ],
       child: MainApp(
         router: GoRouter(
@@ -297,5 +314,51 @@ void main() {
     expect(markers(), findsNWidgets(9));
     expect(world(tester).grown, [for (var i = 0; i < 9; i++) i < 5 ? 1 : 0]);
     expect(find.text('La grue · à toi de jouer'), findsOneWidget);
+  });
+
+  group('the bottom card is the next step (M13-6)', () {
+    NextStepView step(NextStep step, {String? title, String? trip}) =>
+        NextStepView(
+          step,
+          title: title == null ? null : Localized(title, title),
+          tripName: trip,
+        );
+
+    testWidgets('a lesson of this island: its card', (tester) async {
+      await show(
+        tester,
+        next: step(const PlayNode('ae.compound-toy'), title: 'x'),
+      );
+      expect(find.text('Le square · à toi de jouer'), findsOneWidget);
+      expect(find.byType(NextStepCard), findsNothing);
+    });
+
+    testWidgets('a trip first: the next-step card; a marker touched shows '
+        'its lesson instead', (tester) async {
+      await show(tester, next: step(const ContinueTrip('t1'), trip: 'Covid'));
+      expect(find.byType(NextStepCard), findsOneWidget);
+      expect(find.text('Covid'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel(RegExp(r'^1\. ')));
+      await tester.pump();
+      expect(find.byType(NextStepCard), findsNothing);
+      expect(find.text('La banque · terminée'), findsOneWidget);
+    });
+
+    testWidgets('a lesson of another island: sail there', (tester) async {
+      await show(
+        tester,
+        next: step(const PlayNode('lb.loan-cost'), title: 'Le vrai prix'),
+        extra: [
+          contentPacksProvider.overrideWith(
+            (ref) async => [lesBases, actionsEtf],
+          ),
+        ],
+      );
+      final sail = find.text('Naviguer vers Les bases');
+      expect(sail, findsOneWidget);
+      await tester.tap(sail);
+      await settle(tester);
+      expect(profiles.saved, lesBasesIsland);
+    });
   });
 }

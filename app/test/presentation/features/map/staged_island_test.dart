@@ -35,8 +35,12 @@ void main() {
             valueListenable: island,
             builder: (_, buildings, _) => StagedIsland(
               buildings: buildings,
-              builder: (_, frame) =>
-                  CustomPaint(painter: ArchipelagoPainter(buildings: frame)),
+              builder: (_, frame) => CustomPaint(
+                painter: ArchipelagoPainter(
+                  only: archipelago.single,
+                  buildings: frame,
+                ),
+              ),
             ),
           ),
         ),

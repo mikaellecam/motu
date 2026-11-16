@@ -50,11 +50,10 @@
   },
   "failure_storage": "Impossible de lire ou d'enregistrer sur ton appareil.",
   "failure_unexpected": "Une erreur inattendue s'est produite.",
-  "tab_map": "Carte",
+  "tab_map": "Archipel",
   "tab_wallets": "Portefeuille",
   "tab_explore": "Explorer",
   "tab_glossary": "Glossaire",
-  "map_title": "Ton archipel",
   "map_settings": "Param\u00e8tres",
   "@map_settings": {
     "description": "Accessibility label of the settings button in the map header."
@@ -2110,25 +2109,6 @@
   "order_cancel_title": "Annuler cet ordre\u202f?",
   "order_cancel_body": "Il ne partira pas, et ce qu'il r\u00e9servait redevient disponible.",
   "order_cancel_keep": "Garder l'ordre",
-  "map_islands_open": "{count, plural, one{{count} \u00eele ouverte sur {total}} other{{count} \u00eeles ouvertes sur {total}}}",
-  "@map_islands_open": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "map_level": "Niveau {level}",
-  "@map_level": {
-    "placeholders": {
-      "level": {
-        "type": "int"
-      }
-    }
-  },
   "next_step_lesson": "Prochaine le\u00e7on",
   "next_step_play": "Jouer",
   "next_step_mission": "Ta mission",
@@ -2743,5 +2723,13 @@
       }
     }
   },
-  "chart_sailing": "Travers\u00e9e\u2026"
+  "chart_sailing": "Travers\u00e9e\u2026",
+  "next_step_sail": "Naviguer vers {island}",
+  "@next_step_sail": {
+    "placeholders": {
+      "island": {
+        "type": "String"
+      }
+    }
+  }
 }
