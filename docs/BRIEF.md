@@ -292,7 +292,9 @@ Layout: Actions & ETF's district (§4.2, M13-2) or Les bases' port (M13-3) fills
 100 px a tile), under a bar with the island's name, « {done} sur {total} terminées » (closed: « S'ouvre après
 « {leçon} » »), the « {done}/{total} » pill and the settings gear (a back button while the map pushes it).
 Drag pans it and pinch zooms it, within bounds: it never leaves the screen, zooming out stops when it fits whole,
-zooming in at full detail (the map's M12-12 rule does not apply here). One marker per lesson unlocked, the same
+zooming in to 2.5× its full detail (M13-8; the map's M12-12 rule does not apply here). The port is cut to its
+harbour (the watchtower's roof down to the sea in front, the old jetty to the harbour mouth) and always covers the
+screen, so little of the mainland's grass shows (M13-8). One marker per lesson unlocked, the same
 size at any zoom, a 44 × 44 target: done, a navy disc with a check on its building; the lesson to do, a gold pin
 whose ring pulses; another open one (skipped at onboarding, after a pending mission), a small white dot. A locked
 lesson has no marker, and a marker never stands over nothing (decided 2026-11-17, M13-7): a lesson unlocked but
