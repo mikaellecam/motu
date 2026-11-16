@@ -134,8 +134,8 @@ Rules:
   Built (M9-11): in the style of the approved art direction, the « map » artboard of the canvas « Investment
   Companion — Art direction » (https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5), its islands where it places
   them: block islands on the sea, Actions & ETF in sand and grass with trees, the locked ones in grey stone
-  with their props (candlesticks, houses and towers, a crystal, a lighthouse) under clouds. The map opens on all
-  five above the next-step card, the smallest zoom it allows. Labels: Actions & ETF in a chunky pill with its
+  with their props (candlesticks, houses and towers, a crystal, a lighthouse) under clouds. The map shows all
+  five above the next-step card, fitted to the screen, and stays put: no pan, no zoom (M12-12). Labels: Actions & ETF in a chunky pill with its
   lessons done (« 2/12 »); a locked island's name with a lock (screen readers: « {île}, bientôt »).
 - Header: title "Ton archipel", islands opened count, level chip.
 - Next-step card at the bottom: always exactly one recommended action. Selection is a pure function

@@ -11,7 +11,8 @@ import '../../../domain/wallet/island_buildings.dart';
 import 'archipelago.dart';
 import 'living_island.dart';
 
-/// The archipelago, drawn in code, with pan and zoom (BRIEF §4.2). Each
+/// The archipelago, drawn in code, fitted to the screen and still (BRIEF
+/// §4.2, M12-12): no pan, no zoom. Each
 /// island's label is its tap target and its screen-reader entry.
 class ArchipelagoMap extends StatefulWidget {
   const ArchipelagoMap({
@@ -43,9 +44,6 @@ class ArchipelagoMap extends StatefulWidget {
 
 class _ArchipelagoMapState extends State<ArchipelagoMap>
     with TickerProviderStateMixin {
-  final _transform = TransformationController();
-  bool _opened = false;
-
   /// One staged run from [_from] to [_to] (BRIEF §10.5).
   late final _growth = AnimationController(
     vsync: this,
@@ -106,35 +104,18 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
   void dispose() {
     _growth.dispose();
     _green.dispose();
-    _transform.dispose();
     super.dispose();
   }
 
   /// The next-step card over the bottom of the map: the islands stay above.
   static const _cardRoom = 200.0;
 
-  /// The zoom that shows all five islands above the card, as the art
-  /// direction does, and the smallest the map allows.
-  static double fitScale(Size viewport) => math.max(
-    0.5,
-    math.min(
-      viewport.width / mapSize.width,
-      (viewport.height - _cardRoom) / mapSize.height,
-    ),
+  /// The scale that shows all five islands above the card, as the art
+  /// direction does.
+  static double fitScale(Size viewport) => math.min(
+    viewport.width / mapSize.width,
+    (viewport.height - _cardRoom) / mapSize.height,
   );
-
-  /// Opens on the whole archipelago, centred across, at the top.
-  void _open(Size viewport, double scale) {
-    if (_opened) return;
-    _opened = true;
-    final above = viewport.height - _cardRoom - mapSize.height * scale;
-    _transform.value = Matrix4.diagonal3Values(scale, scale, 1)
-      ..setTranslationRaw(
-        (viewport.width - mapSize.width * scale) / 2,
-        math.max(AppSpace.x2, above / 2),
-        0,
-      );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,48 +123,53 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
       builder: (context, constraints) {
         final viewport = constraints.biggest;
         final scale = fitScale(viewport);
-        _open(viewport, scale);
-        return InteractiveViewer(
-          transformationController: _transform,
-          constrained: false,
-          minScale: scale,
-          maxScale: math.max(2.5, scale * 2),
-          // Room to pan the islands anywhere on screen, not off it.
-          boundaryMargin: EdgeInsets.symmetric(
-            horizontal: viewport.width / scale / 2,
-            vertical: viewport.height / scale,
-          ),
-          child: SizedBox.fromSize(
-            size: mapSize,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: Listenable.merge([_growth, _green]),
-                    builder: (context, _) => CustomPaint(
-                      painter: ArchipelagoPainter(
-                        buildings: _frame,
-                        grown: _green.value,
-                        // Built at once, as far as its lessons (M12-6).
-                        grownBases: _greened(widget.progress[IslandId.basics]),
+        final above = viewport.height - _cardRoom - mapSize.height * scale;
+        // The whole archipelago, centred across, at the top.
+        return Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            Positioned(
+              left: (viewport.width - mapSize.width * scale) / 2,
+              top: math.max(AppSpace.x2, above / 2),
+              child: Transform.scale(
+                scale: scale,
+                alignment: Alignment.topLeft,
+                child: SizedBox.fromSize(
+                  size: mapSize,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([_growth, _green]),
+                          builder: (context, _) => CustomPaint(
+                            painter: ArchipelagoPainter(
+                              buildings: _frame,
+                              grown: _green.value,
+                              // Built at once, as far as its lessons (M12-6).
+                              grownBases: _greened(
+                                widget.progress[IslandId.basics],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      for (final island in archipelago)
+                        _IslandLabel(
+                          island: island,
+                          // ≥ 44 px on screen, whatever the scale.
+                          target: AppSpace.minTarget / scale,
+                          progress: widget.progress[island.id],
+                          opensAfter: widget.opensAfter[island.id],
+                          onTap: island.locked
+                              ? null
+                              : () => widget.onOpen(island.id),
+                        ),
+                    ],
                   ),
                 ),
-                for (final island in archipelago)
-                  _IslandLabel(
-                    island: island,
-                    // ≥ 44 px on screen even at the smallest zoom.
-                    target: AppSpace.minTarget / scale,
-                    progress: widget.progress[island.id],
-                    opensAfter: widget.opensAfter[island.id],
-                    onTap: island.locked
-                        ? null
-                        : () => widget.onOpen(island.id),
-                  ),
-              ],
+              ),
             ),
-          ),
+          ],
         );
       },
     );

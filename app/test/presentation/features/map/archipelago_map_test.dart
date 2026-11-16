@@ -161,16 +161,36 @@ void main() {
     }
   });
 
-  testWidgets('pan and zoom within bounds', (tester) async {
+  testWidgets('the map stays put: no pan, no zoom (M12-12)', (tester) async {
     await pumpMap(tester);
-    final viewer = tester.widget<InteractiveViewer>(
-      find.byType(InteractiveViewer),
-    );
-    // The opening view, all five islands, is the smallest.
-    expect(viewer.minScale, 1);
-    expect(viewer.maxScale, 2.5);
-    expect(viewer.panEnabled, isTrue);
-    expect(viewer.scaleEnabled, isTrue);
+    final screen = tester.getRect(find.byType(ArchipelagoMap));
+    Map<String, Rect> labels() => {
+      for (final name in ['Actions & ETF', 'Trading', 'Immobilier', 'Crypto'])
+        name: tester.getRect(find.text(name)),
+    };
+    final before = labels();
+    for (final rect in before.values) {
+      expect(screen.contains(rect.center), isTrue);
+    }
+    // The furthest drag each way, then a pinch.
+    for (final drag in [
+      const Offset(0, 2000),
+      const Offset(0, -2000),
+      const Offset(2000, 0),
+      const Offset(-2000, 0),
+    ]) {
+      await tester.dragFrom(screen.center, drag);
+      await tester.pumpAndSettle();
+      expect(labels(), before);
+    }
+    final a = await tester.startGesture(screen.center - const Offset(20, 0));
+    final b = await tester.startGesture(screen.center + const Offset(20, 0));
+    await a.moveBy(const Offset(-150, 0));
+    await b.moveBy(const Offset(150, 0));
+    await a.up();
+    await b.up();
+    await tester.pumpAndSettle();
+    expect(labels(), before);
   });
 
   group('the living island (M7-2)', () {
