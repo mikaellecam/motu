@@ -17,7 +17,7 @@ requirements (§11).
 | | | |
 |---|---|---|
 | <img src="../screenshots/m7-3-next-step.png" width="240"> | <img src="../screenshots/m7-1-map.png" width="240"> | <img src="../screenshots/m6-9-island-path.png" width="240"> |
-| The archipelago, painted in code (`CustomPainter`); each island grows with its lessons, and the next-step card names what to do | A first launch: the islands as the lessons left them | An island's path: a **dynamic list** of lessons with their state |
+| The archipelago, painted in code (`CustomPainter`); each island grows with its lessons, and the next-step card names what to do | A first launch: the islands as the lessons left them | An island up close: a marker per lesson on its building, which grows when the lesson is done (**coded animation**); pan and pinch |
 | <img src="../screenshots/m6-3-predict-reveal.png" width="240"> | <img src="../screenshots/m7-4-reveal-drawing.png" width="240"> | <img src="../screenshots/m6-8-livret-vs-etf.png" width="240"> |
 | Predict, then reveal: Apple or the world ETF in 2022, on real data | The reveal's curves drawing themselves (**coded animation**) | « Livret or ETF? »: 10 000 € on each since 2015, real prices (**chart**) |
 | <img src="../screenshots/m6-3-toy.png" width="240"> | <img src="../screenshots/m6-8-compound-toy.png" width="240"> | <img src="../screenshots/m6-8-dollar-trap.png" width="240"> |

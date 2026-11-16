@@ -2679,5 +2679,31 @@
     }
   },
   "wallet_plan_stop_keep": "Garder le versement",
-  "dca_set_up": "Le mettre en place"
+  "dca_set_up": "Le mettre en place",
+  "island_recentre": "Revenir \u00e0 ma le\u00e7on",
+  "island_replay": "Revoir",
+  "piece_ae_livret_vs_etf": "La banque",
+  "@piece_ae_livret_vs_etf": {
+    "description": "The building or harbour part a lesson grows on its island, here and in the piece_* strings below (M13-4); the names are drafts."
+  },
+  "piece_ae_fees_toy": "Le pont \u00e0 p\u00e9age",
+  "piece_ae_mission_first_etf": "Le grand magasin",
+  "piece_ae_apple_vs_world_2022": "La tour seule",
+  "piece_ae_march_2020": "Le quai",
+  "piece_ae_risk_ladder": "Les quatre tours",
+  "piece_ae_compound_toy": "Le square",
+  "piece_ae_mission_three_regions": "Le port",
+  "piece_ae_dollar_trap": "La tour des changes",
+  "piece_ae_calm_portfolio": "Le jardin sur le toit",
+  "piece_ae_mission_dca": "La tour de l'horloge",
+  "piece_ae_checkpoint_1": "La fl\u00e8che d'or",
+  "piece_lb_safety_cushion": "La digue",
+  "piece_lb_cash_inflation": "L'\u00e9chelle de mar\u00e9e",
+  "piece_lb_livret_inflation": "L'\u00e9cluse",
+  "piece_lb_mission_livret": "L'entrep\u00f4t",
+  "piece_lb_cushion_2020": "Le quai des ferries",
+  "piece_lb_loan_cost": "La grue",
+  "piece_lb_save_or_repay": "La capitainerie",
+  "piece_lb_spot_the_scam": "La vigie",
+  "piece_lb_checkpoint_1": "Le phare"
 }

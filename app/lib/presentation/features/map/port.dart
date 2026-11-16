@@ -17,24 +17,31 @@ import 'iso.dart';
 /// A lesson's part of the harbour: the node it is built with, where it
 /// stands, and how it is drawn.
 final class PortPart {
-  const PortPart(this.nodeId, this.x, this.y, this._draw);
+  const PortPart(this.nodeId, this.x, this.y, this._draw, {required this.top});
 
   final String nodeId;
   final double x, y;
+
+  /// Its top once built: where its marker stands (M13-4); before, the marker
+  /// sits on its empty spot.
+  final double top;
+
+  ({double x, double y, double z}) anchor({required bool built}) =>
+      (x: x, y: y, z: built ? top : 0.2);
   final void Function(IsoInk ink, double x, double y) _draw;
 }
 
 /// The nine, in the order of Les bases' lessons (BRIEF §4.3).
 const portParts = [
-  PortPart('lb.safety-cushion', 4.0, 3.5, _breakwater),
-  PortPart('lb.cash-inflation', 3.0, 0.9, _tideGauge),
-  PortPart('lb.livret-inflation', 0.9, 7.0, _lock),
-  PortPart('lb.mission-livret', -1.4, 4.3, _warehouse),
-  PortPart('lb.cushion-2020', 1.2, 1.5, _ferryQuay),
-  PortPart('lb.loan-cost', 1.4, 4.2, _crane),
-  PortPart('lb.save-or-repay', -1.0, 1.6, _harbourOffice),
-  PortPart('lb.spot-the-scam', -0.9, -0.9, _watchtower),
-  PortPart('lb.checkpoint-1', 4.0, 0.0, _lighthouse),
+  PortPart('lb.safety-cushion', 4.0, 3.5, _breakwater, top: 0.6),
+  PortPart('lb.cash-inflation', 3.0, 0.9, _tideGauge, top: 1.4),
+  PortPart('lb.livret-inflation', 0.9, 7.0, _lock, top: 0.5),
+  PortPart('lb.mission-livret', -1.4, 4.3, _warehouse, top: 1.3),
+  PortPart('lb.cushion-2020', 1.2, 1.5, _ferryQuay, top: 0.9),
+  PortPart('lb.loan-cost', 1.4, 4.2, _crane, top: 2.0),
+  PortPart('lb.save-or-repay', -1.0, 1.6, _harbourOffice, top: 2.0),
+  PortPart('lb.spot-the-scam', -0.9, -0.9, _watchtower, top: 2.2),
+  PortPart('lb.checkpoint-1', 4.0, 0.0, _lighthouse, top: 4.8),
 ];
 
 /// How many parts stand for those who skip Les bases at onboarding: the port
