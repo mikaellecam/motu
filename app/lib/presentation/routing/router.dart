@@ -7,6 +7,7 @@ import '../../application/learning/island_path.dart';
 import '../../application/learning/ui_level.dart';
 import '../../application/order/order_ticket.dart' show OrderDone;
 import '../../core/l10n/app_localizations.dart';
+import '../../domain/learning/path.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
 import '../features/map/archipelago.dart';
@@ -145,6 +146,11 @@ class MapTab extends ConsumerWidget {
         children: [
           Positioned.fill(
             child: ArchipelagoMap(
+              lessonsDone: {
+                for (final path in paths.values)
+                  for (final n in path?.nodes ?? const <PathNode>[])
+                    if (n.state == NodeState.done) n.node.id,
+              },
               progress: {
                 for (final MapEntry(key: id, value: path) in paths.entries)
                   if (path != null && path.nodes.isNotEmpty)

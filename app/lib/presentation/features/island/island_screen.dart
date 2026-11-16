@@ -131,6 +131,13 @@ class _Path extends ConsumerWidget {
                     child: CustomPaint(
                       painter: ArchipelagoPainter(
                         only: island,
+                        // Actions & ETF's district, a building per lesson
+                        // done (M13-2); its ferry once its line is open.
+                        lessonsDone: {
+                          for (final n in path.nodes)
+                            if (n.state == NodeState.done) n.node.id,
+                        },
+                        ferry: path.open,
                         // Grown by the lessons below it (M9-19, M12-6).
                         grown: grown,
                         grownBases: grown,

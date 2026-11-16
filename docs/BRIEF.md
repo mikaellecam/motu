@@ -148,13 +148,19 @@ Rules:
   user's progress as it happens; "today" is the user's local day; an open trip is one not finished, the newest
   first. Header: « {n} île(s) ouverte(s) sur 5 » under the title, and « Niveau {n} » (§4.15) in the level
   colour. Unread companion moments lead the card (M8-3, §4.12).
-- Lessons grow the Actions & ETF island too (decided 2026-10-24, M9-19): from a sand bank (none done) to the
-  art direction's island (all done). Nature comes first: a tree with the first lesson, all five by half the
-  lessons (`grownTrees`); the grass turns green from the island's middle out, a share per lesson
-  (`grownTiles`); every lesson done raises its landmark, a stone column capped in the levels' gold, at its
-  right end (`landmarkStands`). Its shape never changes. On
-  the map the change eases in over 1,4 s (at once with animations off, and at once when the lessons first
-  load); the island path's header shows it too, and onboarding the sand bank the user starts from.
+- Actions & ETF is a business district, a building per lesson (decided 2026-11-16, M13-2; canvas « Motu —
+  Lesson islands » https://claude.ai/artifact/HdJ8BVCq743bB16CfbeP7N, page « Actions & ETF »; it replaces
+  M9-19's sand bank, grass, trees and column). A New York style street grid in the island's shape (asphalt,
+  sidewalks, a promenade round it, a stone sea wall over the dirt), every block standing from the start. Each
+  lesson has its building, keyed by node id (`districtBuildings`): 1 La banque, 2 Le pont à péage, 3 Le grand
+  magasin, 4 La tour seule, 5 Le quai, 6 Les quatre tours, 7 Le square, 8 Le port, 9 La tour des changes, 10 Le
+  jardin sur le toit, 11 La tour de l'horloge, 12 La flèche d'or (names are drafts). Plain and low before its
+  lesson, it grows once the lesson is done, it alone (`districtGrown`), in whatever order lessons are done:
+  floors, setbacks, sign, crown; the checkpoint gives the spire its gold crown. The blocks that are no lesson's
+  (brownstones, brick and limestone mid-rises with water towers) never change. On its mainland side a wooden
+  ferry pier, the ferry at its end once the island is open. Blocky on the map and over the path; finer from
+  60 px a tile (windows, lane lines, sea-wall strata). Built at once (the island up close eases it, M13-4).
+  Onboarding still shows M9-19's sand bank until M13-6.
 - Les bases comes first and opens the other islands (decided 2026-10-28, M12-7): an island's lessons open
   once the lessons it waits for are done (`islandOpen`), or as soon as it has progress (installs from v1.0.0
   keep Actions & ETF), or when the questionnaire opens it (Q3, §4.1). Closed, its lessons are all locked; its
