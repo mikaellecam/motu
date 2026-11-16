@@ -16,6 +16,7 @@ import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:finance_companion/presentation/features/map/port.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -220,5 +221,58 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Commencer'), findsNothing);
+  });
+
+  testWidgets('Les bases draws the mainland\'s port over its path (M13-3)', (
+    tester,
+  ) async {
+    tester.platformDispatcher.localesTestValue = [const Locale('fr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    final pack = decodePack(packJson());
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          islandPathProvider(lesBasesIsland).overrideWith(
+            (ref) async => IslandPathView(pack.title, [
+              for (final n in pack.nodes) PathNode(n, NodeState.open),
+            ]),
+          ),
+          portViewProvider.overrideWith(
+            (ref) async => const PortView(
+              completed: {'lb.safety-cushion', 'lb.loan-cost'},
+              skipped: false,
+              lines: {actionsEtfIsland},
+            ),
+          ),
+        ],
+        child: MainApp.screen(const IslandScreen(islandId: lesBasesIsland)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final port = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<PortPainter>()
+        .single;
+    expect(port.built, [
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+    ]);
+    expect(port.lines, {actionsEtfIsland});
+    // No island painted over it: Les bases is no island any more.
+    expect(
+      tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .map((p) => p.painter)
+          .whereType<ArchipelagoPainter>(),
+      isEmpty,
+    );
   });
 }

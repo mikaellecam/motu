@@ -14,6 +14,12 @@ const actionsEtfIsland = 'actions-etf';
 /// Money before investing (M12, BRIEF §4.3).
 const lesBasesIsland = 'les-bases';
 
+/// The islands to come (BRIEF §4.2): on the map, not playable yet; their
+/// gates are recorded already, and Les bases' port opens their sea lines.
+const realEstateIsland = 'real-estate';
+const tradingIsland = 'trading';
+const cryptoIsland = 'crypto';
+
 /// The islands the app plays, each with a bundled pack (BRIEF §4.2). The
 /// map draws each one open (`IslandLayout.pack`).
 const playableIslands = [lesBasesIsland, actionsEtfIsland];
@@ -28,10 +34,28 @@ Future<ContentPack> contentPack(Ref ref, String islandId) =>
 /// bases comes first, and Actions & ETF opens after its fifth lesson. Here
 /// rather than in `island.json`, since a published version never changes
 /// (ADR-006); it moves into the pack with Actions & ETF's next version. The
-/// later islands' are in BRIEF §4.2.
+/// islands to come wait as BRIEF §4.2 records.
 const islandRequires = {
   actionsEtfIsland: ['lb.cushion-2020'],
+  realEstateIsland: ['lb.loan-cost'],
+  tradingIsland: ['lb.spot-the-scam', 'ae.checkpoint-1'],
+  cryptoIsland: ['lb.spot-the-scam', 'ae.risk-ladder'],
 };
+
+/// The sea lines open out of Les bases' port (M13-3), by island: Actions &
+/// ETF's once its lessons are open ([actionsEtfOpen], as [lessonsOpen] says),
+/// each island to come's once every lesson it waits for is done.
+Set<String> portLines(Set<String> completed, {required bool actionsEtfOpen}) =>
+    {
+      if (actionsEtfOpen) actionsEtfIsland,
+      for (final id in const [realEstateIsland, tradingIsland, cryptoIsland])
+        if (islandOpen(
+          requires: islandRequires[id]!,
+          lessons: const [],
+          completed: completed,
+        ))
+          id,
+    };
 
 /// Whether [pack]'s lessons are open (`islandOpen`, M12-7): the questionnaire
 /// opens Actions & ETF for those who skip Les bases.
