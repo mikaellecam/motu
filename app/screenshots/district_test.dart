@@ -38,7 +38,7 @@ class _District extends CustomPainter {
         origin: Offset(size.width * 0.58, size.height * 0.12),
       ),
       archipelago.firstWhere((i) => i.id == IslandId.actionsEtf).tiles,
-      grown: [for (var i = 0; i < 12; i++) i < done],
+      grown: [for (var i = 0; i < 12; i++) i < done ? 1.0 : 0.0],
       ferry: true,
     );
   }

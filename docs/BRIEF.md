@@ -74,7 +74,7 @@ Bottom tabs: **Carte** (home), **Portefeuille**, **Explorer**, **Glossaire**. Se
 |---|---|---|
 | Onboarding (5 questions) | `/onboarding` | First launch only; re-takeable from Settings |
 | Map | `/` | Islands, next-step card, level chip |
-| Island path | `/island/:islandId` | Node list, progress |
+| Island up close | `/island/:islandId` | The island, a marker per lesson, the lesson's card (M13-4) |
 | Node player | `/node/:nodeId` | Renders one node type (§4.3) |
 | Wallets list | `/wallets` | Live wallet + trips (newest first, with status) + "Nouveau voyage" + lesson suggestions: the bridges of completed lessons |
 | Wallet (portfolio) | `/wallet/:walletId` | Same layout live and trip; trips add the trip header + time controls |
@@ -260,20 +260,25 @@ A curve restated at INSEE's prices credits them: « Source : Insee, prix à la c
 en euros de {mois} ». A lesson or a term of Les bases links Actions & ETF's terms (« inflation », « Livret A »,
 « matelas de sécurité », M12-1).
 
-Island path (`/island/:islandId`): the nodes in order, each done (✓, replayable), current (the node the
-next-step card points to), open or locked, with « {done} sur {total} terminées » on top. Decided 2026-10-11:
-nodes skipped at onboarding stay open; a pending mission does not lock what follows (the lessons after it
-open, the mission completes whenever the wallet satisfies it); « Tout afficher dès maintenant » changes the
-UI level only, never the node order.
-Layout (decided 2026-10-23, « stepping islets », artboard `Path-E` of the art direction canvas
-https://claude.ai/artifact/Fjf3tVK7odDPsGXX6JzFw5): on the sea, the island as the map paints it (its lessons'
-growth, no wallet building, M13-1), then a chunky header card (title, « {done} sur {total} terminées », progress bar). Each
-node stands on an identical 2×2 block islet on the island art's iso grid, in a strict zig-zag one constant
-step apart; a round chunky bubble on it shows the node type's icon, filled by its state (done `progress`,
-current `primary` and larger with a white ring, open `surface`, locked grey stone), its title and « type ·
-state » beside it. A plank bridge is built from each node done to the next; a dotted plank route on the
-water leads on from the others. Under the current node's islet, a card with its type, its title and
-« Commencer ». Locked islets are grey stone, as on the map.
+Island up close (`/island/:islandId`, decided 2026-11-16, M13-4; canvas « Motu — Lesson islands », page
+« Naviguer »): the nodes in order, each done (replayable), current (the node the next-step card points to), open
+or locked. Decided 2026-10-11: nodes skipped at onboarding stay open; a pending mission does not lock what follows
+(the lessons after it open, the mission completes whenever the wallet satisfies it); « Tout afficher dès
+maintenant » changes the UI level only, never the node order.
+Layout: Actions & ETF's district (§4.2, M13-2) or Les bases' port (M13-3) fills the screen at full detail (120 and
+100 px a tile), under a bar with the island's name, « {done} sur {total} terminées » (closed: « S'ouvre après
+« {leçon} » »), the « {done}/{total} » pill and the settings gear (a back button while the map pushes it).
+Drag pans it and pinch zooms it, within bounds: it never leaves the screen, zooming out stops when it fits whole,
+zooming in at full detail (the map's M12-12 rule does not apply here). One marker per lesson on its building's
+top (on its part's spot at the port, until built), the same size at any zoom, a 44 × 44 target: done, a navy disc
+with a check; the lesson to do, a gold pin whose ring pulses; any other, a small white dot. No number on the
+island. Screen readers hear « {n}. {titre}, {bâtiment}, {état} ». Under the scene, the selected lesson's card
+(the lesson to do by default): its number, « {bâtiment} · {état} », its title, its type, and « Commencer »,
+« Revoir » (done) or, locked, « S'ouvre après « {la leçon d'avant, ou celle qui ouvre l'île} » » disabled. A
+round button brings the view back to the lesson to do. It opens framed on that lesson (×0.7). A lesson done
+grows its building on the way back, eased over 1,4 s (the port builds its part at once), then the view glides
+(0,9 s) to the next marker. With the system's animations off: no pulse, no glide, the building grows at once.
+The building names are drafts (fr + en, `piece_*`). It replaced the « stepping islets » (M6-9, `Path-E`).
 
 Content pack format (`content/packs/<islandId>/<version>/`), validated by `cmd/contentcheck`:
 
@@ -1268,7 +1273,8 @@ All three run at once, without motion, when the system's animations are off.
 Value counters (M7-4, `CountUp`): under a reveal and a decision, each end value counts up from the amount it
 started from, with its signed change, in step with the curve (same duration and curve), then shows the exact
 figures; screen readers hear the end figures only.
-Others: value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
+Others: an island up close (M13-4): a lesson's building growing as its lesson is done, the view gliding to the
+next marker, the gold pin's ring pulsing (hand-coded, `AnimationController`); value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
 (package-provided, counts as the third non-coded animation).
 
 

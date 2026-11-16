@@ -218,7 +218,7 @@ class ArchipelagoPainter extends CustomPainter {
           pen,
           island.projection,
           island.tiles,
-          grown: districtGrown(lessons),
+          grown: [for (final g in districtGrown(lessons)) g ? 1.0 : 0.0],
           ferry: ferry,
         );
         continue;

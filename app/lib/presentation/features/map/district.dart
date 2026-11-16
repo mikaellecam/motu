@@ -12,28 +12,57 @@ import 'iso.dart';
 /// A lesson's building: the node it grows with, where it stands on the
 /// island's grid (a block's centre), and how it is drawn.
 final class DistrictBuilding {
-  const DistrictBuilding(this.nodeId, this.x, this.y, this._draw);
+  const DistrictBuilding(
+    this.nodeId,
+    this.x,
+    this.y,
+    this._draw, {
+    required this.top,
+    this.low = 0.8,
+  });
 
   final String nodeId;
   final double x, y;
-  final void Function(IsoInk ink, double x, double y, {required bool grown})
+
+  /// Its top grown, and plain: where its marker stands (M13-4).
+  final double top, low;
+
+  /// Its marker's point at [t] (0 plain, 1 grown): on its top, in the
+  /// island's grid.
+  ({double x, double y, double z}) anchor(double t) =>
+      (x: x, y: y, z: low + (top - low) * t.clamp(0.0, 1.0));
+  final void Function(IsoInk ink, double x, double y, {required double t})
   _draw;
 }
 
 /// The twelve, in the order of Actions & ETF's lessons (BRIEF §4.3).
 const districtBuildings = [
-  DistrictBuilding('ae.livret-vs-etf', 1.5, 5.5, _bank),
-  DistrictBuilding('ae.fees-toy', 0.5, 4.5, _tollBridge),
-  DistrictBuilding('ae.mission-first-etf', 2.5, 5.5, _store),
-  DistrictBuilding('ae.apple-vs-world-2022', 3.5, 5.5, _loneTower),
-  DistrictBuilding('ae.march-2020', 5.5, 5.5, _wharf),
-  DistrictBuilding('ae.risk-ladder', 4.5, 4.5, _fourTowers),
-  DistrictBuilding('ae.compound-toy', 3.5, 4.5, _square),
-  DistrictBuilding('ae.mission-three-regions', 6.5, 3.5, _harbour),
-  DistrictBuilding('ae.dollar-trap', 4.5, 3.5, _exchange),
-  DistrictBuilding('ae.calm-portfolio', 2.5, 3.5, _roofGarden),
-  DistrictBuilding('ae.mission-dca', 3.5, 2.5, _clockTower),
-  DistrictBuilding('ae.checkpoint-1', 2.5, 2.5, _spire),
+  DistrictBuilding('ae.livret-vs-etf', 1.5, 5.5, _bank, top: 1.2),
+  DistrictBuilding('ae.fees-toy', 0.5, 4.5, _tollBridge, top: 1.9, low: 0.5),
+  DistrictBuilding('ae.mission-first-etf', 2.5, 5.5, _store, top: 1.3),
+  DistrictBuilding(
+    'ae.apple-vs-world-2022',
+    3.5,
+    5.5,
+    _loneTower,
+    top: 3.8,
+    low: 1.3,
+  ),
+  DistrictBuilding('ae.march-2020', 5.5, 5.5, _wharf, top: 0.6, low: 0.4),
+  DistrictBuilding('ae.risk-ladder', 4.5, 4.5, _fourTowers, top: 2.7, low: 1.0),
+  DistrictBuilding('ae.compound-toy', 3.5, 4.5, _square, top: 1.6),
+  DistrictBuilding(
+    'ae.mission-three-regions',
+    6.5,
+    3.5,
+    _harbour,
+    top: 1.3,
+    low: 0.5,
+  ),
+  DistrictBuilding('ae.dollar-trap', 4.5, 3.5, _exchange, top: 2.3),
+  DistrictBuilding('ae.calm-portfolio', 2.5, 3.5, _roofGarden, top: 1.8),
+  DistrictBuilding('ae.mission-dca', 3.5, 2.5, _clockTower, top: 3.4),
+  DistrictBuilding('ae.checkpoint-1', 2.5, 2.5, _spire, top: 5.6, low: 0.9),
 ];
 
 /// Which of [districtBuildings] stand grown: those whose lesson is in
@@ -60,14 +89,15 @@ const _around = 0.7;
 bool districtDetailed(IsoProjection p) => p.tile >= 60;
 
 /// Paints the district on [tiles] (as `IslandLayout.tiles`: `S` the
-/// promenade round it, any other land a block), [grown] as [districtGrown]
+/// promenade round it, any other land a block), each building [grown] from 0
+/// (plain) to 1 (as [districtGrown] says once its lesson is done)
 /// gives it, its ferry pier on the mainland side, the ferry at its end when
 /// [ferry].
 void paintDistrict(
   BlockPen pen,
   IsoProjection p,
   List<String> tiles, {
-  required List<bool> grown,
+  required List<double> grown,
   required bool ferry,
 }) {
   final ink = IsoInk(pen, p);
@@ -80,7 +110,7 @@ void paintDistrict(
     for (final (i, b) in districtBuildings.indexed)
       (
         b.x + b.y,
-        () => b._draw(ink, b.x, b.y, grown: i < grown.length && grown[i]),
+        () => b._draw(ink, b.x, b.y, t: i < grown.length ? grown[i] : 0),
       ),
   ]..sort((a, b) => a.$1.compareTo(b.$1));
   for (final (_, draw) in things) {
@@ -449,9 +479,12 @@ void _filler(IsoInk ink, double x, double y, int kind) {
 
 // ---------------------------------------------------------------- the twelve
 
-double _grow(bool grown) => grown ? 1 : _plain;
+/// A building's heights at [t] (0 plain, 1 grown): eased in between when its
+/// lesson is just done (M13-4).
+double _grow(double t) => _plain + (1 - _plain) * t.clamp(0.0, 1.0);
 
-void _bank(IsoInk ink, double x, double y, {required bool grown}) {
+void _bank(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   const s = DistrictPalette.limestone;
   if (!grown) {
     ink
@@ -484,7 +517,8 @@ void _bank(IsoInk ink, double x, double y, {required bool grown}) {
     ..gable(x, y, 0.7, 0.7, 0.24, s, z: 0.9);
 }
 
-void _tollBridge(IsoInk ink, double x, double y, {required bool grown}) {
+void _tollBridge(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final p = ink.p;
   if (!grown) {
     // A plank footbridge on piles.
@@ -518,14 +552,15 @@ void _tollBridge(IsoInk ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _store(IsoInk ink, double x, double y, {required bool grown}) {
+void _store(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final top = ink.setbacks(
     x,
     y,
     const [(0.7, 1.15)],
     DistrictPalette.brick,
     DistrictPalette.litWindow,
-    grow: _grow(grown),
+    grow: _grow(t),
   );
   if (!grown) return;
   // Its awnings, then its sign on the roof.
@@ -545,14 +580,15 @@ void _store(IsoInk ink, double x, double y, {required bool grown}) {
   ink.box(x, y, 0.5, 0.06, 0.16, DistrictPalette.white, z: top);
 }
 
-void _loneTower(IsoInk ink, double x, double y, {required bool grown}) {
+void _loneTower(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final top = ink.setbacks(
     x,
     y,
     const [(0.4, 3.3)],
     DistrictPalette.glass,
     DistrictPalette.glassWindow,
-    grow: _grow(grown),
+    grow: _grow(t),
   );
   if (grown) {
     ink.pen.line(
@@ -563,7 +599,8 @@ void _loneTower(IsoInk ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _wharf(IsoInk ink, double x, double y, {required bool grown}) {
+void _wharf(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final p = ink.p;
   for (final dx in grown ? const [0.6, 1.1, 1.5] : const [0.6]) {
     for (final dy in const [-0.18, 0.18]) {
@@ -580,7 +617,7 @@ void _wharf(IsoInk ink, double x, double y, {required bool grown}) {
     ..gable(x + 0.95, y, 0.6, 0.34, 0.14, DistrictPalette.slate, z: 0.33);
 }
 
-void _fourTowers(IsoInk ink, double x, double y, {required bool grown}) {
+void _fourTowers(IsoInk ink, double x, double y, {required double t}) {
   for (final (i, (s, h)) in [
     (MapPalette.buildings[3].$1, 0.7),
     (MapPalette.buildings[0].$1, 1.3),
@@ -593,12 +630,13 @@ void _fourTowers(IsoInk ink, double x, double y, {required bool grown}) {
       [(0.16, h)],
       s,
       AppColors.surface.withValues(alpha: 0.7),
-      grow: _grow(grown),
+      grow: _grow(t),
     );
   }
 }
 
-void _square(IsoInk ink, double x, double y, {required bool grown}) {
+void _square(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final i = x.floor().toDouble(), j = y.floor().toDouble();
   ink.flat([
     ink.p.project(i + 0.1, j + 0.1),
@@ -607,7 +645,7 @@ void _square(IsoInk ink, double x, double y, {required bool grown}) {
     ink.p.project(i + 0.1, j + 0.9),
   ], MapPalette.grass);
   // Its tree: a sapling, then a tree of three tiers.
-  final g = 0.5 + 0.5 * _grow(grown);
+  final g = 0.5 + 0.5 * _grow(t);
   ink
     ..box(x, y, 0.16, 0.16, 0.55 * g, MapPalette.trunk)
     ..box(x, y, 0.72 * g, 0.72 * g, 0.36 * g, MapPalette.leaves, z: 0.55 * g);
@@ -617,7 +655,8 @@ void _square(IsoInk ink, double x, double y, {required bool grown}) {
     ..box(x, y, 0.28, 0.28, 0.24, MapPalette.leaves, z: 1.23);
 }
 
-void _harbour(IsoInk ink, double x, double y, {required bool grown}) {
+void _harbour(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final colours = [for (final (s, _) in MapPalette.buildings.take(3)) s];
   for (final (k, s) in colours.indexed) {
     if (!grown && k > 0) break;
@@ -638,14 +677,15 @@ void _harbour(IsoInk ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _exchange(IsoInk ink, double x, double y, {required bool grown}) {
+void _exchange(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final top = ink.setbacks(
     x,
     y,
     const [(0.6, 2.0)],
     DistrictPalette.slate,
     DistrictPalette.glassWindow,
-    grow: _grow(grown),
+    grow: _grow(t),
   );
   if (!grown) return;
   // Its ticker band, gold.
@@ -669,14 +709,15 @@ void _exchange(IsoInk ink, double x, double y, {required bool grown}) {
     ..box(x, y, 0.3, 0.3, 0.2, DistrictPalette.slate, z: top);
 }
 
-void _roofGarden(IsoInk ink, double x, double y, {required bool grown}) {
+void _roofGarden(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final top = ink.setbacks(
     x,
     y,
     const [(0.64, 1.35)],
     DistrictPalette.limestone,
     DistrictPalette.darkWindow,
-    grow: _grow(grown),
+    grow: _grow(t),
   );
   if (!grown) return;
   ink.box(x, y, 0.5, 0.5, 0.06, MapPalette.leaves, z: top);
@@ -685,14 +726,15 @@ void _roofGarden(IsoInk ink, double x, double y, {required bool grown}) {
   }
 }
 
-void _clockTower(IsoInk ink, double x, double y, {required bool grown}) {
+void _clockTower(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final top = ink.setbacks(
     x,
     y,
     const [(0.62, 1.7), (0.46, 0.7)],
     DistrictPalette.limestone,
     DistrictPalette.darkWindow,
-    grow: _grow(grown),
+    grow: _grow(t),
   );
   if (!grown) return;
   final p = ink.p;
@@ -709,14 +751,15 @@ void _clockTower(IsoInk ink, double x, double y, {required bool grown}) {
   ink.pyramid(x, y, 0.46, 0.7, DistrictPalette.copper, z: top);
 }
 
-void _spire(IsoInk ink, double x, double y, {required bool grown}) {
+void _spire(IsoInk ink, double x, double y, {required double t}) {
+  final grown = t >= 1;
   final top = ink.setbacks(
     x,
     y,
     const [(0.66, 2.1), (0.52, 1.0), (0.4, 0.7), (0.28, 0.4)],
     DistrictPalette.limestone,
     DistrictPalette.litWindow,
-    grow: _grow(grown),
+    grow: _grow(t),
   );
   if (!grown) return;
   // Its gold crown: the checkpoint.

@@ -56,7 +56,7 @@ void main() {
     /// The district at [tile] px a tile, its pixels.
     Future<Uint8List> paint({
       required double tile,
-      required List<bool> grown,
+      required List<double> grown,
       bool ferry = true,
     }) async {
       final size = Size(tile * 12, tile * 9);
@@ -86,12 +86,12 @@ void main() {
       testWidgets('at $tile px a tile, a grown building changes the picture, '
           'and the same lessons draw the same', (tester) async {
         await tester.runAsync(() async {
-          final plain = await paint(tile: tile, grown: List.filled(12, false));
+          final plain = await paint(tile: tile, grown: List.filled(12, 0.0));
           final one = await paint(
             tile: tile,
-            grown: [for (var i = 0; i < 12; i++) i == 11],
+            grown: [for (var i = 0; i < 12; i++) i == 11 ? 1.0 : 0.0],
           );
-          final same = await paint(tile: tile, grown: List.filled(12, false));
+          final same = await paint(tile: tile, grown: List.filled(12, 0.0));
           expect(sameBytes(plain, same), isTrue);
           expect(sameBytes(plain, one), isFalse);
         });
