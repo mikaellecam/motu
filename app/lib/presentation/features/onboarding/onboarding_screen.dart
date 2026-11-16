@@ -14,6 +14,7 @@ import '../../../core/widgets/chunky.dart';
 import '../../../domain/learning/profile.dart';
 import '../../../domain/learning/profile_rules.dart';
 import '../map/archipelago.dart';
+import '../map/port.dart';
 
 /// Five questions, then where the path starts and why (BRIEF §4.1), on the
 /// sea under the island, as the art direction's « onboarding question »
@@ -48,38 +49,41 @@ class OnboardingScreen extends ConsumerWidget {
   }
 }
 
-/// The island the way starts on as the map paints it, bare (M12-7): Les
-/// bases, or Actions & ETF for those who skip it.
+/// Where the way starts, before any lesson (M12-7, M13-6): Les bases' port
+/// with its old jetty, or Actions & ETF's district all plain for those who
+/// skip it.
 class _Island extends StatelessWidget {
-  const _Island({this.id = IslandId.basics});
+  const _Island({this.island = lesBasesIsland});
 
-  final IslandId id;
+  final String island;
 
   @override
-  Widget build(BuildContext context) {
-    final island = archipelago.firstWhere((i) => i.id == id);
-    return SizedBox(
-      height: 170,
-      // Les bases as wide as Actions & ETF, as on its path screen.
-      child: Transform.scale(
-        scale: _actionsEtfHalo / island.halo.width,
-        alignment: Alignment.bottomCenter,
-        child: CustomPaint(
-          painter: ArchipelagoPainter(
-            only: island,
-            // No lesson done yet: a sand bank for them to build (M9-19).
-            grown: 0,
-            grownBases: 0,
-          ),
-        ),
-      ),
-    );
-  }
-
-  static final _actionsEtfHalo = archipelago
-      .firstWhere((i) => i.id == IslandId.actionsEtf)
-      .halo
-      .width;
+  Widget build(BuildContext context) => SizedBox(
+    height: 170,
+    child: ExcludeSemantics(
+      child: island == lesBasesIsland
+          ? CustomPaint(
+              painter: PortPainter(
+                built: const [],
+                lines: const {},
+                // Framed on the old jetty and its two rowboats.
+                tile: 40,
+                centre: (0.9, 8.9),
+                at: const Alignment(0.15, 0.2),
+              ),
+            )
+          : Transform.scale(
+              scale: 0.8,
+              alignment: Alignment.bottomCenter,
+              child: CustomPaint(
+                painter: ArchipelagoPainter(
+                  only: archipelago.single,
+                  lessonsDone: const {},
+                ),
+              ),
+            ),
+    ),
+  );
 }
 
 class _Question extends ConsumerWidget {
@@ -218,11 +222,7 @@ class _Result extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpace.screenPadding),
       children: [
-        _Island(
-          id: island == actionsEtfIsland
-              ? IslandId.actionsEtf
-              : IslandId.basics,
-        ),
+        _Island(island: island),
         ChunkyCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

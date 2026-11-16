@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../application/companion/companion.dart';
+import '../../../application/learning/content.dart';
 import '../../../application/learning/next_step_card.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../domain/learning/content.dart';
 import '../../../core/l10n/formats.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
@@ -17,7 +19,12 @@ import '../companion/companion_card.dart';
 /// it follows the user's progress as it happens. Nothing before the
 /// questionnaire, nor while it loads.
 class NextStepCard extends ConsumerWidget {
-  const NextStepCard({super.key});
+  const NextStepCard({super.key, this.here, this.onSail});
+
+  /// The island shown up close (M13-6): a lesson of another island offers
+  /// to sail there ([onSail]) rather than to play it from here.
+  final String? here;
+  final ValueChanged<String>? onSail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,7 +33,24 @@ class NextStepCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final language = Localizations.localeOf(context).languageCode;
     final title = view.title?.of(language);
+    // The island a lesson belongs to, when it is not the one shown.
+    ContentPack? elsewhere(String nodeId) => onSail == null
+        ? null
+        : [
+            for (final pack
+                in ref.watch(contentPacksProvider).value ?? const [])
+              if (pack.id != here && pack.nodes.any((n) => n.id == nodeId))
+                pack,
+          ].firstOrNull;
     final card = switch (view.step) {
+      PlayNode(:final nodeId) ||
+      DoMission(:final nodeId) when elsewhere(nodeId) != null => (
+        view.step is DoMission ? l10n.next_step_mission : l10n.next_step_lesson,
+        title,
+        l10n.next_step_sail(elsewhere(nodeId)!.title.of(language)),
+        ChunkyButtonKind.primary,
+        () => onSail!(elsewhere(nodeId)!.id),
+      ),
       PlayNode(:final nodeId) => (
         l10n.next_step_lesson,
         title,

@@ -351,6 +351,10 @@ class Profiles extends Table {
   /// null for the default.
   IntColumn get liveStartingCents => integer().nullable()();
 
+  /// The island the user was last on, up close (v6, M13-6): the app opens
+  /// there; null for where the way starts.
+  TextColumn get place => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 

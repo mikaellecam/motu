@@ -85,6 +85,18 @@ class ProfileRepository {
     ),
   );
 
+  /// The island the user was last on, up close (M13-6); null before the
+  /// first onboarding or the first island seen.
+  Future<String?> place() =>
+      guardStorage(() async => (await _db.learningDao.profile())?.place);
+
+  /// Remembers [island] as where the app opens (M13-6); nothing before the
+  /// first onboarding, which has no row to keep it in.
+  Future<void> setPlace(String island) => guardStorage(
+    () =>
+        _db.learningDao.updateProfile(ProfilesCompanion(place: Value(island))),
+  );
+
   /// The « Tout afficher dès maintenant » setting (BRIEF §4.15).
   Future<bool> showAll() => guardStorage(
     () async => (await _db.learningDao.profile())?.showAll ?? false,

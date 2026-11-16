@@ -50,7 +50,7 @@ not.
 
 | Requirement (teacher's brief) | Where in the app |
 |---|---|
-| ≥ 3 meaningful screens + navigation | Bottom tabs (Carte, Portefeuille, Explorer, Glossaire) + flows (asset, order, trip wizard, node player) |
+| ≥ 3 meaningful screens + navigation | Bottom tabs (Archipel, Portefeuille, Explorer, Glossaire) + flows (asset, order, trip wizard, node player) |
 | A form with validation | Order form, trip wizard (date + name), onboarding, DCA form |
 | A dynamic list | Explorer catalogue, positions, glossary, wallets list |
 | ≥ 1 REST API + JSON → Dart objects | Our backend (`/v1/...`) + Frankfurter called directly by the app |
@@ -68,12 +68,13 @@ not.
 
 ## 3. Navigation and screens
 
-Bottom tabs: **Carte** (home), **Portefeuille**, **Explorer**, **Glossaire**. Settings from the map header.
+Bottom tabs: **Archipel** (home, « Carte » until M13-6), **Portefeuille**, **Explorer**, **Glossaire**. Settings from the
+island's bar (M13-6).
 
 | Screen | Route | Notes |
 |---|---|---|
 | Onboarding (5 questions) | `/onboarding` | First launch only; re-takeable from Settings |
-| Map | `/` | Islands, next-step card, level chip |
+| Archipel | `/` | The island the user was last on, up close (§4.3), its next step (M13-6) |
 | Island up close | `/island/:islandId` | The island, a marker per lesson, the lesson's card (M13-4) |
 | Node player | `/node/:nodeId` | Renders one node type (§4.3) |
 | Wallets list | `/wallets` | Live wallet + trips (newest first, with status) + "Nouveau voyage" + lesson suggestions: the bridges of completed lessons |
@@ -103,8 +104,8 @@ Routing: `go_router`. Deep links use the routes above (lesson → trip wizard pr
 Five single-choice questions, each required (validation error if none picked: « Choisis une réponse pour
 continuer. Aucune n'est mauvaise. »). Reassurance line: the answers only choose a starting point, not advice.
 Layout (decided 2026-10-24, artboard `Onboarding-A` of the art direction canvas): a world screen on the
-sea under the bare island the way starts on (since M12-7: Les bases' sand bank, or Actions & ETF's for the
-answers that skip Les bases). One chunky card holds « Question n sur 5 », a segmented progress
+sea under where the way starts, before any lesson (since M13-6: Les bases' port with its old jetty, or Actions &
+ETF's district all plain for the answers that skip Les bases). One chunky card holds « Question n sur 5 », a segmented progress
 bar, the question and the reassurance line; the answers are toy blocks under it (they press down, so they
 sit on the sea rather than inside the card). « Retour » (from the second question) and « Suivant » stay at
 the bottom, with the validation error in an alert box just above them. The result: the island, then a card
@@ -129,6 +130,15 @@ Rules:
 
 ### 4.2 Map
 
+Since M13-6 (decided 2026-11-16) there is no map page. The « Archipel » tab (`/`) shows the island the user was
+last on, up close (§4.3), saved on the device (`profiles.place`, schema v6; `placeProvider`); the very first time,
+where their way starts (`startOfWay`: the port, or Actions & ETF for those who skip Les bases). The sea chart
+(below, M13-5) shows every island and what opens it; a crossing lands in this tab. The island's bottom card is
+the next step below (`nextStep`): the companion's unread moment, the open trip or the wallet when one comes first,
+else the lesson; touching a marker shows that lesson's card in its place; a lesson of another island offers
+« Naviguer vers {île} ». No level chip any more, and no message when the level changes (§4.15). What follows
+describes the map as it was until then, and the rules it carried that still hold (next step, gates, islands).
+
 - Isometric archipelago drawn in code (`CustomPainter`), 5 islands: Actions & ETF (centre, playable), Les bases
   (bottom right, playable since M12-6), Trading, Immobilier, Crypto (locked: clouds/greyed, label "Bientôt").
   Built (M9-11): in the style of the approved art direction, the « map » artboard of the canvas « Investment
@@ -137,7 +147,7 @@ Rules:
   with their props (candlesticks, houses and towers, a crystal, a lighthouse) under clouds. The map shows all
   five above the next-step card, fitted to the screen, and stays put: no pan, no zoom (M12-12). Labels: Actions & ETF in a chunky pill with its
   lessons done (« 2/12 »); a locked island's name with a lock (screen readers: « {île}, bientôt »).
-- Header: title "Ton archipel", islands opened count, level chip.
+- Header (until M13-6): title "Ton archipel", islands opened count, level chip.
 - Next-step card at the bottom: always exactly one recommended action. Selection is a pure function
   `nextStep(state)`, first match wins: an unread companion moment; the current node if it is a mission; the
   current lesson node while fewer nodes than the pacing (Q5) were completed today; an open trip; the live
@@ -946,6 +956,8 @@ Built (M9-1), decided 2026-10-12:
   Level 3 (after checkpoint): advanced stats (TWR breakdown, effective number of positions).
 - Override switch in Settings shows everything.
 - Order types are never locked (soft gate, §4.6).
+- Since M13-6 (decided 2026-11-16) the level shows in Settings only (« Niveau n sur 3 »): no chip on any screen,
+  no message when it changes.
 
 ---
 

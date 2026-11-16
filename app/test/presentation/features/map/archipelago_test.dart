@@ -1,83 +1,30 @@
 import 'dart:ui';
 
-import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
-import 'package:finance_companion/presentation/features/map/island_growth.dart';
 import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('five islands, Actions & ETF and Les bases playable (M12-6)', () {
-    expect(archipelago.map((i) => i.id), unorderedEquals(IslandId.values));
-    expect(
-      archipelago.where((i) => !i.locked).map((i) => i.id),
-      unorderedEquals([IslandId.actionsEtf, IslandId.basics]),
-    );
-  });
-
-  test('Les bases: a piece a lesson, the house first, its light last', () {
-    expect(
-      [for (var done = 0; done <= 9; done++) lesBasesPieces(done / 9)],
-      [for (var done = 0; done <= 9; done++) done],
-    );
-    expect(lesBasesPieces(-1), 0);
-    expect(lesBasesPieces(2), 9);
-    for (var done = 0; done <= 9; done++) {
-      final recorder = PictureRecorder();
-      ArchipelagoPainter(grownBases: done / 9).paint(Canvas(recorder), mapSize);
-      expect(recorder.endRecording(), isNotNull);
-    }
-  });
-
-  test('the map opens the playable islands, each on its pack', () {
-    expect([
-      for (final i in archipelago) ?i.pack,
-    ], unorderedEquals(playableIslands));
-  });
-
-  test('every island, its shallows and its label lie on the map', () {
-    final map = Offset.zero & mapSize;
-    for (final island in archipelago) {
-      final halo = island.halo.shift(-mapBounds.topLeft);
-      expect(map.contains(halo.topLeft), isTrue, reason: '${island.id}');
-      expect(map.contains(halo.bottomRight), isTrue, reason: '${island.id}');
-      expect(map.contains(island.labelAnchor), isTrue, reason: '${island.id}');
-    }
-  });
-
   test('tiles are sea or a known ground, on rows of one width', () {
     for (final island in archipelago) {
       final width = island.tiles.first.length;
       for (final row in island.tiles) {
         expect(row.length, width, reason: '${island.id}');
         expect(
-          row.split('').every('.SgGabc'.contains),
+          row.split('').every('.SgG'.contains),
           isTrue,
           reason: '${island.id}: $row',
         );
       }
-      // Sand and grass are Actions & ETF's; stone is the others'.
-      final ground = island.tiles.join().replaceAll('.', '');
-      expect(
-        ground
-            .split('')
-            .every((c) => (island.locked ? 'abc' : 'SgG').contains(c)),
-        isTrue,
-        reason: '${island.id}',
-      );
     }
-  });
-
-  test('back to front: each island is drawn after the ones behind it', () {
-    final rows = [for (final i in archipelago) i.origin.dy];
-    expect(rows, [...rows]..sort());
   });
 
   const b1 = DrawnBuilding(height: 1, built: 1, ghost: 0);
   const b2 = DrawnBuilding(height: 2, built: 1, ghost: 0);
   const b3 = DrawnBuilding(height: 2, built: 0.5, ghost: 1);
 
-  test('the painter draws every island, buildings and ghosts, without '
+  test('the painter draws a wallet\'s island, buildings and ghosts, and '
+      'the district, without '
       'error', () {
     for (final buildings in [
       const <DrawnBuilding>[],
@@ -91,9 +38,18 @@ void main() {
       ],
     ]) {
       final recorder = PictureRecorder();
-      ArchipelagoPainter(buildings: buildings).paint(Canvas(recorder), mapSize);
+      ArchipelagoPainter(
+        only: archipelago.single,
+        buildings: buildings,
+      ).paint(Canvas(recorder), const Size(390, 300));
       expect(recorder.endRecording(), isNotNull);
     }
+    final recorder = PictureRecorder();
+    ArchipelagoPainter(
+      only: archipelago.single,
+      lessonsDone: const {'ae.livret-vs-etf'},
+    ).paint(Canvas(recorder), const Size(390, 300));
+    expect(recorder.endRecording(), isNotNull);
   });
 
   test('where each building stands, for taps: left to right, the largest '
@@ -152,15 +108,27 @@ void main() {
   });
 
   test('repaints when the buildings change, not otherwise', () {
-    final a = ArchipelagoPainter(buildings: const [b1, b2]);
+    final a = ArchipelagoPainter(
+      only: archipelago.single,
+      buildings: const [b1, b2],
+    );
     expect(
-      a.shouldRepaint(ArchipelagoPainter(buildings: const [b1, b2])),
+      a.shouldRepaint(
+        ArchipelagoPainter(only: archipelago.single, buildings: const [b1, b2]),
+      ),
       isFalse,
     );
     expect(
-      a.shouldRepaint(ArchipelagoPainter(buildings: const [b1, b3])),
+      a.shouldRepaint(
+        ArchipelagoPainter(only: archipelago.single, buildings: const [b1, b3]),
+      ),
       isTrue,
     );
-    expect(a.shouldRepaint(ArchipelagoPainter(buildings: const [b1])), isTrue);
+    expect(
+      a.shouldRepaint(
+        ArchipelagoPainter(only: archipelago.single, buildings: const [b1]),
+      ),
+      isTrue,
+    );
   });
 }

@@ -10,6 +10,7 @@ import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
+import 'generated/schema_v6.dart' as v6;
 
 /// Every schema ever shipped (drift_schemas/) must migrate to the current
 /// one. After a schema change: bump `schemaVersion`, add the step, run
@@ -162,6 +163,40 @@ void main() {
       },
     );
   });
+
+  test(
+    'v5 → v6: the profile kept, no place yet (where the way starts)',
+    () async {
+      await verifier.testWithDataIntegrity(
+        oldVersion: 5,
+        newVersion: 6,
+        createOld: v5.DatabaseAtV5.new,
+        createNew: v6.DatabaseAtV6.new,
+        openTestedDatabase: AppDatabase.new,
+        createItems: (batch, oldDb) => batch.insert(
+          oldDb.profiles,
+          const v5.ProfilesData(
+            id: 1,
+            goal: 'learn',
+            dropReaction: 'hold',
+            knowledge: 'nothing',
+            savings: 'some',
+            weeklyTime: 'short',
+            showAll: 0,
+            language: 'fr',
+            liveStartingCents: null,
+          ),
+        ),
+        validateItems: (newDb) async {
+          final row = await newDb.select(newDb.profiles).getSingle();
+          expect(
+            (row.knowledge, row.language, row.place),
+            ('nothing', 'fr', null),
+          );
+        },
+      );
+    },
+  );
 
   test('the code matches the latest recorded schema', () async {
     // Fails when a table changes without a new schema version and dump.

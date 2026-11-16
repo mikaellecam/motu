@@ -70,6 +70,8 @@ void main() {
     '/',
     overrides: map,
     act: (tester) async {
+      // The island and its card load a moment after the tab.
+      await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.text('Lire'));
     },
   );

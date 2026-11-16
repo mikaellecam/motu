@@ -11,11 +11,10 @@
   "failure_data_unavailable": "No data available for {date}.",
   "failure_storage": "Couldn't read or save on your device.",
   "failure_unexpected": "Something unexpected went wrong.",
-  "tab_map": "Map",
+  "tab_map": "Archipelago",
   "tab_wallets": "Portfolio",
   "tab_explore": "Explore",
   "tab_glossary": "Glossary",
-  "map_title": "Your archipelago",
   "map_settings": "Settings",
   "onboarding_progress": "Question {n} of 5",
   "onboarding_reassurance": "Your answers only choose where to start. They are not advice.",
@@ -565,8 +564,6 @@
   "order_cancel_title": "Cancel this order?",
   "order_cancel_body": "It won't go, and what it held back becomes available again.",
   "order_cancel_keep": "Keep the order",
-  "map_islands_open": "{count} of {total} islands open",
-  "map_level": "Level {level}",
   "next_step_lesson": "Next lesson",
   "next_step_play": "Play",
   "next_step_mission": "Your mission",
@@ -744,5 +741,6 @@
   "chart_soon_line": "The line is open. The island isn't written yet.",
   "chart_closed": "Closed",
   "chart_opens_after_two": "Opens after \"{first}\" and \"{second}\"",
-  "chart_sailing": "Crossing\u2026"
+  "chart_sailing": "Crossing\u2026",
+  "next_step_sail": "Sail to {island}"
 }

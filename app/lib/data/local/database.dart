@@ -62,7 +62,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'investment_companion'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -87,6 +87,10 @@ class AppDatabase extends _$AppDatabase {
       // yet: a trip that got there before was finished, and stays so.
       from4To5: (m, schema) =>
           m.addColumn(schema.wallets, schema.wallets.reachedToday),
+      // v6: the island the app opens on (M13-6); none yet: where the way
+      // starts.
+      from5To6: (m, schema) =>
+          m.addColumn(schema.profiles, schema.profiles.place),
     ),
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );
