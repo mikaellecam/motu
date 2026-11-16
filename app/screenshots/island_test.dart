@@ -5,6 +5,8 @@ import 'package:finance_companion/application/learning/island_path.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 
+import 'package:flutter_test/flutter_test.dart';
+
 import 'screenshot.dart';
 
 // The islands up close (M13-4): Actions & ETF after its first six lessons,
@@ -42,5 +44,23 @@ void main() {
         (ref) => Stream.value({for (final n in bases.nodes.take(5)) n.id}),
       ),
     ],
+  );
+
+  // The sea chart from the port (M13-5): Actions & ETF open at 6/12, the
+  // others closed.
+  screenshot(
+    'm13-5-sea-chart',
+    const IslandScreen(islandId: lesBasesIsland),
+    overrides: [
+      lesBasesPack,
+      contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+      completedNodesProvider.overrideWith(
+        (ref) => Stream.value({
+          for (final n in bases.nodes.take(5)) n.id,
+          for (final n in pack.nodes.take(6)) n.id,
+        }),
+      ),
+    ],
+    act: (tester) => tester.tap(find.text('Naviguer')),
   );
 }

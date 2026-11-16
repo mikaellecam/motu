@@ -69,8 +69,11 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
     GoRoute(path: '/tools/dca', builder: (_, _) => const DcaScreen()),
     GoRoute(
       path: '/island/:islandId',
-      builder: (_, state) =>
-          IslandScreen(islandId: state.pathParameters['islandId']!),
+      builder: (_, state) => IslandScreen(
+        islandId: state.pathParameters['islandId']!,
+        // Landed from the sea chart (M13-5).
+        arriving: state.uri.queryParameters['arrive'] == '1',
+      ),
     ),
     GoRoute(
       path: '/node/:nodeId',

@@ -79,4 +79,4 @@ requirements (§11).
 | <img src="../screenshots/m9-2-map-en.png" width="240"> | <img src="../screenshots/m9-2-wallet-en.png" width="240"> | <img src="../screenshots/m9-2-lesson-en.png" width="240"> |
 | In English | | |
 
-Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet`, `m8-3-moment-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).
+Also: `m13-5-sea-chart` (the sea chart, drawn in code, to sail between the port and the islands). Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet`, `m8-3-moment-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).
