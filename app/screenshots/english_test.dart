@@ -2,12 +2,9 @@ import 'dart:io';
 
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/learning/content.dart';
-import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/learning/ui_level.dart';
 import 'package:finance_companion/core/cache_status.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
-import 'package:finance_companion/domain/learning/content.dart';
-import 'package:finance_companion/domain/learning/next_step.dart';
 import 'package:finance_companion/presentation/features/node/node_screen.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/application/providers.dart';
@@ -59,14 +56,6 @@ void main() {
     'm9-2-map-en',
     '/',
     locale: 'en',
-    overrides: [
-      currentUiLevelProvider.overrideWith((ref) async => 2),
-      nextStepViewProvider.overrideWith(
-        (ref) async => const NextStepView(
-          PlayNode('ae.fees-toy'),
-          title: Localized('Le jouet des frais', 'The fees toy'),
-        ),
-      ),
-    ],
+    overrides: [currentUiLevelProvider.overrideWith((ref) async => 2)],
   );
 }

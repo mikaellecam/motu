@@ -177,8 +177,12 @@ class IslandScene extends StatefulWidget {
     required this.onMarker,
     this.focus,
     this.onFerry,
+    this.onTapAway,
     this.arriving = false,
   });
+
+  /// Touching the island or the sea, not a marker (M13-9).
+  final VoidCallback? onTapAway;
 
   /// Touching the ferry: the sea chart (M13-5).
   final VoidCallback? onFerry;
@@ -384,21 +388,30 @@ class IslandSceneState extends State<IslandScene>
         return Stack(
           children: [
             Positioned.fill(
-              child: InteractiveViewer(
-                transformationController: _view,
-                constrained: false,
-                boundaryMargin: EdgeInsets.zero,
-                minScale: _minScale,
-                maxScale: IslandScene.maxZoom,
-                onInteractionStart: (_) => _glide.stop(),
-                // Its own bounds hold whatever the gesture did (M13-8).
-                onInteractionUpdate: (_) => _keepInBounds(),
-                onInteractionEnd: (_) => _keepInBounds(),
-                child: RepaintBoundary(
-                  child: SizedBox.fromSize(
-                    size: _canvas,
-                    child: ExcludeSemantics(
-                      child: CustomPaint(painter: _WorldPainter(widget.world)),
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                // A convenience: the card has its own way out for screen
+                // readers (a marker, the recentre button).
+                excludeFromSemantics: true,
+                onTap: widget.onTapAway,
+                child: InteractiveViewer(
+                  transformationController: _view,
+                  constrained: false,
+                  boundaryMargin: EdgeInsets.zero,
+                  minScale: _minScale,
+                  maxScale: IslandScene.maxZoom,
+                  onInteractionStart: (_) => _glide.stop(),
+                  // Its own bounds hold whatever the gesture did (M13-8).
+                  onInteractionUpdate: (_) => _keepInBounds(),
+                  onInteractionEnd: (_) => _keepInBounds(),
+                  child: RepaintBoundary(
+                    child: SizedBox.fromSize(
+                      size: _canvas,
+                      child: ExcludeSemantics(
+                        child: CustomPaint(
+                          painter: _WorldPainter(widget.world),
+                        ),
+                      ),
                     ),
                   ),
                 ),

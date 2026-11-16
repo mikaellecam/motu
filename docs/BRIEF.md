@@ -133,11 +133,11 @@ Rules:
 Since M13-6 (decided 2026-11-16) there is no map page. The « Archipel » tab (`/`) shows the island the user was
 last on, up close (§4.3), saved on the device (`profiles.place`, schema v6; `placeProvider`); the very first time,
 where their way starts (`startOfWay`: the port, or Actions & ETF for those who skip Les bases). The sea chart
-(below, M13-5) shows every island and what opens it; a crossing lands in this tab. The island's bottom card is
-the next step below (`nextStep`): the companion's unread moment, the open trip or the wallet when one comes first,
-else the lesson; touching a marker shows that lesson's card in its place; a lesson of another island offers
-« Naviguer vers {île} ». No level chip any more, and no message when the level changes (§4.15). What follows
-describes the map as it was until then, and the rules it carried that still hold (next step, gates, islands).
+(below, M13-5) shows every island and what opens it; a crossing lands in this tab. No card shows until a marker is
+touched (decided 2026-11-17, M13-9; from M13-6 to M13-9 the bottom card was the next step below). The next step
+(`nextStep`, its card and its pacing) went with it: companion moments show in the wallet and on the asset page
+(§4.12), trips in the wallets list. No level chip any more, and no message when the level changes (§4.15). What
+follows describes the map as it was until then, and the rules it carried that still hold (gates, islands).
 
 - Isometric archipelago drawn in code (`CustomPainter`), 5 islands: Actions & ETF (centre, playable), Les bases
   (bottom right, playable since M12-6), Trading, Immobilier, Crypto (locked: clouds/greyed, label "Bientôt").
@@ -301,8 +301,8 @@ lesson has no marker, and a marker never stands over nothing (decided 2026-11-17
 not done shows the ghost of what it builds, see-through with faint edges (at the port its part on its empty spot;
 in the district its grown building over the plain one), the marker on the ghost's top. No sea line leaves the
 port before its ferry quay stands, and « Naviguer » (and the ferry) shows only once a line is open (M13-7). No number on the
-island. Screen readers hear « {n}. {titre}, {bâtiment}, {état} ». Under the scene, the selected lesson's card
-(the lesson to do by default): its number, « {bâtiment} · {état} », its title, its type, and « Commencer »,
+island. Screen readers hear « {n}. {titre}, {bâtiment}, {état} ». Touching a marker shows its lesson's card under
+the scene (none until then, M13-9; touching the island, the sea or the recentre button closes it): its number, « {bâtiment} · {état} », its title, its type, and « Commencer »,
 « Revoir » (done) or, locked, « S'ouvre après « {la leçon d'avant, ou celle qui ouvre l'île} » » disabled. A
 round button brings the view back to the lesson to do. It opens framed on that lesson (×0.7). A lesson done
 grows its building on the way back, eased over 1,4 s (the port builds its part at once), then the view glides
@@ -914,8 +914,8 @@ Pure rule engine over domain events, outputs `CompanionCard{ruleId, title, body,
 Cards link to glossary terms or nodes. Wording describes, never prescribes.
 
 Built (M8-3): a moment stays « non lu » until its card's « J'ai compris » (`companion_log.dismissedAt`); the
-cooldowns run on the log whether read or not. Where cards show: the oldest unread moment of any wallet leads the
-map's next-step card (« Ton compagnon », its title, « Lire » opens the card in a sheet); a wallet shows its oldest
+cooldowns run on the log whether read or not. Where cards show (the map's next-step card, which led with the oldest
+unread moment of any wallet, went with M13-9): a wallet shows its oldest
 unread moment under « Investir »; an asset page shows the oldest unread moment of its wallet about that asset.
 A card: « Ton compagnon », a title and a body per rule (figures from the moment's params, signed only where the
 words do not already say which way), chips to its glossary terms, « Revoir la leçon : … » to its lesson
@@ -1367,3 +1367,5 @@ screens; M9-5).
    « Stabilité passée », out of 100, on the asset page only (§4.8).
 5. ~~Final data provider and `dataFloor`~~: decided in ADR-004 (Twelve Data free plan, `dataFloor` 2000-01-03).
 6. ~~Final catalogue list and symbols~~: decided in ADR-004 (US listings).
+7. Q5's answer (« Combien de temps par semaine ? ») paced the next-step card, gone since M13-9: it has no use left.
+   Keep the question, give it a use, or drop it?

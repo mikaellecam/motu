@@ -1,14 +1,10 @@
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/companion/companion.dart';
-import 'package:finance_companion/application/learning/next_step_card.dart';
-import 'package:finance_companion/application/learning/ui_level.dart';
 import 'package:finance_companion/data/repositories/companion_repository.dart';
 import 'package:finance_companion/domain/companion/rules.dart';
 import 'package:finance_companion/domain/learning/content.dart';
-import 'package:finance_companion/domain/learning/next_step.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 import 'screenshot.dart';
 import 'wallet_test.dart' as wallet;
@@ -53,26 +49,5 @@ void main() {
     ],
     // The card's names arrive a frame after the card.
     act: (tester) => tester.pump(),
-  );
-
-  final map = [
-    names,
-    currentUiLevelProvider.overrideWith((ref) async => 1),
-    nextStepViewProvider.overrideWith(
-      (ref) async => NextStepView(const ReadMoment('1'), moment: moment),
-    ),
-  ];
-
-  screenshotRoute('m8-3-map-moment', '/', overrides: map);
-
-  screenshotRoute(
-    'm8-3-moment-sheet',
-    '/',
-    overrides: map,
-    act: (tester) async {
-      // The island and its card load a moment after the tab.
-      await tester.pump(const Duration(seconds: 1));
-      await tester.tap(find.text('Lire'));
-    },
   );
 }

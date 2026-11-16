@@ -3,18 +3,15 @@ import 'dart:io';
 
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
-import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/content.dart';
-import 'package:finance_companion/domain/learning/next_step.dart';
 import 'package:finance_companion/domain/learning/path.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_scene.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
-import 'package:finance_companion/presentation/features/map/next_step_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -79,7 +76,6 @@ Future<void> show(
   String islandId = actionsEtfIsland,
   bool still = false,
   List<Override> extra = const [],
-  NextStepView? next,
   bool fifth = true,
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
@@ -104,8 +100,6 @@ Future<void> show(
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => lesBases),
         profileRepositoryProvider.overrideWithValue(profiles),
-        // The lesson to do comes first, unless [next] says otherwise.
-        nextStepViewProvider.overrideWith((ref) async => next),
         ...extra,
       ],
       child: MainApp(
@@ -177,11 +171,27 @@ void main() {
     );
   });
 
-  testWidgets('the card follows the marker touched', (tester) async {
+  testWidgets('no card until a marker is touched; touching the island '
+      'closes it (M13-9)', (tester) async {
     await show(tester);
-    // The lesson to do first.
+    expect(find.text('Commencer'), findsNothing);
+    expect(find.text('Le square · à toi de jouer'), findsNothing);
+
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^7\. ')));
+    await tester.pump();
     expect(find.text('Les intérêts composés'), findsOneWidget);
     expect(find.text('Le square · à toi de jouer'), findsOneWidget);
+
+    // Touching the island, away from any marker.
+    await tester.tapAt(
+      tester.getRect(find.byType(IslandScene)).bottomLeft +
+          const Offset(20, -300),
+    );
+    await tester.pump();
+    expect(find.text('Commencer'), findsNothing);
+
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^7\. ')));
+    await tester.pump();
     await tester.tap(find.text('Commencer'));
     await settle(tester);
     expect(find.text('node ae.compound-toy'), findsOneWidget);
@@ -245,7 +255,8 @@ void main() {
       find.bySemanticsLabel(RegExp(r'^8\. .*, Le port, à toi de jouer$')),
       findsOneWidget,
     );
-    expect(find.text('Trois zones géographiques'), findsOneWidget);
+    // No card: none was touched.
+    expect(find.text('Commencer'), findsNothing);
   });
 
   testWidgets('with animations off, the building stands grown at once', (
@@ -296,8 +307,8 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
-    // In the bar, and on the card's button.
-    expect(find.textContaining('Février 2020'), findsNWidgets(2));
+    // In the bar; no card, no marker to touch (M13-9).
+    expect(find.textContaining('Février 2020'), findsOneWidget);
     // Every lesson locked: no marker at all (M13-7).
     expect(markers(), findsNothing);
   });
@@ -310,53 +321,9 @@ void main() {
     // Five done and the one to do (M13-7).
     expect(markers(), findsNWidgets(6));
     expect(world(tester).grown, [for (var i = 0; i < 9; i++) i < 5 ? 1 : 0]);
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^6\. ')));
+    await tester.pump();
     expect(find.text('La grue · à toi de jouer'), findsOneWidget);
-  });
-
-  group('the bottom card is the next step (M13-6)', () {
-    NextStepView step(NextStep step, {String? title, String? trip}) =>
-        NextStepView(
-          step,
-          title: title == null ? null : Localized(title, title),
-          tripName: trip,
-        );
-
-    testWidgets('a lesson of this island: its card', (tester) async {
-      await show(
-        tester,
-        next: step(const PlayNode('ae.compound-toy'), title: 'x'),
-      );
-      expect(find.text('Le square · à toi de jouer'), findsOneWidget);
-      expect(find.byType(NextStepCard), findsNothing);
-    });
-
-    testWidgets('a trip first: the next-step card; a marker touched shows '
-        'its lesson instead', (tester) async {
-      await show(tester, next: step(const ContinueTrip('t1'), trip: 'Covid'));
-      expect(find.byType(NextStepCard), findsOneWidget);
-      expect(find.text('Covid'), findsOneWidget);
-      await tester.tap(find.bySemanticsLabel(RegExp(r'^1\. ')));
-      await tester.pump();
-      expect(find.byType(NextStepCard), findsNothing);
-      expect(find.text('La banque · terminée'), findsOneWidget);
-    });
-
-    testWidgets('a lesson of another island: sail there', (tester) async {
-      await show(
-        tester,
-        next: step(const PlayNode('lb.loan-cost'), title: 'Le vrai prix'),
-        extra: [
-          contentPacksProvider.overrideWith(
-            (ref) async => [lesBases, actionsEtf],
-          ),
-        ],
-      );
-      final sail = find.text('Naviguer vers Les bases');
-      expect(sail, findsOneWidget);
-      await tester.tap(sail);
-      await settle(tester);
-      expect(profiles.saved, lesBasesIsland);
-    });
   });
 
   testWidgets('no sea before the ferry quay: no « Naviguer », no line, no '

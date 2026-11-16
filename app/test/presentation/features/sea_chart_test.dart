@@ -1,5 +1,4 @@
 import 'package:finance_companion/application/learning/content.dart';
-import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
@@ -45,8 +44,6 @@ Future<void> showPort(
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => lesBases),
         profileRepositoryProvider.overrideWithValue(profiles),
-        // The lesson to do comes first (the next step has its own tests).
-        nextStepViewProvider.overrideWith((ref) async => null),
         ...extra,
       ],
       child: MainApp(

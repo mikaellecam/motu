@@ -3,9 +3,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/learning/profile_rules.dart';
 import '../providers.dart';
 import 'content.dart';
-import 'next_step_card.dart' show completionsProvider;
 
 part 'ui_level.g.dart';
+
+/// Completed node id → first completion, then every change.
+@riverpod
+Stream<Map<String, DateTime>> completions(Ref ref) =>
+    ref.watch(profileRepositoryProvider).watchCompletions();
 
 /// How much the UI shows (BRIEF §4.15): 1 before the questionnaire, 3 with
 /// « Tout afficher dès maintenant », else from the profile and progress on
