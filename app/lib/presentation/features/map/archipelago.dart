@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 
 import '../../../application/learning/content.dart';
 import '../../../core/theme/tokens.dart';
+import 'district.dart';
 import 'island_growth.dart';
 import 'iso.dart';
 import 'living_island.dart';
@@ -162,9 +163,19 @@ class ArchipelagoPainter extends CustomPainter {
     this.only,
     this.grown = 1,
     this.grownBases = 1,
+    this.lessonsDone,
+    this.ferry = false,
   });
 
   final List<DrawnBuilding> buildings;
+
+  /// The lessons done, by id: given, Actions & ETF is its business district,
+  /// each lesson's building grown by it (M13-2), in place of a wallet's
+  /// island ([buildings], [grown]).
+  final Set<String>? lessonsDone;
+
+  /// The district's ferry at its pier: the line from the port is open.
+  final bool ferry;
 
   /// How far the lessons have greened Actions & ETF, 0 (sand, no tree) to 1
   /// (as the art direction draws it): its grass and trees (`grownTiles`).
@@ -201,6 +212,17 @@ class ArchipelagoPainter extends CustomPainter {
       final pen = island.locked
           ? BlockPen(canvas, MapPalette.lockedInk, 1.1)
           : BlockPen(canvas, AppColors.ink, 1.3);
+      final lessons = lessonsDone;
+      if (island.id == IslandId.actionsEtf && lessons != null) {
+        paintDistrict(
+          pen,
+          island.projection,
+          island.tiles,
+          grown: districtGrown(lessons),
+          ferry: ferry,
+        );
+        continue;
+      }
       ground(pen, island.projection, switch (island.id) {
         IslandId.actionsEtf => grownTiles(island.tiles, grown),
         IslandId.basics => grownTiles(island.tiles, grownBases),
@@ -803,6 +825,8 @@ class ArchipelagoPainter extends CustomPainter {
       old.only != only ||
       old.grown != grown ||
       old.grownBases != grownBases ||
+      old.ferry != ferry ||
+      !setEquals(old.lessonsDone, lessonsDone) ||
       !listEquals(old.buildings, buildings);
 }
 

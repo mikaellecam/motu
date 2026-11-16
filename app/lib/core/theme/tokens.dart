@@ -233,6 +233,85 @@ abstract final class MapPalette {
   static const cloud = Color(0xFFFFFFFF);
 }
 
+/// Actions & ETF as a New York style business district (M13-2): its streets,
+/// its stone, brick and glass, its windows. A lesson's building wears these
+/// once grown; the blocks round them never change.
+abstract final class DistrictPalette {
+  static const asphalt = Color(0xFF5B6170);
+  static const sidewalk = Color(0xFFD9DCE1);
+  static const lot = Color(0xFFEFE2BC);
+  static const promenade = Color(0xFFE9E4D8);
+
+  /// The lane line down each street, zoomed in.
+  static const laneLine = Color(0xCCFFC845);
+
+  /// The thin seam between ground tiles, zoomed in.
+  static const seam = Color(0x261D2340);
+  static const seawall = (
+    top: promenade,
+    left: Color(0xFF9AA3AE),
+    right: Color(0xFFB7BEC7),
+  );
+  static const limestone = (
+    top: Color(0xFFF3EBDD),
+    left: Color(0xFFCDBF9F),
+    right: Color(0xFFE3D6BC),
+  );
+  static const brick = (
+    top: Color(0xFFE9B9A0),
+    left: Color(0xFFA9553C),
+    right: Color(0xFFC76A4C),
+  );
+  static const brownstone = (
+    top: Color(0xFFE3C2A4),
+    left: Color(0xFF8E5E43),
+    right: Color(0xFFAE7656),
+  );
+  static const glass = (
+    top: Color(0xFFDCE6FF),
+    left: Color(0xFF3F63D1),
+    right: Color(0xFF5B82F2),
+  );
+  static const slate = (
+    top: Color(0xFF9AA6BF),
+    left: Color(0xFF3E4A66),
+    right: Color(0xFF56637F),
+  );
+  static const copper = (
+    top: Color(0xFFCDEBE0),
+    left: Color(0xFF4E9C82),
+    right: Color(0xFF6FBBA0),
+  );
+  static const wood = (
+    top: Color(0xFFD79A5E),
+    left: Color(0xFFB57B45),
+    right: Color(0xFFC88B50),
+  );
+  static const steel = (
+    top: Color(0xFFE6EBF0),
+    left: Color(0xFF8C99A8),
+    right: Color(0xFFB4BFCB),
+  );
+  static const white = MapPalette.lighthouse;
+  static const hull = (
+    top: Color(0xFF5B82F2),
+    left: Color(0xFF2E3F8F),
+    right: Color(0xFF3F56B8),
+  );
+  static const deck = (
+    top: Color(0xFFEDE3CC),
+    left: Color(0xFFB9A98A),
+    right: Color(0xFFD1C3A4),
+  );
+  static const funnel = MapPalette.roofCoral;
+  static const litWindow = Color(0xFFFFF4C2);
+  static const glassWindow = Color(0xFFBCD0FF);
+  static const darkWindow = Color(0xFF4A5670);
+
+  /// The lamps on the pier, and the band of the exchange tower.
+  static const lamp = AppColors.progress;
+}
+
 /// 4-pt spacing scale and fixed sizes (BRIEF §10.4).
 abstract final class AppSpace {
   static const x1 = 4.0;

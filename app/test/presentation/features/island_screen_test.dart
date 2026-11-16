@@ -117,6 +117,9 @@ void main() {
         .whereType<ArchipelagoPainter>()
         .single;
     expect(painter.buildings, isEmpty);
+    // Actions & ETF's district, no lesson done yet, its line open (M13-2).
+    expect(painter.lessonsDone, isEmpty);
+    expect(painter.ferry, isTrue);
     // The current lesson in its card, the others beside their islets.
     expect(find.text('Apple ou ETF Monde ?'), findsOneWidget);
     expect(find.text('Prédiction'), findsOneWidget);
