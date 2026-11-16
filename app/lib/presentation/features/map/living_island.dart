@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
-import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../../domain/wallet/island_buildings.dart';
 
@@ -91,3 +91,66 @@ DrawnBuilding _between(DrawnBuilding? start, DrawnBuilding? end, double t) {
 
 DrawnBuilding _flat(DrawnBuilding b) =>
     DrawnBuilding(height: 0, built: b.built, ghost: b.ghost);
+
+/// A wallet's island whose buildings follow [buildings] in the three stages
+/// of [islandFrame], over 1,4 s (BRIEF §10.5): the wallet's positions growing
+/// or shrinking, a pending buy's ghost, its building completing on fill. With
+/// the system's animations off, the island changes at once, and so it does
+/// when its buildings are first known: opening the screen shows the island as
+/// it stands.
+class StagedIsland extends StatefulWidget {
+  const StagedIsland({
+    super.key,
+    required this.buildings,
+    required this.builder,
+  });
+
+  /// The wallet's buildings, the largest first; null while still loading.
+  final List<IslandBuilding>? buildings;
+
+  /// Draws one frame of the island.
+  final Widget Function(BuildContext context, List<DrawnBuilding> frame)
+  builder;
+
+  @override
+  State<StagedIsland> createState() => _StagedIslandState();
+}
+
+class _StagedIslandState extends State<StagedIsland>
+    with SingleTickerProviderStateMixin {
+  late final _run = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+    value: 1,
+  );
+  late var _from = drawnBuildings(widget.buildings ?? const []);
+  late var _to = _from;
+
+  List<DrawnBuilding> get _frame => islandFrame(_from, _to, _run.value);
+
+  @override
+  void didUpdateWidget(StagedIsland old) {
+    super.didUpdateWidget(old);
+    final buildings = widget.buildings;
+    if (buildings == null || listEquals(old.buildings, buildings)) return;
+    _from = _frame;
+    _to = drawnBuildings(buildings);
+    if (old.buildings == null || MediaQuery.disableAnimationsOf(context)) {
+      _run.value = 1;
+    } else {
+      _run.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _run.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _run,
+    builder: (context, _) => widget.builder(context, _frame),
+  );
+}

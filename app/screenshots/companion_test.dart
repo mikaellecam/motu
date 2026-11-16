@@ -2,7 +2,6 @@ import 'package:decimal/decimal.dart';
 import 'package:finance_companion/application/companion/companion.dart';
 import 'package:finance_companion/application/learning/next_step_card.dart';
 import 'package:finance_companion/application/learning/ui_level.dart';
-import 'package:finance_companion/application/wallet/living_island.dart';
 import 'package:finance_companion/data/repositories/companion_repository.dart';
 import 'package:finance_companion/domain/companion/rules.dart';
 import 'package:finance_companion/domain/learning/content.dart';
@@ -58,7 +57,6 @@ void main() {
 
   final map = [
     names,
-    livingIslandProvider.overrideWith((ref) async => const []),
     currentUiLevelProvider.overrideWith((ref) async => 1),
     nextStepViewProvider.overrideWith(
       (ref) async => NextStepView(const ReadMoment('1'), moment: moment),

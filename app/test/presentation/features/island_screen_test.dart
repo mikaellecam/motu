@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:decimal/decimal.dart';
+
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
 import 'package:finance_companion/application/learning/island_path.dart';
@@ -10,8 +12,10 @@ import 'package:finance_companion/data/repositories/profile_repository.dart';
 import 'package:finance_companion/domain/learning/profile.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/learning/path.dart';
+import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,7 +79,12 @@ Future<void> show(WidgetTester tester) async {
         contentPackProvider(lesBasesIsland)
             .overrideWith((ref) async => decodePack(emptyBasesJson())),
         profileRepositoryProvider.overrideWithValue(profiles),
-        livingIslandProvider.overrideWith((ref) async => const []),
+        // A live wallet with a position: none of it on the island (M13-1).
+        walletIslandProvider.overrideWith(
+          (ref, args) async => [
+            IslandBuilding('world', height: Decimal.one, built: Decimal.one),
+          ],
+        ),
       ],
       child: MainApp(
         router: GoRouter(
@@ -101,6 +110,13 @@ void main() {
     await show(tester);
     expect(find.text('Actions & ETF'), findsOneWidget);
     expect(find.text('0 sur 3 terminées'), findsOneWidget);
+    // The island over the path: its lessons only, no wallet building.
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<ArchipelagoPainter>()
+        .single;
+    expect(painter.buildings, isEmpty);
     // The current lesson in its card, the others beside their islets.
     expect(find.text('Apple ou ETF Monde ?'), findsOneWidget);
     expect(find.text('Prédiction'), findsOneWidget);
@@ -189,7 +205,6 @@ void main() {
               ),
             ),
           ),
-          livingIslandProvider.overrideWith((ref) async => const []),
         ],
         child: MainApp.screen(const IslandScreen(islandId: actionsEtfIsland)),
       ),

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../application/learning/island_path.dart';
-import '../../../application/wallet/living_island.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
@@ -14,7 +13,6 @@ import '../../../core/widgets/chunky.dart';
 import '../../../domain/learning/node.dart';
 import '../../../domain/learning/path.dart';
 import '../map/archipelago.dart';
-import '../map/living_island.dart';
 import '../node/node_screen.dart';
 import 'islet_path.dart';
 
@@ -116,11 +114,6 @@ class _Path extends ConsumerWidget {
     ];
     final island = archipelago.where((i) => i.pack == islandId).firstOrNull;
     final grown = path.nodes.isEmpty ? 1.0 : path.done / path.nodes.length;
-    // Offline or still loading, the island stands as it last did, or bare.
-    // The wallet's buildings stand on Actions & ETF only.
-    final buildings = island?.id != IslandId.actionsEtf
-        ? const <DrawnBuilding>[]
-        : drawnBuildings(ref.watch(livingIslandProvider).value ?? const []);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -137,7 +130,6 @@ class _Path extends ConsumerWidget {
                     alignment: Alignment.bottomCenter,
                     child: CustomPaint(
                       painter: ArchipelagoPainter(
-                        buildings: buildings,
                         only: island,
                         // Grown by the lessons below it (M9-19, M12-6).
                         grown: grown,

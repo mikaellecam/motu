@@ -22,6 +22,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../fakes/no_lessons.dart';
 import '../../helpers.dart';
 
 const nnbsp = ' ';
@@ -116,10 +117,9 @@ Future<GoRouter> show(
         walletIslandProvider.overrideWith(
           (ref, args) async => islands[args.$1] ?? const [],
         ),
-        // The islets green Actions & ETF as the lessons did: none here.
-        islandPathProvider(actionsEtfIsland).overrideWith(
-          (ref) async => const IslandPathView(Localized('x', 'x'), []),
-        ),
+        // No lesson done: the islets stand all grown (M13-1).
+        islandPathProvider(actionsEtfIsland)
+            .overrideWith((ref) async => noLessonsDone),
       ],
       child: MainApp(router: router),
     ),
@@ -222,6 +222,9 @@ void main() {
     expect(live, hasLength(2));
     expect(live.last.ghost, 1);
     expect(painterOf('La ville du voyage Crise 2008').buildings, isEmpty);
+    // All grown, though no lesson is done (M13-1).
+    expect(painterOf('Ton île').grown, 1);
+    expect(painterOf('La ville du voyage Crise 2008').grown, 1);
     // Each row is one button for screen readers, its islet said first.
     expect(
       find.bySemanticsLabel(RegExp(r"^Ton île\nAujourd'hui")),

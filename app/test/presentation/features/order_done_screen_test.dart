@@ -18,11 +18,13 @@ import 'package:finance_companion/domain/wallet/position.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/node/mission_player.dart';
 import 'package:finance_companion/presentation/features/order/order_done_screen.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../fakes/no_lessons.dart';
 import '../../helpers.dart';
 
 const nnbsp = ' ';
@@ -107,7 +109,12 @@ final path = IslandPathView(const Localized('Actions & ETF', 'Stocks & ETFs'), [
   ),
 ]);
 
-Future<void> show(WidgetTester tester, OrderDone done, OrderView view) async {
+Future<void> show(
+  WidgetTester tester,
+  OrderDone done,
+  OrderView view, {
+  IslandPathView? lessons,
+}) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
   tester.view.physicalSize = const Size(1170, 3600);
@@ -123,7 +130,8 @@ Future<void> show(WidgetTester tester, OrderDone done, OrderView view) async {
             pending: {'apple': Decimal.fromInt(500)},
           ),
         ),
-        islandPathProvider(actionsEtfIsland).overrideWith((ref) async => path),
+        islandPathProvider(actionsEtfIsland)
+            .overrideWith((ref) async => lessons ?? path),
       ],
       child: MainApp(
         router: GoRouter(
@@ -197,6 +205,26 @@ void main() {
     await tester.tap(find.text('Voir l\'ordre'));
     await tester.pumpAndSettle();
     expect(find.text('order live/o1'), findsOneWidget);
+  });
+
+  testWidgets('the wallet\'s island all grown, though no lesson is done '
+      '(M13-1)', (tester) async {
+    await show(
+      tester,
+      OrderDone(
+        OrderSent('o1', side: Side.buy, opensAt: opensAt),
+        built: false,
+      ),
+      view(opens: opensAt),
+      lessons: noLessonsDone,
+    );
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<ArchipelagoPainter>()
+        .single;
+    expect(painter.grown, 1);
+    expect(painter.buildings, hasLength(1));
   });
 
   testWidgets('a buy filled at once: its building built, at what price', (

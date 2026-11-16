@@ -1,7 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../data/repositories/wallet_repository.dart';
 import '../../domain/wallet/island_buildings.dart';
 import '../../domain/wallet/position.dart';
 import 'wallet_providers.dart';
@@ -32,8 +31,3 @@ Future<List<IslandBuilding>> walletIsland(
     keep: keep,
   );
 }
-
-/// The live wallet's island, on the map and over the island path.
-@riverpod
-Future<List<IslandBuilding>> livingIsland(Ref ref) =>
-    ref.watch(walletIslandProvider(WalletRepository.liveWalletId).future);

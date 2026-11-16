@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../application/learning/content.dart';
-import '../../../application/learning/island_path.dart';
 import '../../../application/trip/trip_summary.dart';
 import '../../../application/wallet/living_island.dart';
 import '../../../core/failure.dart';
@@ -40,11 +38,11 @@ class TripSummaryScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final muted = text.bodySmall?.copyWith(color: AppColors.muted);
     final state = ref.watch(tripSummaryProvider(walletId));
-    // The trip's own city, on the island the lessons greened.
+    // The trip's own city, the island all grown: lessons never green a
+    // wallet's island (M13-1).
     final buildings = drawnBuildings(
       ref.watch(walletIslandProvider(walletId)).value ?? const [],
     );
-    final lessons = ref.watch(islandPathProvider(actionsEtfIsland)).value;
     final back = ChunkyIconButton(
       icon: Icons.chevron_left,
       label: MaterialLocalizations.of(context).backButtonTooltip,
@@ -90,11 +88,6 @@ class TripSummaryScreen extends ConsumerWidget {
                             only: archipelago.firstWhere(
                               (i) => i.id == IslandId.actionsEtf,
                             ),
-                            grown: switch (lessons) {
-                              final path? when path.nodes.isNotEmpty =>
-                                path.done / path.nodes.length,
-                              _ => 1,
-                            },
                           ),
                         ),
                       ),

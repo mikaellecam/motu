@@ -6,7 +6,6 @@ import '../../application/trip/trip_wizard.dart';
 import '../../application/learning/island_path.dart';
 import '../../application/learning/ui_level.dart';
 import '../../application/order/order_ticket.dart' show OrderDone;
-import '../../application/wallet/living_island.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/tokens.dart';
@@ -132,8 +131,6 @@ class MapTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    // Offline or still loading, the island stands as it last did, or bare.
-    final buildings = ref.watch(livingIslandProvider).value ?? const [];
     final paths = {
       for (final island in archipelago)
         if (island.pack case final pack?)
@@ -148,7 +145,6 @@ class MapTab extends ConsumerWidget {
         children: [
           Positioned.fill(
             child: ArchipelagoMap(
-              buildings: buildings,
               progress: {
                 for (final MapEntry(key: id, value: path) in paths.entries)
                   if (path != null && path.nodes.isNotEmpty)

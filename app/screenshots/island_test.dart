@@ -6,13 +6,12 @@ import 'package:finance_companion/data/content/pack_codec.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:flutter/material.dart';
 
-import 'map_test.dart' show island;
 import 'screenshot.dart';
 
 // The bundled Actions & ETF path for someone who did nodes 1 and 2: the
 // mission « Ton premier ETF » is current and, missions not blocking, the
-// lesson after it is open. The whole path, under the living island of the
-// map's screenshot.
+// lesson after it is open. The whole path, under the island as its lessons
+// grow it: no wallet on it (M13-1).
 
 void main() {
   final pack = decodePack(
@@ -23,7 +22,6 @@ void main() {
     const IslandScreen(islandId: actionsEtfIsland),
     size: const Size(390, 1850),
     overrides: [
-      island,
       contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
       lesBasesPack,
       completedNodesProvider.overrideWith(

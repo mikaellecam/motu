@@ -40,8 +40,8 @@ class OrderDoneScreen extends ConsumerWidget {
     final language = Localizations.localeOf(context).languageCode;
     final orderId = done.outcome.orderId;
     final state = ref.watch(orderTrackerProvider(orderId));
-    // The wallet's own city, on the island the lessons greened, with the
-    // order's building even when it is not among the five largest.
+    // The wallet's own city, the island all grown (M13-1), with the order's
+    // building even when it is not among the five largest.
     final buildings = drawnBuildings(
       ref
               .watch(
@@ -50,6 +50,7 @@ class OrderDoneScreen extends ConsumerWidget {
               .value ??
           const [],
     );
+    // The missions this order completed, named from the path.
     final path = ref.watch(islandPathProvider(actionsEtfIsland)).value;
 
     return Scaffold(
@@ -75,11 +76,6 @@ class OrderDoneScreen extends ConsumerWidget {
                     only: archipelago.firstWhere(
                       (i) => i.id == IslandId.actionsEtf,
                     ),
-                    grown: switch (path) {
-                      final path? when path.nodes.isNotEmpty =>
-                        path.done / path.nodes.length,
-                      _ => 1,
-                    },
                   ),
                 ),
               ),

@@ -16,7 +16,6 @@ import 'package:finance_companion/core/l10n/formats.dart';
 import 'package:finance_companion/core/money/money.dart';
 import 'package:finance_companion/data/repositories/wallet_repository.dart';
 import 'package:finance_companion/domain/analytics/returns.dart';
-import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/market/asset.dart';
 import 'package:finance_companion/domain/market/market_calendar.dart';
 import 'package:finance_companion/domain/market/price_bar.dart';
@@ -29,11 +28,14 @@ import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_island_band.dart';
 import 'package:finance_companion/presentation/features/wallet/wallet_screen.dart';
 import 'package:finance_companion/core/widgets/chunky.dart';
+import 'package:finance_companion/presentation/features/map/living_island.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../fakes/no_lessons.dart';
 import '../../helpers.dart';
 
 Decimal d(String s) => Decimal.parse(s);
@@ -166,10 +168,9 @@ Future<void> show(
         walletMomentProvider.overrideWith((ref, args) async => null),
         cacheStatusProvider.overrideWith((ref) => Stream.value(const Fresh())),
         walletOverviewProvider.overrideWith((ref, id) => o()),
-        // The island greens as the lessons did: none here.
-        islandPathProvider(actionsEtfIsland).overrideWith(
-          (ref) async => const IslandPathView(Localized('x', 'x'), []),
-        ),
+        // No lesson done: the wallet's island stands all grown (M13-1).
+        islandPathProvider(actionsEtfIsland)
+            .overrideWith((ref) async => noLessonsDone),
         liveCatchUpProvider.overrideWith(() => catchUp),
         planActionsProvider.overrideWith2((_) => planActions),
         walletChartProvider.overrideWith((ref, args) async {
@@ -324,6 +325,16 @@ void main() {
       expect(size.width, greaterThanOrEqualTo(44), reason: name);
       expect(size.height, greaterThanOrEqualTo(44), reason: name);
     }
+    // All grown, though no lesson is done (M13-1); its buildings follow
+    // the wallet in stages (BRIEF §10.5).
+    expect(find.byType(StagedIsland), findsOneWidget);
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<ArchipelagoPainter>()
+        .single;
+    expect(painter.grown, 1);
+    expect(painter.buildings, hasLength(2));
     await tester.tap(find.bySemanticsLabel('Nvidia'));
     await tester.pumpAndSettle();
     expect(find.text('asset nvidia live'), findsOneWidget);

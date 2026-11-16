@@ -10,11 +10,13 @@ import 'package:finance_companion/domain/wallet/trip_summary.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/trip/summary_screen.dart';
 import 'package:finance_companion/core/widgets/chunky.dart';
+import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../fakes/no_lessons.dart';
 import '../../helpers.dart';
 
 const nnbsp = '\u202f';
@@ -68,10 +70,10 @@ Future<void> show(WidgetTester tester, TripSummary s) async {
     ProviderScope(
       overrides: [
         tripSummaryProvider.overrideWith((ref, id) async => s),
-        // The island over it: no city, no lessons.
+        // The island over it: no city; no lesson done, yet all grown (M13-1).
         walletIslandProvider.overrideWith((ref, id) async => const []),
         islandPathProvider(actionsEtfIsland)
-            .overrideWith((ref) async => const IslandPathView(_l, [])),
+            .overrideWith((ref) async => noLessonsDone),
       ],
       child: MainApp(
         router: GoRouter(
@@ -128,6 +130,17 @@ void main() {
       find.text('Aucune décision notée pendant ce voyage.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the trip\'s island all grown, though no lesson is done '
+      '(M13-1)', (tester) async {
+    await show(tester, summary());
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<ArchipelagoPainter>()
+        .single;
+    expect(painter.grown, 1);
   });
 
   testWidgets('no sell, a capped Livret', (tester) async {

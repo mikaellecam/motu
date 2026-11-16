@@ -121,10 +121,15 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      expect(await container.read(livingIslandProvider.future), [
-        IslandBuilding('world', height: Decimal.one, built: Decimal.one),
-        IslandBuilding('apple', height: d('0.5'), built: d('0.5')),
-      ]);
+      expect(
+        await container.read(
+          walletIslandProvider(WalletRepository.liveWalletId).future,
+        ),
+        [
+          IslandBuilding('world', height: Decimal.one, built: Decimal.one),
+          IslandBuilding('apple', height: d('0.5'), built: d('0.5')),
+        ],
+      );
     },
   );
 }

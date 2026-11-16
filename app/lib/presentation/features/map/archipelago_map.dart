@@ -1,15 +1,12 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/chunky.dart';
-import '../../../domain/wallet/island_buildings.dart';
 import 'archipelago.dart';
-import 'living_island.dart';
 
 /// The archipelago, drawn in code, fitted to the screen and still (BRIEF
 /// §4.2, M12-12): no pan, no zoom. Each
@@ -18,17 +15,12 @@ class ArchipelagoMap extends StatefulWidget {
   const ArchipelagoMap({
     super.key,
     required this.onOpen,
-    this.buildings = const [],
     this.progress = const {},
     this.opensAfter = const {},
   });
 
   /// Called with the playable island the user taps.
   final ValueChanged<IslandId> onOpen;
-
-  /// The live wallet on Actions & ETF, the largest first (the living island,
-  /// M7-2). A change animates in stages (BRIEF §10.5).
-  final List<IslandBuilding> buildings;
 
   /// Lessons done on each playable island, of all of them: its label shows
   /// them, and they build it.
@@ -43,18 +35,7 @@ class ArchipelagoMap extends StatefulWidget {
 }
 
 class _ArchipelagoMapState extends State<ArchipelagoMap>
-    with TickerProviderStateMixin {
-  /// One staged run from [_from] to [_to] (BRIEF §10.5).
-  late final _growth = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-    value: 1,
-  );
-  late var _from = drawnBuildings(widget.buildings);
-  late var _to = _from;
-
-  List<DrawnBuilding> get _frame => islandFrame(_from, _to, _growth.value);
-
+    with SingleTickerProviderStateMixin {
   /// How far the lessons have greened Actions & ETF (M9-19): as the art
   /// direction draws it until its lessons are known.
   static double _greened(({int done, int total})? progress) =>
@@ -90,19 +71,10 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
         );
       }
     }
-    if (listEquals(old.buildings, widget.buildings)) return;
-    _from = _frame;
-    _to = drawnBuildings(widget.buildings);
-    if (still) {
-      _growth.value = 1;
-    } else {
-      _growth.forward(from: 0);
-    }
   }
 
   @override
   void dispose() {
-    _growth.dispose();
     _green.dispose();
     super.dispose();
   }
@@ -140,10 +112,9 @@ class _ArchipelagoMapState extends State<ArchipelagoMap>
                     children: [
                       Positioned.fill(
                         child: AnimatedBuilder(
-                          animation: Listenable.merge([_growth, _green]),
+                          animation: _green,
                           builder: (context, _) => CustomPaint(
                             painter: ArchipelagoPainter(
-                              buildings: _frame,
                               grown: _green.value,
                               // Built at once, as far as its lessons (M12-6).
                               grownBases: _greened(
