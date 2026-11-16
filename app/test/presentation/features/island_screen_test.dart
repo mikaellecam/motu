@@ -376,4 +376,65 @@ void main() {
       isNotNull,
     );
   });
+
+  group('bounds and zoom (M13-8)', () {
+    Future<void> pinch(WidgetTester tester, {required bool inwards}) async {
+      final centre = tester.getCenter(find.byType(IslandScene));
+      for (var i = 0; i < 4; i++) {
+        final (from, to) = inwards ? (20.0, 160.0) : (160.0, 20.0);
+        final a = await tester.startGesture(centre - Offset(from, 0));
+        final b = await tester.startGesture(centre + Offset(from, 0));
+        // In small steps, as fingers move.
+        for (var k = 1; k <= 10; k++) {
+          final at = from + (to - from) * k / 10;
+          await a.moveTo(centre - Offset(at, 0));
+          await b.moveTo(centre + Offset(at, 0));
+          await tester.pump();
+        }
+        await a.up();
+        await b.up();
+        await settle(tester);
+      }
+    }
+
+    IslandSceneState scene(WidgetTester tester) =>
+        tester.state<IslandSceneState>(find.byType(IslandScene));
+
+    testWidgets('the port never shows beyond its harbour', (tester) async {
+      await show(tester, islandId: lesBasesIsland, done: 5);
+      final bounds = Offset.zero & scene(tester).canvas;
+      expect(scene(tester).canvas, world(tester).size);
+      bool inside() {
+        final shown = scene(tester).shown.deflate(0.5);
+        return bounds.contains(shown.topLeft) &&
+            bounds.contains(shown.bottomRight);
+      }
+
+      expect(inside(), isTrue);
+      for (final drag in const [
+        Offset(0, 4000),
+        Offset(4000, 0),
+        Offset(0, -8000),
+        Offset(-8000, 0),
+      ]) {
+        await tester.drag(find.byType(IslandScene), drag);
+        await settle(tester);
+        expect(
+          inside(),
+          isTrue,
+          reason: '$drag: ${scene(tester).shown} in $bounds',
+        );
+      }
+      await pinch(tester, inwards: false);
+      expect(inside(), isTrue, reason: 'pinched: ${scene(tester).shown}');
+    });
+
+    for (final island in [actionsEtfIsland, lesBasesIsland]) {
+      testWidgets('$island zooms in to 2.5×', (tester) async {
+        await show(tester, islandId: island, done: 5);
+        await pinch(tester, inwards: true);
+        expect(scene(tester).scale, closeTo(IslandScene.maxZoom, 1e-6));
+      });
+    }
+  });
 }

@@ -17,9 +17,15 @@ final class IslandWorld {
     required this.paint,
     required this.grown,
     this.ferry,
+    this.cover = false,
   });
 
   final Size size;
+
+  /// Its view always covers the screen, never zoomed out past it: no padding
+  /// round it (the port: little of the mainland shows, M13-8). Otherwise it
+  /// zooms out until it fits whole, on the sea.
+  final bool cover;
 
   /// Its ferry at its pier, once its line is open: touching it opens the sea
   /// chart, and a crossing lands there (M13-5).
@@ -87,11 +93,15 @@ IslandWorld portWorld(
   Set<int> ghosts = const {},
 }) {
   const tile = 100.0, unit = tile * 14 / 30;
-  const origin = Offset(tile / 2 * 13.6, 425);
-  const size = Size(tile / 2 * 20.8, 870);
+  // Cut to the harbour (M13-8): from the watchtower's roof and the
+  // lighthouse's top down to the sea in front, from the old jetty to the
+  // harbour mouth.
+  const origin = Offset(510, 110);
+  const size = Size(830, 840);
   const p = IsoProjection(tile: tile, unit: unit, origin: origin);
   return IslandWorld(
     size: size,
+    cover: true,
     grown: [for (final b in built) b ? 1.0 : 0.0],
     // Its ferry quay is Les bases' fifth part.
     ferry: built.length > 4 && built[4] ? p.project(1.15, 2.3, 0.1) : null,
@@ -189,6 +199,9 @@ class IslandScene extends StatefulWidget {
   /// The scale the view opens at, and glides to a marker at.
   static const closeUp = 0.7;
 
+  /// How far it zooms in: past full detail (M13-8).
+  static const maxZoom = 2.5;
+
   /// Where on the scene a framed marker sits: across the middle, above the
   /// card at the bottom.
   static const framed = Alignment(0, -0.3);
@@ -255,14 +268,52 @@ class IslandSceneState extends State<IslandScene>
 
   Offset get _offset => _centring(widget.world.size, _canvas);
 
+  /// The view's zoom, and the part of the picture on screen, in its px.
+  @visibleForTesting
+  double get scale => _view.value.entry(0, 0);
+  @visibleForTesting
+  Rect get shown => MatrixUtils.inverseTransformRect(
+    _view.value,
+    Offset.zero & (_viewport ?? Size.zero),
+  );
+  @visibleForTesting
+  Size get canvas => _canvas;
+
   /// The view at [scale] with marker [index] where [IslandScene.framed]
   /// says, kept within bounds.
   Matrix4 _framing(int index, double scale) =>
       _framingPoint(widget.world.anchors[index], scale);
 
+  /// The view as it is, its zoom and its pan held within the island's
+  /// bounds.
+  void _keepInBounds() {
+    final viewport = _viewport;
+    if (viewport == null) return;
+    final m = _view.value;
+    final s = m.entry(0, 0).clamp(_minScale, IslandScene.maxZoom).toDouble();
+    final x = m
+        .getTranslation()
+        .x
+        .clamp(math.min(0.0, viewport.width - _canvas.width * s), 0.0)
+        .toDouble();
+    final y = m
+        .getTranslation()
+        .y
+        .clamp(math.min(0.0, viewport.height - _canvas.height * s), 0.0)
+        .toDouble();
+    if (s == m.entry(0, 0) &&
+        x == m.getTranslation().x &&
+        y == m.getTranslation().y) {
+      return;
+    }
+    _view.value = Matrix4.identity()
+      ..translateByDouble(x, y, 0, 1)
+      ..scaleByDouble(s, s, s, 1);
+  }
+
   Matrix4 _framingPoint(Offset worldPoint, double scale) {
     final viewport = _viewport!;
-    final s = scale.clamp(_minScale, 1.0).toDouble();
+    final s = scale.clamp(_minScale, IslandScene.maxZoom).toDouble();
     final point = worldPoint + _offset;
     final target = IslandScene.framed.alongSize(viewport);
     final double x = (target.dx - point.dx * s).clamp(
@@ -275,7 +326,7 @@ class IslandSceneState extends State<IslandScene>
     );
     return Matrix4.identity()
       ..translateByDouble(x, y, 0, 1)
-      ..scaleByDouble(s, s, 1, 1);
+      ..scaleByDouble(s, s, s, 1);
   }
 
   /// Moves the view to marker [index], gliding unless animations are off.
@@ -299,19 +350,19 @@ class IslandSceneState extends State<IslandScene>
       builder: (context, box) {
         final viewport = box.biggest;
         final world = widget.world.size;
-        _minScale = math.min(
-          1.0,
-          math.min(
-            viewport.width / world.width,
-            viewport.height / world.height,
-          ),
-        );
-        // The picture padded with sea so that, zoomed all the way out, it
-        // still covers the screen.
-        _canvas = Size(
-          math.max(world.width, viewport.width / _minScale),
-          math.max(world.height, viewport.height / _minScale),
-        );
+        final across = viewport.width / world.width;
+        final down = viewport.height / world.height;
+        _minScale = widget.world.cover
+            ? math.min(IslandScene.maxZoom, math.max(across, down))
+            : math.min(1.0, math.min(across, down));
+        // Zooming out to the whole island pads it with sea so that it still
+        // covers the screen; a covering world needs none.
+        _canvas = widget.world.cover
+            ? world
+            : Size(
+                math.max(world.width, viewport.width / _minScale),
+                math.max(world.height, viewport.height / _minScale),
+              );
         if (_viewport != viewport) {
           final first = _viewport == null;
           _viewport = viewport;
@@ -338,8 +389,11 @@ class IslandSceneState extends State<IslandScene>
                 constrained: false,
                 boundaryMargin: EdgeInsets.zero,
                 minScale: _minScale,
-                maxScale: 1,
+                maxScale: IslandScene.maxZoom,
                 onInteractionStart: (_) => _glide.stop(),
+                // Its own bounds hold whatever the gesture did (M13-8).
+                onInteractionUpdate: (_) => _keepInBounds(),
+                onInteractionEnd: (_) => _keepInBounds(),
                 child: RepaintBoundary(
                   child: SizedBox.fromSize(
                     size: _canvas,
