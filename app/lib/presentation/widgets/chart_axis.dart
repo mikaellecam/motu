@@ -63,6 +63,9 @@ FlTitlesData dateAxis(
           if (label == null) return const SizedBox.shrink();
           return SideTitleWidget(
             meta: meta,
+            // The first and last dates stay inside the chart, not centred
+            // on its edges (M13-20).
+            fitInside: SideTitleFitInsideData.fromTitleMeta(meta),
             child: Text(label, style: style),
           );
         },
