@@ -142,5 +142,85 @@
         "en": "France's financial markets authority, the AMF, publishes blacklists of fraudulent sites, and an authorised intermediary is listed in the Orias register. A site's own reviews can be fake."
       }
     }
+  ],
+  "cards": [
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "Ce que promet « 10 % par mois »",
+        "en": "What \"10% a month\" promises"
+      },
+      "text": {
+        "fr": "Mille euros à 10 % par mois, ce serait 3 138 € au bout d'un an, 9 850 € au bout de deux, 30 913 € au bout de trois : trente fois la mise. À 3 % par an, le taux du Livret A de février 2023 à janvier 2025, les mêmes 1 000 € deviennent 1 093 € en trois ans. Une promesse pareille, « garantie » en plus, ne tient pas.",
+        "en": "A thousand euros at 10% a month would be €3,138 after one year, €9,850 after two, €30,913 after three: thirty times the stake. At 3% a year, the Livret A's rate from February 2023 to January 2025, the same €1,000 becomes €1,093 in three years. A promise like that, \"guaranteed\" on top, doesn't hold."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "La promesse : 10 % par mois",
+            "en": "The promise: 10% a month"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 1000,
+            "monthly": 0,
+            "years": 3,
+            "return": 2.138428
+          }
+        },
+        {
+          "label": {
+            "fr": "3 % par an",
+            "en": "3% a year"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 1000,
+            "monthly": 0,
+            "years": 3,
+            "return": 0.03
+          }
+        }
+      ]
+    },
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Comment Inès s'est fait avoir",
+        "en": "How Inès got caught"
+      },
+      "text": {
+        "fr": "Inès voit une pub : « 10 % par mois ». Elle verse 500 €. Sur le site, son compte grimpe chaque semaine. Elle retire 50 €, ils arrivent bien. Rassurée, elle verse 2 000 € de plus. Quand elle veut tout retirer, on lui demande d'abord de payer des « frais de déblocage ». Elle paie, rien n'arrive, puis le site ferme. Le compte qui grimpait n'était qu'un chiffre affiché à l'écran, et le premier retrait servait à la mettre en confiance.",
+        "en": "Inès sees an ad: \"10% a month\". She pays in €500. On the site, her account climbs every week. She withdraws €50, and it arrives. Reassured, she pays in €2,000 more. When she wants to take it all out, she's first asked to pay \"release fees\". She pays, nothing arrives, then the site shuts down. The climbing account was only a number on a screen, and the first withdrawal was there to win her trust."
+      }
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Pour récupérer ton argent, une plateforme te demande d'abord de payer des frais.",
+        "en": "To get your money back, a platform first asks you to pay fees."
+      },
+      "choices": [
+        {
+          "id": "pay",
+          "label": {
+            "fr": "Je paie, c'est pour récupérer mon argent",
+            "en": "I pay, it's to get my money back"
+          }
+        },
+        {
+          "id": "scam",
+          "label": {
+            "fr": "C'est le signe d'une arnaque",
+            "en": "It's the sign of a scam"
+          }
+        }
+      ],
+      "answer": "scam",
+      "explanation": {
+        "fr": "Un intermédiaire autorisé ne fait pas payer pour te rendre ton argent. Ces « frais », « taxes » ou « assurances » à régler avant un retrait sont une façon de prendre encore plus.",
+        "en": "An authorised intermediary doesn't charge you to give your money back. Such \"fees\", \"taxes\" or \"insurance\" to pay before a withdrawal are a way of taking even more."
+      }
+    }
   ]
 }

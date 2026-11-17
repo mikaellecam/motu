@@ -62,5 +62,79 @@
   "explanation": {
     "fr": "Taux moyens publiés par la Banque de France pour le 3e trimestre 2026, et le Livret A du jour. Un petit crédit, souvent {{credit-renouvelable|renouvelable}}, coûtait en moyenne près de 18 % par an, dix fois ce que rapporte le {{livret-a|Livret A}}. Une dette chère coûte plus que l'épargne ne rapporte : rembourser une dette à 18 %, c'est comme gagner 18 % sans risque.",
     "en": "Average rates published by the Banque de France for the third quarter of 2026, and today's Livret A. A small loan, often {{credit-renouvelable|revolving}}, cost almost 18% a year on average, ten times what the {{livret-a|Livret A}} earns. An expensive debt costs more than saving earns: paying back a debt at 18% is like earning 18% with no risk."
-  }
+  },
+  "cards": [
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "À crédit ou en mettant de côté",
+        "en": "On credit or by saving first"
+      },
+      "text": {
+        "fr": "Un ordinateur à 3 000 €. À crédit sur 24 mois, avec un {{taeg|TAEG}} de 17,7 %, le taux moyen d'un petit crédit au 3e trimestre 2026 : 147,48 € par mois, 3 539 € en tout. En mettant la même somme de côté chaque mois, les 3 000 € sont là au bout de 21 mois. À crédit, l'ordinateur est là tout de suite : ne pas attendre coûte 539 € d'intérêts.",
+        "en": "A €3,000 computer. On credit over 24 months, at an {{taeg|APR}} of 17.7%, the average rate of a small loan in the third quarter of 2026: €147.48 a month, €3,539 in all. Putting the same sum aside each month, the €3,000 is there after 21 months. On credit, the computer is there at once: not waiting costs €539 of interest."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "À crédit",
+            "en": "On credit"
+          },
+          "formula": "loan",
+          "inputs": {
+            "amount": 3000,
+            "months": 24,
+            "rate": 0.1641
+          }
+        },
+        {
+          "label": {
+            "fr": "Mis de côté",
+            "en": "Put aside"
+          },
+          "formula": "cushion",
+          "inputs": {
+            "spending": 3000,
+            "months": 1,
+            "saving": 147.48
+          }
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Deux offres de crédit pour la même somme. Quel chiffre permet de les comparer ?",
+        "en": "Two loan offers for the same sum. Which figure lets you compare them?"
+      },
+      "choices": [
+        {
+          "id": "payment",
+          "label": {
+            "fr": "La mensualité",
+            "en": "The monthly payment"
+          }
+        },
+        {
+          "id": "taeg",
+          "label": {
+            "fr": "Le TAEG",
+            "en": "The APR"
+          }
+        },
+        {
+          "id": "length",
+          "label": {
+            "fr": "La durée",
+            "en": "The length"
+          }
+        }
+      ],
+      "answer": "taeg",
+      "explanation": {
+        "fr": "Le {{taeg|TAEG}} dit ce que coûte le crédit chaque année, intérêts et frais obligatoires compris. Une {{mensualite|mensualité}} plus basse peut cacher un crédit plus long, et plus cher.",
+        "en": "The {{taeg|APR}} says what the loan costs each year, interest and compulsory fees included. A lower {{mensualite|monthly payment}} can hide a longer loan, and a more expensive one."
+      }
+    }
+  ]
 }

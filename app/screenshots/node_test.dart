@@ -132,6 +132,26 @@ void main() {
       },
     );
   }
+  // Les bases' other lessons get theirs (M13-14).
+  screenshot(
+    'm13-14-loan-cost-compare',
+    const NodeScreen(nodeId: 'lb.loan-cost'),
+    size: const Size(390, 1000),
+    overrides: withLesBases,
+    act: (tester) => toCard(tester, 1),
+  );
+  screenshot(
+    'm13-14-cash-inflation-example',
+    const NodeScreen(nodeId: 'lb.cash-inflation'),
+    size: const Size(390, 1000),
+    overrides: withLesBases,
+    act: (tester) async {
+      await answer(tester, 'Moins');
+      await tester.scrollUntilVisible(find.text('Continuer'), 200);
+      await tester.tap(find.text('Continuer'));
+      await tester.pumpAndSettle();
+    },
+  );
   screenshot(
     'm12-3-loan-toy',
     const NodeScreen(nodeId: 'lb.loan-cost'),
