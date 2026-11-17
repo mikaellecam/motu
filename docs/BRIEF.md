@@ -183,8 +183,11 @@ follows describes the map as it was until then, and the rules it carried that st
   - Recorded for later islands: Immobilier after `lb.loan-cost`; Trading after `lb.spot-the-scam` and
     `ae.checkpoint-1`; Crypto after `lb.spot-the-scam` and `ae.risk-ladder`.
 - Les bases is the mainland's port (decided 2026-11-16, M13-3; canvas « Motu — Lesson islands », page « Les bases »).
-  It is no island: the mainland's coast, inland only grass, a paved quayside with its railway, the sea wall in
-  courses, and its harbour. From the start an old wooden jetty and two rowboats; each lesson builds its part,
+  It is no island: the mainland's coast, a paved quayside with its railway, the sea wall in courses, and its
+  harbour. Inland, on the grass behind the railway, an old village that was there before the port and never changes
+  (decided 2026-11-17, M13-11): whitewashed cottages with terracotta roofs along a dirt road, a stone church and its
+  bell tower on the square, a well, kitchen gardens behind a hedge, trees; a lane down to the quay. The port's view
+  takes in the village (M13-8's bounds, higher), and frames a lesson lower and to the right so the village shows. From the start an old wooden jetty and two rowboats; each lesson builds its part,
   keyed by node id (`portParts`, `portBuilt`): 1 La digue (armour rocks either side of a crown wall), 2 L'échelle
   de marée, 3 L'écluse, 4 L'entrepôt, 5 Le quai des ferries and its ferry, 6 La grue, its quay and the container
   ship, 7 La capitainerie, 8 La vigie, 9 Le phare, lit at the breakwater's end with the checkpoint (names are

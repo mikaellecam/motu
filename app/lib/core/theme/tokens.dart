@@ -365,6 +365,24 @@ abstract final class PortPalette {
   static const seaLine = Color(0xE6FFFFFF);
 }
 
+/// The old village behind the port (M13-11): whitewashed walls, terracotta
+/// roofs, dirt lanes, kitchen gardens.
+abstract final class VillagePalette {
+  static const wall = (
+    top: Color(0xFFF6EEDC),
+    left: Color(0xFFD6C6A2),
+    right: Color(0xFFE9DCC0),
+  );
+  static const roof = (
+    top: Color(0xFFE07A52),
+    left: Color(0xFFA8492E),
+    right: Color(0xFFC45E3E),
+  );
+  static const lane = Color(0xFFDCC796);
+  static const soil = Color(0xFFB58A5A);
+  static const crop = Color(0xFF5FA352);
+}
+
 /// The sea chart (M13-5): a navigator's chart on paper, its grid, its depth
 /// lines, the islands open in colour and the closed ones hatched grey.
 abstract final class ChartPalette {

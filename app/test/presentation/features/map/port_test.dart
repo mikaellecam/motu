@@ -203,6 +203,54 @@ void main() {
       );
     });
   });
+
+  group('the village (M13-11)', () {
+    for (final tile in [40.0, 80.0]) {
+      testWidgets('at $tile px a tile, its cottages stand behind the rails, '
+          'there from the start', (tester) async {
+        await tester.runAsync(() async {
+          final p = IsoProjection(
+            tile: tile,
+            unit: tile * 14 / 30,
+            origin: Offset(tile * 8, tile * 3),
+          );
+          final size = Size(tile * 14, tile * 9);
+          final recorder = ui.PictureRecorder();
+          paintPort(
+            BlockPen(Canvas(recorder), AppColors.ink, 1.2),
+            p,
+            size,
+            built: const [],
+            lines: const {},
+          );
+          final image = await recorder.endRecording().toImage(
+            size.width.round(),
+            size.height.round(),
+          );
+          final bytes = (await image.toByteData())!;
+          Color at(Offset o) {
+            final i = (o.dy.round() * image.width + o.dx.round()) * 4;
+            return Color.fromARGB(
+              bytes.getUint8(i + 3),
+              bytes.getUint8(i),
+              bytes.getUint8(i + 1),
+              bytes.getUint8(i + 2),
+            );
+          }
+
+          // A cottage's walls, where the grass would be.
+          expect(at(p.project(-3.2 + 0.31, 1.8, 0.2)), isNot(MapPalette.grass));
+          // The church's tower.
+          expect(
+            at(p.project(-4.15 - 0.55 + 0.17, 3.25, 1.0)),
+            PortPalette.quay.right,
+          );
+          // Grass still between the houses.
+          expect(at(p.project(-5.6, 7.5)), MapPalette.grass);
+        });
+      });
+    }
+  });
 }
 
 bool sameBytes(Uint8List a, Uint8List b) {
