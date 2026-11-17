@@ -24,7 +24,6 @@ class GlossaryScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final language = Localizations.localeOf(context).languageCode;
     final search = ref.watch(glossarySearchProvider);
-    final actions = ref.read(glossarySearchProvider.notifier);
     final index = ref.watch(glossaryIndexProvider(language));
     final muted = Theme.of(context).textTheme.bodyMedium
         ?.copyWith(color: AppColors.muted);
@@ -34,7 +33,10 @@ class GlossaryScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tab_glossary)),
+      appBar: AppBar(
+        titleSpacing: AppSpace.screenPadding,
+        title: _SearchTitle(title: l10n.tab_glossary, query: search.query),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpace.screenPadding,
@@ -47,14 +49,6 @@ class GlossaryScreen extends ConsumerWidget {
             _Discovered(discovered: i.discovered, total: i.total),
             const SizedBox(height: AppSpace.x4),
           ],
-          // Its text comes from the search, so it survives being scrolled
-          // out of the list and back.
-          ChunkySearchField(
-            initialValue: search.query,
-            hint: l10n.glossary_search,
-            onChanged: actions.setQuery,
-          ),
-          const SizedBox(height: AppSpace.x3),
           ChunkySegmented(
             segments: [
               (GlossaryFilter.all, l10n.glossary_filter_all),
@@ -62,7 +56,7 @@ class GlossaryScreen extends ConsumerWidget {
               (GlossaryFilter.toDiscover, l10n.glossary_filter_to_discover),
             ],
             selected: search.filter,
-            onChanged: actions.setFilter,
+            onChanged: ref.read(glossarySearchProvider.notifier).setFilter,
           ),
           ...switch (index) {
             AsyncValue(:final value?) when value.total == 0 => [
@@ -240,6 +234,126 @@ class _TermRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The title bar's search, folded into its magnifier at the right of the
+/// title (M13-16, decided 2026-11-17): touched, the box slides open leftward
+/// across the bar, focused; its ✕ clears the search and folds it back. A
+/// search still typed keeps it open. At once with reduced motion.
+class _SearchTitle extends ConsumerStatefulWidget {
+  const _SearchTitle({required this.title, required this.query});
+
+  final String title;
+  final String query;
+
+  @override
+  ConsumerState<_SearchTitle> createState() => _SearchTitleState();
+}
+
+class _SearchTitleState extends ConsumerState<_SearchTitle> {
+  // Its text comes from the search, so it survives the tab being left.
+  late final _text = TextEditingController(text: widget.query);
+  final _focus = FocusNode();
+  late bool _open = widget.query.isNotEmpty;
+
+  /// The folded box: the magnifier inside the block's border.
+  static const _folded = 48 + 2 * AppShape.chunkyBorder;
+  static const _height = AppSpace.minTarget + 2 * AppShape.chunkyBorder;
+  static const _unfold = Duration(milliseconds: 280);
+
+  @override
+  void dispose() {
+    _text.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _unfoldIt() {
+    setState(() => _open = true);
+    _focus.requestFocus();
+  }
+
+  void _foldIt() {
+    _text.clear();
+    ref.read(glossarySearchProvider.notifier).setQuery('');
+    _focus.unfocus();
+    setState(() => _open = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _unfold;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The bar's width: the toolbar keeps the screen's margin at its end.
+        final full = constraints.maxWidth;
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: _height + AppShape.chunkyButtonShadow,
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              AnimatedOpacity(
+                opacity: _open ? 0 : 1,
+                duration: duration,
+                child: ExcludeSemantics(
+                  excluding: _open,
+                  child: Text(widget.title),
+                ),
+              ),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: AnimatedContainer(
+                  duration: duration,
+                  curve: Curves.easeOutCubic,
+                  width: _open ? full : _folded,
+                  height: _height,
+                  decoration: ChunkySearchField.box,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      AppShape.chunkyButtonRadius - AppShape.chunkyBorder,
+                    ),
+                    child: _open
+                        ? OverflowBox(
+                            alignment: Alignment.centerLeft,
+                            minWidth: full - 2 * AppShape.chunkyBorder,
+                            maxWidth: full - 2 * AppShape.chunkyBorder,
+                            child: ChunkySearchField(
+                              controller: _text,
+                              focusNode: _focus,
+                              hint: l10n.glossary_search,
+                              onChanged: ref
+                                  .read(glossarySearchProvider.notifier)
+                                  .setQuery,
+                              onClear: _foldIt,
+                              boxed: false,
+                            ),
+                          )
+                        : Semantics(
+                            container: true,
+                            button: true,
+                            label: l10n.glossary_search,
+                            excludeSemantics: true,
+                            child: InkWell(
+                              onTap: _unfoldIt,
+                              child: const Center(
+                                child: Icon(Icons.search, color: AppColors.ink),
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

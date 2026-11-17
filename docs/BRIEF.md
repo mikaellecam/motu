@@ -443,7 +443,9 @@ Rules:
   each time the sheet opens, as a checkpoint does (M12-14).
 - Layout (decided 2026-10-24, artboards Glossary-A, GlossarySheet-A): the index scrolls as one page and
   opens with « n notions découvertes sur m » (the pack's terms, whatever the search) over a bar in
-  `progress`, then an outlined search box and the filters. Letters in small Baloo `primary`; each letter's
+  `progress`, then the filters. The search sits in the title bar, folded into a chunky magnifier at the
+  right of « Glossaire » (M13-16, decided 2026-11-17): touched, its box slides open leftward across the bar,
+  focused; its ✕ clears the search and folds it; a search still typed keeps it open. Letters in small Baloo `primary`; each letter's
   terms in a flat card, a line between rows; on the right ✓ (an ink check in a `line` disc: the artboard's
   green is `gain`, kept for gain figures), « Nouvelle » (a small `progress` pill with an ink edge, a label
   rather than a button) or « À découvrir » in words. The sheet: the title, the « Nouvelle notion » pill and a
@@ -1322,7 +1324,9 @@ Value counters (M7-4, `CountUp`): under a reveal and a decision, each end value 
 started from, with its signed change, in step with the curve (same duration and curve), then shows the exact
 figures; screen readers hear the end figures only.
 Others: an island up close (M13-4): a lesson's building growing as its lesson is done, the view gliding to the
-next marker, the gold pin's ring pulsing (hand-coded, `AnimationController`); value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
+next marker, the gold pin's ring pulsing (hand-coded, `AnimationController`); a segmented control's pill
+sliding to the segment picked and the glossary's search box unfolding (M13-16, implicit animations, at once
+with reduced motion); value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
 (package-provided, counts as the third non-coded animation).
 
 
