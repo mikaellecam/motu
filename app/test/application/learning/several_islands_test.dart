@@ -87,22 +87,27 @@ void main() {
     },
   );
 
-  test('the questionnaire starts Actions & ETF only: another island starts '
-      'at its first lesson', () async {
-    await c
-        .read(profileRepositoryProvider)
-        .save(
-          const Profile(
-            goal: Goal.longTerm,
-            dropReaction: DropReaction.wait,
-            knowledge: Knowledge.etfs,
-            savings: Savings.livret,
-          ),
-        );
-    final path = await read(islandPathProvider('les-bases').future);
-    expect(
-      [for (final n in path.nodes) n.state],
-      [NodeState.current, NodeState.locked, NodeState.locked],
-    );
-  });
+  test(
+    "the questionnaire's starting node is Actions & ETF's only: a "
+    "skipper's Les bases starts after its five standing parts (M13-12)",
+    () async {
+      await c
+          .read(profileRepositoryProvider)
+          .save(
+            const Profile(
+              goal: Goal.longTerm,
+              dropReaction: DropReaction.wait,
+              knowledge: Knowledge.etfs,
+              savings: Savings.livret,
+            ),
+          );
+      final path = await read(islandPathProvider('les-bases').future);
+      expect(
+        [for (final n in path.nodes) n.state],
+        // This pack's three lessons all come before part 6: open to play,
+        // the first one first, not node 3 as on Actions & ETF.
+        [NodeState.current, NodeState.open, NodeState.open],
+      );
+    },
+  );
 }

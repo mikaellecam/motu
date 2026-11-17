@@ -23,8 +23,11 @@ import '../../helpers.dart';
 /// No profile; completions come from [complete], Les bases' fifth lesson
 /// always among them: Actions & ETF's lessons are open (M12-7).
 class StreamedProfiles extends Fake implements ProfileRepository {
-  StreamedProfiles(Set<String> done, {bool fifth = true})
+  StreamedProfiles(Set<String> done, {bool fifth = true, this.profile})
     : last = {...done, if (fifth) 'lb.cushion-2020'};
+
+  /// The questionnaire's answers, none by default.
+  final Profile? profile;
 
   final completions = StreamController<Set<String>>.broadcast();
   Set<String> last;
@@ -49,7 +52,7 @@ class StreamedProfiles extends Fake implements ProfileRepository {
   Future<void> setPlace(String island) async => saved = island;
 
   @override
-  Future<Profile?> load() async => null;
+  Future<Profile?> load() async => profile;
   @override
   Future<bool> showAll() async => false;
   @override
@@ -77,6 +80,7 @@ Future<void> show(
   bool still = false,
   List<Override> extra = const [],
   bool fifth = true,
+  Profile? profile,
 }) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -89,9 +93,11 @@ Future<void> show(
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
   }
   final pack = islandId == actionsEtfIsland ? actionsEtf : lesBases;
-  profiles = StreamedProfiles({
-    for (final n in pack.nodes.take(done)) n.id,
-  }, fifth: fifth);
+  profiles = StreamedProfiles(
+    {for (final n in pack.nodes.take(done)) n.id},
+    fifth: fifth,
+    profile: profile,
+  );
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -324,6 +330,35 @@ void main() {
     await tester.tap(find.bySemanticsLabel(RegExp(r'^6\. ')));
     await tester.pump();
     expect(find.text('La grue · à toi de jouer'), findsOneWidget);
+  });
+
+  testWidgets("a skipper's port: its five parts stand, the gold pin on the "
+      'crane (M13-12)', (tester) async {
+    await show(
+      tester,
+      islandId: lesBasesIsland,
+      done: 0,
+      fifth: false,
+      profile: const Profile(
+        goal: Goal.longTerm,
+        dropReaction: DropReaction.buyMore,
+        knowledge: Knowledge.alreadyInvesting,
+        savings: Savings.invested,
+      ),
+    );
+    await settle(tester);
+    // The five standing open to replay, the crane to play, the rest locked.
+    expect(markers(), findsNWidgets(6));
+    expect(
+      find.bySemanticsLabel(RegExp(r'^1\. .*, La digue, ouverte$')),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel(RegExp(r'^6\. .*, La grue, à toi de jouer$')),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel(RegExp(r'^7\. ')), findsNothing);
+    expect(tester.widget<IslandScene>(find.byType(IslandScene)).focus, 5);
   });
 
   testWidgets('no sea before the ferry quay: no « Naviguer », no line, no '

@@ -53,13 +53,17 @@ Future<IslandPathView> islandPath(Ref ref, String islandId) async {
     await profiles.load(),
   );
   final open = lessonsOpen(content, done, profile);
-  // The questionnaire's start is Actions & ETF's (BRIEF §4.1): another
-  // island starts at its first lesson.
+  // The questionnaire's start is Actions & ETF's (BRIEF §4.1); Les bases
+  // starts after the port parts a skipper has (M13-12); another island
+  // starts at its first lesson.
   final states = open
       ? pathStates(
           islandId == actionsEtfIsland ? profile : null,
           content.path,
           done,
+          start: islandId == lesBasesIsland && profile != null
+              ? basicsStart(profile)
+              : null,
         )
       : [for (final _ in content.nodes) NodeState.locked];
   final waiting = open

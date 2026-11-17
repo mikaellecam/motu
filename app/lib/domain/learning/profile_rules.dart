@@ -35,6 +35,16 @@ int startingNode(Profile p) => switch (p.knowledge) {
 bool skipsTheBasics(Profile p) =>
     p.knowledge == Knowledge.etfs || p.knowledge == Knowledge.alreadyInvesting;
 
+/// How many of Les bases' lessons those who skip it get as already standing
+/// on its port (decided 2026-11-16): through its ferry quay, the line to
+/// Actions & ETF open.
+const basicsSkippedThrough = 5;
+
+/// Where Les bases' path starts (1-based) for those who skip it: after the
+/// port parts that already stand (M13-12). Null for the others: lesson 1.
+int? basicsStart(Profile p) =>
+    skipsTheBasics(p) ? basicsSkippedThrough + 1 : null;
+
 /// Q3: level of detail shown from the start (§4.15).
 int initialUiLevel(Profile p) =>
     p.knowledge == Knowledge.alreadyInvesting ? 2 : 1;
