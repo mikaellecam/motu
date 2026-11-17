@@ -230,8 +230,11 @@ class _IslandState extends ConsumerState<_Island>
     };
     final markers = [
       for (var k = 0; k < _ids.length; k++)
-        // No marker for a locked lesson (M13-7).
-        if (_node(k) case final node? when node.state != NodeState.locked)
+        // No marker for a locked lesson (M13-7), nor for one skipped at
+        // onboarding until its turn (M13-19).
+        if (_node(k) case final node?
+            when node.state != NodeState.locked &&
+                node.state != NodeState.skipped)
           Marker(
             switch (node.state) {
               NodeState.done => MarkerKind.done,
@@ -363,7 +366,7 @@ class _IslandState extends ConsumerState<_Island>
 String _stateName(AppLocalizations l10n, NodeState state) => switch (state) {
   NodeState.done => l10n.island_state_done,
   NodeState.current => l10n.island_state_current,
-  NodeState.open => l10n.island_state_open,
+  NodeState.open || NodeState.skipped => l10n.island_state_open,
   NodeState.locked => l10n.island_state_locked,
 };
 

@@ -17,6 +17,7 @@ final class IslandWorld {
     required this.paint,
     required this.grown,
     this.fading = const {},
+    this.ghosts = const {},
     this.ferry,
     this.cover = false,
     this.framed = const Alignment(0, -0.3),
@@ -27,6 +28,9 @@ final class IslandWorld {
   /// right, so that the village shows too (M13-11).
   /// The ghosts of the pieces just done, by piece, as they fade (M13-17).
   final Map<int, double> fading;
+
+  /// The pieces drawn as ghosts: unlocked, not done (M13-7).
+  final Set<int> ghosts;
 
   final Alignment framed;
 
@@ -75,6 +79,7 @@ IslandWorld districtWorld(
     size: size,
     grown: grown,
     fading: fading,
+    ghosts: ghosts,
     ferry: ferry ? p.project(-2.1, 5.58, 0.1) : null,
     anchors: [
       for (final (i, b) in districtBuildings.indexed)
@@ -122,6 +127,7 @@ IslandWorld portWorld(
     framed: const Alignment(0.25, 0.2),
     grown: [for (final (i, b) in built.indexed) b ? rising[i] ?? 1.0 : 0.0],
     fading: fading,
+    ghosts: ghosts,
     // Its ferry quay is Les bases' fifth part.
     ferry: built.length > 4 && built[4] ? p.project(1.15, 2.3, 0.1) : null,
     anchors: [

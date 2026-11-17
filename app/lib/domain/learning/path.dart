@@ -10,8 +10,12 @@ enum NodeState {
   /// The one the path points to (the next-step card's lesson).
   current,
 
-  /// Playable now: skipped at onboarding, or after a pending mission.
+  /// Playable now, after a pending mission (missions do not block).
   open,
+
+  /// Skipped at onboarding (M13-19): playable, but it waits for its turn,
+  /// after the rest of the path, and the island does not show it until then.
+  skipped,
 
   /// Waits for the lesson before it.
   locked,
@@ -58,7 +62,7 @@ IslandNode? currentNode(
 /// The state of each node of [path] (decided 2026-10-11): done, the current
 /// node, then nodes open while everything from the starting node up to
 /// them is done or a pending mission (missions do not block); nodes skipped
-/// at onboarding stay open. The rest is locked.
+/// at onboarding wait for their turn (M13-19). The rest is locked.
 List<NodeState> pathStates(
   Profile? profile,
   List<IslandNode> path,
@@ -75,7 +79,8 @@ List<NodeState> pathStates(
     states.add(switch (node) {
       _ when !pending => NodeState.done,
       _ when node == current => NodeState.current,
-      _ when i < from || i == (forced ?? 0) - 1 || reachable => NodeState.open,
+      _ when i < from && i != (forced ?? 0) - 1 => NodeState.skipped,
+      _ when i == (forced ?? 0) - 1 || reachable => NodeState.open,
       _ => NodeState.locked,
     });
     // From the starting node on, a lesson not done closes the way.

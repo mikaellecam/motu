@@ -302,7 +302,9 @@ en euros de {mois} ». A lesson or a term of Les bases links Actions & ETF's ter
 
 Island up close (`/island/:islandId`, decided 2026-11-16, M13-4; canvas « Motu — Lesson islands », page
 « Naviguer »): the nodes in order, each done (replayable), current (the node the next-step card points to), open
-or locked. Decided 2026-10-11: nodes skipped at onboarding stay open; a pending mission does not lock what follows
+or locked. Decided 2026-10-11: nodes skipped at onboarding stay playable (since M13-19, decided 2026-11-17, they
+are `skipped`: hidden on the island until the path comes back to them, after the rest, one by one as the
+current node); a pending mission does not lock what follows
 (the lessons after it open, the mission completes whenever the wallet satisfies it); « Tout afficher dès
 maintenant » changes the UI level only, never the node order.
 Layout: Actions & ETF's district (§4.2, M13-2) or Les bases' port (M13-3) fills the screen at full detail (120 and
@@ -313,8 +315,8 @@ zooming in to 2.5× its full detail (M13-8; the map's M12-12 rule does not apply
 harbour (the watchtower's roof down to the sea in front, the old jetty to the harbour mouth) and always covers the
 screen, so little of the mainland's grass shows (M13-8). One marker per lesson unlocked, the same
 size at any zoom, a 44 × 44 target: done, a navy disc with a check on its building; the lesson to do, a gold pin
-whose ring pulses; another open one (skipped at onboarding, after a pending mission), a small white dot. A locked
-lesson has no marker, and a marker never stands over nothing (decided 2026-11-17, M13-7): a lesson unlocked but
+whose ring pulses; another open one (after a pending mission), a small white dot. A locked lesson, or one skipped
+at onboarding until its turn (M13-19), has no marker and no ghost, and a marker never stands over nothing (decided 2026-11-17, M13-7): a lesson unlocked but
 not done shows the ghost of what it builds, see-through with faint edges (at the port its part on its empty spot;
 in the district its grown building over the plain one), the marker on the ghost's top. No sea line leaves the
 port before its ferry quay stands, and « Naviguer » (and the ferry) shows only once a line is open (M13-7). No number on the

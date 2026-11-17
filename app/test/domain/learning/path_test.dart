@@ -9,7 +9,7 @@ import 'learning_test.dart' show island, profile;
 // 7 toy, 8 mission, 9 predict, 10 puzzle, 11 mission, 12 checkpoint.
 
 /// The states in path order, one letter each: d(one), c(urrent), o(pen),
-/// l(ocked).
+/// s(kipped), l(ocked).
 String states(Profile? p, Set<String> completed) =>
     pathStates(p, island, completed).map((s) => s.name[0]).join();
 
@@ -33,11 +33,15 @@ void main() {
     expect(states(profile(), done([1, 2, 4, 5, 6, 7, 9, 10])), 'ddcddddoddoo');
   });
 
-  test('nodes skipped at onboarding stay open (decided 2026-10-11)', () {
+  test('nodes skipped at onboarding are skipped: playable, waiting for '
+      'their turn (decided 2026-10-11, M13-19)', () {
     // « J'investis déjà » starts at node 4.
     final investing = profile(knowledge: Knowledge.alreadyInvesting);
-    expect(states(investing, {}), 'ooocllllllll');
-    expect(states(investing, done([2, 4])), 'ododclllllll');
+    expect(states(investing, {}), 'ssscllllllll');
+    expect(states(investing, done([2, 4])), 'sdsdclllllll');
+    // Their turn comes after the rest: then current, one by one.
+    final rest = done([for (var i = 4; i <= 12; i++) i]);
+    expect(states(investing, rest), 'cssddddddddd');
   });
 
   test('a given start opens what comes before it (M13-12)', () {
@@ -50,16 +54,17 @@ void main() {
         {},
         start: 6,
       ).map((s) => s.name[0]).join(),
-      'oooooclll',
+      'sssssclll',
     );
     expect(currentNode(null, island, done([6]), start: 6)!.id, island[6].id);
   });
 
   test('Livret savings put node 1 first, then the starting node', () {
-    // « Ce qu'est un ETF » starts at node 3, a mission: node 4 is open too.
+    // « Ce qu'est un ETF » starts at node 3, a mission: node 4 is open too;
+    // node 2, skipped, waits.
     final p = profile(knowledge: Knowledge.etfs, savings: Savings.livret);
-    expect(states(p, {}), 'cooollllllll');
-    expect(states(p, done([1])), 'docollllllll');
+    expect(states(p, {}), 'csoollllllll');
+    expect(states(p, done([1])), 'dscollllllll');
   });
 
   test('everything done: no current node', () {

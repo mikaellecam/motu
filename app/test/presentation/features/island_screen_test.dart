@@ -368,18 +368,44 @@ void main() {
       ),
     );
     await settle(tester);
-    // The five standing open to replay, the crane to play, the rest locked.
-    expect(markers(), findsNWidgets(6));
-    expect(
-      find.bySemanticsLabel(RegExp(r'^1\. .*, La digue, ouverte$')),
-      findsOneWidget,
-    );
+    // The five standing wait for their turn, unmarked (M13-19); the crane to
+    // play; the rest locked.
+    expect(markers(), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'^1\. ')), findsNothing);
     expect(
       find.bySemanticsLabel(RegExp(r'^6\. .*, La grue, à toi de jouer$')),
       findsOneWidget,
     );
     expect(find.bySemanticsLabel(RegExp(r'^7\. ')), findsNothing);
     expect(tester.widget<IslandScene>(find.byType(IslandScene)).focus, 5);
+  });
+
+  testWidgets('lessons skipped at onboarding wait for their turn: no ghost, '
+      'no marker (M13-19)', (tester) async {
+    await show(
+      tester,
+      done: 0,
+      profile: const Profile(
+        goal: Goal.longTerm,
+        dropReaction: DropReaction.buyMore,
+        knowledge: Knowledge.alreadyInvesting,
+        savings: Savings.invested,
+      ),
+    );
+    await settle(tester);
+    // « J'investis déjà » starts at lesson 4: 1 to 3 wait, unseen.
+    for (final n in [1, 2, 3]) {
+      expect(
+        find.bySemanticsLabel(RegExp('^$n\\. ')),
+        findsNothing,
+        reason: '$n',
+      );
+    }
+    expect(
+      find.bySemanticsLabel(RegExp(r'^4\. .*, à toi de jouer$')),
+      findsOneWidget,
+    );
+    expect(world(tester).ghosts, {3});
   });
 
   testWidgets('no sea before the ferry quay: no « Naviguer », no line, no '
