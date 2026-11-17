@@ -105,6 +105,33 @@ void main() {
     size: const Size(390, 1150),
     overrides: withLesBases,
   );
+  // Its cards (M13-13): every slider moved, then « Continuer » to each.
+  Future<void> toCard(WidgetTester tester, int card) async {
+    for (var i = 0; i < 3; i++) {
+      await tester.drag(find.byType(Slider).at(i), const Offset(40, 0));
+      await tester.pumpAndSettle();
+    }
+    for (var i = 0; i < card; i++) {
+      await tester.scrollUntilVisible(find.text('Continuer'), 200);
+      await tester.tap(find.text('Continuer'));
+      await tester.pumpAndSettle();
+    }
+  }
+
+  for (final (card, name) in [(1, 'example'), (2, 'compare'), (3, 'check')]) {
+    screenshot(
+      'm13-13-card-$name',
+      const NodeScreen(nodeId: 'lb.safety-cushion'),
+      size: const Size(390, 1000),
+      overrides: withLesBases,
+      act: (tester) async {
+        await toCard(tester, card);
+        if (name == 'check') {
+          await answer(tester, 'Payer un imprévu sans emprunter');
+        }
+      },
+    );
+  }
   screenshot(
     'm12-3-loan-toy',
     const NodeScreen(nodeId: 'lb.loan-cost'),

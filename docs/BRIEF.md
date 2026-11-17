@@ -241,12 +241,23 @@ Node types (each a widget + a pure evaluator):
 | `quiz` | A checkpoint's questions inside an island, under its own name (M12-4) | ≥ 1 attempt finished |
 
 Player (decided 2026-10-24, artboard `Reveal-A` of the art direction canvas): a world screen on the sea, a
-chunky ✕ and the island's lessons as pills on top (each done in `progress`, this one in `primary`). Each node
+chunky ✕ and, on top, the lesson's cards as pills (M13-13: its interaction then each card, those seen in
+`progress`, this one in `primary`, « Carte n sur N » for screen readers; none for a lesson without cards). Each node
 opens with a chunky card: its type, its title, its prompt. Once answered, the verdict takes the question's
 place in that card: « Bien vu ! » or « Raté, et c'est comme ça qu'on apprend », then what was answered and the
 right answer; a checkpoint marks the right answer ✓ and a wrong pick ✗ (icons and screen-reader labels, never
 colour alone); a decision shows what each choice became, the user's named. The explanation sits in a chunky
 « Pourquoi ? » card; sliders and other controls in a chunky card.
+
+Cards (M13-13, decided 2026-11-17): after its interaction a lesson may go on in `cards`, in its pack's order,
+so each is 3 or 4 cards. A card is a worked example (`example`: a headline, a text, optionally a chart), a
+comparison (`compare`: a headline, a text, two or three lines on one chart), or a quick check (`check`: one
+question as a checkpoint asks it; right or wrong, its why shows and the lesson goes on). A line is a frozen
+dataset the lesson draws (scaled to an `amount`: what it became) or a toy formula on fixed `inputs` (its main
+series, or the `series` named), never hand-typed points. « Continuer » leads from the interaction to each card
+(a check once answered); the lesson is saved as done after its last card, its bridge into the sandbox there,
+so leaving half-way leaves it to do. `contentcheck` checks the kinds, the lines' datasets and formula inputs,
+the check's answer among its choices, and every text in fr and en. Missions and checkpoints have no cards.
 
 Every node may end with:
 - **"Et aujourd'hui ?"** — reruns the same widget on current data; hidden when offline or when the node

@@ -321,6 +321,14 @@ func (c *checker) island(f *file, ref Ref, nodes []file) []object {
 var (
 	nodeTypes    = []string{"predict_reveal", "toy", "decision", "sort", "build_puzzle", "mission", "checkpoint", "quiz"}
 	difficulties = []string{"decouverte", "realiste", "serre", "sur-mesure"}
+	// The toy formulas a card's line can draw: their inputs, then their
+	// series, the main one first (ToyFormula).
+	formulas = map[string][2][]string{
+		"fees":     {{"amount", "years", "return", "fee_low", "fee_high"}, {"low", "high"}},
+		"compound": {{"amount", "monthly", "years", "return"}, {"value", "money_in"}},
+		"cushion":  {{"spending", "months", "saving"}, {"saved"}},
+		"loan":     {{"amount", "months", "rate"}, {"repaid"}},
+	}
 )
 
 func (c *checker) node(f file) {
@@ -358,7 +366,106 @@ func (c *checker) node(f file) {
 			c.add(f.name, "covers: \"from\" is after \"to\"")
 		}
 	}
+	if cards, ok := b["cards"]; ok {
+		c.cards(f.name, b, cards)
+	}
 	c.texts(f.name, "", b)
+}
+
+// cards checks a lesson's cards (M13-13): an example, a comparison of two
+// or three lines, each a dataset the lesson draws or a known formula with
+// exactly its inputs, or a check whose answer is one of its choices. Their
+// texts are checked with the node's.
+func (c *checker) cards(name string, node object, v any) {
+	list, ok := v.([]any)
+	if !ok {
+		c.add(name, "cards: not a list")
+		return
+	}
+	drawn := map[string]bool{}
+	if ds, ok := node["datasets"].([]any); ok {
+		for _, d := range ds {
+			if id, ok := d.(string); ok {
+				drawn[id] = true
+			}
+		}
+	}
+	for i, item := range list {
+		at := fmt.Sprintf("cards[%d]", i)
+		card, _ := item.(object)
+		switch kind, _ := card["kind"].(string); kind {
+		case "example", "compare":
+			c.requireText(name+": "+at, card, "headline")
+			c.requireText(name+": "+at, card, "text")
+			lines, _ := card["lines"].([]any)
+			if kind == "compare" && len(lines) < 2 {
+				c.add(name, "%s: compares fewer than two lines", at)
+			}
+			if len(lines) > 3 {
+				c.add(name, "%s: draws over three lines", at)
+			}
+			for j, l := range lines {
+				c.cardLine(name, fmt.Sprintf("%s.lines[%d]", at, j), l, drawn)
+			}
+		case "check":
+			c.requireText(name+": "+at, card, "question")
+			answer, _ := card["answer"].(string)
+			found := false
+			choices, _ := card["choices"].([]any)
+			for _, ch := range choices {
+				if o, _ := ch.(object); o["id"] == answer {
+					found = true
+				}
+			}
+			if !found {
+				c.add(name, "%s: the answer %q is not a choice", at, answer)
+			}
+		default:
+			c.add(name, "%s: kind %q is unknown", at, kind)
+		}
+	}
+}
+
+func (c *checker) cardLine(name, at string, v any, drawn map[string]bool) {
+	line, _ := v.(object)
+	c.requireText(name+": "+at, line, "label")
+	_, isData := line["dataset"]
+	_, isFormula := line["formula"]
+	if isData == isFormula {
+		c.add(name, "%s: a dataset or a formula", at)
+		return
+	}
+	if isData {
+		if id, _ := line["dataset"].(string); !drawn[id] {
+			c.add(name, "%s: %q is not a dataset of the lesson", at, id)
+		}
+		return
+	}
+	f, _ := line["formula"].(string)
+	spec, ok := formulas[f]
+	if !ok {
+		c.add(name, "%s: formula %q is unknown", at, f)
+		return
+	}
+	inputs, _ := line["inputs"].(object)
+	if keys := sortedKeys(inputs); !slices.Equal(keys, sorted(spec[0])) {
+		c.add(name, "%s: %s reads %s", at, f, strings.Join(spec[0], ", "))
+	}
+	for _, k := range sortedKeys(inputs) {
+		n, _ := inputs[k].(json.Number)
+		if f, err := n.Float64(); err != nil || f < 0 {
+			c.add(name, "%s: input %q is not a number from 0", at, k)
+		}
+	}
+	if s, ok := line["series"]; ok && !slices.Contains(spec[1], fmt.Sprint(s)) {
+		c.add(name, "%s: %s draws no %q", at, f, s)
+	}
+}
+
+func sorted(s []string) []string {
+	out := slices.Clone(s)
+	slices.Sort(out)
+	return out
 }
 
 // recipes checks that the pack's recipes rebuild exactly its datasets

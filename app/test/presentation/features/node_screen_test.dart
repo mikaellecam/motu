@@ -230,6 +230,64 @@ void main() {
     );
   });
 
+  testWidgets('cards: the toy, then an example, a comparison and a check; '
+      'done after the last one (M13-13)', (tester) async {
+    await show(tester, 'lb.safety-cushion');
+    Finder header(int n) => find.bySemanticsLabel('Carte $n sur 4');
+    expect(header(1), findsOneWidget);
+    // The interaction first: no « Continuer » until every slider moved.
+    expect(find.text('Continuer'), findsNothing);
+    for (var i = 0; i < 3; i++) {
+      await tester.drag(find.byType(Slider).at(i), const Offset(40, 0));
+      await tester.pumpAndSettle();
+    }
+    // Played, not saved yet: the cards come first.
+    expect(profiles.completed, isEmpty);
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+
+    expect(header(2), findsOneWidget);
+    expect(find.text('Un exemple'), findsOneWidget);
+    expect(find.text('Léa remplit le sien'), findsOneWidget);
+    // 4 200 € at 150 € a month: full in 28 months.
+    expect(find.textContaining('Le matelas de Léa'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp(r'Le matelas de Léa.*4.200')),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+
+    expect(header(3), findsOneWidget);
+    expect(find.text('Côte à côte'), findsOneWidget);
+    expect(find.text('300 € par mois'), findsOneWidget);
+    expect(find.text('100 € par mois'), findsOneWidget);
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+
+    // The check: « Continuer » only once answered, right or wrong.
+    expect(header(4), findsOneWidget);
+    expect(find.text('Petite vérif'), findsOneWidget);
+    expect(find.text('Continuer'), findsNothing);
+    await tester.tap(find.text('Faire grossir ton argent'));
+    await tester.pump();
+    await tester.tap(find.text('Valider'));
+    await tester.pumpAndSettle();
+    expect(find.text("Raté, et c'est comme ça qu'on apprend"), findsOneWidget);
+    expect(find.text('Il est là tout de suite.'), findsOneWidget);
+    expect(profiles.completed, isEmpty);
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(profiles.completed.single.$1, 'lb.safety-cushion');
+  });
+
+  testWidgets('a lesson without cards shows no header (M13-13)', (
+    tester,
+  ) async {
+    await show(tester, 'lb.loan-cost');
+    expect(find.bySemanticsLabel(RegExp('^Carte ')), findsNothing);
+  });
+
   testWidgets('quiz: a checkpoint\'s questions, under its own name', (
     tester,
   ) async {

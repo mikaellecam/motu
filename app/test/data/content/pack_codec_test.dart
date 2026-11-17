@@ -3,9 +3,11 @@ import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:finance_companion/data/content/pack_codec.dart';
+import 'package:finance_companion/domain/learning/cards.dart';
 import 'package:finance_companion/domain/learning/content.dart';
 import 'package:finance_companion/domain/learning/glossary.dart';
 import 'package:finance_companion/domain/learning/node.dart';
+import 'package:finance_companion/domain/learning/toys.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// A small valid pack; [edit] breaks it on purpose.
@@ -71,7 +73,72 @@ String pack({void Function(Map<String, dynamic> json)? edit}) {
   return jsonEncode(json);
 }
 
+Map<String, Object?> text(String s) => {'fr': s, 'en': s};
+
+/// ae.one's three cards (M13-13): an example, a comparison, a check.
+List<Map<String, Object?>> cards() => [
+  {
+    'kind': 'example',
+    'headline': text('Léa'),
+    'text': text('Elle met 100 € de côté.'),
+  },
+  {
+    'kind': 'compare',
+    'headline': text('Deux frais'),
+    'text': text('Côte à côte.'),
+    'lines': [
+      {'label': text('Apple'), 'dataset': 'ds.aapl', 'amount': 1000},
+      {
+        'label': text('Épargne'),
+        'formula': 'cushion',
+        'inputs': {'spending': 1000, 'months': 3, 'saving': 500},
+      },
+    ],
+  },
+  {
+    'kind': 'check',
+    'question': text('Lequel ?'),
+    'choices': [
+      {'id': 'a', 'label': text('A')},
+      {'id': 'b', 'label': text('B')},
+    ],
+    'answer': 'b',
+    'explanation': text('Parce que.'),
+  },
+];
+
+/// [cards] with [edit] applied.
+List<dynamic> broken(void Function(List<dynamic>) edit) {
+  final c = <dynamic>[...cards()];
+  edit(c);
+  return c;
+}
+
 void main() {
+  test('cards: an example, a comparison, a check, in order (M13-13)', () {
+    final node = decodePack(pack(edit: (j) => j['nodes'][1]['cards'] = cards()))
+        .nodes
+        .first;
+    expect(node.payload.containsKey('cards'), isFalse);
+    final [example, compare, check] = node.cards;
+    expect(
+      example,
+      isA<StoryCard>()
+          .having((c) => c.compare, 'compare', false)
+          .having((c) => c.lines, 'lines', isEmpty)
+          .having((c) => c.headline.fr, 'headline', 'Léa'),
+    );
+    final lines = (compare as StoryCard).lines;
+    expect(compare.compare, isTrue);
+    expect(lines.first.dataset, 'ds.aapl');
+    expect(lines.first.amount, Decimal.fromInt(1000));
+    expect(lines.last.formula, ToyFormula.cushion);
+    expect(lines.last.inputs['saving'], Decimal.fromInt(500));
+    expect((check as CheckCard).question.answer, 'b');
+    // A lesson without cards has none.
+    expect(decodePack(pack()).nodes.first.cards, isEmpty);
+  });
+
   test('the bundled Actions & ETF pack reads: 12 nodes in path order', () {
     final bundled = decodePack(
       File('assets/packs/actions-etf.json').readAsStringSync(),
@@ -156,6 +223,31 @@ void main() {
         'a bridge without a date',
         (j) => j['nodes'][1]['bridge'] = {'difficulty': 'serre'},
       ),
+      for (final (what, edit) in <(String, void Function(List<dynamic>))>[
+        ('an unknown card', (c) => c[0]['kind'] = 'poem'),
+        ('a card text in one language', (c) => c[0]['text'].remove('en')),
+        ('a comparison of one line', (c) => c[1]['lines'].removeLast()),
+        (
+          'a line of a dataset the lesson does not draw',
+          (c) => c[1]['lines'][0]['dataset'] = 'ds.other',
+        ),
+        ('an unknown formula', (c) => c[1]['lines'][1]['formula'] = 'magic'),
+        (
+          'a formula input missing',
+          (c) => c[1]['lines'][1]['inputs'].remove('saving'),
+        ),
+        ('a series it does not draw', (c) => c[1]['lines'][1]['series'] = 'x'),
+        (
+          'inputs it cannot draw',
+          (c) => c[1]['lines'][1]['inputs']['saving'] = -1,
+        ),
+        (
+          'a line both dataset and formula',
+          (c) => c[1]['lines'][1]['dataset'] = 'ds.aapl',
+        ),
+        ('a check answer not among its choices', (c) => c[2]['answer'] = 'z'),
+      ])
+        ('cards: $what', (j) => j['nodes'][1]['cards'] = broken(edit)),
       (
         'an empty period',
         (j) => j['nodes'][1]['covers'] = {

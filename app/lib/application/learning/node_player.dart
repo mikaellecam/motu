@@ -9,6 +9,7 @@ import '../../domain/learning/reveal.dart';
 import '../../domain/learning/toys.dart';
 import '../providers.dart';
 import 'content.dart';
+import 'lesson_cards.dart';
 
 part 'node_player.g.dart';
 
@@ -209,13 +210,7 @@ class PredictPlay extends _$PredictPlay {
     final chosen = state.chosen;
     if (chosen == null || state.submitted) return;
     try {
-      await ref
-          .read(profileRepositoryProvider)
-          .completeNode(
-            nodeId,
-            answer: chosen,
-            at: ref.read(liveClockProvider).now(),
-          );
+      await savePlayed(ref, nodeId, answer: chosen);
       state = PredictState(chosen: chosen, submitted: true);
     } on Failure catch (failure) {
       state = PredictState(chosen: chosen, failure: failure);
@@ -398,9 +393,7 @@ class ToyPlay extends _$ToyPlay {
     final ids = [for (final c in current.view.toy.controls) c.id];
     if (next.completed || !everyControlTouched(ids, next.touched)) return;
     try {
-      await ref
-          .read(profileRepositoryProvider)
-          .completeNode(nodeId, at: ref.read(liveClockProvider).now());
+      await savePlayed(ref, nodeId);
       next = (state.value ?? next).copyWith(completed: true);
     } on Failure catch (failure) {
       next = (state.value ?? next).copyWith(failure: failure);
