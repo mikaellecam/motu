@@ -14,7 +14,7 @@ import '../../helpers.dart';
 const nbsp = ' ';
 
 void main() {
-  testWidgets('five questions, then where the path starts and why', (
+  testWidgets('four questions, then where the path starts and why', (
     tester,
   ) async {
     final db = AppDatabase(NativeDatabase.memory());
@@ -32,7 +32,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Question 1 sur 5'), findsOneWidget);
+    expect(find.text('Question 1 sur 4'), findsOneWidget);
 
     // Nothing chosen: the spec's message, no move.
     await tester.tap(find.text('Suivant'));
@@ -41,15 +41,15 @@ void main() {
       find.text('Choisis une réponse pour continuer. Aucune n\'est mauvaise.'),
       findsOneWidget,
     );
-    expect(find.text('Question 1 sur 5'), findsOneWidget);
+    expect(find.text('Question 1 sur 4'), findsOneWidget);
 
-    for (final answer in [
+    for (final (i, answer) in [
       'Long terme, plus de 8 ans',
       'J\'attends',
       'Ce qu\'est un ETF',
       'Compte courant',
-      '15${nbsp}min',
-    ]) {
+    ].indexed) {
+      expect(find.text('Question ${i + 1} sur 4'), findsOneWidget);
       // Under the island, an answer may be below the fold.
       await tester.scrollUntilVisible(find.text(answer), 100);
       await tester.tap(find.text(answer));
@@ -69,6 +69,8 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    // The fourth answer ends it: no question left, the start and why.
+    expect(find.textContaining('Question'), findsNothing);
     expect(
       find.text(
         'On commence par «${nbsp}Ton premier ETF$nbsp» parce que tu as répondu '
@@ -107,7 +109,6 @@ void main() {
       'J\'attends',
       'Ce qu\'est un ETF',
       'Compte courant',
-      '15${nbsp}min',
     ]) {
       // Under the island, an answer may be below the fold.
       await tester.scrollUntilVisible(find.text(answer), 100);

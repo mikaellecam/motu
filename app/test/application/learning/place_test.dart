@@ -13,7 +13,6 @@ Profile knowing(Knowledge k) => Profile(
   dropReaction: DropReaction.wait,
   knowledge: k,
   savings: Savings.livret,
-  weeklyTime: WeeklyTime.fifteen,
 );
 
 void main() {

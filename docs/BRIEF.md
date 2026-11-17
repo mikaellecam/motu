@@ -73,7 +73,7 @@ island's bar (M13-6).
 
 | Screen | Route | Notes |
 |---|---|---|
-| Onboarding (5 questions) | `/onboarding` | First launch only; re-takeable from Settings |
+| Onboarding (4 questions) | `/onboarding` | First launch only; re-takeable from Settings |
 | Archipel | `/` | The island the user was last on, up close (§4.3), its next step (M13-6) |
 | Island up close | `/island/:islandId` | The island, a marker per lesson, the lesson's card (M13-4) |
 | Node player | `/node/:nodeId` | Renders one node type (§4.3) |
@@ -101,11 +101,11 @@ Routing: `go_router`. Deep links use the routes above (lesson → trip wizard pr
 
 ### 4.1 Onboarding
 
-Five single-choice questions, each required (validation error if none picked: « Choisis une réponse pour
+Four single-choice questions, each required (validation error if none picked: « Choisis une réponse pour
 continuer. Aucune n'est mauvaise. »). Reassurance line: the answers only choose a starting point, not advice.
 Layout (decided 2026-10-24, artboard `Onboarding-A` of the art direction canvas): a world screen on the
 sea under where the way starts, before any lesson (since M13-6: Les bases' port with its old jetty, or Actions &
-ETF's district all plain for the answers that skip Les bases). One chunky card holds « Question n sur 5 », a segmented progress
+ETF's district all plain for the answers that skip Les bases). One chunky card holds « Question n sur 4 », a segmented progress
 bar, the question and the reassurance line; the answers are toy blocks under it (they press down, so they
 sit on the sea rather than inside the card). « Retour » (from the second question) and « Suivant » stay at
 the bottom, with the validation error in an alert box just above them. The result: the island, then a card
@@ -118,14 +118,16 @@ question is required.
 | Q2 | Ton portefeuille perd 20 % en un mois. Tu fais quoi ? | Je vends tout / J'attends / J'achète plus / Je ne sais pas | `riskComfort` (low/medium/high/unknown→medium) → moment thresholds + pre-trade coach sensitivity |
 | Q3 | Tu sais déjà… | Rien / Ce qu'est une action / Ce qu'est un ETF / J'investis déjà | `startingNode` (1 / 1 / 3 / 4) and `initialUiLevel` (1 / 1 / 1 / 2); since M12-7 « Ce qu'est un ETF » and « J'investis déjà » skip Les bases (`skipsTheBasics`): Actions & ETF opens at once and the way starts there, the others start on Les bases' lesson 1 |
 | Q4 | Où est ton épargne aujourd'hui ? | Livret A ou livrets / Compte courant / Déjà investie / Pas d'épargne | if Livret → node 1 "Livret ou ETF ?" is forced first and flagged, once Actions & ETF is open; ~~if none → the "matelas de sécurité" glossary sheet comes first~~ (dropped 2026-10-28, M12-7: Les bases' lesson 1 is about it) |
-| Q5 | Combien de temps par semaine ? | 5 min / 15 min / 30 min et plus | next-step pacing (1 / 2 / 3 suggestions per day) |
+
+A fifth question, « Combien de temps par semaine ? » (5 min / 15 min / 30 min et plus), paced the next-step card;
+it went with that card (decided 2026-11-17, M13-10: `profiles.weekly_time` dropped, schema v7).
 
 Rules:
 - The profile **never** drives asset suggestions. It only shapes path, UI level, thresholds, wording.
 - After onboarding, show one sentence explaining the choice ("On commence par X parce que tu as répondu Y"):
   on Les bases, « Pas d'épargne » or the Q3 answer; on Actions & ETF, Livret savings or the Q3 answer.
 - Pure domain functions, unit-tested: `startingNode(profile)`, `initialUiLevel(profile)`,
-  `momentThresholds(profile)`, `pacing(profile)`.
+  `momentThresholds(profile)`.
 - Retaking the questionnaire recomputes these but never erases progress.
 
 ### 4.2 Map
@@ -150,7 +152,7 @@ follows describes the map as it was until then, and the rules it carried that st
 - Header (until M13-6): title "Ton archipel", islands opened count, level chip.
 - Next-step card at the bottom: always exactly one recommended action. Selection is a pure function
   `nextStep(state)`, first match wins: an unread companion moment; the current node if it is a mission; the
-  current lesson node while fewer nodes than the pacing (Q5) were completed today; an open trip; the live
+  current lesson node while fewer nodes than the pacing (the weekly time question, dropped in M13-10) were completed today; an open trip; the live
   wallet. Since M12-7 the current node walks the open islands in order: Les bases to its end, then Actions &
   ETF; for those who skip Les bases, Actions & ETF first, then Les bases (decided 2026-10-28). The
   safety-cushion sheet no longer comes first.
@@ -1057,7 +1059,7 @@ User data (only the user creates it; rows of a wallet cascade when it is deleted
 | `dca_plans` | id, walletId, assetId, amountCents, frequency, startDate, active |
 | `dca_simulations` | id, params json, result json, savedAt |
 | `journal_entries` | walletId, simDate, eventId, decision, reason |
-| `profiles` | single row: the five answers, showAll, language |
+| `profiles` | single row: the four answers, showAll, language |
 | `node_progress` | nodeId, status, attempts, lastAnswer, completedAt |
 | `glossary_state` | termId, discoveredAt, quizPassed |
 | `favorites` | assetId, addedAt |
@@ -1367,5 +1369,5 @@ screens; M9-5).
    « Stabilité passée », out of 100, on the asset page only (§4.8).
 5. ~~Final data provider and `dataFloor`~~: decided in ADR-004 (Twelve Data free plan, `dataFloor` 2000-01-03).
 6. ~~Final catalogue list and symbols~~: decided in ADR-004 (US listings).
-7. Q5's answer (« Combien de temps par semaine ? ») paced the next-step card, gone since M13-9: it has no use left.
-   Keep the question, give it a use, or drop it?
+7. ~~Q5's answer (« Combien de temps par semaine ? ») paced the next-step card, gone since M13-9: it has no use left.
+   Keep the question, give it a use, or drop it?~~: decided 2026-11-17, dropped (M13-10).

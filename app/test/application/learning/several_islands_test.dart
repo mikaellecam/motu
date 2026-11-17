@@ -97,7 +97,6 @@ void main() {
             dropReaction: DropReaction.wait,
             knowledge: Knowledge.etfs,
             savings: Savings.livret,
-            weeklyTime: WeeklyTime.fifteen,
           ),
         );
     final path = await read(islandPathProvider('les-bases').future);

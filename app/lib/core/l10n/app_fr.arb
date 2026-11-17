@@ -58,7 +58,7 @@
   "@map_settings": {
     "description": "Accessibility label of the settings button in the map header."
   },
-  "onboarding_progress": "Question {n} sur 5",
+  "onboarding_progress": "Question {n} sur {total}",
   "onboarding_reassurance": "Tes r\u00e9ponses choisissent seulement par o\u00f9 commencer. Ce ne sont pas des conseils.",
   "onboarding_next": "Suivant",
   "onboarding_back": "Retour",
@@ -86,13 +86,12 @@
   "onboarding_savings_currentAccount": "Compte courant",
   "onboarding_savings_invested": "D\u00e9j\u00e0 investie",
   "onboarding_savings_none": "Pas d'\u00e9pargne",
-  "onboarding_time_question": "Combien de temps par semaine\u202f?",
-  "onboarding_time_five": "5\u00a0min",
-  "onboarding_time_fifteen": "15\u00a0min",
-  "onboarding_time_thirtyPlus": "30\u00a0min et plus",
   "@onboarding_progress": {
     "placeholders": {
       "n": {
+        "type": "int"
+      },
+      "total": {
         "type": "int"
       }
     }

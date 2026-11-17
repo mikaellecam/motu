@@ -8,13 +8,12 @@ import '../providers.dart';
 
 part 'onboarding_controller.g.dart';
 
-/// The five questions in order, each with its answers in display order.
+/// The four questions in order, each with its answers in display order.
 const onboardingQuestions = <List<Enum>>[
   Goal.values,
   DropReaction.values,
   Knowledge.values,
   Savings.values,
-  WeeklyTime.values,
 ];
 
 /// Where the questionnaire stands.
@@ -26,7 +25,7 @@ final class OnboardingState {
     this.saveError,
   });
 
-  /// 0 to 4 while asking; [onboardingQuestions].length once answered.
+  /// 0 to 3 while asking; [onboardingQuestions].length once answered.
   final int question;
 
   /// One per question, null until chosen.
@@ -48,7 +47,6 @@ final class OnboardingState {
           dropReaction: answers[1]! as DropReaction,
           knowledge: answers[2]! as Knowledge,
           savings: answers[3]! as Savings,
-          weeklyTime: answers[4]! as WeeklyTime,
         );
 
   OnboardingState copyWith({
@@ -80,7 +78,6 @@ class OnboardingController extends _$OnboardingController {
               previous.dropReaction,
               previous.knowledge,
               previous.savings,
-              previous.weeklyTime,
             ],
     );
   }
