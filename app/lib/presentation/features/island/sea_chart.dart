@@ -655,10 +655,15 @@ class SeaChartPainter extends CustomPainter {
   }
 
   void _cartouche(Canvas canvas) {
+    final name = TextPainter(
+      text: TextSpan(text: labels.cartouche, style: AppText.label),
+      textDirection: TextDirection.ltr,
+    )..layout();
     final box = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(232, 352, 108, 30),
+      cartoucheBox(name.width),
       const Radius.circular(6),
     );
+    name.dispose();
     canvas
       ..drawRRect(box, Paint()..color = AppColors.surface)
       ..drawRRect(box, _stroke(AppColors.ink, 1.5));
@@ -803,4 +808,12 @@ class SeaChartPainter extends CustomPainter {
       old.here != here ||
       old.islands != islands ||
       old.names != names;
+}
+
+/// The chart's cartouche round a name [textWidth] wide (M13-21): 108 wide at
+/// least, 10 clear of the name on each side, its right edge where the chart
+/// puts it.
+Rect cartoucheBox(double textWidth) {
+  final width = math.max(108.0, textWidth + 20);
+  return Rect.fromLTWH(340 - width, 352, width, 30);
 }

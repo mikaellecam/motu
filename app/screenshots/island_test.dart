@@ -63,4 +63,21 @@ void main() {
     ],
     act: (tester) => tester.tap(find.text('Naviguer')),
   );
+  // In English, its cartouche wide enough for « Motu archipelago » (M13-21).
+  screenshot(
+    'm13-21-sea-chart-en',
+    const IslandScreen(islandId: lesBasesIsland),
+    locale: 'en',
+    overrides: [
+      lesBasesPack,
+      contentPackProvider(actionsEtfIsland).overrideWith((ref) async => pack),
+      completedNodesProvider.overrideWith(
+        (ref) => Stream.value({
+          for (final n in bases.nodes.take(5)) n.id,
+          for (final n in pack.nodes.take(6)) n.id,
+        }),
+      ),
+    ],
+    act: (tester) => tester.tap(find.text('Sail')),
+  );
 }

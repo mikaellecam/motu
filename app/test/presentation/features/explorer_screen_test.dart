@@ -78,6 +78,10 @@ final catalogue = [
 Future<void> show(WidgetTester tester, List<ExplorerRow> rows) async {
   tester.platformDispatcher.localesTestValue = [const Locale('fr')];
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+  // Tall enough for the catalogue's rows under its group headers (M13-21).
+  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   final db = AppDatabase(NativeDatabase.memory());
   addTearDown(db.close);
   await tester.pumpWidget(
@@ -238,6 +242,65 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Apple'), findsOneWidget);
     expect(find.text('Nvidia'), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('each group opens on a separator: a header with its rule, '
+      'pinned at the top while its group scrolls (M13-21)', (tester) async {
+    final many = [
+      for (var i = 0; i < 20; i++)
+        row(
+          'e$i',
+          'Fonds ${i.toString().padLeft(2, '0')}',
+          AssetType.etf,
+          'us',
+        ),
+      for (var i = 0; i < 20; i++)
+        row(
+          'a$i',
+          'Actif ${i.toString().padLeft(2, '0')}',
+          AssetType.stock,
+          'us',
+        ),
+    ];
+    await show(tester, many);
+    expect(find.byKey(const ValueKey('group-rule')), findsWidgets);
+    final list = find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.byType(Scrollable),
+    );
+    final viewport = tester.getRect(list);
+    expect(
+      tester.getSemantics(
+        find.descendant(
+          of: find.byType(CustomScrollView),
+          matching: find.text('ETF'),
+        ),
+      ),
+      isSemantics(label: 'ETF', isHeader: true),
+    );
+    Finder title(String t) => find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.text(t),
+    );
+    // Into the ETFs: their header stays at the top of the list.
+    await tester.drag(list, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.text('Fonds 00'), findsNothing, reason: 'scrolled away');
+    expect(
+      tester.getTopLeft(title('ETF')).dy,
+      lessThan(viewport.top + 40),
+      reason: 'pinned',
+    );
+    // Into the stocks: theirs takes its place.
+    await tester.scrollUntilVisible(
+      find.text('Actif 10'),
+      400,
+      scrollable: list,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(title('Actions')).dy, lessThan(viewport.top + 40));
+    expect(title('ETF'), findsNothing);
     await unmount(tester);
   });
 

@@ -1,5 +1,6 @@
 import 'package:finance_companion/application/learning/content.dart';
 import 'package:finance_companion/application/providers.dart';
+import 'package:finance_companion/core/theme/app_theme.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/island/island_screen.dart';
 import 'package:finance_companion/presentation/features/island/sea_chart.dart';
@@ -156,5 +157,22 @@ void main() {
     await showPort(tester);
     await openChart(tester);
     await expectAccessible(tester);
+  });
+
+  testWidgets('the cartouche holds its name whole, in both languages '
+      '(M13-21)', (tester) async {
+    // A short name keeps the box as drawn; a long one widens it to the left.
+    expect(cartoucheBox(60), const Rect.fromLTWH(232, 352, 108, 30));
+    expect(cartoucheBox(130), const Rect.fromLTWH(190, 352, 150, 30));
+    for (final name in ['Archipel Motu', 'Motu archipelago']) {
+      final painter = TextPainter(
+        text: TextSpan(text: name, style: AppText.label),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final box = cartoucheBox(painter.width);
+      expect(box.width - painter.width, greaterThanOrEqualTo(20), reason: name);
+      expect(box.right, 340);
+      painter.dispose();
+    }
   });
 }

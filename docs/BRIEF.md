@@ -847,10 +847,13 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
 - Offline banner « Hors connexion. Tu vois les cours du {date}, {heure}. » + Réessayer.
 - In a trip, the list is filtered by availability and every value is as of the trip date.
 - Layout (decided 2026-10-24, artboard `Explore-A`): the list reads in two groups, « ETF » then « Actions »,
-  each under its section title (`SectionTitle`) with what it is (« Un panier d'entreprises en un seul achat »,
+  each under its header with what it is (« Un panier d'entreprises en un seul achat »,
   « Une seule entreprise : plus de potentiel, plus de secousses »), its rows in a flat card, sorted by name
   inside. Search and filters narrow both groups; a group with nothing left is not shown. Filter chips are
-  pills; a long name wraps to a second line.
+  pills; a long name wraps to a second line. Each header is a separator (M13-21, asked 2026-11-17: « the "ETFs" &
+  "Stocks" headers don't seem headers »): its scene, the name in the title size, its line, a full-width 2 px ink
+  rule under them, more room above the second group; it stays pinned at the top while its group scrolls under
+  it, on the page colour.
 - Each section title beside what it holds (decided 2026-10-28 by the user, M11-5: « it shows what each is »),
   a 60×56 scene on `sea` in `MapPalette` (§10.2): ETF, four small buildings on one plot (a basket); Actions,
   one tower with its flag (one company). Decorative: the title and its line say it.
