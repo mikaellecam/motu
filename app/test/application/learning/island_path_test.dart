@@ -119,10 +119,11 @@ void main() {
             savings: Savings.currentAccount,
           ),
         );
-    // « Ce qu'est un ETF » starts at node 3: nodes 1 and 2 are skipped.
+    // « Ce qu'est un ETF » starts at node 3: nodes 1 and 2 are skipped,
+    // waiting for their turn (M13-19).
     expect(rows(await path()).map((r) => r.$2), [
-      NodeState.open,
-      NodeState.open,
+      NodeState.skipped,
+      NodeState.skipped,
       NodeState.current,
     ]);
   });

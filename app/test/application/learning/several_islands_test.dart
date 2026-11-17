@@ -104,9 +104,9 @@ void main() {
       final path = await read(islandPathProvider('les-bases').future);
       expect(
         [for (final n in path.nodes) n.state],
-        // This pack's three lessons all come before part 6: open to play,
-        // the first one first, not node 3 as on Actions & ETF.
-        [NodeState.current, NodeState.open, NodeState.open],
+        // This pack's three lessons all come before part 6: the first one to
+        // play, not node 3 as on Actions & ETF; the others wait (M13-19).
+        [NodeState.current, NodeState.skipped, NodeState.skipped],
       );
     },
   );
