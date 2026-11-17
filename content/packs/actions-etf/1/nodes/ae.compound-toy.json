@@ -75,5 +75,105 @@
       "step": 0.005,
       "default": 0.05
     }
+  ],
+  "cards": [
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "Le même effort, trois rendements",
+        "en": "The same effort, three returns"
+      },
+      "text": {
+        "fr": "100 € par mois pendant 30 ans : 36 000 € versés. À 2 % par an, ils deviennent 48 682 € ; à 5 %, 79 727 € ; à 7 %, 113 353 €. À 7 %, les gains, 77 353 €, font plus de deux fois ce qui a été versé. Ces taux restent des hypothèses : aucun n'est garanti.",
+        "en": "€100 a month for 30 years: €36,000 paid in. At 2% a year, it becomes €48,682; at 5%, €79,727; at 7%, €113,353. At 7%, the gains, €77,353, are more than twice what was paid in. These rates stay assumptions: none is guaranteed."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "7 % par an",
+            "en": "7% a year"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 0,
+            "monthly": 100,
+            "years": 30,
+            "return": 0.07
+          }
+        },
+        {
+          "label": {
+            "fr": "5 % par an",
+            "en": "5% a year"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 0,
+            "monthly": 100,
+            "years": 30,
+            "return": 0.05
+          }
+        },
+        {
+          "label": {
+            "fr": "2 % par an",
+            "en": "2% a year"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 0,
+            "monthly": 100,
+            "years": 30,
+            "return": 0.02
+          }
+        }
+      ]
+    },
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Léo commence dix ans plus tôt",
+        "en": "Léo starts ten years earlier"
+      },
+      "text": {
+        "fr": "Léo verse 100 € par mois de 25 à 35 ans, puis plus rien : 12 000 € en tout. Max commence à 35 ans et verse 100 € par mois jusqu'à 65 ans : 36 000 €. À 5 % par an, à 65 ans, Léo a 65 233 € et Max 79 727 €. Léo a versé trois fois moins, et ses gains, 53 233 €, dépassent ceux de Max, 43 727 € : son argent a eu dix ans de plus pour rapporter.",
+        "en": "Léo pays in €100 a month from 25 to 35, then nothing more: €12,000 in all. Max starts at 35 and pays in €100 a month until 65: €36,000. At 5% a year, at 65, Léo has €65,233 and Max €79,727. Léo paid in three times less, and his gains, €53,233, beat Max's, €43,727: his money had ten more years to earn."
+      }
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "1 000 € placés à 5 % par an, rien ajouté, gains laissés placés. La 10e année rapporte…",
+        "en": "€1,000 at 5% a year, nothing added, gains left in. The 10th year earns…"
+      },
+      "choices": [
+        {
+          "id": "more",
+          "label": {
+            "fr": "Plus que la 1re",
+            "en": "More than the 1st"
+          }
+        },
+        {
+          "id": "same",
+          "label": {
+            "fr": "Autant que la 1re",
+            "en": "As much as the 1st"
+          }
+        },
+        {
+          "id": "less",
+          "label": {
+            "fr": "Moins que la 1re",
+            "en": "Less than the 1st"
+          }
+        }
+      ],
+      "answer": "more",
+      "explanation": {
+        "fr": "La 1re année rapporte 50 €. La 10e, 77,57 € : elle rapporte aussi sur les gains des neuf années d'avant. Ce sont les {{interets-composes|intérêts composés}}.",
+        "en": "The 1st year earns €50. The 10th, €77.57: it also earns on the gains of the nine years before. That's {{interets-composes|compound interest}}."
+      }
+    }
   ]
 }

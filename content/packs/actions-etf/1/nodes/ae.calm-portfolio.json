@@ -64,5 +64,71 @@
   "explanation": {
     "fr": "Les obligations ont bougé bien moins que les actions, et pas toujours en même temps qu'elles : mélangés, ces placements ont moins bougé que la plupart pris seuls. C'est l'{{allocation|allocation}}, plus que le choix de chaque ETF, qui a fixé la {{volatilite|volatilité}} du portefeuille.",
     "en": "Bonds moved far less than stocks, and not always at the same time: mixed, these investments moved less than most of them alone. The {{allocation|allocation}}, more than the choice of each ETF, set the portfolio's {{volatilite|volatility}}."
-  }
+  },
+  "cards": [
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "Le calme a eu un prix",
+        "en": "Calm came at a price"
+      },
+      "text": {
+        "fr": "De 2023 à 2025, 1 000 $ dans l'ETF Monde sont devenus 1 757 $, avec une {{pire-baisse|pire baisse}} de 17 % au printemps 2025. Dans les obligations américaines, 1 140 $, et une pire baisse de 7 %. Sur ces trois ans, les obligations ont bien moins chuté, et bien moins rapporté.",
+        "en": "From 2023 to 2025, $1,000 in the world ETF became $1,757, with a {{pire-baisse|worst drop}} of 17% in spring 2025. In US bonds, $1,140, and a worst drop of 7%. Over those three years, bonds fell far less, and earned far less."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "ETF Monde (actions)",
+            "en": "World ETF (stocks)"
+          },
+          "dataset": "ds.acwi-3y-d",
+          "amount": 1000
+        },
+        {
+          "label": {
+            "fr": "Obligations américaines",
+            "en": "US bonds"
+          },
+          "dataset": "ds.agg-3y-d",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Deux ETF qui ne montent et ne baissent pas toujours en même temps, mélangés moitié-moitié. Le mélange bouge…",
+        "en": "Two ETFs that don't always rise and fall at the same time, mixed half and half. The mix moves…"
+      },
+      "choices": [
+        {
+          "id": "more",
+          "label": {
+            "fr": "Plus que chacun des deux",
+            "en": "More than each of them"
+          }
+        },
+        {
+          "id": "less",
+          "label": {
+            "fr": "Moins que la moyenne des deux",
+            "en": "Less than the average of the two"
+          }
+        },
+        {
+          "id": "avg",
+          "label": {
+            "fr": "Exactement comme la moyenne des deux",
+            "en": "Exactly like the average of the two"
+          }
+        }
+      ],
+      "answer": "less",
+      "explanation": {
+        "fr": "Quand l'un baisse pendant que l'autre tient, leurs mouvements se compensent en partie. C'est ce qui permet à un portefeuille mélangé de bouger moins que la plupart de ses ETF pris seuls : c'est la {{diversification|diversification}}.",
+        "en": "When one falls while the other holds, their moves partly cancel out. That's what lets a mixed portfolio move less than most of its ETFs alone: that's {{diversification|diversification}}."
+      }
+    }
+  ]
 }

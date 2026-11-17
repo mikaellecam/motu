@@ -260,4 +260,34 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  // Actions & ETF's cards (M13-15): the interaction answered, then
+  // « Continuer » to the first card.
+  Future<void> toFirstCard(WidgetTester tester) async {
+    await tester.scrollUntilVisible(find.text('Valider'), 200);
+    await tester.tap(find.text('Valider'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Continuer'), 200);
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+  }
+
+  screenshot(
+    'm13-15-risk-ladder-compare',
+    const NodeScreen(nodeId: 'ae.risk-ladder'),
+    size: const Size(390, 880),
+    overrides: overrides,
+    act: toFirstCard,
+  );
+  screenshot(
+    'm13-15-march-2020-example',
+    const NodeScreen(nodeId: 'ae.march-2020'),
+    size: const Size(390, 800),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.text('Garder'));
+      await tester.pump();
+      await toFirstCard(tester);
+    },
+  );
 }

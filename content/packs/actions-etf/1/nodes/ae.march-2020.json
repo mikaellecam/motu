@@ -83,5 +83,63 @@
   "explanation": {
     "fr": "Ce jour-là, personne ne savait que le marché toucherait son plus bas trois jours plus tard. Fin février 2021, l'ETF Monde avait regagné 70 % depuis le 20 mars : ceux qui avaient vendu avaient figé leur perte, ceux qui avaient gardé l'avaient effacée. Rien ne garantissait ce {{rebond|rebond}} : après 2008, il avait fallu plusieurs années.",
     "en": "That day, nobody knew the market would hit its low three days later. By late February 2021, the world ETF had gained 70% from 20 March: those who had sold had locked in their loss, those who had held had wiped it out. Nothing guaranteed that {{rebond|rebound}}: after 2008, it had taken several years."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Julie garde, Karim vend",
+        "en": "Julie holds, Karim sells"
+      },
+      "text": {
+        "fr": "Début janvier 2020, Julie et Karim placent chacun 10 000 $ dans l'ETF Monde. Le 20 mars, Karim vend tout : il récupère 6 968 $. Il attend que ça se calme et rachète début août, quand l'ETF retrouve son prix de début janvier. Fin février 2021, Karim a 8 185 $. Julie, qui n'a rien touché, 11 842 $. Attendre que ça aille mieux, ici, c'était racheter plus cher.",
+        "en": "Early January 2020, Julie and Karim each put $10,000 in the world ETF. On 20 March, Karim sells everything: he gets $6,968 back. He waits for things to calm down and buys back in early August, once the ETF is back at its early-January price. By late February 2021, Karim has $8,185. Julie, who touched nothing, has $11,842. Waiting for things to get better, here, meant buying back higher."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Les 10 000 $ de Julie",
+            "en": "Julie's $10,000"
+          },
+          "dataset": "ds.acwi-2020-w",
+          "amount": 10000
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Le 20 mars 2020, les 10 000 $ de Julie n'en valent plus que 6 968. Tant qu'elle ne vend pas, cette perte…",
+        "en": "On 20 March 2020, Julie's $10,000 is only worth $6,968. As long as she doesn't sell, that loss…"
+      },
+      "choices": [
+        {
+          "id": "final",
+          "label": {
+            "fr": "Est définitive",
+            "en": "Is final"
+          }
+        },
+        {
+          "id": "open",
+          "label": {
+            "fr": "Peut encore grandir ou s'effacer",
+            "en": "Can still grow or be wiped out"
+          }
+        },
+        {
+          "id": "none",
+          "label": {
+            "fr": "N'existe pas",
+            "en": "Doesn't exist"
+          }
+        }
+      ],
+      "answer": "open",
+      "explanation": {
+        "fr": "Tant qu'elle garde ses parts, la perte bouge avec les cours : elle aurait pu se creuser, elle s'est effacée en août. En vendant, Karim a figé la sienne : 3 032 $ de moins, pour de bon.",
+        "en": "As long as she keeps her shares, the loss moves with prices: it could have deepened, it was wiped out in August. By selling, Karim locked his in: $3,032 less, for good."
+      }
+    }
+  ]
 }
