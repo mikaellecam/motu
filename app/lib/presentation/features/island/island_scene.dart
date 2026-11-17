@@ -18,7 +18,13 @@ final class IslandWorld {
     required this.grown,
     this.ferry,
     this.cover = false,
+    this.framed = const Alignment(0, -0.3),
   });
+
+  /// Where on the screen a lesson's marker sits when the view frames it:
+  /// across the middle, a little up by default; at the port, lower and to the
+  /// right, so that the village shows too (M13-11).
+  final Alignment framed;
 
   final Size size;
 
@@ -96,12 +102,13 @@ IslandWorld portWorld(
   // Cut to the harbour (M13-8): from the watchtower's roof and the
   // lighthouse's top down to the sea in front, from the old jetty to the
   // harbour mouth.
-  const origin = Offset(510, 110);
-  const size = Size(830, 840);
+  const origin = Offset(510, 250);
+  const size = Size(830, 890);
   const p = IsoProjection(tile: tile, unit: unit, origin: origin);
   return IslandWorld(
     size: size,
     cover: true,
+    framed: const Alignment(0.25, 0.2),
     grown: [for (final b in built) b ? 1.0 : 0.0],
     // Its ferry quay is Les bases' fifth part.
     ferry: built.length > 4 && built[4] ? p.project(1.15, 2.3, 0.1) : null,
@@ -205,10 +212,6 @@ class IslandScene extends StatefulWidget {
 
   /// How far it zooms in: past full detail (M13-8).
   static const maxZoom = 2.5;
-
-  /// Where on the scene a framed marker sits: across the middle, above the
-  /// card at the bottom.
-  static const framed = Alignment(0, -0.3);
 
   @override
   State<IslandScene> createState() => IslandSceneState();
@@ -319,7 +322,7 @@ class IslandSceneState extends State<IslandScene>
     final viewport = _viewport!;
     final s = scale.clamp(_minScale, IslandScene.maxZoom).toDouble();
     final point = worldPoint + _offset;
-    final target = IslandScene.framed.alongSize(viewport);
+    final target = widget.world.framed.alongSize(viewport);
     final double x = (target.dx - point.dx * s).clamp(
       math.min(0.0, viewport.width - _canvas.width * s),
       0.0,

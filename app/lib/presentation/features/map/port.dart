@@ -84,7 +84,8 @@ void paintPort(
   final ink = IsoInk(pen, p);
   final ghost = IsoInk(GhostPen(pen.canvas), p);
   _mainland(ink);
-  final things = <(double, VoidCallback)>[..._oldJetty(ink)];
+  _villageGround(ink);
+  final things = <(double, VoidCallback)>[..._oldJetty(ink), ..._village(ink)];
   for (final (i, part) in portParts.indexed) {
     if (i < built.length && built[i]) {
       things.add((part.x + part.y, () => part._draw(ink, part.x, part.y)));
@@ -590,3 +591,164 @@ class PortPainter extends CustomPainter {
       !listEquals(old.built, built) ||
       !setEquals(old.lines, lines);
 }
+
+// ---------------------------------------------------------------- the village
+
+/// The village was there before the port (M13-11), and never changes: along
+/// a dirt road behind the railway, its cottages, its church and bell tower
+/// on the square, a well, kitchen gardens, trees.
+const _cottages = [
+  (-3.2, 0.8), (-3.2, 1.8), (-3.25, 4.1), (-3.2, 5.2), (-3.15, 6.3), //
+  (-4.3, 1.9), (-4.4, 5.3), (-4.2, 0.5), (-4.25, 6.5),
+  // Further inland, up the road's side lane.
+  (-5.4, -0.2), (-5.6, 1.5), (-6.4, 0.6), (-5.5, 3.1),
+];
+const _church = (-4.15, 3.25);
+const _well = (-3.0, 0.05);
+const _trees = [
+  (-2.2, -0.5), (-2.15, 1.25), (-2.2, 4.6), (-2.1, 7.4), (-2.2, 8.9), //
+  (-3.85, 7.3), (-4.75, 2.7), (-3.7, 0.0), (-4.8, 4.4), (-5.0, 0.9),
+  (-6.1, -0.9), (-4.7, -1.1), (-6.6, 2.2), (-5.9, 4.2), (-7.0, -0.4),
+  (-6.3, 3.5), (-5.2, 6.6),
+];
+
+/// The road along the railway, the lane down to the quay, the gardens.
+void _villageGround(IsoInk ink) {
+  final p = ink.p;
+  void patch(double x0, double y0, double x1, double y1, Color c) => ink.flat([
+    p.project(x0, y0),
+    p.project(x1, y0),
+    p.project(x1, y1),
+    p.project(x0, y1),
+  ], c);
+  patch(-2.85, -12, -2.5, 14, VillagePalette.lane);
+  patch(-7.5, 2.75, -1.9, 3.1, VillagePalette.lane);
+  // The side lane inland.
+  patch(-5.05, -2.0, -4.75, 2.75, VillagePalette.lane);
+  // The square before the church.
+  patch(-3.7, 2.6, -2.5, 3.6, VillagePalette.lane);
+  // Kitchen gardens: rows of crops on tilled soil.
+  for (final (x0, y0) in const [(-4.85, 3.95), (-5.1, 5.7)]) {
+    patch(x0, y0, x0 + 1.0, y0 + 0.75, VillagePalette.soil);
+    for (var r = 0; r < 4; r++) {
+      final y = y0 + 0.1 + r * 0.17;
+      patch(x0 + 0.08, y, x0 + 0.92, y + 0.07, VillagePalette.crop);
+    }
+  }
+}
+
+List<(double, VoidCallback)> _village(IsoInk ink) => [
+  for (final (x, y) in _cottages) (x + y, () => _cottage(ink, x, y)),
+  (_church.$1 + _church.$2, () => _belfry(ink, _church.$1, _church.$2)),
+  (_well.$1 + _well.$2, () => _wellAt(ink, _well.$1, _well.$2)),
+  for (final (x, y) in _trees) (x + y, () => _tree(ink, x, y)),
+  // A hedge along the gardens.
+  (4.0 - 4.9, () => ink.box(-4.35, 4.75, 1.0, 0.1, 0.16, MapPalette.leaves)),
+];
+
+void _cottage(IsoInk ink, double x, double y) {
+  const w = 0.62, d = 0.44, h = 0.38;
+  ink
+    ..box(x, y, w, d, h, VillagePalette.wall)
+    ..gable(x, y, w + 0.08, d + 0.08, 0.3, VillagePalette.roof, z: h)
+    ..box(x - 0.15, y - 0.08, 0.08, 0.08, 0.2, PortPalette.rock, z: h + 0.12);
+  if (!ink.detailed) return;
+  // Its door and windows, on the faces in view.
+  ink
+    ..pane(
+      PortPalette.loadingDoor,
+      y: y + d / 2,
+      a0: x - 0.06,
+      a1: x + 0.06,
+      z0: 0,
+      z1: 0.24,
+    )
+    ..pane(
+      DistrictPalette.darkWindow,
+      y: y + d / 2,
+      a0: x - 0.24,
+      a1: x - 0.14,
+      z0: 0.14,
+      z1: 0.26,
+    )
+    ..pane(
+      DistrictPalette.darkWindow,
+      y: y + d / 2,
+      a0: x + 0.14,
+      a1: x + 0.24,
+      z0: 0.14,
+      z1: 0.26,
+    )
+    ..pane(
+      DistrictPalette.darkWindow,
+      x: x + w / 2,
+      a0: y - 0.06,
+      a1: y + 0.06,
+      z0: 0.14,
+      z1: 0.26,
+    );
+}
+
+/// The church: a stone nave and its bell tower, slate roofs.
+void _belfry(IsoInk ink, double x, double y) {
+  ink
+    ..box(x, y, 1.0, 0.6, 0.55, PortPalette.quay)
+    ..gable(x, y, 1.06, 0.66, 0.38, DistrictPalette.slate, z: 0.55)
+    ..box(x - 0.55, y, 0.34, 0.34, 1.45, PortPalette.quay)
+    ..pyramid(x - 0.55, y, 0.4, 0.55, DistrictPalette.slate, z: 1.45);
+  final p = ink.p;
+  final top = p.project(x - 0.55, y, 2.0);
+  ink.pen
+    ..line(top, top - const Offset(0, 9), 1.4)
+    ..line(top - const Offset(3, 6), top - const Offset(-3, 6), 1.4);
+  if (!ink.detailed) return;
+  // The belfry's openings and the nave's tall windows.
+  ink
+    ..pane(
+      DistrictPalette.darkWindow,
+      y: y + 0.17,
+      a0: x - 0.62,
+      a1: x - 0.48,
+      z0: 1.08,
+      z1: 1.32,
+    )
+    ..pane(
+      DistrictPalette.darkWindow,
+      x: x - 0.38,
+      a0: y - 0.07,
+      a1: y + 0.07,
+      z0: 1.08,
+      z1: 1.32,
+    );
+  for (final a in const [-0.15, 0.15, 0.4]) {
+    ink.pane(
+      DistrictPalette.darkWindow,
+      y: y + 0.3,
+      a0: x + a - 0.04,
+      a1: x + a + 0.04,
+      z0: 0.18,
+      z1: 0.42,
+    );
+  }
+}
+
+void _wellAt(IsoInk ink, double x, double y) {
+  ink
+    ..box(x, y, 0.24, 0.24, 0.16, PortPalette.rock)
+    ..pen.line(
+      ink.p.project(x - 0.1, y, 0.16),
+      ink.p.project(x - 0.1, y, 0.42),
+      1.2,
+    )
+    ..pen.line(
+      ink.p.project(x + 0.1, y, 0.16),
+      ink.p.project(x + 0.1, y, 0.42),
+      1.2,
+    )
+    ..gable(x, y, 0.3, 0.3, 0.12, DistrictPalette.wood, z: 0.42);
+}
+
+void _tree(IsoInk ink, double x, double y) => ink
+  ..box(x, y, 0.1, 0.1, 0.28, MapPalette.trunk)
+  ..box(x, y, 0.42, 0.42, 0.34, MapPalette.leaves, z: 0.28)
+  ..box(x, y, 0.26, 0.26, 0.18, MapPalette.leaves, z: 0.62);
