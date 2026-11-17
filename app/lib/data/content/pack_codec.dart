@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:decimal/decimal.dart';
 
+import '../../domain/learning/cards.dart';
 import '../../domain/learning/checkpoint.dart';
 import '../../domain/learning/content.dart';
 import '../../domain/learning/decision.dart';
@@ -47,6 +48,14 @@ ContentPack decodePack(String source) {
         throw FormatException('${node.id} draws an unknown dataset: $id');
       }
     }
+    for (final card in node.cards) {
+      if (card is! StoryCard) continue;
+      for (final line in card.lines) {
+        if (line.dataset case final id? when !node.datasets.contains(id)) {
+          throw FormatException('${node.id}: a card draws $id, not listed');
+        }
+      }
+    }
   }
   // A lesson or a term may link a term another island holds (M12-1): links
   // are checked across every pack (`contentcheck`), and one left unresolved
@@ -71,6 +80,7 @@ const _nodeFields = {
   'datasets',
   'bridge',
   'covers',
+  'cards',
 };
 
 NodeContent _node(Map<String, Object?> json) {
@@ -108,7 +118,77 @@ NodeContent _node(Map<String, Object?> json) {
       for (final e in json.entries)
         if (!_nodeFields.contains(e.key)) e.key: e.value,
     },
+    cards: [
+      for (final c in _list(json['cards'] ?? const [], '$id cards'))
+        _card(_map(c, '$id card'), id),
+    ],
   );
+}
+
+/// A card of [node] (M13-13): `example`, `compare` or `check`.
+NodeCard _card(Map<String, Object?> json, String node) {
+  final kind = _string(json['kind'], '$node card kind');
+  if (kind == 'check') return CheckCard(_question(json, '$node check'));
+  if (kind != 'example' && kind != 'compare') {
+    throw FormatException('$node has an unknown card: $kind');
+  }
+  final lines = [
+    for (final l in _list(json['lines'] ?? const [], '$node $kind lines'))
+      _cardLine(_map(l, '$node line'), node),
+  ];
+  if (kind == 'compare' && lines.length < 2) {
+    throw FormatException('$node compares fewer than two lines');
+  }
+  if (lines.length > 3) throw FormatException('$node draws over three lines');
+  return StoryCard(
+    compare: kind == 'compare',
+    headline: _localized(json['headline'], '$node $kind headline'),
+    text: _localized(json['text'], '$node $kind text'),
+    lines: lines,
+  );
+}
+
+CardLine _cardLine(Map<String, Object?> json, String node) {
+  final label = _localized(json['label'], '$node line label');
+  if ((json['dataset'] == null) == (json['formula'] == null)) {
+    throw FormatException('$node: a line is a dataset or a formula');
+  }
+  if (json['dataset'] case final Object dataset) {
+    return CardLine(
+      label,
+      dataset: _string(dataset, '$node line dataset'),
+      amount: switch (json['amount']) {
+        null => null,
+        final Object a => _positive(a, '$node line amount'),
+      },
+    );
+  }
+  final name = _string(json['formula'], '$node line formula');
+  final formula = ToyFormula.values.firstWhere(
+    (f) => f.json == name,
+    orElse: () => throw FormatException('$node has an unknown formula: $name'),
+  );
+  final inputs = _map(json['inputs'], '$node line inputs');
+  if (([...inputs.keys]..sort()).join(',') !=
+      ([...formula.inputs]..sort()).join(',')) {
+    throw FormatException('$node: $name reads ${formula.inputs}');
+  }
+  final series = switch (json['series']) {
+    null => null,
+    final Object s => _string(s, '$node line series'),
+  };
+  if (series != null && !formula.series.contains(series)) {
+    throw FormatException('$node: $name draws no $series');
+  }
+  final values = {
+    for (final e in inputs.entries) e.key: _decimal(e.value, '$node ${e.key}'),
+  };
+  try {
+    formulaSeries(formula, values);
+  } on ArgumentError {
+    throw FormatException('$node: $name cannot draw these inputs');
+  }
+  return CardLine(label, formula: formula, inputs: values, series: series);
 }
 
 Dataset _dataset(Map<String, Object?> json) {

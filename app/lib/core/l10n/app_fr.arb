@@ -2730,5 +2730,19 @@
         "type": "String"
       }
     }
+  },
+  "card_example": "Un exemple",
+  "card_compare": "C\u00f4te \u00e0 c\u00f4te",
+  "card_check": "Petite v\u00e9rif",
+  "card_progress": "Carte {n} sur {total}",
+  "@card_progress": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   }
 }

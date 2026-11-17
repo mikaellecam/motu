@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'lesson_pack.dart';
 
 /// Les bases' two toys (M12-3): `lb.safety-cushion` (1 500 € a month, 3
-/// months, 200 € put aside, from nothing) and `lb.loan-cost` (3 000 € over 36
+/// months, 200 € put aside, from nothing; three cards, M13-13) and `lb.loan-cost` (3 000 € over 36
 /// months at 20 % a year), then `lb.spot-the-scam`, a quiz (M12-4). Its
 /// explanations link the lesson pack's term.
 String basesToysJson() => jsonEncode({
@@ -36,6 +36,44 @@ String basesToysJson() => jsonEncode({
             'step': step,
             'default': init,
           },
+      ],
+      // Its cards (M13-13): an example, a comparison, a check.
+      'cards': [
+        {
+          'kind': 'example',
+          'headline': text('Léa remplit le sien'),
+          'text': text('Elle met 150 € de côté chaque mois.'),
+          'lines': [
+            {
+              'label': text('Le matelas de Léa'),
+              'formula': 'cushion',
+              'inputs': {'spending': 1400, 'months': 3, 'saving': 150},
+            },
+          ],
+        },
+        {
+          'kind': 'compare',
+          'headline': text('100 € ou 300 € par mois'),
+          'text': text('Le même matelas.'),
+          'lines': [
+            for (final saving in [300, 100])
+              {
+                'label': text('$saving € par mois'),
+                'formula': 'cushion',
+                'inputs': {'spending': 1400, 'months': 3, 'saving': saving},
+              },
+          ],
+        },
+        {
+          'kind': 'check',
+          'question': text("Un matelas sert d'abord à…"),
+          'choices': [
+            {'id': 'grow', 'label': text('Faire grossir ton argent')},
+            {'id': 'unexpected', 'label': text('Payer un imprévu')},
+          ],
+          'answer': 'unexpected',
+          'explanation': text('Il est là tout de suite.'),
+        },
       ],
     },
     {

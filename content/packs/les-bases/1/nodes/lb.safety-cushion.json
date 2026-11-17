@@ -53,5 +53,104 @@
   "explanation": {
     "fr": "On l'évalue souvent à trois à six mois de dépenses. Sur un {{livret-a|Livret A}}, il reste disponible tout de suite et ne peut pas baisser : c'est le {{matelas-de-securite|matelas de sécurité}}.",
     "en": "It's often put at three to six months of spending. On a {{livret-a|Livret A}}, it stays available at once and can't fall: that's the {{matelas-de-securite|safety cushion}}."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Léa remplit le sien",
+        "en": "Léa fills hers"
+      },
+      "text": {
+        "fr": "Léa dépense 1 400 € par mois. Trois mois de côté, c'est 4 200 €. Elle met 150 € de côté chaque mois : son matelas est plein en 28 mois. Au dixième mois, sa voiture tombe en panne : 900 € de réparation. Elle a déjà 1 500 € de côté, elle paie sans emprunter.",
+        "en": "Léa spends €1,400 a month. Three months aside is €4,200. She puts €150 aside each month: her cushion is full in 28 months. In the tenth month, her car breaks down: €900 of repairs. She already has €1,500 aside, so she pays without borrowing."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Le matelas de Léa",
+            "en": "Léa's cushion"
+          },
+          "formula": "cushion",
+          "inputs": {
+            "spending": 1400,
+            "months": 3,
+            "saving": 150
+          }
+        }
+      ]
+    },
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "100 € ou 300 € par mois",
+        "en": "€100 or €300 a month"
+      },
+      "text": {
+        "fr": "Le même matelas de 4 200 €. À 100 € par mois, il faut 42 mois, trois ans et demi. À 300 € par mois, 14 mois. Un petit montant régulier finit lui aussi par le remplir : c'est la régularité qui compte.",
+        "en": "The same €4,200 cushion. At €100 a month, it takes 42 months, three and a half years. At €300 a month, 14 months. A small regular amount fills it too in the end: what matters is doing it every month."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "300 € par mois",
+            "en": "€300 a month"
+          },
+          "formula": "cushion",
+          "inputs": {
+            "spending": 1400,
+            "months": 3,
+            "saving": 300
+          }
+        },
+        {
+          "label": {
+            "fr": "100 € par mois",
+            "en": "€100 a month"
+          },
+          "formula": "cushion",
+          "inputs": {
+            "spending": 1400,
+            "months": 3,
+            "saving": 100
+          }
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Un matelas de sécurité sert d'abord à…",
+        "en": "A safety cushion is first of all for…"
+      },
+      "choices": [
+        {
+          "id": "grow",
+          "label": {
+            "fr": "Faire grossir ton argent",
+            "en": "Making your money grow"
+          }
+        },
+        {
+          "id": "unexpected",
+          "label": {
+            "fr": "Payer un imprévu sans emprunter",
+            "en": "Paying for the unexpected without borrowing"
+          }
+        },
+        {
+          "id": "treat",
+          "label": {
+            "fr": "Te faire plaisir en fin de mois",
+            "en": "Treating yourself at the end of the month"
+          }
+        }
+      ],
+      "answer": "unexpected",
+      "explanation": {
+        "fr": "Ce qui compte, c'est qu'il soit là tout de suite et qu'il ne baisse pas, pas ce qu'il rapporte : c'est pour ça qu'on le garde sur un {{livret-a|Livret A}}.",
+        "en": "What counts is that it's there at once and can't fall, not what it earns: that's why it's kept on a {{livret-a|Livret A}}."
+      }
+    }
+  ]
 }

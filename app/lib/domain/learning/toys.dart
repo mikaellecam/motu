@@ -47,6 +47,61 @@ enum ToyFormula {
   const ToyFormula(this.json, this.inputs);
   final String json;
   final List<String> inputs;
+
+  /// The series it draws, the main one first (M13-13): [formulaSeries].
+  List<String> get series => switch (this) {
+    fees => const ['low', 'high'],
+    compound => const ['value', 'money_in'],
+    cushion => const ['saved'],
+    loan => const ['repaid'],
+  };
+}
+
+/// What [formula] draws for fixed [inputs], by series name (M13-13: a
+/// card's comparison line). Whole inputs (years, months) are truncated.
+/// Throws an [ArgumentError] when an input is missing or out of range.
+Map<String, List<Decimal>> formulaSeries(
+  ToyFormula formula,
+  Map<String, Decimal> inputs,
+) {
+  Decimal value(String id) =>
+      inputs[id] ?? (throw ArgumentError('${formula.json} reads $id'));
+  int whole(String id) => value(id).toBigInt().toInt();
+  return switch (formula) {
+    ToyFormula.fees => () {
+      final r = feesToy(
+        amount: value('amount'),
+        years: whole('years'),
+        yearlyReturn: value('return'),
+        lowFee: value('fee_low'),
+        highFee: value('fee_high'),
+      );
+      return {'low': r.low, 'high': r.high};
+    }(),
+    ToyFormula.compound => () {
+      final r = compoundToy(
+        amount: value('amount'),
+        monthly: value('monthly'),
+        years: whole('years'),
+        yearlyReturn: value('return'),
+      );
+      return {'value': r.value, 'money_in': r.moneyIn};
+    }(),
+    ToyFormula.cushion => {
+      'saved': cushionToy(
+        spending: value('spending'),
+        months: whole('months'),
+        saving: value('saving'),
+      ).saved,
+    },
+    ToyFormula.loan => {
+      'repaid': loanToy(
+        amount: value('amount'),
+        months: whole('months'),
+        yearlyRate: value('rate'),
+      ).repaid,
+    },
+  };
 }
 
 /// A slider: its range, step and starting value.

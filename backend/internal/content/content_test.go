@@ -193,6 +193,50 @@ func TestNodes(t *testing.T) {
 	}
 }
 
+// withCards is ae.apple with [cards] (M13-13).
+func withCards(cards string) map[string]string {
+	return map[string]string{"nodes/ae.apple.json": strings.Replace(apple,
+		`"glossary": ["diversification"]}`, `"glossary": ["diversification"], "cards": `+cards+`}`, 1)}
+}
+
+const validCards = `[
+	{"kind": "example", "headline": {"fr": "Léa", "en": "Léa"}, "text": {"fr": "T", "en": "T"}},
+	{"kind": "compare", "headline": {"fr": "H", "en": "H"}, "text": {"fr": "T", "en": "T"}, "lines": [
+		{"label": {"fr": "A", "en": "A"}, "dataset": "ds.aapl", "amount": 1000},
+		{"label": {"fr": "B", "en": "B"}, "formula": "cushion", "inputs": {"spending": 1000, "months": 3, "saving": 100}}]},
+	{"kind": "check", "question": {"fr": "Q", "en": "Q"},
+		"choices": [{"id": "a", "label": {"fr": "A", "en": "A"}}, {"id": "b", "label": {"fr": "B", "en": "B"}}],
+		"answer": "b", "explanation": {"fr": "E", "en": "E"}}]`
+
+func TestCards(t *testing.T) {
+	if got := problems(t, pack(t, withCards(validCards)), false); got != "" {
+		t.Fatalf("valid cards: %s", got)
+	}
+	expectProblem(t, withCards(`[
+		{"kind": "poem"},
+		{"kind": "example", "headline": {"fr": "H"}, "text": {"fr": "T", "en": "T"}},
+		{"kind": "compare", "headline": {"fr": "H", "en": "H"}, "text": {"fr": "T", "en": "T"}, "lines": [
+			{"label": {"fr": "A", "en": "A"}, "dataset": "ds.nope"},
+			{"label": {"fr": "B", "en": "B"}, "formula": "magic", "inputs": {}},
+			{"label": {"fr": "C", "en": "C"}, "formula": "loan", "inputs": {"amount": 1}},
+			{"label": {"fr": "D", "en": "D"}, "formula": "fees", "series": "x",
+				"inputs": {"amount": 1, "years": 1, "return": 0, "fee_low": 0, "fee_high": 0}}]},
+		{"kind": "compare", "headline": {"fr": "H", "en": "H"}, "text": {"fr": "T", "en": "T"}, "lines": [
+			{"label": {"fr": "A", "en": "A"}, "dataset": "ds.aapl"}]},
+		{"kind": "check", "question": {"fr": "Q", "en": "Q"},
+			"choices": [{"id": "a", "label": {"fr": "A", "en": "A"}}], "answer": "z"}]`),
+		`nodes/ae.apple.json: cards[0]: kind "poem" is unknown`,
+		`nodes/ae.apple.json: cards[1].headline: "en" is missing`,
+		`nodes/ae.apple.json: cards[2]: draws over three lines`,
+		`nodes/ae.apple.json: cards[2].lines[0]: "ds.nope" is not a dataset of the lesson`,
+		`nodes/ae.apple.json: cards[2].lines[1]: formula "magic" is unknown`,
+		`nodes/ae.apple.json: cards[2].lines[2]: loan reads amount, months, rate`,
+		`nodes/ae.apple.json: cards[2].lines[3]: fees draws no "x"`,
+		`nodes/ae.apple.json: cards[3]: compares fewer than two lines`,
+		`nodes/ae.apple.json: cards[4]: the answer "z" is not a choice`,
+	)
+}
+
 func TestEveryTextHasBothLanguages(t *testing.T) {
 	expectProblem(t, map[string]string{"nodes/ae.apple.json": strings.Replace(apple,
 		`{"id": "apple", "label": {"fr": "Apple", "en": "Apple"}}`,

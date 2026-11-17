@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../application/learning/content.dart';
-import '../../../application/learning/island_path.dart';
+import '../../../application/learning/lesson_cards.dart';
 import '../../../application/learning/node_player.dart';
 import '../../../application/trip/trip_wizard.dart';
 import '../../../core/failure.dart';
@@ -15,7 +14,7 @@ import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../domain/learning/content.dart';
 import '../../../domain/learning/node.dart';
-import '../../../domain/learning/path.dart';
+import 'card_player.dart';
 import 'checkpoint_player.dart';
 import 'decision_player.dart';
 import 'mission_player.dart';
@@ -61,7 +60,7 @@ class NodeScreen extends ConsumerWidget {
                       onPressed: () => leaveNode(context),
                     ),
                     const SizedBox(width: AppSpace.x3),
-                    Expanded(child: _IslandProgress(nodeId: nodeId)),
+                    Expanded(child: _CardProgress(nodeId: nodeId)),
                   ],
                 ),
               ),
@@ -70,6 +69,9 @@ class NodeScreen extends ConsumerWidget {
                   node,
                   onRetry: () => ref.invalidate(islandNodeProvider(nodeId)),
                   data: (value) => switch (value.type) {
+                    // Past its interaction, a lesson shows its cards (M13-13).
+                    _ when ref.watch(lessonCardsProvider(nodeId)).at > 0 =>
+                      CardPlayer(nodeId: nodeId),
                     NodeType.predictReveal => PredictRevealPlayer(
                       nodeId: nodeId,
                     ),
@@ -91,45 +93,36 @@ class NodeScreen extends ConsumerWidget {
   }
 }
 
-/// The island's lessons as pills: each one done filled, this one in
-/// primary. Screen readers hear the progress.
-class _IslandProgress extends ConsumerWidget {
-  const _IslandProgress({required this.nodeId});
+/// This lesson's cards as pills (M13-13): its interaction then each card,
+/// those seen filled, this one in primary. Screen readers hear « Carte n
+/// sur N ». A lesson without cards shows none.
+class _CardProgress extends ConsumerWidget {
+  const _CardProgress({required this.nodeId});
 
   final String nodeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // The lesson's own island.
-    final island = ref
-        .watch(contentPacksProvider)
-        .value
-        ?.where((p) => p.nodes.any((n) => n.id == nodeId))
-        .firstOrNull
-        ?.id;
-    final path = island == null
-        ? null
-        : ref.watch(islandPathProvider(island)).value;
-    if (path == null || path.nodes.every((n) => n.node.id != nodeId)) {
-      return const SizedBox.shrink();
-    }
+    final cards = ref.watch(islandNodeProvider(nodeId)).value?.cards;
+    if (cards == null || cards.isEmpty) return const SizedBox.shrink();
+    final at = ref.watch(lessonCardsProvider(nodeId)).at;
+    final total = cards.length + 1;
     return Semantics(
-      label: AppLocalizations.of(context)
-          .island_progress(path.done, path.nodes.length),
+      label: AppLocalizations.of(context).card_progress(at + 1, total),
       excludeSemantics: true,
       child: Row(
         children: [
-          for (final (i, n) in path.nodes.indexed) ...[
+          for (var i = 0; i < total; i++) ...[
             if (i > 0) const SizedBox(width: AppSpace.x1),
             Expanded(
               child: Container(
                 height: AppSpace.x3,
                 decoration: BoxDecoration(
-                  color: switch (n) {
-                    _ when n.node.id == nodeId => AppColors.primary,
-                    PathNode(state: NodeState.done) => AppColors.progress,
-                    _ => AppColors.surface,
-                  },
+                  color: i == at
+                      ? AppColors.primary
+                      : i < at
+                      ? AppColors.progress
+                      : AppColors.surface,
                   borderRadius: BorderRadius.circular(AppSpace.x2),
                   border: Border.all(color: AppColors.ink, width: 2),
                 ),
@@ -221,14 +214,22 @@ Widget playerState<T>(
 
 /// The end of a played lesson: its bridge into the sandbox when it has one
 /// (BRIEF §4.3: « Rejoue-le toi-même » opens the prefilled trip wizard),
-/// then « Continuer ».
-class LessonEnd extends StatelessWidget {
-  const LessonEnd({super.key, required this.node});
+/// then « Continuer ». A lesson with cards goes on to its first card
+/// (M13-13); its last card ends with this, [onContinue] saving it.
+class LessonEnd extends ConsumerWidget {
+  const LessonEnd({super.key, required this.node, this.onContinue});
 
   final NodeContent node;
+  final VoidCallback? onContinue;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (onContinue == null && node.cards.isNotEmpty) {
+      return ChunkyButton(
+        label: AppLocalizations.of(context).node_continue,
+        onPressed: ref.read(lessonCardsProvider(node.id).notifier).next,
+      );
+    }
     final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -243,7 +244,7 @@ class LessonEnd extends StatelessWidget {
         ],
         ChunkyButton(
           label: l10n.node_continue,
-          onPressed: () => leaveNode(context),
+          onPressed: onContinue ?? () => leaveNode(context),
         ),
       ],
     );

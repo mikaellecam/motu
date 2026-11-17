@@ -738,5 +738,9 @@
   "chart_closed": "Closed",
   "chart_opens_after_two": "Opens after \"{first}\" and \"{second}\"",
   "chart_sailing": "Crossing\u2026",
-  "next_step_sail": "Sail to {island}"
+  "next_step_sail": "Sail to {island}",
+  "card_example": "An example",
+  "card_compare": "Side by side",
+  "card_check": "Quick check",
+  "card_progress": "Card {n} of {total}"
 }

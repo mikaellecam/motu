@@ -11,6 +11,7 @@ import '../../domain/learning/puzzle.dart';
 import '../../domain/learning/sort.dart';
 import '../../domain/livret/livret_interest.dart';
 import '../providers.dart';
+import 'lesson_cards.dart';
 import 'node_player.dart';
 
 part 'lesson_play.g.dart';
@@ -30,16 +31,10 @@ _node(Ref ref, String nodeId, NodeType type, {NodeType? or}) async {
   return lesson;
 }
 
-/// Saves [nodeId] as done; null when saved, else the failure.
+/// [nodeId] played ([savePlayed]); null when saved, else the failure.
 Future<Failure?> _complete(Ref ref, String nodeId, {String? answer}) async {
   try {
-    await ref
-        .read(profileRepositoryProvider)
-        .completeNode(
-          nodeId,
-          answer: answer,
-          at: ref.read(liveClockProvider).now(),
-        );
+    await savePlayed(ref, nodeId, answer: answer);
     return null;
   } on Failure catch (failure) {
     return failure;

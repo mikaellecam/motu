@@ -1,3 +1,5 @@
+import 'cards.dart';
+
 import 'package:decimal/decimal.dart';
 
 import 'checkpoint.dart';
@@ -48,6 +50,7 @@ final class NodeContent {
     this.bridge,
     this.covers,
     this.payload = const {},
+    this.cards = const [],
   });
 
   final String id;
@@ -67,6 +70,9 @@ final class NodeContent {
   /// Null when the lesson is not about a period.
   final Period? covers;
   final Map<String, Object?> payload;
+
+  /// What it shows after its interaction, in order (M13-13).
+  final List<NodeCard> cards;
 }
 
 /// Prices frozen for a lesson by `cmd/freeze`, never hand-typed (§4.3).

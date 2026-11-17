@@ -26,6 +26,8 @@ requirements (§11).
 | « Mars 2020 : vendre ou tenir ? »: a decision on a past crisis | Rank by risk | Build a calm portfolio: under 8 % volatility (**calculation**) |
 | <img src="../screenshots/m6-4-checkpoint.png" width="240"> | <img src="../screenshots/m6-5-mission.png" width="240"> | <img src="../screenshots/m13-5-sea-chart.png" width="240"> |
 | A checkpoint | A mission, completed by doing it in the sandbox | The sea chart, drawn in code: sail between the port and the islands |
+| <img src="../screenshots/m13-13-card-example.png" width="240"> | <img src="../screenshots/m13-13-card-compare.png" width="240"> | <img src="../screenshots/m13-13-card-check.png" width="240"> |
+| After its interaction, a lesson goes on in cards: a worked example (**calculation**: the cushion's months) | Two ways compared on one **chart** | A quick check, right or wrong, with its why; the header shows the lesson's cards |
 
 ## The portfolio
 
