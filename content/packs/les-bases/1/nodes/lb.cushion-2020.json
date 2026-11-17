@@ -82,5 +82,53 @@
   "explanation": {
     "fr": "En quatre semaines, le Covid a fait chuter l'ETF Monde de 31 %. Fin mars, tout placé, ton matelas ne valait plus que 3 454 € : 23 % de moins, au moment où beaucoup perdaient des revenus. Les marchés se sont redressés dans les mois qui ont suivi, mais une panne ou une baisse de revenus n'attend pas. Un {{matelas-de-securite|matelas de sécurité}} reste là où il ne peut pas baisser ; ce qui s'investit, c'est l'argent dont on n'aura pas besoin avant longtemps : c'est l'{{horizon-de-placement|horizon de placement}}.",
     "en": "In four weeks, Covid knocked the world ETF down 31%. At the end of March, all invested, your cushion was worth only €3,454: 23% less, just when many people were losing income. Markets recovered in the months that followed, but a breakdown or a drop in income doesn't wait. A {{matelas-de-securite|safety cushion}} stays where it can't fall; what gets invested is money that won't be needed for a long time: that's the {{horizon-de-placement|investment horizon}}."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Karim avait tout placé",
+        "en": "Karim had invested it all"
+      },
+      "text": {
+        "fr": "Le 21 février 2020, Karim place tout son matelas, 4 500 €, sur un ETF Monde. Le vendredi 20 mars, sa voiture tombe en panne : 2 000 € de réparation. Ses 4 500 € ne valent plus que 3 124 €. Il en vend pour 2 000 €, il lui reste 1 124 € placés, qui valent 1 243 € fin mars. Gardé sur son Livret A, son matelas aurait payé la panne, et il lui serait resté 2 500 €. Vendre après une chute rend la perte définitive sur ce qui est vendu.",
+        "en": "On 21 February 2020, Karim puts his whole cushion, €4,500, in a world ETF. On Friday 20 March, his car breaks down: €2,000 of repairs. His €4,500 is now worth only €3,124. He sells €2,000 of it, leaving €1,124 invested, worth €1,243 at the end of March. Kept on his Livret A, his cushion would have paid for the repairs and left him €2,500. Selling after a fall makes the loss final on what is sold."
+      }
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Une chute comme celle de mars 2020 gêne le moins…",
+        "en": "A fall like March 2020's gets in the way least for…"
+      },
+      "choices": [
+        {
+          "id": "long",
+          "label": {
+            "fr": "L'argent dont tu n'auras pas besoin avant des années",
+            "en": "Money you won't need for years"
+          }
+        },
+        {
+          "id": "cushion",
+          "label": {
+            "fr": "Ton matelas de sécurité",
+            "en": "Your safety cushion"
+          }
+        },
+        {
+          "id": "rent",
+          "label": {
+            "fr": "L'argent du loyer du mois prochain",
+            "en": "Next month's rent money"
+          }
+        }
+      ],
+      "answer": "long",
+      "explanation": {
+        "fr": "Celui-là n'a pas à être vendu pendant la chute. Ton matelas et ton loyer, eux, peuvent servir le mois même où les marchés chutent, comme pour Karim en mars 2020. Le temps pendant lequel on peut se passer de son argent, c'est l'{{horizon-de-placement|horizon de placement}}.",
+        "en": "That money doesn't have to be sold during the fall. Your cushion and your rent may be needed the very month markets fall, as Karim's was in March 2020. How long you can do without your money is the {{horizon-de-placement|investment horizon}}."
+      }
+    }
+  ]
 }

@@ -53,5 +53,90 @@
   "explanation": {
     "fr": "Plus le taux est haut et la durée longue, plus le crédit coûte cher : ce que tu paies en plus, ce sont les intérêts. Chaque {{mensualite|mensualité}} rembourse une part de la somme et les intérêts du mois ; le {{taeg|TAEG}} dit ce que le crédit coûte en tout, par an. Un crédit t'engage et doit être remboursé.",
     "en": "The higher the rate and the longer the loan, the more it costs: what you pay on top is the interest. Each {{mensualite|monthly payment}} pays back part of the sum and the month's interest; the {{taeg|APR}} says what the loan costs in all, per year. A loan commits you and must be paid back."
-  }
+  },
+  "cards": [
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "Petite mensualité, gros total",
+        "en": "Small payment, big total"
+      },
+      "text": {
+        "fr": "Jules emprunte 3 000 € à 20 % par an. Sur 12 mois, il rembourse 277,90 € par mois et le crédit lui coûte 335 €. Sur 48 mois, sa {{mensualite|mensualité}} tombe à 91,29 €, plus facile à payer chaque mois, mais le crédit coûte 1 382 € : plus de quatre fois plus.",
+        "en": "Jules borrows €3,000 at 20% a year. Over 12 months, he pays back €277.90 a month and the loan costs him €335. Over 48 months, his {{mensualite|monthly payment}} drops to €91.29, easier to pay each month, but the loan costs €1,382: more than four times as much."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Sur 48 mois",
+            "en": "Over 48 months"
+          },
+          "formula": "loan",
+          "inputs": {
+            "amount": 3000,
+            "months": 48,
+            "rate": 0.2
+          }
+        },
+        {
+          "label": {
+            "fr": "Sur 12 mois",
+            "en": "Over 12 months"
+          },
+          "formula": "loan",
+          "inputs": {
+            "amount": 3000,
+            "months": 12,
+            "rate": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Dans une mensualité",
+        "en": "Inside a monthly payment"
+      },
+      "text": {
+        "fr": "Pour 3 000 € sur 36 mois à 20 % par an, la {{mensualite|mensualité}} est de 111,49 €. Le premier mois, 50 € sont des intérêts et 61,49 € remboursent la somme. Au 18e mois, 30,05 € d'intérêts et 81,44 € remboursés. Le dernier mois, il ne reste que 1,83 € d'intérêts : ils se calculent chaque mois sur ce qu'il reste à rembourser.",
+        "en": "For €3,000 over 36 months at 20% a year, the {{mensualite|monthly payment}} is €111.49. In the first month, €50 is interest and €61.49 pays back the sum. In month 18, €30.05 of interest and €81.44 paid back. In the last month, only €1.83 of interest is left: it's worked out each month on what is still owed."
+      }
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Au fil d'un crédit, la part des intérêts dans chaque mensualité…",
+        "en": "As a loan goes on, the interest part of each monthly payment…"
+      },
+      "choices": [
+        {
+          "id": "down",
+          "label": {
+            "fr": "Diminue",
+            "en": "Shrinks"
+          }
+        },
+        {
+          "id": "same",
+          "label": {
+            "fr": "Reste la même",
+            "en": "Stays the same"
+          }
+        },
+        {
+          "id": "up",
+          "label": {
+            "fr": "Augmente",
+            "en": "Grows"
+          }
+        }
+      ],
+      "answer": "down",
+      "explanation": {
+        "fr": "Les intérêts du mois se calculent sur ce qu'il reste à rembourser. Plus tu as remboursé, moins il en reste, et moins les intérêts pèsent dans ta {{mensualite|mensualité}}.",
+        "en": "Each month's interest is worked out on what is still owed. The more you have paid back, the less is left, and the less interest weighs in your {{mensualite|monthly payment}}."
+      }
+    }
+  ]
 }

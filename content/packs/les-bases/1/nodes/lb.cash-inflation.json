@@ -62,5 +62,101 @@
   "explanation": {
     "fr": "Les billets n'ont pas bougé, mais les prix ont monté de près de 21 % en dix ans : fin 2025, tes 10 000 € n'achetaient plus que ce que 8 275 € achetaient fin 2015. C'est l'{{inflation|inflation}}. Pour garder son {{pouvoir-d-achat|pouvoir d'achat}}, l'argent doit rapporter au moins autant que la hausse des prix.",
     "en": "The notes didn't change, but prices rose by almost 21% in ten years: at the end of 2025, your €10,000 bought only what €8,275 bought at the end of 2015. That's {{inflation|inflation}}. To keep its {{pouvoir-d-achat|purchasing power}}, money has to earn at least as much as prices rise."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Pas au même rythme chaque année",
+        "en": "Not at the same pace every year"
+      },
+      "text": {
+        "fr": "Fin 2020, tes 10 000 € achetaient ce que 9 531 € achetaient fin 2015 : 469 € de perdus en cinq ans, les prix montaient d'un peu moins de 1 % par an. De fin 2020 à fin 2023, 1 081 € de perdus en trois ans : rien qu'en 2022, les prix ont monté de 5,8 %. L'{{inflation|inflation}} ne garde pas le même rythme d'une année à l'autre.",
+        "en": "At the end of 2020, your €10,000 bought what €9,531 bought at the end of 2015: €469 lost in five years, while prices rose by a little under 1% a year. From the end of 2020 to the end of 2023, €1,081 lost in three years: in 2022 alone, prices rose by 5.8%. {{inflation|Inflation}} doesn't keep the same pace from one year to the next."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Ce que tes 10 000 € achètent",
+            "en": "What your €10,000 buys"
+          },
+          "dataset": "ds.cash-real-2016-m"
+        }
+      ]
+    },
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "En billets ou à 2 % par an",
+        "en": "In notes or at 2% a year"
+      },
+      "text": {
+        "fr": "De fin 2015 à fin 2025, les prix ont monté de 1,9 % par an en moyenne. Pour acheter fin 2025 ce que 10 000 € achetaient fin 2015, il fallait 12 084 €. En billets, tu as toujours 10 000 €. À 2 % par an, les mêmes 10 000 € seraient devenus 12 190 € : tout juste de quoi suivre les prix.",
+        "en": "From the end of 2015 to the end of 2025, prices rose by 1.9% a year on average. To buy at the end of 2025 what €10,000 bought at the end of 2015, you needed €12,084. In notes, you still have €10,000. At 2% a year, the same €10,000 would have become €12,190: just enough to keep up with prices."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "À 2 % par an",
+            "en": "At 2% a year"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 10000,
+            "monthly": 0,
+            "years": 10,
+            "return": 0.02
+          }
+        },
+        {
+          "label": {
+            "fr": "En billets",
+            "en": "In notes"
+          },
+          "formula": "compound",
+          "inputs": {
+            "amount": 10000,
+            "monthly": 0,
+            "years": 10,
+            "return": 0
+          }
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "De fin 2015 à fin 2025, les prix ont monté de près de 21 %. Pour garder son pouvoir d'achat, l'argent devait rapporter en moyenne…",
+        "en": "From the end of 2015 to the end of 2025, prices rose by almost 21%. To keep its purchasing power, money had to earn on average…"
+      },
+      "choices": [
+        {
+          "id": "two",
+          "label": {
+            "fr": "Près de 2 % par an",
+            "en": "Almost 2% a year"
+          }
+        },
+        {
+          "id": "twenty",
+          "label": {
+            "fr": "Près de 21 % par an",
+            "en": "Almost 21% a year"
+          }
+        },
+        {
+          "id": "none",
+          "label": {
+            "fr": "Rien, s'il reste en billets",
+            "en": "Nothing, if it stays in notes"
+          }
+        }
+      ],
+      "answer": "two",
+      "explanation": {
+        "fr": "Une hausse de 21 % en dix ans, c'est 1,9 % par an en moyenne : chaque année, la hausse s'ajoute à celle des années d'avant. En dessous, l'argent perd du {{pouvoir-d-achat|pouvoir d'achat}}.",
+        "en": "A 21% rise over ten years is 1.9% a year on average: each year's rise adds to the years before. Below that, money loses {{pouvoir-d-achat|purchasing power}}."
+      }
+    }
+  ]
 }
