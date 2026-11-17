@@ -478,7 +478,7 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
 **Wallets list** (the Portefeuille tab; layout decided 2026-10-24, artboard `Wallets-A` of the art direction
 canvas; money family §10.1 until M13-24, world family since, decided 2026-11-17: its cards chunky, the trips under a
 separator header with its count and an ink rule, the figures in Figtree): « Mes portefeuilles », and under it « Un portefeuille d'aujourd'hui, et autant de
-voyages dans le temps que tu veux. » Each wallet is a flat row: its islet (decided 2026-10-28, M11-3: the
+voyages dans le temps que tu veux. » Each wallet is a chunky card: its islet (decided 2026-10-28, M11-3: the
 wallet's buildings on its island as the map draws them, all grown whatever the lessons (M13-1), on a 68 px square of
 `sea`, still; « Ton île » or « La ville du voyage {nom} » for screen readers), its name and a chip, a status line, and on the right its value over its change in %
 (signed; the amount when nothing was put in). The live wallet is « Aujourd'hui », chip « En direct », « Cours
