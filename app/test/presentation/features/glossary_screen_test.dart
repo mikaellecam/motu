@@ -193,6 +193,18 @@ void main() {
     expect(find.text('ETF'), findsOneWidget, reason: 'the search cleared');
   });
 
+  testWidgets('the progress bar fills as a pill (M13-22)', (tester) async {
+    await show(tester, const GlossaryScreen());
+    final fill = find.byKey(const ValueKey('discovered-fill'));
+    final radius =
+        ((tester.widget<DecoratedBox>(fill).decoration as BoxDecoration)
+                    .borderRadius!
+                as BorderRadius)
+            .topRight
+            .x;
+    expect(radius, tester.getSize(fill).height / 2);
+  });
+
   testWidgets('the sheet: new notion, definition, example, for you, related', (
     tester,
   ) async {

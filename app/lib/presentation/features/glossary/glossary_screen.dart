@@ -152,10 +152,19 @@ class _Discovered extends StatelessWidget {
                 width: AppShape.chunkySmallBorder,
               ),
             ),
+            // A pill, its right end as round as the bar (M13-22).
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
               widthFactor: discovered / total,
-              child: const ColoredBox(color: AppColors.progress),
+              child: const DecoratedBox(
+                key: ValueKey('discovered-fill'),
+                decoration: BoxDecoration(
+                  color: AppColors.progress,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(7 - AppShape.chunkySmallBorder),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
