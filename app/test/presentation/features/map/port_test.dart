@@ -100,24 +100,33 @@ void main() {
   });
 
   group('the painter', () {
+    IsoProjection at(double tile) {
+      final p0 = IsoProjection(tile: tile, unit: tile * 14 / 30);
+      final size = Size(tile * 12, tile * 9);
+      return p0.shifted(
+        Offset(size.width * 0.55, size.height * 0.2) - p0.project(1.4, 3.4),
+      );
+    }
+
     Future<Uint8List> paint({
       required double tile,
       required List<bool> built,
       Set<String> lines = const {},
       Set<int> ghosts = const {},
+      Map<int, double> rising = const {},
+      Map<int, double> fading = const {},
     }) async {
       final size = Size(tile * 12, tile * 9);
       final recorder = ui.PictureRecorder();
-      final p0 = IsoProjection(tile: tile, unit: tile * 14 / 30);
       paintPort(
         BlockPen(Canvas(recorder), AppColors.ink, 1.2),
-        p0.shifted(
-          Offset(size.width * 0.55, size.height * 0.2) - p0.project(1.4, 3.4),
-        ),
+        at(tile),
         size,
         built: built,
         lines: lines,
         ghosts: ghosts,
+        rising: rising,
+        fading: fading,
       );
       final image = await recorder.endRecording().toImage(
         size.width.round(),
@@ -176,6 +185,76 @@ void main() {
         );
         expect(sameBytes(bare, ghost), isFalse);
         expect(sameBytes(built, ghost), isFalse);
+      });
+    });
+
+    testWidgets('a part just done rises from the ground into its ghost, '
+        'which then fades (M13-17)', (tester) async {
+      await tester.runAsync(() async {
+        const tile = 60.0, crane = 5;
+        final only = [for (var i = 0; i < 9; i++) i == crane];
+        final bare = await paint(tile: tile, built: []);
+        final built = await paint(tile: tile, built: only);
+        final half = await paint(tile: tile, built: only, rising: {crane: 0.5});
+        // Below the line climbing from under its footprint to over its top,
+        // the part as built; above it, nothing yet.
+        final part = portParts[crane];
+        final p = at(tile);
+        final ground = p.project(part.x, part.y).dy + tile;
+        final top = p.project(part.x, part.y, part.top).dy - tile / 2;
+        final line = ground - (ground - top) * 0.5;
+        final width = (tile * 12).round() * 4;
+        final height = (tile * 9).round();
+        // Bytes differing between [a] and [b] in rows [from] to [to]: a
+        // clipped stroke's anti-aliasing differs by a pixel or two, so the
+        // part is compared by how much of it is there.
+        int apart(Uint8List a, Uint8List b, int from, int to) => [
+          for (var i = from * width; i < to * width; i++)
+            if (a[i] != b[i]) i,
+        ].length;
+        final below = (line.ceil() + 1, height);
+        final above = (0, line.floor() - 1);
+        expect(
+          apart(half, built, below.$1, below.$2),
+          lessThan(apart(bare, built, below.$1, below.$2) * 0.05),
+          reason: 'below the line, the part as built',
+        );
+        expect(
+          apart(half, bare, above.$1, above.$2),
+          lessThan(apart(built, bare, above.$1, above.$2) * 0.05),
+          reason: 'above it, nothing yet',
+        );
+        expect(sameBytes(half, built), isFalse);
+        expect(sameBytes(half, bare), isFalse);
+        // Not risen at all: nothing yet; risen: the part.
+        expect(
+          sameBytes(
+            await paint(tile: tile, built: only, rising: {crane: 0}),
+            bare,
+          ),
+          isTrue,
+        );
+        expect(
+          sameBytes(
+            await paint(tile: tile, built: only, rising: {crane: 1}),
+            built,
+          ),
+          isTrue,
+        );
+        // Its ghost over it until it has faded.
+        final ghosted = await paint(
+          tile: tile,
+          built: only,
+          fading: {crane: 1},
+        );
+        expect(sameBytes(ghosted, built), isFalse);
+        expect(
+          sameBytes(
+            await paint(tile: tile, built: only, fading: {crane: 0}),
+            built,
+          ),
+          isTrue,
+        );
       });
     });
 

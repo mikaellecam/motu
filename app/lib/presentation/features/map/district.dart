@@ -94,7 +94,8 @@ bool districtDetailed(IsoProjection p) => p.tile >= 60;
 /// [ghosts] (their lessons unlocked, not done) under the ghost of themselves
 /// grown
 /// gives it, its ferry pier on the mainland side, the ferry at its end when
-/// [ferry].
+/// [ferry]. A building just done keeps its ghost over it at the opacity
+/// [fading] gives, while it rises into it (M13-17).
 void paintDistrict(
   BlockPen pen,
   IsoProjection p,
@@ -102,6 +103,7 @@ void paintDistrict(
   required List<double> grown,
   required bool ferry,
   Set<int> ghosts = const {},
+  Map<int, double> fading = const {},
 }) {
   final ink = IsoInk(pen, p);
   final ghost = IsoInk(GhostPen(pen.canvas), p);
@@ -117,7 +119,12 @@ void paintDistrict(
         () {
           b._draw(ink, b.x, b.y, t: i < grown.length ? grown[i] : 0);
           // Unlocked, not done: the ghost of it grown, over it (M13-7).
-          if (ghosts.contains(i)) b._draw(ghost, b.x, b.y, t: 1);
+          if (ghosts.contains(i)) {
+            b._draw(ghost, b.x, b.y, t: 1);
+          } else if (fading[i] case final opacity? when opacity > 0) {
+            final fade = IsoInk(GhostPen(pen.canvas, opacity: opacity), p);
+            b._draw(fade, b.x, b.y, t: 1);
+          }
         },
       ),
   ]..sort((a, b) => a.$1.compareTo(b.$1));
@@ -129,18 +136,24 @@ void paintDistrict(
 /// Draws what a lesson unlocked but not done will build (M13-7): its colours
 /// see-through, its edges faint.
 final class GhostPen extends BlockPen {
-  GhostPen(Canvas canvas) : super(canvas, DistrictPalette.ghostEdge, 1.2);
+  /// [opacity] fades the ghost out (1: as unlocked, 0: gone), once its
+  /// building has risen into it (M13-17).
+  GhostPen(Canvas canvas, {this.opacity = 1})
+    : super(canvas, DistrictPalette.ghostEdge, 1.2);
+
+  final double opacity;
 
   @override
   void fill(Path path, Color color) => canvas
     ..drawPath(
       path,
-      Paint()..color = color.withValues(alpha: DistrictPalette.ghostAlpha),
+      Paint()
+        ..color = color.withValues(alpha: DistrictPalette.ghostAlpha * opacity),
     )
     ..drawPath(
       path,
       Paint()
-        ..color = ink
+        ..color = ink.withValues(alpha: ink.a * opacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2
         ..strokeJoin = StrokeJoin.round,

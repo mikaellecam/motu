@@ -98,11 +98,16 @@ class _IslandState extends ConsumerState<_Island>
     with SingleTickerProviderStateMixin {
   final _scene = GlobalKey<IslandSceneState>();
 
-  /// A building growing, its lesson just done (as M9-19's 1,4 s).
+  /// A building rising into its ghost, its lesson just done (as M9-19's
+  /// 1,4 s).
   late final _grow = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
   );
+
+  /// The run's stages (M13-17): the building rising, then its ghost fading.
+  static const _rise = Interval(0, 0.85, curve: Curves.easeInOut);
+  static const _fade = Interval(0.85, 1);
 
   /// The pieces growing now, and those done while this screen was hidden.
   Set<int> _growing = {};
@@ -171,8 +176,7 @@ class _IslandState extends ConsumerState<_Island>
       if (_current case final c?) _scene.currentState?.glideTo(c);
     }
 
-    if (MediaQuery.disableAnimationsOf(context) || _port) {
-      // The port builds its part at once.
+    if (MediaQuery.disableAnimationsOf(context)) {
       WidgetsBinding.instance.addPostFrameCallback((_) => then());
       return;
     }
@@ -256,23 +260,30 @@ class _IslandState extends ConsumerState<_Island>
                 child: AnimatedBuilder(
                   animation: _grow,
                   builder: (context, _) {
-                    final t = Curves.easeInOut.transform(_grow.value);
+                    // A lesson just done: its building rises into its
+                    // ghost, then the ghost fades (M13-17, as §10.5's
+                    // order completing).
+                    final rise = _rise.transform(_grow.value);
+                    final fade = 1 - _fade.transform(_grow.value);
                     final grown = [
                       for (var k = 0; k < _ids.length; k++)
                         _growing.contains(k)
-                            ? t
+                            ? rise
                             : done.contains(k)
                             ? 1.0
                             : 0.0,
                     ];
+                    final fading = {for (final k in _growing) k: fade};
                     final world = _port
                         ? portWorld(
                             portBuilt({
                               for (final (k, id) in _ids.indexed)
-                                if (grown[k] > 0) id,
+                                if (grown[k] > 0 || _growing.contains(k)) id,
                             }, skipped: port?.skipped ?? false),
                             lines: port?.lines ?? const {},
                             ghosts: ghosts,
+                            rising: {for (final k in _growing) k: rise},
+                            fading: fading,
                           )
                         : districtWorld(
                             grown,
@@ -280,6 +291,7 @@ class _IslandState extends ConsumerState<_Island>
                             ferry:
                                 sail && port!.lines.contains(actionsEtfIsland),
                             ghosts: ghosts,
+                            fading: fading,
                           );
                     return IslandScene(
                       key: _scene,
