@@ -130,20 +130,67 @@ void main() {
       findsNWidgets(4),
     );
 
+    // The search opens from its magnifier (M13-16).
+    await tester.tap(find.bySemanticsLabel('Rechercher une notion'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'ecart');
     await tester.pumpAndSettle();
     expect(find.text('Écart'), findsOneWidget);
     expect(find.text('ETF'), findsNothing);
 
-    await tester.enterText(find.byType(TextField), '');
+    // Its ✕ clears it and brings the filters back.
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Découvertes'));
     await tester.pumpAndSettle();
     expect(find.text('Indice'), findsOneWidget);
     expect(find.text('ETF'), findsNothing);
 
+    await tester.tap(find.bySemanticsLabel('Rechercher une notion'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'zzz');
     await tester.pumpAndSettle();
     expect(find.text('Aucune notion ne correspond.'), findsOneWidget);
+  });
+
+  testWidgets('the search folds into its magnifier in the title bar, opens '
+      'leftward over the title focused, and its ✕ folds it back (M13-16)', (
+    tester,
+  ) async {
+    await show(tester, const GlossaryScreen());
+    final magnifier = find.bySemanticsLabel('Rechercher une notion');
+    // Folded: no field, a 44 px button named for screen readers.
+    expect(find.byType(TextField), findsNothing);
+    expect(magnifier, findsOneWidget);
+    final size = tester.getSize(magnifier);
+    expect(size.width, greaterThanOrEqualTo(44));
+    expect(size.height, greaterThanOrEqualTo(44));
+    expect(find.semantics.byLabel('Glossaire'), findsOneWidget);
+    final folded = tester.getSize(find.byType(AnimatedContainer).first).width;
+
+    await tester.tap(magnifier);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 140));
+    // Half-way, it is opening to the right.
+    final opening = tester.getSize(find.byType(AnimatedContainer).first).width;
+    expect(opening, greaterThan(folded));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.byType(AnimatedContainer).first).width,
+      greaterThan(opening),
+    );
+    final field = tester.widget<EditableText>(find.byType(EditableText));
+    expect(field.focusNode.hasFocus, isTrue);
+    // The title gives way; the filters stay.
+    expect(find.semantics.byLabel('Glossaire'), findsNothing);
+    expect(find.text('Toutes').hitTestable(), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'ecart');
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNothing);
+    expect(find.semantics.byLabel('Glossaire'), findsOneWidget);
+    expect(find.text('ETF'), findsOneWidget, reason: 'the search cleared');
   });
 
   testWidgets('the sheet: new notion, definition, example, for you, related', (

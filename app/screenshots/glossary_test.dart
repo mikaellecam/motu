@@ -72,6 +72,20 @@ void main() {
     overrides: overrides,
   );
 
+  // The search opened from its magnifier, a word typed (M13-16).
+  screenshot(
+    'm13-16-glossary-search',
+    const GlossaryScreen(),
+    size: const Size(390, 900),
+    overrides: overrides,
+    act: (tester) async {
+      await tester.tap(find.bySemanticsLabel('Rechercher une notion'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'vol');
+      await tester.pumpAndSettle();
+    },
+  );
+
   screenshot(
     'm6-6-term-sheet',
     const GlossaryScreen(),

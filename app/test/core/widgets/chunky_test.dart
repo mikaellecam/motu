@@ -117,6 +117,62 @@ void main() {
     },
   );
 
+  testWidgets('ChunkySegmented: the pill slides to the segment picked, to its '
+      'own width when compact; at once with reduced motion (M13-16)', (
+    tester,
+  ) async {
+    for (final compact in [false, true]) {
+      for (final still in [false, true]) {
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            FakeAccessibilityFeatures(disableAnimations: still);
+        var selected = 'week';
+        late StateSetter set;
+        await pumpApp(
+          tester,
+          Center(
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                set = setState;
+                return ChunkySegmented(
+                  segments: const [('week', '1S'), ('year', 'Une année')],
+                  selected: selected,
+                  onChanged: (v) => setState(() => selected = v),
+                  compact: compact,
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final pill = find.byKey(const ValueKey('segment-pill'));
+        Rect segment(String label) => tester.getRect(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Padding))
+              .first,
+        );
+        final start = tester.getRect(pill);
+        expect(start, segment('1S'), reason: 'compact $compact');
+
+        set(() => selected = 'year');
+        await tester.pump();
+        await tester.pump(ChunkySegmented.slide ~/ 2);
+        final mid = tester.getRect(pill);
+        final end = segment('Une année');
+        if (still) {
+          expect(mid, end, reason: 'at once, compact $compact');
+        } else {
+          expect(mid.left, greaterThan(start.left));
+          expect(mid.left, lessThan(end.left));
+        }
+        await tester.pumpAndSettle();
+        expect(tester.getRect(pill), end, reason: 'compact $compact');
+        // Compact: each segment its label's width.
+        if (compact) expect(end.width, greaterThan(segment('1S').width));
+      }
+    }
+    tester.platformDispatcher.clearAccessibilityFeaturesTestValue();
+  });
+
   testWidgets('ChunkyChip says whether its filter is on', (tester) async {
     var taps = 0;
     await pumpApp(

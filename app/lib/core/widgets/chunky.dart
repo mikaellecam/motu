@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -422,7 +424,8 @@ class ChunkyBackButton extends StatelessWidget {
 
 /// One choice among a few, as a toy block: a chart's period, an order's type,
 /// the glossary's filter. The selected segment sits in the neutral `line`,
-/// outlined in ink (BRIEF §10.2). The segments share the width, or with
+/// outlined in ink (BRIEF §10.2); picking another slides it there (M13-16),
+/// at once with reduced motion. The segments share the width, or with
 /// [compact] each takes its label's (the order sheet's € / Parts).
 class ChunkySegmented<T> extends StatelessWidget {
   const ChunkySegmented({
@@ -442,48 +445,60 @@ class ChunkySegmented<T> extends StatelessWidget {
   /// touch target, so it reaches the minimum.
   static const _inset = AppShape.chunkyBorder;
 
+  /// How long the pill takes to slide.
+  static const slide = Duration(milliseconds: 260);
+
   @override
   Widget build(BuildContext context) {
-    Widget segment(T value, String label) {
-      final on = value == selected;
-      return MergeSemantics(
-        child: Semantics(
-          button: true,
-          selected: on,
-          inMutuallyExclusiveGroup: true,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => onChanged(value),
-            child: Padding(
-              padding: const EdgeInsets.all(_inset),
-              child: Container(
-                constraints: const BoxConstraints(
-                  minWidth: AppSpace.minTarget - 2 * _inset,
-                ),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpace.x2),
-                decoration: on
-                    ? BoxDecoration(
-                        color: AppColors.line,
-                        borderRadius: BorderRadius.circular(
-                          AppShape.chunkyButtonRadius - 2 * _inset,
-                        ),
-                        border: Border.all(color: AppColors.ink, width: 2),
-                      )
-                    : null,
-                child: Text(
-                  label,
-                  style: AppText.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+    final still = MediaQuery.disableAnimationsOf(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    // A compact segment is as wide as its label, so the pill knows where
+    // each one sits.
+    double labelWidth(String label) {
+      final painter = TextPainter(
+        text: TextSpan(text: label, style: AppText.label),
+        textScaler: scaler,
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+      )..layout();
+      final width = painter.width;
+      painter.dispose();
+      return math.max(
+            AppSpace.minTarget - 2 * _inset,
+            width + 2 * AppSpace.x2,
+          ) +
+          2 * _inset;
+    }
+
+    Widget segment(T value, String label) => MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: value == selected,
+        inMutuallyExclusiveGroup: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => onChanged(value),
+          child: Padding(
+            padding: const EdgeInsets.all(_inset),
+            child: Container(
+              constraints: const BoxConstraints(
+                minWidth: AppSpace.minTarget - 2 * _inset,
+              ),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.x2),
+              child: Text(
+                label,
+                style: AppText.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
 
+    final at = segments.indexWhere((s) => s.$1 == selected);
     return Container(
       height: AppSpace.minTarget + 2 * AppShape.chunkyBorder,
       margin: const EdgeInsets.only(bottom: AppShape.chunkyButtonShadow),
@@ -502,14 +517,46 @@ class ChunkySegmented<T> extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
-        children: [
-          for (final (value, label) in segments)
-            compact
-                ? segment(value, label)
-                : Expanded(child: segment(value, label)),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final widths = compact
+              ? [for (final (_, label) in segments) labelWidth(label)]
+              : List.filled(
+                  segments.length,
+                  constraints.maxWidth / segments.length,
+                );
+          final left = widths.take(math.max(at, 0)).fold(0.0, (a, b) => a + b);
+          return Stack(
+            children: [
+              if (at >= 0)
+                AnimatedPositioned(
+                  duration: still ? Duration.zero : slide,
+                  curve: Curves.easeOutCubic,
+                  left: left + _inset,
+                  width: widths[at] - 2 * _inset,
+                  top: _inset,
+                  bottom: _inset,
+                  child: DecoratedBox(
+                    key: const ValueKey('segment-pill'),
+                    decoration: BoxDecoration(
+                      color: AppColors.line,
+                      borderRadius: BorderRadius.circular(
+                        AppShape.chunkyButtonRadius - 2 * _inset,
+                      ),
+                      border: Border.all(color: AppColors.ink, width: 2),
+                    ),
+                  ),
+                ),
+              Row(
+                mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
+                children: [
+                  for (final (i, (value, label)) in segments.indexed)
+                    SizedBox(width: widths[i], child: segment(value, label)),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -593,7 +640,8 @@ class ChunkyChip extends StatelessWidget {
 }
 
 /// A search box as a toy block (Explore, the glossary). [onClear], when
-/// given, shows a clear button at its end.
+/// given, shows a clear button at its end. Without [boxed], the field alone,
+/// for a block drawn around it ([ChunkySearchField.box]).
 class ChunkySearchField extends StatelessWidget {
   const ChunkySearchField({
     super.key,
@@ -602,6 +650,8 @@ class ChunkySearchField extends StatelessWidget {
     this.controller,
     this.initialValue,
     this.onClear,
+    this.focusNode,
+    this.boxed = true,
   });
 
   final String hint;
@@ -609,28 +659,32 @@ class ChunkySearchField extends StatelessWidget {
   final TextEditingController? controller;
   final String? initialValue;
   final VoidCallback? onClear;
+  final FocusNode? focusNode;
+  final bool boxed;
+
+  /// The block a search box sits in.
+  static const box = BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.all(
+      Radius.circular(AppShape.chunkyButtonRadius),
+    ),
+    border: Border.fromBorderSide(
+      BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.ink,
+        offset: Offset(0, AppShape.chunkyButtonShadow),
+      ),
+    ],
+  );
 
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: AppShape.chunkyButtonShadow),
-    decoration: const BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.all(
-        Radius.circular(AppShape.chunkyButtonRadius),
-      ),
-      border: Border.fromBorderSide(
-        BorderSide(color: AppColors.ink, width: AppShape.chunkyBorder),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: AppColors.ink,
-          offset: Offset(0, AppShape.chunkyButtonShadow),
-        ),
-      ],
-    ),
-    child: TextFormField(
+  Widget build(BuildContext context) {
+    final field = TextFormField(
       controller: controller,
       initialValue: initialValue,
+      focusNode: focusNode,
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
       style: AppText.body,
@@ -647,8 +701,14 @@ class ChunkySearchField extends StatelessWidget {
         border: InputBorder.none,
         contentPadding: const EdgeInsets.symmetric(vertical: AppSpace.x3),
       ),
-    ),
-  );
+    );
+    if (!boxed) return field;
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppShape.chunkyButtonShadow),
+      decoration: box,
+      child: field,
+    );
+  }
 }
 
 /// A world screen's progress: one segment per step, the ones reached filled.
