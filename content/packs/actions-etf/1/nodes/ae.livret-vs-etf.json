@@ -64,5 +64,56 @@
   "explanation": {
     "fr": "En un peu moins de onze ans, l'ETF Monde a plus que triplé, quand le Livret A a gagné 15 %. Mais le chemin n'a pas été le même : début 2020, l'ETF a perdu 19 % en deux mois, alors que le {{livret-a|Livret A}} ne baisse jamais et reste disponible à tout moment. Ce {{rendement|rendement}} plus élevé est allé avec de la {{volatilite|volatilité}}.",
     "en": "In a little under eleven years, the world ETF more than tripled, while the Livret A gained 15%. But the road wasn't the same: early 2020, the ETF lost 19% in two months, whereas the {{livret-a|Livret A}} never falls and stays available at any time. That higher {{rendement|return}} came with {{volatilite|volatility}}."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Deux mois de 2020",
+        "en": "Two months of 2020"
+      },
+      "text": {
+        "fr": "Fin janvier 2020, tes 10 000 € placés dans l'ETF Monde valaient 15 039 €. Fin mars, 12 152 € : 2 886 € de moins en deux mois. C'est près de deux fois tout ce que le Livret A a rapporté en presque onze ans, 1 553 €. Le {{livret-a|Livret A}}, lui, n'a pas baissé d'un euro.",
+        "en": "At the end of January 2020, your €10,000 put in the world ETF was worth €15,039. At the end of March, €12,152: €2,886 less in two months. That's nearly twice everything the Livret A earned in almost eleven years, €1,553. The {{livret-a|Livret A}} didn't fall by a single euro."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "ETF Monde, 10 000 € placés fin 2015",
+            "en": "World ETF, €10,000 put in at the end of 2015"
+          },
+          "dataset": "ds.acwi-eur-2016-m",
+          "amount": 10000
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Fin février 2016, deux mois après le départ : lequel des deux valait le plus ?",
+        "en": "At the end of February 2016, two months in: which of the two was worth more?"
+      },
+      "choices": [
+        {
+          "id": "livret",
+          "label": {
+            "fr": "Le Livret A",
+            "en": "The Livret A"
+          }
+        },
+        {
+          "id": "etf",
+          "label": {
+            "fr": "L'ETF Monde",
+            "en": "The world ETF"
+          }
+        }
+      ],
+      "answer": "livret",
+      "explanation": {
+        "fr": "Le Livret A : 10 009 €, contre 9 351 € pour l'ETF Monde. En presque onze ans, l'ETF n'a fini un mois sous le Livret A qu'au premier semestre 2016. Sur deux mois, le résultat a été l'inverse de celui sur onze ans : c'est l'{{horizon-de-placement|horizon de placement}} qui a fait la différence.",
+        "en": "The Livret A: €10,009, against €9,351 for the world ETF. In almost eleven years, the ETF only ended a month below the Livret A in the first half of 2016. Over two months, the outcome was the reverse of the one over eleven years: the {{horizon-de-placement|investment horizon}} made the difference."
+      }
+    }
+  ]
 }

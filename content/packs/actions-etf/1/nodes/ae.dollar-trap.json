@@ -70,5 +70,53 @@
   "explanation": {
     "fr": "En 2017, le dollar a perdu 12 % face à l'euro. La hausse de Coca-Cola, gagnée en dollars, a fondu une fois reconvertie : +0,5 % en euros. C'est le {{risque-de-change|risque de change}}. Il joue dans les deux sens : un dollar qui monte ajoute du gain.",
     "en": "In 2017, the dollar lost 12% against the euro. Coca-Cola's rise, earned in dollars, melted away once converted back: +0.5% in euros. That's {{risque-de-change|currency risk}}. It works both ways: a rising dollar adds to the gain."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "2022 : le dollar dans l'autre sens",
+        "en": "2022: the dollar the other way"
+      },
+      "text": {
+        "fr": "De fin 2021 à fin septembre 2022, l'ETF Monde a perdu 26 % en dollars. Pour qui l'avait acheté en euros, la baisse n'était que de 14 % : pendant ce temps, le dollar avait pris 16 % face à l'euro. Cette fois, le {{taux-de-change|taux de change}} a amorti la chute.",
+        "en": "From the end of 2021 to the end of September 2022, the world ETF lost 26% in dollars. For someone who had bought it with euros, the fall was only 14%: meanwhile, the dollar had gained 16% against the euro. This time, the {{taux-de-change|exchange rate}} cushioned the fall."
+      }
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Tu as acheté une action américaine avec des euros. En un an, elle ne bouge pas en dollars, et le dollar perd 10 % face à l'euro. En euros, tu as…",
+        "en": "You bought an American share with euros. Over a year, it doesn't move in dollars, and the dollar loses 10% against the euro. In euros, you have…"
+      },
+      "choices": [
+        {
+          "id": "less",
+          "label": {
+            "fr": "Environ 10 % de moins",
+            "en": "About 10% less"
+          }
+        },
+        {
+          "id": "same",
+          "label": {
+            "fr": "Autant",
+            "en": "The same"
+          }
+        },
+        {
+          "id": "more",
+          "label": {
+            "fr": "Environ 10 % de plus",
+            "en": "About 10% more"
+          }
+        }
+      ],
+      "answer": "less",
+      "explanation": {
+        "fr": "Ton action vaut toujours autant de dollars, mais chaque dollar vaut 10 % d'euros en moins. C'est le {{risque-de-change|risque de change}} : il joue même quand l'action ne bouge pas.",
+        "en": "Your share is still worth as many dollars, but each dollar is worth 10% fewer euros. That's {{risque-de-change|currency risk}}: it plays even when the share doesn't move."
+      }
+    }
+  ]
 }

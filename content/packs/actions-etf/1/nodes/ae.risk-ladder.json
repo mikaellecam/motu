@@ -68,5 +68,79 @@
   "explanation": {
     "fr": "La {{volatilite|volatilité}} mesure l'amplitude des variations. Le Livret A ne bouge pas. En 2025, l'ETF Monde et l'ETF Pays émergents ont bougé presque autant, autour de 17 % par an ; Apple, près de deux fois plus : une seule entreprise porte tout, un ETF répartit sur des centaines ou des milliers.",
     "en": "{{volatilite|Volatility}} measures how much prices swing. The Livret A doesn't move. In 2025, the world ETF and the emerging markets ETF moved almost as much, around 17% a year; Apple, nearly twice as much: a single company carries everything, an ETF spreads it over hundreds or thousands."
-  }
+  },
+  "cards": [
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "Plus de mouvement, pas plus de gain",
+        "en": "More movement, not more gain"
+      },
+      "text": {
+        "fr": "Début 2025, 1 000 $ dans chacun. Au printemps, Apple a chuté de 30 % depuis son sommet de février, l'ETF Monde de 17 %. Fin 2025 : 1 120 $ pour Apple, 1 226 $ pour l'ETF Monde, 1 341 $ pour l'ETF Pays émergents. Une {{volatilite|volatilité}} plus forte, ce sont des écarts plus grands dans les deux sens, pas un gain plus grand assuré.",
+        "en": "Early 2025, $1,000 in each. In the spring, Apple fell 30% from its February peak, the world ETF 17%. End of 2025: $1,120 for Apple, $1,226 for the world ETF, $1,341 for the emerging markets ETF. Higher {{volatilite|volatility}} means bigger swings both ways, not a bigger gain for sure."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "ETF Pays émergents",
+            "en": "Emerging markets ETF"
+          },
+          "dataset": "ds.eem-2025-d",
+          "amount": 1000
+        },
+        {
+          "label": {
+            "fr": "ETF Monde",
+            "en": "World ETF"
+          },
+          "dataset": "ds.acwi-2025-d",
+          "amount": 1000
+        },
+        {
+          "label": {
+            "fr": "Apple",
+            "en": "Apple"
+          },
+          "dataset": "ds.aapl-2025-d",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Un placement plus volatil qu'un autre, c'est un placement qui…",
+        "en": "An investment more volatile than another is one that…"
+      },
+      "choices": [
+        {
+          "id": "more",
+          "label": {
+            "fr": "Rapporte forcément plus",
+            "en": "Always earns more"
+          }
+        },
+        {
+          "id": "swings",
+          "label": {
+            "fr": "Monte et baisse plus fort",
+            "en": "Rises and falls harder"
+          }
+        },
+        {
+          "id": "loses",
+          "label": {
+            "fr": "Perd forcément de l'argent",
+            "en": "Always loses money"
+          }
+        }
+      ],
+      "answer": "swings",
+      "explanation": {
+        "fr": "La volatilité mesure l'amplitude des variations, pas leur sens. En 2025, Apple a été le plus volatil des trois et a fini avec le plus petit gain, mais un gain quand même.",
+        "en": "Volatility measures how big the swings are, not their direction. In 2025, Apple was the most volatile of the three and ended with the smallest gain, but a gain all the same."
+      }
+    }
+  ]
 }

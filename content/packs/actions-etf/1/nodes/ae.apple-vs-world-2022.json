@@ -60,5 +60,71 @@
   "live_variant": {
     "widget": "compare_returns",
     "period": "1y"
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Remonter après une chute",
+        "en": "Climbing back after a fall"
+      },
+      "text": {
+        "fr": "Fin 2022, tes 1 000 $ dans Apple valaient 759 $. Pour revenir à 1 000 $, il fallait ensuite +32 %, pas +24 % : la hausse part d'une somme plus petite. Dans l'ETF Monde, à 828 $, il fallait +21 %. Une chute moins profonde, c'est aussi moins de chemin pour remonter.",
+        "en": "At the end of 2022, your $1,000 in Apple was worth $759. To get back to $1,000, it then needed +32%, not +24%: the rise starts from a smaller sum. In the world ETF, at $828, it needed +21%. A shallower fall also means less ground to make up."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Apple",
+            "en": "Apple"
+          },
+          "dataset": "ds.aapl-2022-w",
+          "amount": 1000
+        },
+        {
+          "label": {
+            "fr": "ETF Monde",
+            "en": "World ETF"
+          },
+          "dataset": "ds.acwi-2022-w",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Une seule des entreprises d'un ETF Monde s'effondre. L'ETF…",
+        "en": "Just one of the companies in a world ETF collapses. The ETF…"
+      },
+      "choices": [
+        {
+          "id": "all",
+          "label": {
+            "fr": "S'effondre avec elle",
+            "en": "Collapses with it"
+          }
+        },
+        {
+          "id": "share",
+          "label": {
+            "fr": "Baisse de la petite part qu'elle y pèse",
+            "en": "Falls by the small share it weighs in it"
+          }
+        },
+        {
+          "id": "none",
+          "label": {
+            "fr": "Ne bouge pas, il est protégé",
+            "en": "Doesn't move, it's protected"
+          }
+        }
+      ],
+      "answer": "share",
+      "explanation": {
+        "fr": "L'ETF Monde détient des milliers d'entreprises : chacune n'y pèse qu'une petite part, et sa chute ne fait baisser l'ETF que de cette part. Avec 1 000 $ dans une seule action, cette part, c'est tout : c'est la {{concentration|concentration}}.",
+        "en": "The world ETF holds thousands of companies: each weighs only a small share, and its fall only pulls the ETF down by that share. With $1,000 in a single stock, that share is everything: that's {{concentration|concentration}}."
+      }
+    }
+  ]
 }

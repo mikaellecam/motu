@@ -86,5 +86,128 @@
       "step": 0.001,
       "default": 0.015
     }
+  ],
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Inès et ses 20 000 €",
+        "en": "Inès and her €20,000"
+      },
+      "text": {
+        "fr": "Inès place 20 000 € pendant 25 ans. Disons 5 % par an avant frais. Dans un ETF à 0,2 % de frais par an, elle finit avec 64 421 €. Dans un fonds à 2 % par an, avec 40 871 €. L'écart, 23 550 €, est plus grand que ce qu'elle avait placé.",
+        "en": "Inès puts €20,000 in for 25 years. Say 5% a year before fees. In an ETF with 0.2% yearly fees, she ends up with €64,421. In a fund at 2% a year, with €40,871. The gap, €23,550, is bigger than what she put in."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "ETF à 0,2 %",
+            "en": "ETF at 0.2%"
+          },
+          "formula": "fees",
+          "inputs": {
+            "amount": 20000,
+            "years": 25,
+            "return": 0.05,
+            "fee_low": 0.002,
+            "fee_high": 0.02
+          },
+          "series": "low"
+        },
+        {
+          "label": {
+            "fr": "Fonds à 2 %",
+            "en": "Fund at 2%"
+          },
+          "formula": "fees",
+          "inputs": {
+            "amount": 20000,
+            "years": 25,
+            "return": 0.05,
+            "fee_low": 0.002,
+            "fee_high": 0.02
+          },
+          "series": "high"
+        }
+      ]
+    },
+    {
+      "kind": "compare",
+      "headline": {
+        "fr": "Quand le rendement est faible",
+        "en": "When the return is low"
+      },
+      "text": {
+        "fr": "10 000 € placés 20 ans à 2 % par an : 14 859 € sans frais. Avec 1,5 % de frais par an : 10 983 €. Les frais ont pris 3 876 € sur 4 859 € de gains, quatre sur cinq. À 5 % par an, les mêmes frais en prennent environ quatre sur dix. Plus le {{rendement|rendement}} est faible, plus les frais en mangent une grande part.",
+        "en": "€10,000 put in for 20 years at 2% a year: €14,859 without fees. With 1.5% yearly fees: €10,983. The fees took €3,876 of €4,859 of gains, four in five. At 5% a year, the same fees take about four in ten. The lower the {{rendement|return}}, the bigger the share fees eat."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Sans frais",
+            "en": "No fees"
+          },
+          "formula": "fees",
+          "inputs": {
+            "amount": 10000,
+            "years": 20,
+            "return": 0.02,
+            "fee_low": 0,
+            "fee_high": 0.015
+          },
+          "series": "low"
+        },
+        {
+          "label": {
+            "fr": "1,5 % de frais",
+            "en": "1.5% fees"
+          },
+          "formula": "fees",
+          "inputs": {
+            "amount": 10000,
+            "years": 20,
+            "return": 0.02,
+            "fee_low": 0,
+            "fee_high": 0.015
+          },
+          "series": "high"
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "1 % de frais par an sur un placement de 10 000 €, c'est…",
+        "en": "1% yearly fees on €10,000 invested is…"
+      },
+      "choices": [
+        {
+          "id": "once",
+          "label": {
+            "fr": "100 € une fois pour toutes",
+            "en": "€100 once and for all"
+          }
+        },
+        {
+          "id": "fixed",
+          "label": {
+            "fr": "100 € par an, toujours",
+            "en": "€100 a year, always"
+          }
+        },
+        {
+          "id": "share",
+          "label": {
+            "fr": "1 % de ce que tu as, chaque année",
+            "en": "1% of what you hold, every year"
+          }
+        }
+      ],
+      "answer": "share",
+      "explanation": {
+        "fr": "Les {{frais|frais}} se calculent sur ce que vaut ton placement, gains compris. S'il passe à 20 000 €, 1 % fait 200 € par an. C'est pour ça que leur poids grandit avec le temps.",
+        "en": "{{frais|Fees}} are worked out on what your investment is worth, gains included. If it grows to €20,000, 1% is €200 a year. That's why their weight grows over time."
+      }
+    }
   ]
 }
