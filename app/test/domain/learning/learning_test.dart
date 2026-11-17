@@ -117,6 +117,14 @@ void main() {
       }
     });
 
+    test('those who skip Les bases start it after the parts that stand '
+        '(M13-12)', () {
+      expect(basicsSkippedThrough, 5);
+      expect(basicsStart(profile(knowledge: Knowledge.alreadyInvesting)), 6);
+      expect(basicsStart(profile(knowledge: Knowledge.etfs)), 6);
+      expect(basicsStart(profile(knowledge: Knowledge.nothing)), isNull);
+    });
+
     test('moment thresholds: only concentration follows risk comfort', () {
       for (final (drop, concentration) in [
         (DropReaction.sellAll, '0.30'),

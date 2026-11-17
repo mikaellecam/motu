@@ -34,18 +34,20 @@ bool islandOpen({
 /// The node the path points to: the first not completed in path order, the
 /// forced node 1 (Livret savings) first, then from the starting node to the
 /// end, then the nodes skipped before it (§4.1). Null when every node is
-/// done. Before the questionnaire the path starts at node 1.
+/// done. Before the questionnaire the path starts at node 1. A [start] given
+/// (1-based) replaces the questionnaire's starting node.
 IslandNode? currentNode(
   Profile? profile,
   List<IslandNode> path,
-  Set<String> completed,
-) {
-  final start = profile == null ? 0 : startingNode(profile) - 1;
+  Set<String> completed, {
+  int? start,
+}) {
+  final from = (start ?? (profile == null ? 1 : startingNode(profile))) - 1;
   final forced = profile == null ? null : forcedFirstNode(profile);
   final order = <IslandNode>{
     if (forced != null && forced <= path.length) path[forced - 1],
-    ...path.skip(start),
-    ...path.take(start),
+    ...path.skip(from),
+    ...path.take(from),
   };
   for (final node in order) {
     if (!completed.contains(node.id)) return node;
@@ -60,11 +62,12 @@ IslandNode? currentNode(
 List<NodeState> pathStates(
   Profile? profile,
   List<IslandNode> path,
-  Set<String> completed,
-) {
-  final start = profile == null ? 0 : startingNode(profile) - 1;
+  Set<String> completed, {
+  int? start,
+}) {
+  final from = (start ?? (profile == null ? 1 : startingNode(profile))) - 1;
   final forced = profile == null ? null : forcedFirstNode(profile);
-  final current = currentNode(profile, path, completed);
+  final current = currentNode(profile, path, completed, start: start);
   final states = <NodeState>[];
   var reachable = true;
   for (final (i, node) in path.indexed) {
@@ -72,11 +75,11 @@ List<NodeState> pathStates(
     states.add(switch (node) {
       _ when !pending => NodeState.done,
       _ when node == current => NodeState.current,
-      _ when i < start || i == (forced ?? 0) - 1 || reachable => NodeState.open,
+      _ when i < from || i == (forced ?? 0) - 1 || reachable => NodeState.open,
       _ => NodeState.locked,
     });
     // From the starting node on, a lesson not done closes the way.
-    if (i >= start && pending && node.type != NodeType.mission) {
+    if (i >= from && pending && node.type != NodeType.mission) {
       reachable = false;
     }
   }

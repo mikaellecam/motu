@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 
 import '../../../application/learning/content.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../domain/learning/profile_rules.dart';
 import 'archipelago.dart';
 import 'district.dart';
 import 'iso.dart';
@@ -44,17 +45,12 @@ const portParts = [
   PortPart('lb.checkpoint-1', 4.0, 0.0, _lighthouse, top: 4.8),
 ];
 
-/// How many parts stand for those who skip Les bases at onboarding: the port
-/// through its ferry quay, the line to Actions & ETF open (decided
-/// 2026-11-16).
-const _skippedThrough = 5;
-
 /// Which of [portParts] stand: those whose lesson is in [done], and the
 /// first five for those who [skipped] Les bases. Ids that are no part's
 /// change nothing.
 List<bool> portBuilt(Set<String> done, {required bool skipped}) => [
   for (final (i, part) in portParts.indexed)
-    done.contains(part.nodeId) || (skipped && i < _skippedThrough),
+    done.contains(part.nodeId) || (skipped && i < basicsSkippedThrough),
 ];
 
 /// Whether the ferry quay stands (Les bases' fifth part): the sea lines leave

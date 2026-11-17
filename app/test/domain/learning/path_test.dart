@@ -40,6 +40,21 @@ void main() {
     expect(states(investing, done([2, 4])), 'ododclllllll');
   });
 
+  test('a given start opens what comes before it (M13-12)', () {
+    // Les bases for those who skip it: its port stands through part 5, so
+    // its path starts at 6, whatever the questionnaire said for Actions & ETF.
+    expect(
+      pathStates(
+        null,
+        island.take(9).toList(),
+        {},
+        start: 6,
+      ).map((s) => s.name[0]).join(),
+      'oooooclll',
+    );
+    expect(currentNode(null, island, done([6]), start: 6)!.id, island[6].id);
+  });
+
   test('Livret savings put node 1 first, then the starting node', () {
     // « Ce qu'est un ETF » starts at node 3, a mission: node 4 is open too.
     final p = profile(knowledge: Knowledge.etfs, savings: Savings.livret);

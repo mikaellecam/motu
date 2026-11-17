@@ -194,7 +194,8 @@ follows describes the map as it was until then, and the rules it carried that st
   drafts). The sea lines leave the ferry quay round the lighthouse, one per island it opens (`portLines`):
   Actions & ETF's once its lessons are open, each island to come's once the lessons it waits for are done (the
   gates above, `islandRequires`). Whoever skips Les bases at onboarding finds the port built through its ferry
-  quay (decided 2026-11-16); its lessons keep their real state. The island path's header draws the port; the map
+  quay (decided 2026-11-16); its lessons keep their real state, and its path starts after them (M13-12,
+  `basicsStart`): the first five open to replay, the crane's lesson to play. The island path's header draws the port; the map
   keeps M12-6's Les bases island (a sand bank, a house and a lighthouse growing a course a lesson) until M13-6
   removes the map.
 - The sea chart (decided 2026-11-16, M13-5; canvas « Motu — Lesson islands », page « Naviguer »): from an island up
