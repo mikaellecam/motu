@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../application/learning/content.dart';
 import '../../../application/learning/island_path.dart';
-import '../../../application/learning/next_step_card.dart';
 import '../../../application/learning/place.dart';
 import '../../../core/failure.dart';
 import '../../../core/l10n/app_localizations.dart';
@@ -13,13 +12,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
-import '../../../domain/learning/next_step.dart';
 import '../../../domain/learning/path.dart';
 import '../map/district.dart';
 import '../map/port.dart';
 import '../node/node_screen.dart';
 import 'island_scene.dart';
-import '../map/next_step_card.dart';
 import 'sea_chart.dart';
 
 /// An island up close (BRIEF §4.3, M13-4): Actions & ETF's district or Les
@@ -207,23 +204,6 @@ class _IslandState extends ConsumerState<_Island>
     if (Navigator.of(context).canPop()) context.go('/');
   }
 
-  /// The lesson whose card shows: the marker touched; else the next step's
-  /// when it is a lesson of this island, or the lesson to do while there is
-  /// no next step yet. Null: the next step is something else.
-  int? _cardPiece(int fallback) {
-    if (_picked case final picked?) return picked;
-    final step = ref.watch(nextStepViewProvider).value?.step;
-    // No next step yet (before the questionnaire, or loading).
-    if (step == null) return fallback;
-    final nodeId = switch (step) {
-      PlayNode(:final nodeId) || DoMission(:final nodeId) => nodeId,
-      _ => null,
-    };
-    if (nodeId == null) return null;
-    final piece = _ids.indexOf(nodeId);
-    return piece < 0 ? null : piece;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -264,10 +244,6 @@ class _IslandState extends ConsumerState<_Island>
         else
           null,
     ];
-    final picked =
-        _picked ??
-        current ??
-        (done.length == _ids.length ? _ids.length - 1 : 0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -313,6 +289,8 @@ class _IslandState extends ConsumerState<_Island>
                       arriving: widget.arriving,
                       onFerry: sail ? _chart : null,
                       onMarker: (k) => setState(() => _picked = k),
+                      // Touching the island or the sea closes the card.
+                      onTapAway: () => setState(() => _picked = null),
                     );
                   },
                 ),
@@ -337,7 +315,7 @@ class _IslandState extends ConsumerState<_Island>
                       label: l10n.island_recentre,
                       onPressed: () {
                         setState(() => _picked = null);
-                        _scene.currentState?.glideTo(current ?? picked);
+                        _scene.currentState?.glideTo(current ?? 0);
                       },
                     ),
                   ],
@@ -349,8 +327,8 @@ class _IslandState extends ConsumerState<_Island>
                 bottom:
                     AppSpace.screenPadding +
                     MediaQuery.paddingOf(context).bottom,
-                child: switch (_cardPiece(picked)) {
-                  // A lesson of this island: its card.
+                // Nothing until a marker is touched (M13-9).
+                child: switch (_picked) {
                   final piece? => _LessonCard(
                     piece: piece,
                     pieceId: _ids[piece],
@@ -359,8 +337,7 @@ class _IslandState extends ConsumerState<_Island>
                     path: path,
                     language: language,
                   ),
-                  // Anything else comes first: the next step (BRIEF §4.2).
-                  null => NextStepCard(here: widget.islandId, onSail: _sail),
+                  null => const SizedBox.shrink(),
                 },
               ),
             ],

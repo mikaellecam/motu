@@ -16,16 +16,16 @@ requirements (§11).
 
 | | | |
 |---|---|---|
-| <img src="../screenshots/m7-3-next-step.png" width="240"> | <img src="../screenshots/m7-1-map.png" width="240"> | <img src="../screenshots/m6-9-island-path.png" width="240"> |
-| The « Archipel » tab: the island the user was on, up close, painted in code (`CustomPainter`), and the next step | A first launch: the port, where the way starts, its old jetty | An island up close: a marker per lesson on its building, which grows when the lesson is done (**coded animation**); pan and pinch |
+| <img src="../screenshots/m13-9-lesson-card.png" width="240"> | <img src="../screenshots/m7-1-map.png" width="240"> | <img src="../screenshots/m6-9-island-path.png" width="240"> |
+| The « Archipel » tab: the island the user was on, up close, painted in code (`CustomPainter`); a marker touched shows its lesson | A first launch: the port, where the way starts, its old jetty | An island up close: a marker per lesson on its building, which grows when the lesson is done (**coded animation**); pan and pinch |
 | <img src="../screenshots/m6-3-predict-reveal.png" width="240"> | <img src="../screenshots/m7-4-reveal-drawing.png" width="240"> | <img src="../screenshots/m6-8-livret-vs-etf.png" width="240"> |
 | Predict, then reveal: Apple or the world ETF in 2022, on real data | The reveal's curves drawing themselves (**coded animation**) | « Livret or ETF? »: 10 000 € on each since 2015, real prices (**chart**) |
 | <img src="../screenshots/m6-3-toy.png" width="240"> | <img src="../screenshots/m6-8-compound-toy.png" width="240"> | <img src="../screenshots/m6-8-dollar-trap.png" width="240"> |
 | The fees toy: sliders, the gap after 30 years (**calculation**: compound growth net of fees) | Compound interest | The dollar trap: a US stock's return in dollars and in euros |
 | <img src="../screenshots/m6-4-decision.png" width="240"> | <img src="../screenshots/m6-4-sort.png" width="240"> | <img src="../screenshots/m6-4-build-puzzle.png" width="240"> |
 | « Mars 2020 : vendre ou tenir ? »: a decision on a past crisis | Rank by risk | Build a calm portfolio: under 8 % volatility (**calculation**) |
-| <img src="../screenshots/m6-4-checkpoint.png" width="240"> | <img src="../screenshots/m6-5-mission.png" width="240"> | <img src="../screenshots/m8-3-map-moment.png" width="240"> |
-| A checkpoint | A mission, completed by doing it in the sandbox | The companion: a moment drawn from the user's own wallet |
+| <img src="../screenshots/m6-4-checkpoint.png" width="240"> | <img src="../screenshots/m6-5-mission.png" width="240"> | <img src="../screenshots/m13-5-sea-chart.png" width="240"> |
+| A checkpoint | A mission, completed by doing it in the sandbox | The sea chart, drawn in code: sail between the port and the islands |
 
 ## The portfolio
 
@@ -79,4 +79,4 @@ requirements (§11).
 | <img src="../screenshots/m9-2-map-en.png" width="240"> | <img src="../screenshots/m9-2-wallet-en.png" width="240"> | <img src="../screenshots/m9-2-lesson-en.png" width="240"> |
 | In English | | |
 
-Also: `m13-5-sea-chart` (the sea chart, drawn in code, to sail between the port and the islands). Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet`, `m8-3-moment-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).
+Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).
