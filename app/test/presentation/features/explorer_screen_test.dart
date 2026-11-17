@@ -97,6 +97,12 @@ Future<void> show(WidgetTester tester, List<ExplorerRow> rows) async {
   await tester.pumpAndSettle();
 }
 
+/// The title bar's magnifier opens the search (M13-23).
+Future<void> openSearch(WidgetTester tester) async {
+  await tester.tap(find.bySemanticsLabel('Rechercher un nom ou un ticker'));
+  await tester.pumpAndSettle();
+}
+
 /// Drift closes its watch queries on a timer once the tree is gone.
 Future<void> unmount(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
@@ -170,6 +176,7 @@ void main() {
     expect(inList('Actions'), findsOneWidget);
     await tester.tap(find.widgetWithText(ChunkyChip, 'Tout'));
     await tester.pumpAndSettle();
+    await openSearch(tester);
     await tester.enterText(find.byType(TextField), 'monde');
     await tester.pump();
     expect(inList('ETF'), findsOneWidget);
@@ -195,6 +202,7 @@ void main() {
 
   testWidgets('search ignores accents; nothing found says so', (tester) async {
     await show(tester, catalogue);
+    await openSearch(tester);
     await tester.enterText(find.byType(TextField), 'hermes');
     await tester.pump();
     expect(find.text('Hermès'), findsOneWidget);
@@ -301,6 +309,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(title('Actions')).dy, lessThan(viewport.top + 40));
     expect(title('ETF'), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('the search folds into the title bar: the magnifier opens it, '
+      '✕ clears and folds it (M13-23)', (tester) async {
+    await show(tester, catalogue);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.text('Explorer'), findsOneWidget);
+    await openSearch(tester);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus,
+      isTrue,
+    );
+    await tester.enterText(find.byType(TextField), 'apple');
+    await tester.pump();
+    expect(find.text('Apple'), findsOneWidget);
+    expect(find.text('Hermès'), findsNothing);
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsNothing);
+    expect(find.text('Hermès'), findsOneWidget, reason: 'the search cleared');
     await unmount(tester);
   });
 

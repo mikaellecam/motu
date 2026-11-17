@@ -14,6 +14,7 @@ import '../../../domain/market/asset.dart';
 import '../../widgets/asset_avatar.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/risk_meter.dart';
+import '../../widgets/search_title.dart';
 import 'asset_kind_scene.dart';
 import '../../widgets/sign_color.dart';
 
@@ -31,14 +32,9 @@ class ExplorerScreen extends ConsumerStatefulWidget {
 }
 
 class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
-  final _search = TextEditingController();
+  /// What the title bar's search holds (M13-23).
+  var _query = '';
   var _filter = ExplorerFilter.all;
-
-  @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
-  }
 
   Future<void> _refresh() => ref
       .refresh(explorerRowsProvider(widget.walletId).future)
@@ -50,11 +46,19 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
     final rows = ref.watch(explorerRowsProvider(widget.walletId));
     final favorites = ref.watch(favoritesProvider).value ?? const {};
 
+    final leading = ChunkyBackButton.leadingOf(context);
     return Scaffold(
       appBar: AppBar(
-        leading: ChunkyBackButton.leadingOf(context),
+        leading: leading,
         leadingWidth: ChunkyBackButton.width,
-        title: Text(l10n.tab_explore),
+        titleSpacing: leading == null ? AppSpace.screenPadding : null,
+        // The search folds into the bar, as the glossary's (M13-23).
+        title: SearchTitle(
+          title: l10n.tab_explore,
+          hint: l10n.explorer_search_hint,
+          query: _query,
+          onChanged: (query) => setState(() => _query = query),
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -68,17 +72,7 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
             ),
             child: CacheStatusBanner(onRetry: _refresh),
           ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpace.screenPadding),
-            child: ChunkySearchField(
-              controller: _search,
-              hint: l10n.explorer_search_hint,
-              onChanged: (_) => setState(() {}),
-              onClear: _search.text.isEmpty
-                  ? null
-                  : () => setState(_search.clear),
-            ),
-          ),
+          const SizedBox(height: AppSpace.x3),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(
@@ -109,17 +103,16 @@ class _ExplorerScreenState extends ConsumerState<ExplorerScreen> {
               AsyncValue(value: final all?) => _List(
                 rows: filterRows(
                   all,
-                  query: _search.text,
+                  query: _query,
                   filter: _filter,
                   favorites: favorites,
                 ),
                 favorites: favorites,
                 walletId: widget.walletId,
                 empty:
-                    _filter == ExplorerFilter.favorites &&
-                        _search.text.trim().isEmpty
+                    _filter == ExplorerFilter.favorites && _query.trim().isEmpty
                     ? l10n.explorer_no_favorites
-                    : l10n.explorer_no_match(_search.text.trim()),
+                    : l10n.explorer_no_match(_query.trim()),
                 onRefresh: _refresh,
               ),
               AsyncValue(error: final error?) => Center(
