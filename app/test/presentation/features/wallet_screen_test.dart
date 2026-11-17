@@ -30,6 +30,7 @@ import 'package:finance_companion/presentation/features/wallet/wallet_screen.dar
 import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:finance_companion/presentation/features/map/living_island.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -286,6 +287,36 @@ void main() {
       find.bySemanticsLabel(RegExp('^Valeur du portefeuille sur 1 semaine')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the chart\'s dates stay inside its card; the compare chips '
+      'share one row, at 390 px and at 130 % text (M13-20)', (tester) async {
+    for (final scale in [1.0, 1.3]) {
+      textAt(tester, scale);
+      await show(
+        tester,
+        () async => overview(fills: invested, cash: eur('48020')),
+      );
+      final chart = find.byType(LineChart);
+      final card = tester.getRect(
+        find.ancestor(of: chart, matching: find.byType(Card)).first,
+      );
+      final dates = find.descendant(of: chart, matching: find.byType(Text));
+      expect(dates, findsWidgets);
+      for (final date in dates.evaluate()) {
+        final rect = tester.getRect(find.byWidget(date.widget));
+        expect(rect.left, greaterThanOrEqualTo(card.left), reason: '$scale');
+        expect(rect.right, lessThanOrEqualTo(card.right), reason: '$scale');
+      }
+      final world = tester.getRect(
+        find.widgetWithText(ChunkyChip, 'ETF Monde'),
+      );
+      final livret = tester.getRect(
+        find.widgetWithText(ChunkyChip, 'Livret A'),
+      );
+      expect(livret.top, world.top, reason: 'one row at $scale');
+      expect(livret.right, lessThanOrEqualTo(card.right), reason: '$scale');
+    }
   });
 
   testWidgets('a new wallet: no positions, the chart starts today', (

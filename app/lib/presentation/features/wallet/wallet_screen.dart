@@ -321,22 +321,26 @@ class _ChartCardState extends ConsumerState<_ChartCard> {
               ],
             ),
             const SizedBox(height: AppSpace.x2),
-            Wrap(
+            // The label on its line, the two chips together on the next
+            // (M13-20).
+            Text(l10n.wallet_compare, style: text.bodyMedium),
+            const SizedBox(height: AppSpace.x2),
+            Row(
               spacing: AppSpace.x2,
-              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text(l10n.wallet_compare, style: text.bodyMedium),
                 for (final (benchmark, label) in [
                   (Benchmark.world, l10n.wallet_benchmark_world),
                   (Benchmark.livret, l10n.wallet_benchmark_livret),
                 ])
-                  ChunkyChip(
-                    label: label,
-                    selected: _benchmark == benchmark,
-                    onTap: () => setState(
-                      () => _benchmark = _benchmark == benchmark
-                          ? null
-                          : benchmark,
+                  Flexible(
+                    child: ChunkyChip(
+                      label: label,
+                      selected: _benchmark == benchmark,
+                      onTap: () => setState(
+                        () => _benchmark = _benchmark == benchmark
+                            ? null
+                            : benchmark,
+                      ),
                     ),
                   ),
               ],
