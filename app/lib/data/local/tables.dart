@@ -339,7 +339,6 @@ class Profiles extends Table {
   TextColumn get dropReaction => textEnum<DropReaction>()();
   TextColumn get knowledge => textEnum<Knowledge>()();
   TextColumn get savings => textEnum<Savings>()();
-  TextColumn get weeklyTime => textEnum<WeeklyTime>()();
 
   /// « Tout afficher dès maintenant » (BRIEF §4.15).
   BoolColumn get showAll => boolean().withDefault(const Constant(false))();

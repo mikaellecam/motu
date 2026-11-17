@@ -54,13 +54,6 @@ StartReason startReason(Profile p) => switch (p.savings) {
   _ => StartReason.knowledge,
 };
 
-/// Q5: new lesson nodes suggested per day.
-int pacing(Profile p) => switch (p.weeklyTime) {
-  WeeklyTime.five => 1,
-  WeeklyTime.fifteen => 2,
-  WeeklyTime.thirtyPlus => 3,
-};
-
 /// Companion and pre-trade coach thresholds (BRIEF §4.12). Only
 /// concentration follows risk comfort (decided 2026-10-07); the rest are the
 /// §4.12 defaults.

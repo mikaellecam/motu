@@ -16,7 +16,7 @@ import '../../../domain/learning/profile_rules.dart';
 import '../map/archipelago.dart';
 import '../map/port.dart';
 
-/// Five questions, then where the path starts and why (BRIEF §4.1), on the
+/// Four questions, then where the path starts and why (BRIEF §4.1), on the
 /// sea under the island, as the art direction's « onboarding question »
 /// draws it.
 class OnboardingScreen extends ConsumerWidget {
@@ -113,7 +113,7 @@ class _Question extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      l10n.onboarding_progress(state.question + 1),
+                      l10n.onboarding_progress(state.question + 1, questions),
                       style: AppText.label.copyWith(color: AppColors.muted),
                     ),
                     const SizedBox(height: AppSpace.x2),
@@ -256,8 +256,7 @@ String questionTitle(AppLocalizations l10n, int question) => switch (question) {
   0 => l10n.onboarding_goal_question,
   1 => l10n.onboarding_drop_question,
   2 => l10n.onboarding_knowledge_question,
-  3 => l10n.onboarding_savings_question,
-  _ => l10n.onboarding_time_question,
+  _ => l10n.onboarding_savings_question,
 };
 
 String answerLabel(AppLocalizations l10n, Enum answer) => switch (answer) {
@@ -277,8 +276,5 @@ String answerLabel(AppLocalizations l10n, Enum answer) => switch (answer) {
   Savings.currentAccount => l10n.onboarding_savings_currentAccount,
   Savings.invested => l10n.onboarding_savings_invested,
   Savings.none => l10n.onboarding_savings_none,
-  WeeklyTime.five => l10n.onboarding_time_five,
-  WeeklyTime.fifteen => l10n.onboarding_time_fifteen,
-  WeeklyTime.thirtyPlus => l10n.onboarding_time_thirtyPlus,
   _ => throw ArgumentError.value(answer, 'answer'),
 };

@@ -138,7 +138,6 @@ void main() {
             dropReaction: DropReaction.wait,
             knowledge: Knowledge.nothing,
             savings: Savings.livret,
-            weeklyTime: WeeklyTime.fifteen,
           ),
         );
     final buy = Order(
