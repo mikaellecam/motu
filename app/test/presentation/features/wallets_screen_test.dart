@@ -13,6 +13,7 @@ import 'package:finance_companion/domain/wallet/island_buildings.dart';
 import 'package:finance_companion/domain/wallet/order.dart';
 import 'package:finance_companion/domain/wallet/trip_engine.dart';
 import 'package:finance_companion/domain/wallet/wallet.dart';
+import 'package:finance_companion/core/widgets/chunky.dart';
 import 'package:finance_companion/main.dart';
 import 'package:finance_companion/presentation/features/map/archipelago.dart';
 import 'package:finance_companion/presentation/features/wallets/wallet_islet.dart';
@@ -165,6 +166,20 @@ void main() {
 
     expect(find.text('Voyages dans le temps'), findsOneWidget);
     expect(find.text('1'), findsOneWidget, reason: 'the trip count');
+    // The world family (M13-24): each wallet a chunky card, the trips under
+    // a separator header and its ink rule.
+    for (final name in ["Aujourd'hui", 'Crise 2008']) {
+      expect(
+        find.ancestor(of: find.text(name), matching: find.byType(ChunkyCard)),
+        findsOneWidget,
+        reason: name,
+      );
+    }
+    expect(
+      tester.getSemantics(find.text('Voyages dans le temps')),
+      isSemantics(isHeader: true),
+    );
+    expect(find.byKey(const ValueKey('trips-rule')), findsOneWidget);
     expect(find.text('Crise 2008'), findsOneWidget);
     expect(find.text('Réaliste'), findsOneWidget);
     expect(find.text('En cours, tu es le 1er octobre 2008'), findsOneWidget);

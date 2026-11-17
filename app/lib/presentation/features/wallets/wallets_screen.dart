@@ -15,7 +15,6 @@ import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/chunky.dart';
 import '../../../data/repositories/wallet_repository.dart';
 import '../../../domain/wallet/wallet.dart';
-import '../../widgets/section_title.dart';
 import '../../widgets/sign_color.dart';
 import '../node/node_screen.dart' show LessonCard;
 import 'wallet_islet.dart';
@@ -48,15 +47,21 @@ class WalletsScreen extends ConsumerWidget {
             Text(l10n.wallets_intro, style: muted),
             const SizedBox(height: AppSpace.x4),
             if (list.live case final live?) _WalletRow(live),
+            // A separator, as Explore's groups (M13-24): the title, its
+            // count, an ink rule.
+            const SizedBox(height: AppSpace.x6),
             MergeSemantics(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Expanded(
-                    child: SectionTitle(
-                      l10n.wallets_trips_title,
-                      top: AppSpace.x6,
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        l10n.wallets_trips_title,
+                        style: AppText.title,
+                      ),
                     ),
                   ),
                   if (list.trips.isNotEmpty)
@@ -64,6 +69,13 @@ class WalletsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            const SizedBox(height: AppSpace.x2),
+            const DecoratedBox(
+              key: ValueKey('trips-rule'),
+              decoration: BoxDecoration(color: AppColors.ink),
+              child: SizedBox(height: 2, width: double.infinity),
+            ),
+            const SizedBox(height: AppSpace.x4),
             if (list.trips.isEmpty)
               Text(
                 l10n.wallets_no_trips,
@@ -89,7 +101,7 @@ class WalletsScreen extends ConsumerWidget {
               leading: const _IconTile(Icons.event_repeat_outlined),
               onTap: () => context.push('/tools/dca'),
               lines: [
-                Text(l10n.wallets_dca_title, style: AppText.bodyStrong),
+                Text(l10n.wallets_dca_title, style: AppText.titleSmall),
                 Text(l10n.wallets_dca_body, style: muted),
               ],
               trailing: const Icon(Icons.chevron_right, color: AppColors.muted),
@@ -124,8 +136,9 @@ String _difficulty(AppLocalizations l10n, String id) => switch (id) {
   final other => other,
 };
 
-/// A flat row of the list: [leading] (a wallet's islet, a tool's icon), what
-/// it is, then [trailing]. The whole row opens [onTap].
+/// A row of the list as a chunky card (M13-24, the world family): [leading]
+/// (a wallet's islet, a tool's icon), what it is, then [trailing]. The whole
+/// card opens [onTap], pressing down onto its shadow.
 class _Row extends StatelessWidget {
   const _Row({
     required this.leading,
@@ -140,30 +153,25 @@ class _Row extends StatelessWidget {
   final Widget? trailing;
 
   @override
-  Widget build(BuildContext context) => Card(
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpace.x3),
-        child: Row(
-          children: [
-            leading,
-            const SizedBox(width: AppSpace.x3),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: AppSpace.x1,
-                children: lines,
-              ),
-            ),
-            if (trailing case final trailing?) ...[
-              const SizedBox(width: AppSpace.x3),
-              trailing,
-            ],
-          ],
+  Widget build(BuildContext context) => ChunkyCard(
+    onTap: onTap,
+    padding: const EdgeInsets.all(AppSpace.x3),
+    child: Row(
+      children: [
+        leading,
+        const SizedBox(width: AppSpace.x3),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpace.x1,
+            children: lines,
+          ),
         ),
-      ),
+        if (trailing case final trailing?) ...[
+          const SizedBox(width: AppSpace.x3),
+          trailing,
+        ],
+      ],
     ),
   );
 }
@@ -259,7 +267,7 @@ class _WalletRow extends ConsumerWidget {
           children: [
             Text(
               live ? l10n.wallets_live_name : wallet.name,
-              style: AppText.bodyStrong,
+              style: AppText.titleSmall,
             ),
             if (chip != null) _Chip(chip),
           ],
