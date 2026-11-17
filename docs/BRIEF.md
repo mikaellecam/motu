@@ -850,7 +850,9 @@ prix » (limit, stop) or « … au prochain jour de cotation du voyage » (trip)
   each under its header with what it is (« Un panier d'entreprises en un seul achat »,
   « Une seule entreprise : plus de potentiel, plus de secousses »), its rows in a flat card, sorted by name
   inside. Search and filters narrow both groups; a group with nothing left is not shown. Filter chips are
-  pills; a long name wraps to a second line. Each header is a separator (M13-21, asked 2026-11-17: « the "ETFs" &
+  pills; a long name wraps to a second line. The search sits in the title bar, folded into a magnifier at the
+  right of « Explorer », as the glossary's (M13-23, asked 2026-11-17: the list started too low); the filter
+  chips stay under it. Each header is a separator (M13-21, asked 2026-11-17: « the "ETFs" &
   "Stocks" headers don't seem headers »): its scene, the name in the title size, its line, a full-width 2 px ink
   rule under them, more room above the second group; it stays pinned at the top while its group scrolls under
   it, on the page colour.

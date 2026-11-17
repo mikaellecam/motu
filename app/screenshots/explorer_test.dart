@@ -22,6 +22,8 @@ void main() {
     act: (tester) async {
       await tester.tap(find.widgetWithText(ChunkyChip, 'Actions'));
       await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Rechercher un nom ou un ticker'));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'hermes');
       await tester.pump();
     },
