@@ -68,7 +68,9 @@ const _lines = [
 
 /// Paints the mainland's coast and its harbour on [size]: the parts [built]
 /// as [portBuilt] gives them, the sea [lines] open (island ids, as
-/// [portLines] gives them) leaving towards the right edge.
+/// [portLines] gives them) leaving towards the right edge. A part just done
+/// rises into its ghost (M13-17): [rising] (0 to 1) shows it from the
+/// ground up, its ghost over it at the opacity [fading] gives.
 void paintPort(
   BlockPen pen,
   IsoProjection p,
@@ -76,6 +78,8 @@ void paintPort(
   required List<bool> built,
   required Set<String> lines,
   Set<int> ghosts = const {},
+  Map<int, double> rising = const {},
+  Map<int, double> fading = const {},
 }) {
   final ink = IsoInk(pen, p);
   final ghost = IsoInk(GhostPen(pen.canvas), p);
@@ -84,7 +88,29 @@ void paintPort(
   final things = <(double, VoidCallback)>[..._oldJetty(ink), ..._village(ink)];
   for (final (i, part) in portParts.indexed) {
     if (i < built.length && built[i]) {
-      things.add((part.x + part.y, () => part._draw(ink, part.x, part.y)));
+      things.add((
+        part.x + part.y,
+        () {
+          final r = rising[i] ?? 1;
+          if (r < 1) {
+            // Shown up to a line climbing from below its footprint to above
+            // its top.
+            final ground = p.project(part.x, part.y).dy + p.tile;
+            final top = p.project(part.x, part.y, part.top).dy - p.tile / 2;
+            pen.canvas
+              ..save()
+              ..clipRect(
+                Rect.fromLTRB(-1e5, ground - (ground - top) * r, 1e5, 1e5),
+              );
+          }
+          if (r > 0) part._draw(ink, part.x, part.y);
+          if (r < 1) pen.canvas.restore();
+          if (fading[i] case final opacity? when opacity > 0) {
+            final fade = IsoInk(GhostPen(pen.canvas, opacity: opacity), p);
+            part._draw(fade, part.x, part.y);
+          }
+        },
+      ));
     } else if (ghosts.contains(i)) {
       // Unlocked, not done: what it will build (M13-7).
       things.add((part.x + part.y, () => part._draw(ghost, part.x, part.y)));

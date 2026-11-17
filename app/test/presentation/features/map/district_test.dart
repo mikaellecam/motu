@@ -59,6 +59,7 @@ void main() {
       required List<double> grown,
       bool ferry = true,
       Set<int> ghosts = const {},
+      Map<int, double> fading = const {},
     }) async {
       final size = Size(tile * 12, tile * 9);
       final recorder = ui.PictureRecorder();
@@ -75,6 +76,7 @@ void main() {
         grown: grown,
         ferry: ferry,
         ghosts: ghosts,
+        fading: fading,
       );
       final image = await recorder.endRecording().toImage(
         size.width.round(),
@@ -123,6 +125,32 @@ void main() {
         );
         expect(sameBytes(plain, ghost), isFalse);
         expect(sameBytes(grown, ghost), isFalse);
+      });
+    });
+
+    testWidgets('a building just done rises with its ghost over it, the '
+        'ghost fading out (M13-17)', (tester) async {
+      await tester.runAsync(() async {
+        List<double> at(double t) => [
+          for (var i = 0; i < 12; i++) i == 11 ? t : 0.0,
+        ];
+        final half = await paint(tile: 34, grown: at(0.5));
+        final ghosted = await paint(tile: 34, grown: at(0.5), fading: {11: 1});
+        final faint = await paint(tile: 34, grown: at(1), fading: {11: 0.4});
+        final gone = await paint(tile: 34, grown: at(1), fading: {11: 0});
+        final grown = await paint(tile: 34, grown: at(1));
+        // Half-risen, under its whole ghost.
+        expect(sameBytes(half, ghosted), isFalse);
+        expect(
+          sameBytes(
+            ghosted,
+            await paint(tile: 34, grown: at(0.5), ghosts: {11}),
+          ),
+          isTrue,
+          reason: 'its ghost as when unlocked',
+        );
+        expect(sameBytes(faint, grown), isFalse);
+        expect(sameBytes(gone, grown), isTrue);
       });
     });
 

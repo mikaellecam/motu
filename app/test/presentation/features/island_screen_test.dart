@@ -255,8 +255,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 600));
     expect(world(tester).grown[6], inExclusiveRange(0, 1));
+    // Rising into its ghost, whole until it has risen (M13-17).
+    expect(world(tester).fading, {6: 1});
     await settle(tester);
     expect(world(tester).grown[6], 1);
+    expect(world(tester).fading, isEmpty);
     expect(
       find.bySemanticsLabel(RegExp(r'^8\. .*, Le port, à toi de jouer$')),
       findsOneWidget,
@@ -273,6 +276,24 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(world(tester).grown[6], 1);
+    expect(world(tester).fading, isEmpty);
+  });
+
+  testWidgets('the port: a part done rises into its ghost, which fades '
+      '(M13-17)', (tester) async {
+    await show(tester, islandId: lesBasesIsland, done: 5);
+    profiles.complete({'lb.loan-cost'});
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(world(tester).grown[5], inExclusiveRange(0, 1));
+    expect(world(tester).fading, {5: 1});
+    // Near the end, the ghost fading.
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(world(tester).fading[5], inExclusiveRange(0, 1));
+    await settle(tester);
+    expect(world(tester).grown[5], 1);
+    expect(world(tester).fading, isEmpty);
   });
 
   testWidgets('settings open from the bar', (tester) async {

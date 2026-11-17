@@ -16,6 +16,7 @@ final class IslandWorld {
     required this.anchors,
     required this.paint,
     required this.grown,
+    this.fading = const {},
     this.ferry,
     this.cover = false,
     this.framed = const Alignment(0, -0.3),
@@ -24,6 +25,9 @@ final class IslandWorld {
   /// Where on the screen a lesson's marker sits when the view frames it:
   /// across the middle, a little up by default; at the port, lower and to the
   /// right, so that the village shows too (M13-11).
+  /// The ghosts of the pieces just done, by piece, as they fade (M13-17).
+  final Map<int, double> fading;
+
   final Alignment framed;
 
   final Size size;
@@ -50,11 +54,13 @@ final class IslandWorld {
 
 /// Actions & ETF's district, 120 px a tile, its buildings at [grown] (0
 /// plain, 1 grown, eased between), the [ghosts] of those unlocked, not done
-/// (M13-7), its ferry at its pier when [ferry].
+/// (M13-7), the ghosts of those just done [fading] (M13-17), its ferry at
+/// its pier when [ferry].
 IslandWorld districtWorld(
   List<double> grown, {
   required bool ferry,
   Set<int> ghosts = const {},
+  Map<int, double> fading = const {},
 }) {
   const tile = 120.0, unit = tile * 18 / 34;
   // Room for the ferry left, the island's right corner, the spire's crown
@@ -68,6 +74,7 @@ IslandWorld districtWorld(
   return IslandWorld(
     size: size,
     grown: grown,
+    fading: fading,
     ferry: ferry ? p.project(-2.1, 5.58, 0.1) : null,
     anchors: [
       for (final (i, b) in districtBuildings.indexed)
@@ -86,17 +93,21 @@ IslandWorld districtWorld(
         grown: grown,
         ferry: ferry,
         ghosts: ghosts,
+        fading: fading,
       );
     },
   );
 }
 
 /// Les bases' port, 100 px a tile, its parts [built], the [ghosts] of those
-/// unlocked, not done (M13-7), its sea [lines] open.
+/// unlocked, not done (M13-7), its sea [lines] open; those just done
+/// [rising] into their ghosts [fading] (M13-17).
 IslandWorld portWorld(
   List<bool> built, {
   required Set<String> lines,
   Set<int> ghosts = const {},
+  Map<int, double> rising = const {},
+  Map<int, double> fading = const {},
 }) {
   const tile = 100.0, unit = tile * 14 / 30;
   // Cut to the harbour (M13-8): from the watchtower's roof and the
@@ -109,7 +120,8 @@ IslandWorld portWorld(
     size: size,
     cover: true,
     framed: const Alignment(0.25, 0.2),
-    grown: [for (final b in built) b ? 1.0 : 0.0],
+    grown: [for (final (i, b) in built.indexed) b ? rising[i] ?? 1.0 : 0.0],
+    fading: fading,
     // Its ferry quay is Les bases' fifth part.
     ferry: built.length > 4 && built[4] ? p.project(1.15, 2.3, 0.1) : null,
     anchors: [
@@ -130,6 +142,8 @@ IslandWorld portWorld(
         built: built,
         lines: lines,
         ghosts: ghosts,
+        rising: rising,
+        fading: fading,
       );
     },
   );

@@ -322,7 +322,8 @@ island. Screen readers hear « {n}. {titre}, {bâtiment}, {état} ». Touching a
 the scene (none until then, M13-9; touching the island, the sea or the recentre button closes it): its number, « {bâtiment} · {état} », its title, its type, and « Commencer »,
 « Revoir » (done) or, locked, « S'ouvre après « {la leçon d'avant, ou celle qui ouvre l'île} » » disabled. A
 round button brings the view back to the lesson to do. It opens framed on that lesson (×0.7). A lesson done
-grows its building on the way back, eased over 1,4 s (the port builds its part at once), then the view glides
+grows its building on the way back, rising into its ghost over 1,4 s (M13-17, as §10.5's order completing: rising
+0–0.85, eased, then the ghost fading 0.85–1; a port part, which has no heights, shows from the ground up), then the view glides
 (0,9 s) to the next marker. With the system's animations off: no pulse, no glide, the building grows at once.
 The building names are drafts (fr + en, `piece_*`). It replaced the « stepping islets » (M6-9, `Path-E`).
 
@@ -1324,7 +1325,8 @@ Value counters (M7-4, `CountUp`): under a reveal and a decision, each end value 
 started from, with its signed change, in step with the curve (same duration and curve), then shows the exact
 figures; screen readers hear the end figures only.
 Others: an island up close (M13-4): a lesson's building growing as its lesson is done, the view gliding to the
-next marker, the gold pin's ring pulsing (hand-coded, `AnimationController`); a segmented control's pill
+next marker, the gold pin's ring pulsing (hand-coded, `AnimationController`); a lesson's building rising into
+its ghost, which then fades, on both islands (M13-17); a segmented control's pill
 sliding to the segment picked and the glossary's search box unfolding (M13-16, implicit animations, at once
 with reduced motion); value counters (`TweenAnimationBuilder`), favorite star pop, sheet transitions, fl_chart transitions
 (package-provided, counts as the third non-coded animation).
