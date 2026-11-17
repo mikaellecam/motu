@@ -16,13 +16,11 @@ Profile profile({
   DropReaction drop = DropReaction.wait,
   Knowledge knowledge = Knowledge.nothing,
   Savings savings = Savings.currentAccount,
-  WeeklyTime time = WeeklyTime.fifteen,
 }) => Profile(
   goal: goal,
   dropReaction: drop,
   knowledge: knowledge,
   savings: savings,
-  weeklyTime: time,
 );
 
 /// The Actions & ETF island (BRIEF §4.3).
@@ -116,16 +114,6 @@ void main() {
           skips,
           reason: '$knowledge',
         );
-      }
-    });
-
-    test('Q5 → pacing', () {
-      for (final (time, perDay) in [
-        (WeeklyTime.five, 1),
-        (WeeklyTime.fifteen, 2),
-        (WeeklyTime.thirtyPlus, 3),
-      ]) {
-        expect(pacing(profile(time: time)), perDay, reason: '$time');
       }
     });
 

@@ -52,7 +52,6 @@ const answers = <Enum>[
   DropReaction.wait,
   Knowledge.etfs,
   Savings.currentAccount,
-  WeeklyTime.fifteen,
 ];
 
 void main() {
@@ -128,7 +127,6 @@ void main() {
         dropReaction: DropReaction.sellAll,
         knowledge: Knowledge.stocks,
         savings: Savings.none,
-        weeklyTime: WeeklyTime.five,
       ),
     );
     final s = await start(container);
@@ -137,7 +135,6 @@ void main() {
       DropReaction.sellAll,
       Knowledge.stocks,
       Savings.none,
-      WeeklyTime.five,
     ]);
   });
 
@@ -166,7 +163,6 @@ void main() {
       dropReaction: DropReaction.wait,
       knowledge: k,
       savings: s,
-      weeklyTime: WeeklyTime.fifteen,
     );
     // Les bases' first lesson, or Actions & ETF's node for those who skip
     // Les bases (M12-7).

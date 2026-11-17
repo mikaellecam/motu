@@ -62,7 +62,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'investment_companion'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -91,6 +91,9 @@ class AppDatabase extends _$AppDatabase {
       // starts.
       from5To6: (m, schema) =>
           m.addColumn(schema.profiles, schema.profiles.place),
+      // v7: the weekly time question dropped (M13-10); SQLite drops a column
+      // by rebuilding the table.
+      from6To7: (m, schema) => m.alterTable(TableMigration(schema.profiles)),
     ),
     beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
   );

@@ -20,7 +20,6 @@ void main() {
         "J'attends",
         "Ce qu'est un ETF",
         'Livret A ou livrets',
-        '15 min',
       ]) {
         await tester.tap(find.text(answer));
         await tester.pump();
@@ -41,7 +40,6 @@ void main() {
         'Je ne sais pas',
         'Rien',
         "Pas d'épargne",
-        '5\u00a0min',
       ]) {
         await tester.tap(find.text(answer));
         await tester.pump();

@@ -506,7 +506,6 @@ void main() {
         dropReaction: DropReaction.wait,
         knowledge: k,
         savings: Savings.livret,
-        weeklyTime: WeeklyTime.fifteen,
       );
       await dao.saveProfile(answers(Knowledge.nothing));
       await dao.saveProfile(answers(Knowledge.etfs));

@@ -39,7 +39,6 @@ class ProfileRepository {
       dropReaction: row.dropReaction,
       knowledge: row.knowledge,
       savings: row.savings,
-      weeklyTime: row.weeklyTime,
     );
   });
 
@@ -50,7 +49,6 @@ class ProfileRepository {
         dropReaction: Value(profile.dropReaction),
         knowledge: Value(profile.knowledge),
         savings: Value(profile.savings),
-        weeklyTime: Value(profile.weeklyTime),
       ),
     ),
   );
@@ -112,7 +110,7 @@ class ProfileRepository {
       );
 
   /// The nodes the user completed, each with its first completion, then
-  /// every change (the next-step card's pacing counts today's).
+  /// every change.
   Stream<Map<String, DateTime>> watchCompletions() =>
       _db.learningDao.watchProgress().map(
         (rows) => {

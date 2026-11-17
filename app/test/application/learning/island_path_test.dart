@@ -117,7 +117,6 @@ void main() {
             dropReaction: DropReaction.wait,
             knowledge: Knowledge.etfs,
             savings: Savings.currentAccount,
-            weeklyTime: WeeklyTime.fifteen,
           ),
         );
     // « Ce qu'est un ETF » starts at node 3: nodes 1 and 2 are skipped.

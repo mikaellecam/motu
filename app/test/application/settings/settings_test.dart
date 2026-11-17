@@ -61,7 +61,6 @@ void main() {
             dropReaction: DropReaction.wait,
             knowledge: Knowledge.nothing,
             savings: Savings.livret,
-            weeklyTime: WeeklyTime.five,
           ),
         );
     c.listen(settingsViewProvider, (_, _) {});

@@ -11,6 +11,7 @@ import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
 import 'generated/schema_v6.dart' as v6;
+import 'generated/schema_v7.dart' as v7;
 
 /// Every schema ever shipped (drift_schemas/) must migrate to the current
 /// one. After a schema change: bump `schemaVersion`, add the step, run
@@ -192,6 +193,45 @@ void main() {
           expect(
             (row.knowledge, row.language, row.place),
             ('nothing', 'fr', null),
+          );
+        },
+      );
+    },
+  );
+
+  test(
+    'v6 → v7: the profile keeps its four answers and settings, no weekly time',
+    () async {
+      await verifier.testWithDataIntegrity(
+        oldVersion: 6,
+        newVersion: 7,
+        createOld: v6.DatabaseAtV6.new,
+        createNew: v7.DatabaseAtV7.new,
+        openTestedDatabase: AppDatabase.new,
+        createItems: (batch, oldDb) => batch.insert(
+          oldDb.profiles,
+          const v6.ProfilesData(
+            id: 1,
+            goal: 'longTerm',
+            dropReaction: 'buyMore',
+            knowledge: 'etfs',
+            savings: 'livret',
+            weeklyTime: 'fifteen',
+            showAll: 1,
+            language: 'en',
+            liveStartingCents: 1000000,
+            place: 'actions-etf',
+          ),
+        ),
+        validateItems: (newDb) async {
+          final row = await newDb.select(newDb.profiles).getSingle();
+          expect(
+            (row.goal, row.dropReaction, row.knowledge, row.savings),
+            ('longTerm', 'buyMore', 'etfs', 'livret'),
+          );
+          expect(
+            (row.showAll, row.language, row.liveStartingCents, row.place),
+            (1, 'en', 1000000, 'actions-etf'),
           );
         },
       );

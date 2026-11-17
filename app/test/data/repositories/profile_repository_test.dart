@@ -12,7 +12,6 @@ const first = Profile(
   dropReaction: DropReaction.wait,
   knowledge: Knowledge.nothing,
   savings: Savings.livret,
-  weeklyTime: WeeklyTime.fifteen,
 );
 
 void main() {
@@ -33,8 +32,9 @@ void main() {
     await repo.save(first);
     final read = (await repo.load())!;
     expect(read.goal, Goal.longTerm);
+    expect(read.dropReaction, DropReaction.wait);
+    expect(read.knowledge, Knowledge.nothing);
     expect(read.savings, Savings.livret);
-    expect(read.weeklyTime, WeeklyTime.fifteen);
   });
 
   test('a retake replaces the answers and keeps everything else', () async {
@@ -56,7 +56,6 @@ void main() {
         dropReaction: DropReaction.buyMore,
         knowledge: Knowledge.alreadyInvesting,
         savings: Savings.invested,
-        weeklyTime: WeeklyTime.thirtyPlus,
       ),
     );
 
@@ -125,7 +124,6 @@ void main() {
         dropReaction: DropReaction.wait,
         knowledge: Knowledge.etfs,
         savings: Savings.livret,
-        weeklyTime: WeeklyTime.fifteen,
       );
       await repo.save(answers);
       await repo.setLanguage('en');
