@@ -14,7 +14,6 @@ import '../../../domain/market/asset.dart';
 import '../../widgets/asset_avatar.dart';
 import '../../widgets/cache_status_banner.dart';
 import '../../widgets/risk_meter.dart';
-import '../../widgets/section_title.dart';
 import 'asset_kind_scene.dart';
 import '../../widgets/sign_color.dart';
 
@@ -190,40 +189,47 @@ class _List extends ConsumerWidget {
             ),
             sliver: SliverMainAxisGroup(
               slivers: [
-                for (final (i, (type, group)) in groupRows(rows).indexed) ...[
-                  SliverToBoxAdapter(
-                    child: switch (type) {
-                      AssetType.etf => SectionTitle(
-                        l10n.explorer_filter_etfs,
-                        line: l10n.explorer_etfs_line,
-                        leading: const AssetKindScene(AssetType.etf),
-                        top: i == 0 ? AppSpace.x2 : AppSpace.x4,
+                // Each group its own: its header stays pinned at the top
+                // while the group scrolls under it (M13-21).
+                for (final (i, (type, group)) in groupRows(rows).indexed)
+                  SliverMainAxisGroup(
+                    slivers: [
+                      PinnedHeaderSliver(
+                        child: switch (type) {
+                          AssetType.etf => _GroupHeader(
+                            l10n.explorer_filter_etfs,
+                            line: l10n.explorer_etfs_line,
+                            type: type,
+                            first: i == 0,
+                          ),
+                          AssetType.stock => _GroupHeader(
+                            l10n.explorer_filter_stocks,
+                            line: l10n.explorer_stocks_line,
+                            type: type,
+                            first: i == 0,
+                          ),
+                        },
                       ),
-                      AssetType.stock => SectionTitle(
-                        l10n.explorer_filter_stocks,
-                        line: l10n.explorer_stocks_line,
-                        leading: const AssetKindScene(AssetType.stock),
-                        top: i == 0 ? AppSpace.x2 : AppSpace.x4,
-                      ),
-                    },
-                  ),
-                  DecoratedSliver(
-                    decoration: card,
-                    sliver: SliverList.separated(
-                      itemCount: group.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
-                      itemBuilder: (context, j) => _Row(
-                        group[j],
-                        favorite: favorites.contains(group[j].asset.id),
-                        walletId: walletId,
-                        corners: BorderRadius.vertical(
-                          top: j == 0 ? corner : Radius.zero,
-                          bottom: j == group.length - 1 ? corner : Radius.zero,
+                      DecoratedSliver(
+                        decoration: card,
+                        sliver: SliverList.separated(
+                          itemCount: group.length,
+                          separatorBuilder: (_, _) => const Divider(height: 1),
+                          itemBuilder: (context, j) => _Row(
+                            group[j],
+                            favorite: favorites.contains(group[j].asset.id),
+                            walletId: walletId,
+                            corners: BorderRadius.vertical(
+                              top: j == 0 ? corner : Radius.zero,
+                              bottom: j == group.length - 1
+                                  ? corner
+                                  : Radius.zero,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
               ],
             ),
           ),
@@ -231,6 +237,70 @@ class _List extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// A group's header (M13-21): its scene, its name in the title size, its
+/// line, a full-width ink rule under them, on the page's colour so the rows
+/// scroll under it while it stays pinned. Read out as a header.
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader(
+    this.title, {
+    required this.line,
+    required this.type,
+    required this.first,
+  });
+
+  final String title;
+  final String line;
+  final AssetType type;
+
+  /// The first group sits closer under the filters.
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: AppColors.page,
+    child: Padding(
+      padding: EdgeInsets.only(
+        top: first ? AppSpace.x2 : AppSpace.x6,
+        bottom: AppSpace.x3,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              AssetKindScene(type),
+              const SizedBox(width: AppSpace.x3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(title, style: AppText.title),
+                    ),
+                    Text(
+                      line,
+                      style: AppText.caption.copyWith(color: AppColors.muted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpace.x3),
+          const DecoratedBox(
+            key: ValueKey('group-rule'),
+            decoration: BoxDecoration(color: AppColors.ink),
+            child: SizedBox(height: 2, width: double.infinity),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Row extends ConsumerWidget {
