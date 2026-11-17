@@ -476,8 +476,9 @@ Wallet kinds: `live` (exactly one, created at first launch) and `trip` (0..n).
 `LiveClock`.
 
 **Wallets list** (the Portefeuille tab; layout decided 2026-10-24, artboard `Wallets-A` of the art direction
-canvas, money family §10.1): « Mes portefeuilles », and under it « Un portefeuille d'aujourd'hui, et autant de
-voyages dans le temps que tu veux. » Each wallet is a flat row: its islet (decided 2026-10-28, M11-3: the
+canvas; money family §10.1 until M13-24, world family since, decided 2026-11-17: its cards chunky, the trips under a
+separator header with its count and an ink rule, the figures in Figtree): « Mes portefeuilles », and under it « Un portefeuille d'aujourd'hui, et autant de
+voyages dans le temps que tu veux. » Each wallet is a chunky card: its islet (decided 2026-10-28, M11-3: the
 wallet's buildings on its island as the map draws them, all grown whatever the lessons (M13-1), on a 68 px square of
 `sea`, still; « Ton île » or « La ville du voyage {nom} » for screen readers), its name and a chip, a status line, and on the right its value over its change in %
 (signed; the amount when nothing was put in). The live wallet is « Aujourd'hui », chip « En direct », « Cours
@@ -1268,8 +1269,8 @@ data, no key).
 ### 10.1 Two component families
 
 - **World / companion ("chunky")**: map, island path, node player, wizard, companion cards, missions,
-  celebrations, the glossary (M11-2). White surfaces, 3 px ink border, offset shadow `0 4–6 px 0 ink`, radius 16–24, Baloo 2 titles.
-- **Money ("flat")**: wallet, asset page, order sheet, explorer, settings, charts. White cards, 1 px line
+  celebrations, the glossary (M11-2), the wallets list (M13-24). White surfaces, 3 px ink border, offset shadow `0 4–6 px 0 ink`, radius 16–24, Baloo 2 titles.
+- **Money ("flat")**: wallet, asset page, order sheet, explorer, settings, charts (the wallets list until M13-24). White cards, 1 px line
   border, no offset shadow, radius 14–18. Numbers in Figtree with tabular figures.
 
 Rule: chunky = the game is talking to you, or what you touch; flat = the figures of your money.
