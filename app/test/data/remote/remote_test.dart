@@ -358,4 +358,81 @@ void main() {
       await expectLater(api.quotes(['x']), throwsA(isA<ServerFailure>()));
     });
   });
+
+  group('a pause once the backend is unreachable (M13-18)', () {
+    late DateTime now;
+    late int requests;
+    late BackendApi paused;
+
+    setUp(() {
+      now = DateTime.utc(2026, 11, 17, 12);
+      requests = 0;
+      adapter = FakeAdapter((o) {
+        requests++;
+        throw DioException.connectionError(
+          requestOptions: o,
+          reason: 'refused',
+        );
+      });
+      paused = BackendApi(
+        'http://backend.test',
+        adapter: adapter,
+        quiet: const Duration(seconds: 30),
+        now: () => now,
+      );
+    });
+
+    test('after an unreachable failure, the next calls fail at once, with '
+        'no request, until the pause ends', () async {
+      await expectLater(paused.assets(), throwsA(isA<NetworkFailure>()));
+      expect(requests, 1);
+      for (final call in [
+        paused.assets,
+        () => paused.calendar(Exchange.nyse, 2026),
+        () => paused.history('apple'),
+        paused.livret,
+      ]) {
+        await expectLater(call(), throwsA(isA<NetworkFailure>()));
+      }
+      expect(requests, 1, reason: 'none went out');
+      now = now.add(const Duration(seconds: 29));
+      await expectLater(paused.assets(), throwsA(isA<NetworkFailure>()));
+      expect(requests, 1);
+      now = now.add(const Duration(seconds: 1));
+      await expectLater(paused.assets(), throwsA(isA<NetworkFailure>()));
+      expect(requests, 2, reason: 'tried again after 30 s');
+    });
+
+    test('reconnect() tries at once; a success ends the pause', () async {
+      await expectLater(paused.assets(), throwsA(isA<NetworkFailure>()));
+      adapter.respond = (o) {
+        requests++;
+        return json({'assets': []});
+      };
+      paused.reconnect();
+      expect(await paused.assets(), isEmpty);
+      expect(requests, 2);
+      expect(await paused.assets(), isEmpty);
+      expect(requests, 3);
+    });
+
+    test('a rate limit, a 404 or a server error starts no pause', () async {
+      for (final status in [429, 404, 500]) {
+        adapter.respond = (o) {
+          requests++;
+          return json({}, status: status);
+        };
+        await expectLater(paused.assets(), throwsA(isA<Failure>()));
+        await expectLater(paused.assets(), throwsA(isA<Failure>()));
+      }
+      expect(requests, 6);
+    });
+
+    test('without a pause set, every call tries the network', () async {
+      final api = BackendApi('http://backend.test', adapter: adapter);
+      await expectLater(api.assets(), throwsA(isA<NetworkFailure>()));
+      await expectLater(api.assets(), throwsA(isA<NetworkFailure>()));
+      expect(requests, 2);
+    });
+  });
 }

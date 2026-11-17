@@ -263,9 +263,11 @@ class MarketRepository {
     );
   });
 
-  /// « Actualiser maintenant »: everything is fetched again on its next read.
-  /// Until then, and offline, the cached prices stand.
+  /// « Actualiser maintenant »: everything is fetched again on its next read,
+  /// the backend tried at once even if it was just found unreachable
+  /// (M13-18). Until then, and offline, the cached prices stand.
   Future<void> refreshNow() async {
+    _api.reconnect();
     _dueBefore = _wall.now();
     _assetsCheckedAt = null;
     _livretCheckedAt = null;

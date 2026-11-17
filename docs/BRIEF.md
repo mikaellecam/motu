@@ -1119,6 +1119,13 @@ time of the last successful price fetch, in local time. Manual check: `docs/qa/o
 (`connectivity_plus`); `Stale(lastUpdated)` when it has one but the last price fetch (history or quote)
 failed and the cache stood in; `Fresh` otherwise. `CacheStatusBanner` shows the banner for the first two.
 
+Backend unreachable (M13-18): once a request finds it so (`NetworkFailure`: no connection, a timeout, a 502–504),
+`BackendApi` makes no request for 30 s and every call fails at once the same way, so each repository answers
+from its cache without waiting. Measured before (2026-11-17, release build, no backend): Explore's first
+open sent ~70 requests, one after another, each failing in 0,5–1 s, 15–25 s of skeleton. A success ends the
+pause, and so do the banner's « Réessayer » and Settings' « Actualiser maintenant », which try the network at
+once. A rate limit, a 404 or a server error starts no pause.
+
 ---
 
 ## 7. Domain calculations (all pure, all unit-tested)

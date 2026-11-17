@@ -10,15 +10,24 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final updated = DateTime.utc(2026, 10, 8, 13, 30);
 
-  Future<void> show(WidgetTester tester, CacheStatus status) async {
+  Future<void> show(
+    WidgetTester tester,
+    CacheStatus status, {
+    VoidCallback? onRetry,
+    VoidCallback? reconnect,
+  }) async {
     tester.platformDispatcher.localesTestValue = [const Locale('fr')];
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           cacheStatusProvider.overrideWith((ref) => Stream.value(status)),
+          if (reconnect != null)
+            backendRetryProvider.overrideWithValue(reconnect),
         ],
-        child: MainApp.screen(const Scaffold(body: CacheStatusBanner())),
+        child: MainApp.screen(
+          Scaffold(body: CacheStatusBanner(onRetry: onRetry)),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -56,5 +65,18 @@ void main() {
     expect(find.byType(Card), findsNothing);
     await show(tester, const Offline(null));
     expect(find.byType(Card), findsNothing);
+  });
+
+  testWidgets('« Réessayer » tries the backend at once, then the screen '
+      'reloads (M13-18)', (tester) async {
+    final calls = <String>[];
+    await show(
+      tester,
+      Offline(updated),
+      onRetry: () => calls.add('reload'),
+      reconnect: () => calls.add('reconnect'),
+    );
+    await tester.tap(find.text('Réessayer'));
+    expect(calls, ['reconnect', 'reload']);
   });
 }
