@@ -57,5 +57,56 @@
   "explanation": {
     "fr": "En 2022, le Livret A a rapporté 1,3 %, quand les prix montaient bien plus vite : fin 2022, ses 10 129 € n'achetaient que ce que 9 570 € achetaient fin 2021. Son taux suit les prix, mais avec retard : il est revu deux fois par an, à partir de l'{{inflation|inflation}} et des taux d'intérêt des mois passés. Il est monté à 3 % en 2023, et l'écart n'a commencé à se refermer qu'en 2024. Le {{livret-a|Livret A}} reste la place d'un {{matelas-de-securite|matelas de sécurité}} : disponible tout de suite, il ne baisse jamais en euros.",
     "en": "In 2022, the Livret A earned 1.3% while prices rose much faster: at the end of 2022, its €10,129 bought only what €9,570 bought at the end of 2021. Its rate follows prices, but with a delay: it's reset twice a year from the {{inflation|inflation}} and interest rates of the months before. It rose to 3% in 2023, and the gap only began to close in 2024. The {{livret-a|Livret A}} is still the place for a {{matelas-de-securite|safety cushion}}: available at once, it never falls in euros."
-  }
+  },
+  "cards": [
+    {
+      "kind": "example",
+      "headline": {
+        "fr": "Le matelas de Nora",
+        "en": "Nora's cushion"
+      },
+      "text": {
+        "fr": "Fin 2021, Nora a 4 500 € sur son Livret A : trois mois de dépenses, à 1 500 € par mois. Fin 2024, avec les intérêts, son Livret affiche 4 830 €. Mais pour les mêmes achats, ses dépenses sont passées à 1 668 € par mois : trois mois, c'est maintenant plus de 5 000 €. Son {{matelas-de-securite|matelas}} a grandi en euros, pas assez pour couvrir encore trois mois.",
+        "en": "At the end of 2021, Nora has €4,500 on her Livret A: three months of spending, at €1,500 a month. By the end of 2024, with interest, her Livret shows €4,830. But for the same shopping, her spending has gone up to €1,668 a month: three months is now over €5,000. Her {{matelas-de-securite|cushion}} grew in euros, not enough to still cover three months."
+      },
+      "lines": [
+        {
+          "label": {
+            "fr": "Le Livret A de Nora",
+            "en": "Nora's Livret A"
+          },
+          "dataset": "ds.livret-a-2022-m",
+          "amount": 4500
+        }
+      ]
+    },
+    {
+      "kind": "check",
+      "question": {
+        "fr": "Tes dépenses suivent les prix. Pour couvrir toujours trois mois, ton matelas…",
+        "en": "Your spending follows prices. To keep covering three months, your cushion…"
+      },
+      "choices": [
+        {
+          "id": "grow",
+          "label": {
+            "fr": "Doit grandir avec elles",
+            "en": "Has to grow with it"
+          }
+        },
+        {
+          "id": "same",
+          "label": {
+            "fr": "Peut rester au même montant",
+            "en": "Can stay at the same amount"
+          }
+        }
+      ],
+      "answer": "grow",
+      "explanation": {
+        "fr": "Trois mois de dépenses, c'est un montant qui monte avec les prix. De fin 2021 à fin 2024, le {{livret-a|Livret A}} a rapporté 7,3 %, quand les prix montaient de 11,2 % : ses intérêts seuls n'ont pas suffi.",
+        "en": "Three months of spending is an amount that rises with prices. From the end of 2021 to the end of 2024, the {{livret-a|Livret A}} earned 7.3% while prices rose by 11.2%: its interest alone wasn't enough."
+      }
+    }
+  ]
 }
