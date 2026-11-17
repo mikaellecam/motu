@@ -52,9 +52,17 @@ const backendUrl = String.fromEnvironment(
   defaultValue: 'http://localhost:8080',
 );
 
-/// Our backend, shared by every repository that calls it.
+/// Our backend, shared by every repository that calls it. Found unreachable,
+/// it is left alone for 30 s: the caches answer at once (M13-18).
 @Riverpod(keepAlive: true)
-BackendApi backendApi(Ref ref) => BackendApi(backendUrl);
+BackendApi backendApi(Ref ref) =>
+    BackendApi(backendUrl, quiet: const Duration(seconds: 30));
+
+/// « Réessayer » on a stale banner: the backend is tried again at once, even
+/// right after it was found unreachable (M13-18).
+@riverpod
+void Function() backendRetry(Ref ref) =>
+    ref.watch(backendApiProvider).reconnect;
 
 @Riverpod(keepAlive: true)
 MarketRepository marketRepository(Ref ref) {

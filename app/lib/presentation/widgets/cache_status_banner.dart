@@ -14,20 +14,28 @@ class CacheStatusBanner extends ConsumerWidget {
   final VoidCallback? onRetry;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) =>
-      switch (ref.watch(cacheStatusProvider).value) {
-        Stale(:final lastUpdated) => StaleBanner(
-          lastUpdated: lastUpdated,
-          offline: false,
-          onRetry: onRetry,
-        ),
-        Offline(lastUpdated: final lastUpdated?) => StaleBanner(
-          lastUpdated: lastUpdated,
-          offline: true,
-          onRetry: onRetry,
-        ),
-        // Fresh, still loading, or offline with nothing ever fetched (the
-        // screen shows its error instead).
-        _ => const SizedBox.shrink(),
-      };
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The backend is tried again at once, even mid-pause (M13-18).
+    final retry = onRetry == null
+        ? null
+        : () {
+            ref.read(backendRetryProvider)();
+            onRetry!();
+          };
+    return switch (ref.watch(cacheStatusProvider).value) {
+      Stale(:final lastUpdated) => StaleBanner(
+        lastUpdated: lastUpdated,
+        offline: false,
+        onRetry: retry,
+      ),
+      Offline(lastUpdated: final lastUpdated?) => StaleBanner(
+        lastUpdated: lastUpdated,
+        offline: true,
+        onRetry: retry,
+      ),
+      // Fresh, still loading, or offline with nothing ever fetched (the
+      // screen shows its error instead).
+      _ => const SizedBox.shrink(),
+    };
+  }
 }

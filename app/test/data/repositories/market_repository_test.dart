@@ -409,6 +409,47 @@ void main() {
     );
   });
 
+  test('offline, a screen\'s reads cost one request, not one each; '
+      '« Actualiser maintenant » tries again at once (M13-18)', () async {
+    final paused = MarketRepository(
+      db,
+      BackendApi(
+        'http://backend.test',
+        adapter: backend,
+        quiet: const Duration(seconds: 30),
+        now: wall.now,
+      ),
+      wallClock: wall,
+    );
+    backend.closes['meta'] = {'2026-10-07': '300'};
+    Future<void> read() async {
+      for (final id in ['apple', 'meta']) {
+        await paused.history(
+          id,
+          from: day(10, 1),
+          to: day(10, 31),
+          asOf: wall.now(),
+        );
+      }
+      await paused.calendar(
+        {Exchange.nasdaq, Exchange.nyse},
+        fromYear: 2026,
+        toYear: 2026,
+      );
+    }
+
+    await read();
+    backend.offline = true;
+    wall.advance(const Duration(days: 2));
+    final before = backend.requests.length;
+    await read();
+    expect(backend.requests.length - before, 1);
+
+    await paused.refreshNow();
+    await read();
+    expect(backend.requests.length - before, 2);
+  });
+
   test('calendar offline: the first failed check ends the others; the cache '
       'answers', () async {
     Future<MarketCalendar> load() => repo.calendar(
