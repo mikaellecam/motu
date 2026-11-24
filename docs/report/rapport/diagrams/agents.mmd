@@ -1,0 +1,20 @@
+%%{init: {"flowchart": {"wrappingWidth": 460}}}%%
+flowchart TB
+  auteur["<b>Auteur</b> (Mikael LE CAM), propriétaire du produit<br/>décide, valide les maquettes, répond aux questions, essaie sur téléphone"]
+  ctx["<b>Contexte partagé, dans le dépôt</b><br/>CLAUDE.md : règles d'architecture, garde-fous, définition de fini<br/>BRIEF.md et ADR : le cahier des charges, chaque décision datée<br/>Tracker : un fichier par ticket (périmètre, critères, questions, journal)"]
+  principal["<b>Agent principal</b><br/>choisit le ticket, lit le code concerné, prépare le brief"]
+  subgraph wt["Un worktree git par ticket"]
+    direction LR
+    sous1["<b>Sous-agent</b><br/>code et tests du ticket A"]
+    sous2["<b>Sous-agent</b><br/>ticket B, en parallèle"]
+  end
+  ci["<b>Intégration continue</b><br/>analyse statique, tests app et backend, contrôle des leçons"]
+  revue["<b>Agent principal</b><br/>relit la pull request, la rebase si main a bougé"]
+  main[("main")]
+  auteur -- "décisions, demandes" --> ctx
+  ctx --> principal
+  principal -- "brief" --> sous1 & sous2
+  sous1 & sous2 -- "pull request" --> ci
+  ci -- "tout est vert" --> revue
+  revue -- "fusion (squash)" --> main
+  principal -. "question produit : ticket bloqué" .-> auteur
