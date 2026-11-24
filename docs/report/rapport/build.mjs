@@ -4,12 +4,13 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import {
-  AlignmentType, Document, Footer, LevelFormat, Packer, PageNumber, Paragraph,
-  TableOfContents, TextRun,
+  AlignmentType, BorderStyle, Document, Footer, Header, ImageRun, LevelFormat, Packer, PageNumber,
+  Paragraph, Tab, TableOfContents, TabStopType, TextRun,
 } from 'docx';
 import {
-  C, FONT, H1, H2, H3, P, bullets, code, fr, note, screens, spacer, table, wideFigure,
+  C, FONT, H1, H2, H3, P, TEXT_DXA, bullets, code, fr, note, screens, spacer, table, wideFigure,
 } from './lib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -19,8 +20,15 @@ const shot = (f) => join(shots, f);
 
 // Cover ---------------------------------------------------------------------
 
+// The school's logo (insa-hautsdefrance.fr), 1875 × 411.
+const logo = readFileSync(join(here, 'insa-hdf.png'));
+const logoRun = (heightPx) => new ImageRun({
+  type: 'png', data: logo, transformation: { width: Math.round(heightPx * 1875 / 411), height: heightPx },
+});
+const AUTHOR = 'Mikael LE CAM';
+
 const cover = [
-  new Paragraph({ children: [], spacing: { before: 1600 } }),
+  new Paragraph({ children: [logoRun(62)], alignment: AlignmentType.CENTER, spacing: { after: 900 } }),
   new Paragraph({ children: [new TextRun({ text: 'Motu', font: FONT, size: 96, bold: true, color: C.ink })], alignment: AlignmentType.CENTER }),
   new Paragraph({
     children: [new TextRun({ text: fr('Apprendre à investir sur des données réelles, sans argent réel'), size: 30, color: C.primary })],
@@ -30,9 +38,9 @@ const cover = [
   new Paragraph({ children: [new TextRun({ text: fr("Actions & ETF, l'île des leçons sur la bourse, une fois ses douze leçons faites"), size: 16, color: C.muted, italics: true })], alignment: AlignmentType.CENTER }),
   new Paragraph({ children: [], spacing: { before: 600 } }),
   new Paragraph({ children: [new TextRun({ text: 'Rapport de projet', size: 32, bold: true, color: C.ink })], alignment: AlignmentType.CENTER }),
-  new Paragraph({ children: [new TextRun({ text: fr('Module de développement mobile · INSA'), size: 24, color: C.muted })], alignment: AlignmentType.CENTER, spacing: { after: 120 } }),
+  new Paragraph({ children: [new TextRun({ text: fr('Module de développement mobile · INSA Hauts-de-France'), size: 24, color: C.muted })], alignment: AlignmentType.CENTER, spacing: { after: 120 } }),
   new Paragraph({ children: [new TextRun({ text: 'Novembre 2026', size: 24, color: C.muted })], alignment: AlignmentType.CENTER, spacing: { after: 120 } }),
-  new Paragraph({ children: [new TextRun({ text: fr('Auteur : à compléter'), size: 24, color: C.muted, highlight: 'yellow' })], alignment: AlignmentType.CENTER }),
+  new Paragraph({ children: [new TextRun({ text: AUTHOR, size: 26, bold: true, color: C.ink })], alignment: AlignmentType.CENTER }),
 ];
 
 const contents = [
@@ -126,7 +134,7 @@ const fonctionnalites = [
     ['M13', 'Les îles en gros plan, la carte marine, les leçons en cartes', '25'],
   ], [0.8, 6, 1]),
   spacer(),
-  P("Chaque ticket suit le même chemin : une branche, le code du domaine écrit test d'abord, une pull request, l'intégration continue (analyse statique, tests de l'application et du backend, contrôle des packs de contenu) qui doit passer avant la fusion. Chaque choix d'architecture est consigné dans une ADR (Architecture Decision Record : contexte, options, décision, conséquences), et chaque décision produit datée dans le cahier des charges (`docs/BRIEF.md`)."),
+  P("Chaque ticket suit le même chemin : une branche, le code du domaine écrit test d'abord, une pull request, l'intégration continue (analyse statique, tests de l'application et du backend, contrôle des packs de contenu) qui doit passer avant la fusion. Chaque choix d'architecture est consigné dans une ADR (Architecture Decision Record : contexte, options, décision, conséquences), et chaque décision produit datée dans le cahier des charges (`docs/BRIEF.md`). Le code a été écrit par des agents d'IA, sous la direction de l'auteur : le chapitre 14 explique comment."),
 ];
 
 // 3. Écrans ---------------------------------------------------------------------
@@ -587,6 +595,56 @@ const limites = [
   ]),
 ];
 
+// 14. Agents ------------------------------------------------------------------------------
+
+const agents = [
+  H1("14. Le développement avec des agents d'IA"),
+  note("**Déclaration.** Motu a été développé avec des agents d'IA. Claude Code, l'agent de programmation d'Anthropic, a écrit le code de l'application et du backend, les tests, la documentation, et ce rapport. L'auteur a tenu le rôle de propriétaire du produit : il a décidé de ce que fait l'application, validé ce qu'elle montre, et relu ce qui a été fusionné. Ce chapitre dit qui a fait quoi, et comment les agents travaillent ensemble."),
+  H2('14.1 Les rôles'),
+  table(['Rôle', 'Ce qu’il fait'], [
+    ['**L’auteur**, propriétaire du produit', 'Décide du produit : le cahier des charges compte près de 80 décisions datées. Choisit les directions artistiques sur des maquettes, valide le contenu des leçons (celles de Les bases le 28 octobre), répond aux questions des agents (26 tickets en ont posé), relit les pull requests, essaie l’application sur son téléphone (le parcours hors ligne en mode avion, qui a trouvé trois bugs).'],
+    ['**L’agent principal**', 'Une session Claude Code ouverte dans le dépôt. Il prend le ticket suivant, lit le ticket, les sections du cahier des charges qu’il cite et le code qu’il touche, puis implémente lui-même ou délègue à un sous-agent avec un brief. Il relit le résultat, surveille l’intégration continue, fusionne, et écrit le journal du ticket.'],
+    ['**Les sous-agents**', 'Lancés par l’agent principal, chacun avec son brief et dans son propre worktree git, sur sa propre branche : plusieurs tickets avancent en parallèle sans se gêner, et le journal en garde la trace (« agent-built, reviewed, rebased over #96 »). D’autres sous-agents explorent le code ou relisent une modification sans connaître l’avis de celui qui l’a écrite.'],
+    ['**L’intégration continue**', 'Le juge commun : formatage, analyse statique, les 1 353 tests de l’application et les 131 du backend, le contrôle des packs de leçons. La branche `main` refuse toute fusion tant que tout n’est pas vert.'],
+  ], [1.8, 6]),
+  spacer(),
+  H2('14.2 Comment ils se coordonnent : par le dépôt'),
+  P("Les agents ne partagent pas une conversation : chaque session repart de zéro. Ils partagent **le dépôt**, et ce qu'il contient suffit à reprendre le travail où il en est :"),
+  ...bullets([
+    "**Le fichier CLAUDE.md**, lu par chaque session : les dix règles d'architecture (section 4), les garde-fous (ne prendre aucune décision produit, ne jamais affaiblir un test pour faire passer l'intégration continue, jamais de `double` pour l'argent, aucune formulation qui conseille ou prédit) et la définition de « fini ».",
+    "**Le cahier des charges et les ADR** : le contrat. Une décision prise en cours de route y est écrite, datée, sur la même branche que le code qui l'applique.",
+    "**Le tracker** : un fichier par ticket, avec son état, sa priorité (`must` pour une exigence notée du sujet), ses dépendances, les sections du cahier des charges qu'il suit, ses critères d'acceptation, ses questions et son journal. Deux scripts encadrent le cycle : `tracker/start` crée le worktree depuis un `main` à jour, `tracker/finish` fusionne, supprime le worktree et clôt le ticket.",
+    "**Une mémoire** gardée d'une session à l'autre pour les consignes de l'auteur. Par exemple : rédiger les textes d'interface manquants sans demander d'approbation, mais les lister dans la pull request.",
+  ]),
+  ...wideFigure(diag('agents.png'), "Qui fait quoi : l'auteur décide, les agents construisent, l'intégration continue tranche", { diagram: true, maxCm: 15.5 }),
+  H2("14.3 Le cycle d'un ticket"),
+  table(['Étape', 'Ce qui se passe'], [
+    ['1. Choisir', 'Le ticket que l’auteur nomme, ou le suivant dans l’ordre du plan ; il passe « en cours », un worktree est créé'],
+    ['2. Lire', 'Le ticket, les sections du cahier des charges qu’il cite, le code qu’il touche. Fini quand chaque fichier à modifier est nommé'],
+    ['3. Construire', 'Le domaine test d’abord ; un critère d’acceptation est coché quand son test passe. Un travail hors périmètre devient un nouveau ticket'],
+    ['4. Bloqué ?', 'Une question produit est écrite dans le ticket avec ses options et leurs compromis ; le ticket passe « bloqué », l’auteur est prévenu, l’agent passe au suivant'],
+    ['5. Finir', 'Pull request avec captures d’écran pour toute interface changée, intégration continue jusqu’au vert, relecture, fusion, ligne de journal datée'],
+  ], [1.4, 6.4]),
+  H2('14.4 Pourquoi faire confiance au code écrit par un agent'),
+  P("Parce qu'il est vérifié par autre chose que lui-même. Les règles qui comptent sont des tests, pas des intentions :"),
+  ...bullets([
+    "un test fait respecter les couches (aucun Flutter, aucune entrée-sortie, aucun `DateTime.now()` dans le domaine) ;",
+    "les captures d'écran sont des tests : un écran qui change fait échouer le sien, et la pull request montre l'image nouvelle à l'auteur ;",
+    "chaque chiffre cité par les leçons d'Actions & ETF est vérifié contre les vrais cours ;",
+    "chaque migration du schéma est testée depuis chaque version plus ancienne ;",
+    "les fonctions du domaine ont leurs cas limites imposés (section 12.2).",
+  ]),
+  P("Les commits ne portent aucune mention d'outil, par choix : c'est ce chapitre qui déclare l'usage des agents."),
+  H2('14.5 Ce qui a marché, ce qui a coincé'),
+  ...bullets([
+    "**Le parallèle a payé** : des tickets indépendants avancent en même temps dans leurs worktrees, puis se rebasent l'un sur l'autre à la fusion.",
+    "**Des règles strictes donnent un code homogène** : 158 tickets écrits par des sessions différentes suivent les mêmes couches, les mêmes types d'argent, les mêmes états d'écran.",
+    "**Un agent ne remplace pas la décision.** Là où le cahier des charges se taisait, les agents ont demandé plutôt que choisi : 26 tickets ont posé leurs questions à l'auteur. Le « quoi » et le « pourquoi » sont restés les siens.",
+    "**Un garde-fou n'existe que s'il est appliqué.** Sur le premier dépôt, rien n'empêchait de fusionner une pull request rouge, et c'est arrivé une fois (#74, corrigée par #75). Le dépôt actuel l'interdit par une règle sur `main`.",
+    "**Les tests ne voient pas tout.** Le parcours hors ligne à la main sur un téléphone a trouvé trois bugs que les tests automatiques laissaient passer, et la direction artistique s'est jugée sur les captures, à l'œil de l'auteur.",
+  ]),
+];
+
 // Annexe ------------------------------------------------------------------------------
 
 const annexe = [
@@ -612,7 +670,7 @@ const heading = (size, color, before, after) => ({
 });
 
 const doc = new Document({
-  creator: 'Motu',
+  creator: AUTHOR,
   title: 'Motu, rapport de projet',
   description: 'Rapport du projet de développement mobile',
   features: { updateFields: true },
@@ -633,14 +691,27 @@ const doc = new Document({
   sections: [
     { properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } }, children: [...cover] },
     {
-      properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } },
+      properties: { page: { margin: { top: 1560, bottom: 1300, left: 1134, right: 1134, header: 600, footer: 600 } } },
+      headers: {
+        default: new Header({
+          children: [new Paragraph({
+            tabStops: [{ type: TabStopType.RIGHT, position: TEXT_DXA }],
+            border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: C.line, space: 6 } },
+            children: [
+              logoRun(30),
+              new TextRun({ children: [new Tab(), fr('Motu · Rapport de projet')], size: 16, color: C.muted }),
+            ],
+          })],
+        }),
+      },
       footers: {
         default: new Footer({
           children: [new Paragraph({
-            alignment: AlignmentType.CENTER,
+            tabStops: [{ type: TabStopType.RIGHT, position: TEXT_DXA }],
+            border: { top: { style: BorderStyle.SINGLE, size: 4, color: C.line, space: 6 } },
             children: [
-              new TextRun({ text: fr('Motu · Rapport de projet · '), size: 16, color: C.muted }),
-              new TextRun({ children: [PageNumber.CURRENT], size: 16, color: C.muted }),
+              new TextRun({ text: fr(`${AUTHOR} · INSA Hauts-de-France`), size: 16, color: C.muted }),
+              new TextRun({ children: [new Tab(), 'Page ', PageNumber.CURRENT, ' sur ', PageNumber.TOTAL_PAGES], size: 16, color: C.muted }),
             ],
           })],
         }),
@@ -648,7 +719,7 @@ const doc = new Document({
       children: [
         ...contents, ...projet, ...fonctionnalites, ...ecrans, ...architecture, ...etat,
         ...persistance, ...cache, ...donnees, ...calculs, ...animations, ...score, ...tests,
-        ...limites, ...annexe,
+        ...limites, ...agents, ...annexe,
       ],
     },
   ],

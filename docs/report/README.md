@@ -69,3 +69,6 @@ npm run build      # writes ../rapport.docx
 The screenshots come from `docs/screenshots/`, cut to a phone's height; regenerate them first
 (`flutter test screenshots --update-goldens`) when screens changed. The table of contents is a field: Word fills
 it when the file opens.
+
+`rapport/insa-hdf.png` is INSA Hauts-de-France's logo, from the school's website (insa-hautsdefrance.fr), rendered from its
+SVG for the report's cover and headers. It belongs to the school and is not covered by this repository's licence.
