@@ -1,6 +1,7 @@
 # Report material
 
-The school report (subject §14) is written from this folder and the documents it points to. Each item the
+The school report (subject §14) is [`rapport.docx`](rapport.docx), in French, built by
+[`rapport/build.mjs`](rapport/build.mjs) from this folder and the documents it points to. Each item the
 subject asks the report to present, and where its material is:
 
 | The report presents (subject §14) | Material |
@@ -14,8 +15,8 @@ subject asks the report to present, and where its material is:
 | Cache, invalidation and refresh | [cache.md](cache.md); [ADR-005](../decisions/ADR-005-market-cache-policy.md) |
 | The APIs and the data used | [ADR-004](../decisions/ADR-004-market-data-provider.md) (Twelve Data, the 29 instruments, adjusted prices); `docs/BRIEF.md` §8.3 (our backend's endpoints); Frankfurter for exchange rates; [ADR-006](../decisions/ADR-006-content-packs.md) (lessons and their frozen datasets) |
 | The main processing and calculations | `docs/BRIEF.md` §7 (15 calculations, with their formulas and edge cases); [ADR-003](../decisions/ADR-003-money-representation.md) (exact money); [tests.md](tests.md) |
-| The animations and how they are built | `docs/BRIEF.md` §10.5: three hand-coded (the map's buildings with a `CustomPainter` and an `AnimationController`, construction to completion in three staged intervals, the reveal's curves drawn along their `PathMetric`) and fl_chart's own transitions |
-| Scoring and recommendations | The risk band 1–5 from a year's volatility, with its thresholds (`docs/BRIEF.md` §7.8); the starting lesson chosen from the questionnaire, with its reason on screen (§4.1); the next step on the map (§4.2). Explainable asset scoring is still an open decision (§14.4) |
+| The animations and how they are built | `docs/BRIEF.md` §10.5: three hand-coded (a wallet's island buildings with a `CustomPainter` and an `AnimationController`, construction to completion in three staged intervals, the reveal's curves drawn along their `PathMetric`), more on the islands up close (a lesson's building rising into its ghost, the view gliding to the next marker, the pin's pulse, the sea chart's boat), and fl_chart's own transitions |
+| Scoring and recommendations | The risk band 1–5 from a year's volatility, with its thresholds (`docs/BRIEF.md` §7.8); the starting lesson chosen from the questionnaire, with its reason on screen (§4.1); the next step on the map (§4.2). « Stabilité passée », a score out of 100 on the asset page whose four parts are shown, never used to rank (§4.8, decided 2026-10-25) |
 | The tests | [tests.md](tests.md): every test, by layer, with the edge cases they name; `docs/BRIEF.md` §12 |
 | Difficulties, limits, improvements | The limits in [cache.md](cache.md); the open decisions (`docs/BRIEF.md` §14); the offline run on a phone, which found three bugs (PR #63); every ADR's « Consequences » |
 
@@ -40,9 +41,10 @@ To draw them again after a change, with the Mermaid CLI (`npm install @mermaid-j
 diagram copied to a `.mmd` file, at its natural size so the text stays sharp:
 
 ```sh
-echo '{"er": {"useMaxWidth": false}, "flowchart": {"useMaxWidth": false}, "sequence": {"useMaxWidth": false}}' > mermaid.json
-mmdc -c mermaid.json -i layers.mmd -o docs/report/diagrams/layers.png -b white -s 2
+mmdc -c docs/report/rapport/mermaid.json -i layers.mmd -o docs/report/diagrams/layers.png -b white -s 2
 ```
+
+`rapport/mermaid.json` holds the theme (the app's colours) and keeps each diagram at its natural size.
 
 ## Regenerating the test list
 
@@ -51,3 +53,19 @@ mmdc -c mermaid.json -i layers.mmd -o docs/report/diagrams/layers.png -b white -
 (cd backend && go test -json ./...) > go.json
 python3 docs/report/test_list.py app.json go.json > docs/report/tests.md
 ```
+
+## Building the report
+
+`rapport.docx` is generated: its text, tables and figure choices are in `rapport/build.mjs`, its French
+diagrams in `rapport/diagrams/*.mmd`. With node and ImageMagick (`magick`):
+
+```sh
+cd docs/report/rapport
+npm install --no-package-lock
+npm run diagrams   # after a change to a .mmd
+npm run build      # writes ../rapport.docx
+```
+
+The screenshots come from `docs/screenshots/`, cut to a phone's height; regenerate them first
+(`flutter test screenshots --update-goldens`) when screens changed. The table of contents is a field: Word fills
+it when the file opens.

@@ -33,6 +33,21 @@ where they apply; the main ones are listed below.
 | 2026-10-12 | Settings: language, level, data, simulation capital and FX fee | BRIEF §4.14 |
 | 2026-10-12 | A live order placed offline waits as pending for the next session's open; it never fills at a cached price | BRIEF §6.4, §14.1 |
 | 2026-10-13 | The map follows the approved art direction and may use colours of its own (`MapPalette`) | BRIEF §4.2, §10.2 |
+| 2026-10-24 | Every screen follows the art direction canvas, artboard by artboard; two component families, chunky (the game talking, what you touch) and flat (the figures of your money) | BRIEF §4, §10.1 |
+| 2026-10-24 | A trip has no maximum length; once it reaches today it goes on at the pace of real days | BRIEF §4.5, §14.2 |
+| 2026-10-24 | Islands share no cash: each teaches its own thing | BRIEF §14.3 |
+| 2026-10-24 | Comparisons with a Livret A respect the ceiling of each date; money above it waits as cash | BRIEF §4.11 |
+| 2026-10-25 | « Stabilité passée »: a score out of 100 on the asset page, its four parts shown, never used to rank | BRIEF §4.8, §14.4 |
+| 2026-10-27 | Motu's icon: the developed island, drawn like the map | BRIEF §10.6 |
+| 2026-10-28 | Every control is chunky, on every screen; the glossary is a world screen | BRIEF §10.1, §4.4 |
+| 2026-10-28 | Les bases comes first and opens Actions & ETF; the questionnaire can skip it | BRIEF §4.1, §4.2 |
+| 2026-10-28 | A quiz's choices come in a new order each time | BRIEF §4.3 |
+| 2026-11-16 | No map page: the « Archipel » tab opens on the island the user was on, up close; the sea chart sails between them | BRIEF §3, §4.2 |
+| 2026-11-16 | Actions & ETF is a business district and Les bases the mainland's port, a building or a part per lesson | BRIEF §4.2 |
+| 2026-11-16 | The lessons' islands and the wallets' islands are never mixed | BRIEF §4.2 |
+| 2026-11-17 | A lesson goes on in cards after its interaction: a worked example, a comparison, a quick check | BRIEF §4.3 |
+| 2026-11-17 | The questionnaire drops its weekly time question (schema v7) | BRIEF §4.1, §14.7 |
+| 2026-11-17 | Lessons skipped at onboarding stay hidden until their turn | BRIEF §4.3 |
+| 2026-11-17 | The wallets list joins the world family | BRIEF §4.5, §10.1 |
 
-Still open (BRIEF §14): a trip's maximum length, cash shared across future islands, explainable asset
-scoring.
+Every question BRIEF §14 listed is decided; none is open.

@@ -31,19 +31,19 @@ the domain knows nobody.
 flowchart TB
   subgraph P["presentation: widgets, no logic"]
     direction LR
-    P1["Screens<br/>MapTab · ArchipelagoMap (CustomPainter)<br/>WalletScreen · AssetScreen · OrderSheet<br/>ExplorerScreen · TripWizardScreen · NodeScreen<br/>DcaScreen · GlossaryScreen · SettingsScreen"]
+    P1["Screens<br/>HomeTab · IslandScreen · IslandScene, SeaChart (CustomPainter)<br/>WalletScreen · AssetScreen · OrderSheet<br/>ExplorerScreen · TripWizardScreen · NodeScreen, CardPlayer<br/>DcaScreen · GlossaryScreen · SettingsScreen"]
     P2["Shared states<br/>AsyncSkeleton · ErrorView(failure, onRetry)<br/>CacheStatusBanner"]
   end
   subgraph A["application: Riverpod providers and notifiers"]
     direction LR
-    A1["Views<br/>walletOverview · assetOverview · explorerRows<br/>islandPath · nextStepView · walletsList<br/>dcaRun · settingsView · cacheStatus"]
+    A1["Views<br/>walletOverview · assetOverview · explorerRows<br/>islandPath · place · seaChart · walletsList<br/>dcaRun · settingsView · cacheStatus"]
     A2["Intents<br/>OrderTicket · OrderTracker · TripRunner<br/>LiveCatchUp · TripWizard · DcaFormController<br/>node players · SettingsController"]
   end
   subgraph D["domain: pure Dart, unit-tested"]
     direction LR
     D1["Wallet<br/>TripEngine · matchOnBar · fillAtQuote · valueWallet<br/>Position (average cost) · validateOrder<br/>dcaSchedule · investFlows · livret interest"]
-    D2["Analytics<br/>returns (simple, TWR) · maxDrawdown<br/>annualisedVolatility · decomposeMove · risk"]
-    D3["Learning and market<br/>nextStep · profile rules · node evaluators<br/>companion rules · MarketCalendar"]
+    D2["Analytics<br/>returns (simple, TWR) · maxDrawdown<br/>annualisedVolatility · decomposeMove<br/>riskBand · pastStability"]
+    D3["Learning and market<br/>profile rules · islandOpen · node evaluators, cards<br/>companion rules · MarketCalendar"]
   end
   subgraph DA["data: the only layer with I/O"]
     direction LR
@@ -75,24 +75,28 @@ and when a colour is written anywhere but the theme tokens.
 ## The backend
 
 ```mermaid
-flowchart LR
-  subgraph cmd
-    server["cmd/server<br/>HTTP + scheduler"]
-    freeze["cmd/freeze<br/>frozen lesson datasets"]
-    check["cmd/contentcheck<br/>validates lesson packs"]
+flowchart TB
+  subgraph cmd["Commands (cmd/)"]
+    direction LR
+    server["server<br/>HTTP + scheduler"]
+    check["contentcheck<br/>validates lesson packs"]
+    freeze["freeze<br/>frozen lesson datasets"]
+    logos["logos<br/>stock logos for the app"]
   end
-  subgraph internal
+  subgraph internal["Packages (internal/)"]
     apih["api<br/>handlers, ETag, gzip,<br/>per-client rate limit"]
     jobs["jobs<br/>Syncer (daily append)<br/>QuoteRefresher (30 min)<br/>Budget (credits)"]
-    store["store<br/>SQLite: assets, bars,<br/>fx, livret, sync state"]
-    prov["provider<br/>Twelve Data adapter"]
     content["content<br/>packs, manifest"]
+    store["store<br/>SQLite: assets, bars,<br/>fx, livret, sync state"]
+    ref["catalogue · calendar<br/>29 assets, Livret A,<br/>NYSE holidays"]
+    src["provider · fx · insee<br/>Twelve Data, ECB rates,<br/>INSEE prices (ADR-008)"]
   end
   server --> apih & jobs
-  apih --> store & content
-  jobs --> prov & store
-  freeze --> prov
   check --> content
+  apih --> content & store & ref
+  jobs --> store & ref & src
+  freeze --> ref & src
+  logos --> ref
 ```
 
 No user data and no accounts: the backend serves the same public market data and lessons to everyone.
@@ -155,7 +159,10 @@ erDiagram
     int id PK "single row"
     text goal
     text dropReaction
+    text knowledge
+    text savings
     text language
+    text place "the island it opens on"
     bool showAll
   }
   NODE_PROGRESS {
@@ -206,10 +213,12 @@ erDiagram
   }
 ```
 
-Not drawn: `glossary_state`, `livret_rates` and `livret_ceilings`, `calendar_years`' columns,
-`content_packs`. Positions are never stored: they are derived from fills (average cost), so the ledger,
-the fills and the daily values are the whole truth. The schema is at version 3; every version ships with a
-migration and a test that upgrades a database of each older version (`app/test/drift/`).
+Not drawn: `glossary_state`, `livret_rates` and `livret_ceilings`, `exchange_early_closes`,
+`calendar_years`' columns, `content_packs`. Positions are never stored: they are derived from fills (average cost), so the ledger,
+the fills and the daily values are the whole truth. The schema is at version 7; every version ships with a
+migration and a test that upgrades a database of each older version (`app/test/drift/`): v2 a trip's stop
+reasons, v3 the live wallet's starting cash, v4 the early closes, v5 a trip that reached today, v6 the
+island the app opens on, v7 the weekly time question dropped (the profile table rebuilt).
 
 ## One read, end to end
 
@@ -239,7 +248,7 @@ sequenceDiagram
   P->>Dm: returns, drawdown, volatility, decomposition
   Dm-->>P: figures (Decimal)
   P-->>S: AsyncData → the page
-  Note over M,B: Network failure: the cache stands in, status() emits Stale or Offline,<br/>CacheStatusBanner shows when prices were last fetched.<br/>Nothing cached: a typed Failure → AsyncError → ErrorView with Retry.
+  Note over M,B: Network failure: the cache stands in, status() emits Stale or Offline,<br/>CacheStatusBanner shows when prices were last fetched, and BackendApi pauses for 30 s.<br/>Nothing cached: a typed Failure → AsyncError → ErrorView with Retry.
 ```
 
 ## The architecture questions (subject §12)

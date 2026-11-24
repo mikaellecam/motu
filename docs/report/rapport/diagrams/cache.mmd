@@ -1,0 +1,4 @@
+flowchart LR
+  td["Twelve Data<br/>8 crédits/min, 800/jour"] -- "après chaque clôture US<br/>et toutes les 30 min en séance" --> be[("Stockage du backend<br/>SQLite")]
+  be -- "seulement ce qui manque<br/>au téléphone" --> app[("Cache de l'application<br/>drift")]
+  app -- "instantané, hors ligne" --> ui["Écrans"]

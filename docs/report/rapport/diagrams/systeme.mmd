@@ -1,0 +1,13 @@
+flowchart LR
+  subgraph phone["Téléphone"]
+    app["Application Flutter<br/>Riverpod · drift (SQLite)"]
+  end
+  subgraph server["Auto-hébergé"]
+    api["Backend Go<br/>net/http · SQLite"]
+  end
+  td["Twelve Data<br/>(cours quotidiens, cotations)"]
+  fr["Frankfurter<br/>(taux de change BCE)"]
+  app -- "REST + JSON<br/>/v1/assets, /history, /quotes,<br/>/calendar, /livret, /content" --> api
+  app -- "REST + JSON<br/>taux quotidiens sur une période" --> fr
+  api -- "après chaque clôture américaine,<br/>dans un budget de crédits" --> td
+  api -- "USD→EUR, chaque jour" --> fr

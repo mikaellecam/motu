@@ -1,0 +1,11 @@
+erDiagram
+  direction LR
+  WALLETS ||--o{ CASH_LEDGER : "liquidités = somme"
+  WALLETS ||--o{ ORDERS : passe
+  ORDERS ||--o| FILLS : "exécuté une fois"
+  WALLETS ||--o{ FILLS : "positions déduites de"
+  WALLETS ||--o{ WALLET_VALUES : "une par jour clos"
+  WALLETS ||--o{ DCA_PLANS : possède
+  DCA_PLANS ||--o{ ORDERS : "un par période"
+  WALLETS ||--o{ JOURNAL_ENTRIES : "journal du voyage"
+  WALLETS ||--o{ COMPANION_LOG : "moments affichés"
