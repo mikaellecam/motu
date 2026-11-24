@@ -1,0 +1,7 @@
+erDiagram
+  direction LR
+  ASSETS ||--o{ PRICE_BARS : "quotidiens, ajustés"
+  ASSETS ||--o| HISTORY_SYNC : "jusqu’où en cache"
+  ASSETS ||--o| QUOTES : "dernière cotation"
+  CALENDAR_YEARS ||--o{ EXCHANGE_HOLIDAYS : liste
+  CALENDAR_YEARS ||--o{ EXCHANGE_EARLY_CLOSES : liste

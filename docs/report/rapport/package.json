@@ -1,0 +1,14 @@
+{
+  "name": "motu-rapport",
+  "private": true,
+  "type": "module",
+  "description": "Builds docs/report/rapport.docx, the school report",
+  "scripts": {
+    "diagrams": "for f in diagrams/*.mmd; do mmdc -q -c mermaid.json -i \"$f\" -o \"${f%.mmd}.png\" -b white -s 2; done",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.17.1",
+    "docx": "9.16.0"
+  }
+}

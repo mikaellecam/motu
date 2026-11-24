@@ -1,0 +1,24 @@
+sequenceDiagram
+  autonumber
+  participant S as AssetScreen
+  participant P as assetOverview (provider)
+  participant M as MarketRepository
+  participant DB as drift
+  participant B as BackendApi
+  participant Dm as domaine
+  S->>P: ref.watch(assetOverviewProvider(id))
+  P-->>S: AsyncLoading → AsyncSkeleton
+  P->>M: history(id, asOf), latest, calendar
+  M->>DB: history_sync : jusqu'où est-ce en cache ?
+  alt en cache et vérifié il y a moins de 15 min
+    DB-->>M: cours jusqu'à asOf
+  else de nouveaux jours peuvent exister
+    M->>B: GET /v1/assets/{id}/history?from=lastDate+1
+    B-->>M: seulement les jours manquants
+    M->>DB: une transaction : cours + history_sync
+  end
+  M-->>P: cours coupés à asOf (aucune anticipation)
+  P->>Dm: rendements, pire baisse, volatilité, décomposition
+  Dm-->>P: chiffres (Decimal)
+  P-->>S: AsyncData → la page
+  Note over M,B: Échec réseau : le cache prend le relais, status() émet Stale ou Offline,<br/>CacheStatusBanner affiche l'heure des derniers cours, et BackendApi se met en pause 30 s.<br/>Rien en cache : une Failure typée → AsyncError → ErrorView avec Réessayer.

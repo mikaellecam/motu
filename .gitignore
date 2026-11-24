@@ -19,3 +19,6 @@ app/assets/logos/*
 
 # Personal agent instructions (the tracker workflow), loaded after CLAUDE.md
 CLAUDE.local.md
+
+# The report builder's packages (docs/report/rapport: npm install)
+docs/report/rapport/node_modules/

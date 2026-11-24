@@ -1,0 +1,31 @@
+%%{init: {"flowchart": {"wrappingWidth": 420}}}%%
+flowchart TB
+  subgraph P["présentation : widgets, aucune logique"]
+    direction LR
+    P1["Écrans<br/>HomeTab · IslandScreen · IslandScene, SeaChart (CustomPainter)<br/>WalletScreen · AssetScreen · OrderSheet<br/>ExplorerScreen · TripWizardScreen · NodeScreen, CardPlayer<br/>DcaScreen · GlossaryScreen · SettingsScreen"]
+    P2["États partagés<br/>AsyncSkeleton · ErrorView(failure, onRetry)<br/>CacheStatusBanner"]
+  end
+  subgraph A["application : providers et notifiers Riverpod"]
+    direction LR
+    A1["Vues<br/>walletOverview · assetOverview · explorerRows<br/>islandPath · place · seaChart · walletsList<br/>dcaRun · settingsView · cacheStatus"]
+    A2["Intentions<br/>OrderTicket · OrderTracker · TripRunner<br/>LiveCatchUp · TripWizard · DcaFormController<br/>lecteurs de leçons · SettingsController"]
+  end
+  subgraph D["domaine : Dart pur, testé unitairement"]
+    direction LR
+    D1["Portefeuille<br/>TripEngine · matchOnBar · fillAtQuote · valueWallet<br/>Position (coût moyen) · validateOrder<br/>dcaSchedule · investFlows · intérêts du Livret"]
+    D2["Analyses<br/>rendements (simple, TWR) · maxDrawdown<br/>annualisedVolatility · decomposeMove<br/>riskBand · pastStability"]
+    D3["Apprentissage et marché<br/>règles du profil · islandOpen · évaluateurs, cartes<br/>règles du compagnon · MarketCalendar"]
+  end
+  subgraph DA["données : la seule couche avec des E/S"]
+    direction LR
+    R["Dépôts<br/>MarketRepository · FxService · WalletRepository<br/>ContentRepository · ProfileRepository · Favorites…"]
+    L["Local : drift<br/>AppDatabase · MarketDao<br/>WalletDao · LearningDao"]
+    N["Distant : dio<br/>BackendApi · FrankfurterApi<br/>deviceOnline (connectivity_plus)"]
+  end
+  C["core, utilisé par toutes les couches : SimulationClock (LiveClock, HistoricalClock)<br/>Money / Quantity / Price · Failure scellée · CacheStatus scellé · jetons du thème · formats"]
+  P -- "ref.watch (état), ref.read (intentions)" --> A
+  A -- "appelle des fonctions pures" --> D
+  A -- "lit, écrit" --> R
+  R --> L
+  R --> N
+  R -.->|renvoie des types du domaine| D

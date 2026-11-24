@@ -1,0 +1,22 @@
+flowchart TB
+  subgraph cmd["Commandes (cmd/)"]
+    direction LR
+    server["server<br/>HTTP + planificateur"]
+    check["contentcheck<br/>valide les packs"]
+    freeze["freeze<br/>jeux de données figés"]
+    logos["logos<br/>logos des actions"]
+  end
+  subgraph internal["Paquets (internal/)"]
+    apih["api<br/>handlers, ETag, gzip,<br/>limite par client"]
+    jobs["jobs<br/>Syncer (ajout quotidien)<br/>QuoteRefresher (30 min)<br/>Budget (crédits)"]
+    content["content<br/>packs, manifeste"]
+    store["store<br/>SQLite : actifs, cours,<br/>change, Livret, synchro"]
+    ref["catalogue · calendar<br/>29 actifs, Livret A,<br/>jours fériés NYSE"]
+    src["provider · fx · insee<br/>Twelve Data, taux BCE,<br/>prix INSEE"]
+  end
+  server --> apih & jobs
+  check --> content
+  apih --> content & store & ref
+  jobs --> store & ref & src
+  freeze --> ref & src
+  logos --> ref

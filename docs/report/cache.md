@@ -74,7 +74,13 @@ stood in, `Fresh` otherwise. `CacheStatusBanner` turns the first two into a line
 « Hors connexion. Tu vois les cours du 7 octobre 2026, 22 h 05. », with Retry
 (`docs/screenshots/m9-5-wallet-offline.png`).
 
-What still works offline: the map, every lesson (bundled), wallets, positions and charts, the glossary,
+When the backend itself cannot be reached (no connection, a timeout, a 502–504), `BackendApi` stops calling it
+for 30 seconds: every call in that window fails at once with the same `NetworkFailure`, so each repository
+answers from its cache without waiting (M13-18). A success ends the pause, and so do the banner's
+« Réessayer » and Settings' « Actualiser maintenant », which try the network at once. A rate limit, a 404 or
+a server error starts no pause: they say nothing about the connection.
+
+What still works offline: the islands and the sea chart, every lesson (bundled), wallets, positions and charts, the glossary,
 saved simulations, the asset pages and the explorer, a trip moving within its cached history. Placing a
 live market order offline queues it for the next session's open, so it never fills at a price that may be
 hours old; it fills once back online. A held asset without a cached quote is valued at its last cached close.
@@ -88,6 +94,9 @@ phone in airplane mode; it was run on 2026-10-12 (record in PR #63) and found th
 - The first view of an asset downloads its whole history: about 775 KB of JSON, sent gzipped as about
   195 KB. Each later refresh brings only the new days.
 - A trip moving through cached history makes no request.
+- Without the backend pause, Explore's first open with no backend reachable (release build, 2026-11-17) sent
+  about 70 requests one after another, each failing in 0,5 to 1 s: 15 to 25 s of skeleton. With it, the
+  first failure answers every other read from the cache at once.
 - After one session on a phone, Settings read « 29 historiques, 167 390 cours, 21,1 Mo sur l'appareil »:
   the whole catalogue's history since 2000.
 

@@ -29,6 +29,30 @@ requirements (§11).
 | <img src="../screenshots/m13-13-card-example.png" width="240"> | <img src="../screenshots/m13-13-card-compare.png" width="240"> | <img src="../screenshots/m13-13-card-check.png" width="240"> |
 | After its interaction, a lesson goes on in cards: a worked example (**calculation**: the cushion's months) | Two ways compared on one **chart** | A quick check, right or wrong, with its why; the header shows the lesson's cards |
 
+## The lessons' islands
+
+Islands drawn in code (`CustomPainter`), at a tablet's size; each lesson done grows its building or its part.
+
+|  |  |  |
+|---|---|---|
+| <img src="../screenshots/m13-2-district-0.png" width="240"> | <img src="../screenshots/m13-2-district-6.png" width="240"> | <img src="../screenshots/m13-2-district-12.png" width="240"> |
+| Actions & ETF, a business district, before any lesson | Six lessons done: six buildings grown | All twelve: the spire wears its gold crown |
+| <img src="../screenshots/m13-3-port-0.png" width="240"> | <img src="../screenshots/m13-3-port-5.png" width="240"> | <img src="../screenshots/m13-3-port-9.png" width="240"> |
+| Les bases, the mainland's port: the old jetty and the village | Five lessons: the ferry quay, and the line to Actions & ETF | All nine: the lighthouse lit |
+| <img src="../screenshots/m13-17-district-rising.png" width="240"> | <img src="../screenshots/m13-17-port-rising.png" width="240"> | <img src="../screenshots/m12-6-bases-path.png" width="240"> |
+| A lesson done: its building rising into its ghost (**coded animation**) | The same at the port | Les bases up close, before its first lesson |
+
+## Les bases' lessons
+
+|  |  |  |
+|---|---|---|
+| <img src="../screenshots/m12-3-cushion-toy.png" width="240"> | <img src="../screenshots/m12-3-loan-toy.png" width="240"> | <img src="../screenshots/m12-5-cash-inflation.png" width="240"> |
+| The safety cushion: months of spending, filled month by month (**calculation**) | A loan's real cost: equal payments, interest to the cent (**calculation**) | 10 000 € in notes, and what they buy at INSEE's prices |
+| <img src="../screenshots/m12-5-livret-inflation.png" width="240"> | <img src="../screenshots/m12-5-cushion-2020.png" width="240"> | <img src="../screenshots/m12-5-spot-the-scam.png" width="240"> |
+| The Livret A against inflation, 2021–2024 | « Février 2020 : et ton matelas ? », a decision | A quiz: spot the scam |
+| <img src="../screenshots/m13-14-cash-inflation-example.png" width="240"> | <img src="../screenshots/m13-14-loan-cost-compare.png" width="240"> | <img src="../screenshots/m12-7-onboarding-result-bases.png" width="240"> |
+| A worked example card | A comparison card: 12 or 48 months | Where the path starts, on Les bases |
+
 ## The portfolio
 
 | | | |
@@ -72,6 +96,25 @@ requirements (§11).
 | <img src="../screenshots/m6-6-term-sheet.png" width="240"> | <img src="../screenshots/m9-1-settings.png" width="240"> | |
 | A term, with a live example on real data | Settings: language, level, data and cache, simulation | |
 
+## More states
+
+|  |  |  |
+|---|---|---|
+| <img src="../screenshots/m9-36-asset-score.png" width="240"> | <img src="../screenshots/m9-17-order-error.png" width="240"> | <img src="../screenshots/m9-34-order-done-pending.png" width="240"> |
+| « Stabilité passée »: a score out of 100, its four parts shown | An order refused: the error in words | An order placed: its building under construction |
+| <img src="../screenshots/m9-34-order-done-filled.png" width="240"> | <img src="../screenshots/m9-34-order-done-mission.png" width="240"> | <img src="../screenshots/m9-41-plan-sheet.png" width="240"> |
+| Filled | Filled, and a mission completed | « Investir chaque mois »: a DCA plan |
+| <img src="../screenshots/m9-41-wallet-plans.png" width="240"> | <img src="../screenshots/m9-33-forward-sheet.png" width="240"> | <img src="../screenshots/m9-35-trip-at-today.png" width="240"> |
+| The wallet's plans | A trip: « Avancer jusqu'à… » with its stops | A trip that reached today goes on day by day |
+| <img src="../screenshots/m9-32-trip-wallet-stopped.png" width="240"> | <img src="../screenshots/m9-32-trip-wallet-finished.png" width="240"> | <img src="../screenshots/m9-24-trip-wizard-tight.png" width="240"> |
+| A trip stopped, waiting for a decision | A trip finished | « Serré »: fixed fees and whole shares |
+| <img src="../screenshots/m9-26-dca-result-fold.png" width="240"> | <img src="../screenshots/m9-28-term-sheet-drawdown.png" width="240"> | <img src="../screenshots/m13-16-glossary-search.png" width="240"> |
+| The DCA result, its comparisons | A term's live example: the worst drop marked | The glossary's search, unfolded |
+| <img src="../screenshots/m13-15-march-2020-example.png" width="240"> | <img src="../screenshots/m13-15-risk-ladder-compare.png" width="240"> | <img src="../screenshots/m11-4-wallet-empty.png" width="240"> |
+| Actions & ETF's cards: an example | A comparison on one chart | A new live wallet |
+| <img src="../screenshots/m13-21-sea-chart-en.png" width="240"> | <img src="../screenshots/m10-4-launcher.png" width="240"> | <img src="../screenshots/m10-4-splash.png" width="240"> |
+| The sea chart, in English | Motu's icon | Its launch screen |
+
 ## Offline, accessibility, English
 
 | | | |
@@ -81,4 +124,4 @@ requirements (§11).
 | <img src="../screenshots/m9-2-map-en.png" width="240"> | <img src="../screenshots/m9-2-wallet-en.png" width="240"> | <img src="../screenshots/m9-2-lesson-en.png" width="240"> |
 | In English | | |
 
-Not shown above: `m0-2-gallery`, `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet` (more states of these screens; `m0-2-gallery` is the design system's components).
+Not shown above: `m0-2-gallery` (the design system's components), `m4-1-shell-explore`, `m4-1-shell-map`, `m4-6-order-filled`, `m5-1-trip-wizard-floor`, `m8-1-livret-sheet`, `m13-3-port-3`, `m13-3-port-6` (more states of screens shown).
